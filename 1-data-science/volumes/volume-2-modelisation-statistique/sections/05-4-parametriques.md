@@ -35,9 +35,9 @@ C'est exactement la forme du modèle de Cox, avec un risque de base **imposé** 
 
 La vraisemblance avec censure (5.1.5) s'écrit pour un AFT, avec $z_i=(\ln y_i-x_i^\top\gamma)/\sigma$, $f_W$ la densité et $S_W$ la survie de $W$ :
 $$\ell(\gamma,\sigma)=\sum_i\Big[\delta_i\big(\ln f_W(z_i)-\ln\sigma-\ln y_i\big)+(1-\delta_i)\ln S_W(z_i)\Big].$$
-(La densité de $T=e^{\mu+\sigma W}$ est $f_W(z)/(\sigma t)$ : c'est le changement de variable habituel.) Pour la Weibull, $\ln f_W(z)=z-e^z$ et $\ln S_W(z)=-e^z$ ; pour la log-normale, $f_W=\varphi$ et $S_W=1-\Phi$ ; pour la log-logistique, $\ln f_W(z)=z-2\ln(1+e^z)$ et $\ln S_W(z)=-\ln(1+e^z)$. Le code suivant écrit ces trois vraisemblances, les maximise numériquement et calcule les erreurs standard par la **hessienne** numérique de $-\ell$ (l'inverse de l'information, comme au volume I, section 3.2).
+(La densité de $T=e^{\mu+\sigma W}$ est $f_W(z)/(\sigma t)$ : c'est le changement de variable habituel.) Pour la Weibull, $\ln f_W(z)=z-e^z$ et $\ln S_W(z)=-e^z$ ; pour la log-normale, $f_W=\varphi$ et $S_W=1-\Phi$ ; pour la log-logistique, $\ln f_W(z)=z-2\ln(1+e^z)$ et $\ln S_W(z)=-\ln(1+e^z)$. Nous avons programmé ces trois vraisemblances, les avons maximisées numériquement et avons calculé les erreurs standard par la **hessienne** numérique de $-\ell$ (l'inverse de l'information, comme au volume I, section 3.2) : le code est dans le cahier, application 5.5. Voici l'ajustement de la Weibull sur les 2 000 clients.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from math import gamma as Gamma
@@ -90,20 +90,31 @@ print(f"log-vraisemblance = {wb['ll']:.3f}")
 ```
 <!--sortie-->
 ```text
-                              gamma      ET  facteur d'accélération e^gamma
-(constante)                  3.5257  0.0970                         33.9765
-offre_bienvenue              0.3132  0.0489                          1.3678
-age                          0.0102  0.0023                          1.0102
-canal_acquisition_Instagram -0.4799  0.0636                          0.6188
-canal_acquisition_Site      -0.2452  0.0671                          0.7825
+                            gamma      ET  facteur d'accélération e^gamma
+(constante)                3.5257  0.0970                         33.9765
+offre_bienvenue            0.3132  0.0489                          1.3678
+age                        0.0102  0.0023                          1.0102
+canal_acquisition_Réseaux -0.4799  0.0636                          0.6188
+canal_acquisition_Site    -0.2452  0.0671                          0.7825
 
 sigma = 0.7563  ->  forme k = 1/sigma = 1.3223   (ET de ln sigma : 0.0253)
 log-vraisemblance = -4657.378
 ```
 
-Comparons avec **R** (`survreg`, la référence) et avec `lifelines` :
+| Paramètre | $\gamma$ | Erreur standard | Facteur d'accélération $e^{\gamma}$ |
+|---|---:|---:|---:|
+| constante | 3,5257 | 0,0970 | 33,98 |
+| offre de bienvenue | 0,3132 | 0,0489 | 1,368 |
+| âge (par année) | 0,0102 | 0,0023 | 1,010 |
+| canal Réseaux (réf. Boutique) | −0,4799 | 0,0636 | 0,619 |
+| canal Site (réf. Boutique) | −0,2452 | 0,0671 | 0,783 |
 
-```r
+L'échelle estimée est $\hat\sigma=0{,}7563$, soit une forme $k=1/\hat\sigma=1{,}3223$ (log-vraisemblance : $-4\,657{,}38$).
+
+
+Ces résultats sont identiques à ceux de **R** (`survreg`, la référence) et de `lifelines` : mêmes coefficients, même échelle, même log-vraisemblance.
+
+```r hide
 w_r <- survreg(Surv(duree_mois, churn) ~ offre_bienvenue + age + canal_acquisition, data = clients, dist = "weibull")
 print(summary(w_r))
 ```
@@ -113,13 +124,13 @@ print(summary(w_r))
 Call:
 survreg(formula = Surv(duree_mois, churn) ~ offre_bienvenue + 
     age + canal_acquisition, data = clients, dist = "weibull")
-                             Value Std. Error      z       p
-(Intercept)                 3.5257     0.0970  36.34 < 2e-16
-offre_bienvenue             0.3132     0.0489   6.40 1.5e-10
-age                         0.0102     0.0023   4.43 9.3e-06
-canal_acquisitionInstagram -0.4799     0.0636  -7.55 4.4e-14
-canal_acquisitionSite      -0.2452     0.0671  -3.66 0.00026
-Log(scale)                 -0.2794     0.0253 -11.04 < 2e-16
+                           Value Std. Error      z       p
+(Intercept)               3.5257     0.0970  36.34 < 2e-16
+offre_bienvenue           0.3132     0.0489   6.40 1.5e-10
+age                       0.0102     0.0023   4.43 9.3e-06
+canal_acquisitionRéseaux -0.4799     0.0636  -7.55 4.4e-14
+canal_acquisitionSite    -0.2452     0.0671  -3.66 0.00026
+Log(scale)               -0.2794     0.0253 -11.04 < 2e-16
 
 Scale= 0.756 
 
@@ -130,7 +141,7 @@ Number of Newton-Raphson Iterations: 6
 n= 2000 
 ```
 
-```python
+```python hide
 from lifelines import WeibullAFTFitter
 
 df_ll = pd.concat([c[["duree_mois", "churn"]], X], axis=1)
@@ -140,11 +151,31 @@ print(f"lifelines : rho = ln k = {ll_w.params_[('rho_', 'Intercept')]:.4f} (à l
 ```
 <!--sortie-->
 ```text
-lifelines : coefficients de lambda_ : {'age': 0.0102, 'canal_acquisition_Instagram': -0.4799, 'canal_acquisition_Site': -0.2452, 'offre_bienvenue': 0.3132, 'Intercept': 3.5257}
+lifelines : coefficients de lambda_ : {'age': 0.0102, 'canal_acquisition_Réseaux': -0.4799, 'canal_acquisition_Site': -0.2452, 'offre_bienvenue': 0.3132, 'Intercept': 3.5257}
 lifelines : rho = ln k = 0.2794 (à la main : -ln sigma = 0.2794) ; log-vraisemblance -4657.378
 ```
 
-Les trois sources donnent les mêmes coefficients, la même échelle et la même log-vraisemblance. Lecture :
+Avec `lifelines`, l'ajustement tient en trois lignes (`df_ll` rassemble la durée, le départ observé et les variables explicatives) :
+
+```python
+from lifelines import WeibullAFTFitter
+
+aft = WeibullAFTFitter().fit(df_ll, "duree_mois", "churn")
+print(aft.params_["lambda_"].round(3))                      # coefficients gamma de ln(durée)
+```
+<!--sortie-->
+```text
+covariate
+age                          0.010
+canal_acquisition_Réseaux   -0.480
+canal_acquisition_Site      -0.245
+offre_bienvenue              0.313
+Intercept                    3.526
+dtype: float64
+```
+
+
+Lecture :
 
 - **Offre de bienvenue** : facteur d'accélération $e^{0{,}313}\approx1{,}37$ : la durée de vie d'un client qui l'a reçue est **37 % plus longue** (à âge et canal égaux).
 - **Canal** : par rapport à la boutique, un client arrivé par Réseaux a une durée de vie **38 % plus courte** ($e^{-0{,}48}\approx0{,}62$) et un client arrivé par le site, **22 % plus courte** ($e^{-0{,}245}\approx0{,}78$).
@@ -153,19 +184,27 @@ Les trois sources donnent les mêmes coefficients, la même échelle et la même
 
 **La vérification croisée avec Cox.** Convertissons ces coefficients AFT en coefficients de risques par $\beta=-\gamma/\sigma$ et comparons au modèle de Cox de la section 5.3 :
 
-```python
+```python hide
 beta_ph = -wb["theta"][1:-1] / sigma
 cox_coef = np.array([-0.40612, -0.01363, 0.63508, 0.32580])          # section 5.3.3 (Breslow)
 print(pd.DataFrame({"Weibull converti (-gamma/sigma)": beta_ph, "Cox (5.3.3)": cox_coef}, index=noms[1:]).round(4).to_string())
 ```
 <!--sortie-->
 ```text
-                             Weibull converti (-gamma/sigma)  Cox (5.3.3)
-offre_bienvenue                                      -0.4141      -0.4061
-age                                                  -0.0135      -0.0136
-canal_acquisition_Instagram                           0.6346       0.6351
-canal_acquisition_Site                                0.3242       0.3258
+                           Weibull converti (-gamma/sigma)  Cox (5.3.3)
+offre_bienvenue                                    -0.4141      -0.4061
+age                                                -0.0135      -0.0136
+canal_acquisition_Réseaux                           0.6346       0.6351
+canal_acquisition_Site                              0.3242       0.3258
 ```
+
+| Variable | Weibull converti ($-\gamma/\sigma$) | Cox (5.3.3) |
+|---|---:|---:|
+| offre de bienvenue | −0,4141 | −0,4061 |
+| âge | −0,0135 | −0,0136 |
+| canal Réseaux | 0,6346 | 0,6351 |
+| canal Site | 0,3242 | 0,3258 |
+
 
 Les deux séries sont presque identiques : les données sont bien compatibles avec une Weibull. Les erreurs standard sont, elles aussi, voisines (environ 0,065 pour l'offre dans les deux cas, en convertissant celle de l'AFT par $0{,}0489/0{,}756$). Quand la forme paramétrique est bonne, on pourrait espérer un gain de précision par rapport à Cox ; ici il est négligeable : avec 977 départs, le risque de base est déjà estimé très précisément, et Cox ne perd presque rien.
 
@@ -173,7 +212,7 @@ Les deux séries sont presque identiques : les données sont bien compatibles av
 
 Tous ces modèles ont le même nombre de paramètres sauf l'exponentielle (un de moins) ; on peut donc les comparer par la **vraisemblance** et le **critère d'Akaike** (AIC $=2k-2\ell$, voir la section 1.4 de ce volume ; plus petit = meilleur).
 
-```python
+```python hide
 lignes = []
 for loi, r in ajustements.items():
     lignes.append({"loi": loi, "paramètres": r["k"], "log-vraisemblance": round(r["ll"], 2), "AIC": round(2 * r["k"] - 2 * r["ll"], 2)})
@@ -194,7 +233,7 @@ exponentielle           5           -4710.58 9431.17
 exponentielle contre Weibull : chi2 = 106.4 (1 ddl), p = 6.0e-25
 ```
 
-```r
+```r hide
 for (loi in c("weibull", "lognormal", "loglogistic", "exponential")) {
   f <- survreg(Surv(duree_mois, churn) ~ offre_bienvenue + age + canal_acquisition, data = clients, dist = loi)
   cat(sprintf("%-12s log-vraisemblance = %.3f   AIC = %.2f\n", loi, f$loglik[2], AIC(f)))
@@ -208,6 +247,16 @@ loglogistic  log-vraisemblance = -4663.725   AIC = 9339.45
 exponential  log-vraisemblance = -4710.583   AIC = 9431.17
 ```
 
+| Loi | Paramètres | Log-vraisemblance | AIC |
+|---|---:|---:|---:|
+| **Weibull** | 6 | −4 657,38 | **9 326,76** |
+| log-logistique | 6 | −4 663,73 | 9 339,45 |
+| log-normale | 6 | −4 697,20 | 9 406,40 |
+| exponentielle | 5 | −4 710,58 | 9 431,17 |
+
+Le test du rapport de vraisemblance de l'exponentielle contre la Weibull donne $\chi^2=106{,}4$ (1 degré de liberté, $p=6\times10^{-25}$).
+
+
 La **Weibull** est nettement la meilleure ; la log-logistique arrive deuxième (13 points d'AIC derrière), la log-normale troisième, l'exponentielle dernière. Le test du rapport de vraisemblance rejette l'exponentielle de façon écrasante : le risque n'est pas constant. Les valeurs coïncident avec celles de R.
 
 Un AIC compare des modèles **entre eux** ; il ne dit pas si le meilleur est *bon*. Pour juger l'adéquation, on utilise les **résidus de Cox-Snell**.
@@ -216,7 +265,7 @@ Un AIC compare des modèles **entre eux** ; il ne dit pas si le meilleur est *bo
 
 Superposons la comparaison globale (survie marginale prédite par chaque modèle, contre Kaplan-Meier) et les résidus de Cox-Snell, pour la Weibull et pour l'exponentielle :
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -289,7 +338,7 @@ où $m$ est la **marge mensuelle** par client encore actif, $r$ le taux d'actual
 
 > 🧭 **Des hypothèses, pas des données.** Nous n'avons dans nos fichiers **ni marge ni coût**. Les trois chiffres ci-dessous sont des hypothèses que la gérante devrait remplacer par les siens : une marge de **6 € par mois** et par client actif, un taux d'actualisation de **1 % par mois** (environ 13 % par an) et un horizon de 20 ans (240 mois). Le but est de montrer la **mécanique** du calcul, pas de chiffrer vraiment la boutique.
 
-```python
+```python hide
 m_mensuelle, taux, horizon = 6.0, 0.01, 240
 mois = np.arange(0, horizon)
 k_hat, th = 1 / sigma, wb["theta"]
@@ -315,19 +364,29 @@ print(pd.DataFrame(lignes).round(3).to_string(index=False))
 <!--sortie-->
 ```text
           groupe  clients  durée moyenne (mois)  survie à 36 mois  CLV (€)  part de la CLV après 84 mois (%)
-tous les clients     2000                41.339             0.453   186.096                             3.741
-      sans offre      985                35.167             0.384   165.806                             2.156
-      avec offre     1015                47.329             0.521   205.785                             4.981
-        Boutique      504                53.159             0.574   223.468                             6.364
-            Site      680                42.068             0.471   189.751                             3.545
-       Réseaux      816                33.431             0.364   159.967                             1.672
+tous les clients     2000                41.339             0.453  186.096                             3.741
+      sans offre      985                35.167             0.384  165.806                             2.156
+      avec offre     1015                47.329             0.521  205.785                             4.981
+        Boutique      504                53.159             0.574  223.468                             6.364
+            Site      680                42.068             0.471  189.751                             3.545
+         Réseaux      816                33.431             0.364  159.967                             1.672
 ```
+
+| Groupe | Clients | Durée moyenne (mois) | Survie à 36 mois | CLV (€) | Part de la CLV après 84 mois |
+|---|---:|---:|---:|---:|---:|
+| tous les clients | 2 000 | 41,3 | 0,453 | 186,1 | 3,7 % |
+| sans offre | 985 | 35,2 | 0,384 | 165,8 | 2,2 % |
+| avec offre | 1 015 | 47,3 | 0,521 | 205,8 | 5,0 % |
+| Boutique | 504 | 53,2 | 0,574 | 223,5 | 6,4 % |
+| Site | 680 | 42,1 | 0,471 | 189,8 | 3,5 % |
+| Réseaux | 816 | 33,4 | 0,364 | 160,0 | 1,7 % |
+
 
 Quelques vérifications de bon sens. La survie moyenne à 36 mois du modèle (0,453) retrouve **exactement** la valeur de Kaplan-Meier de la section 5.2 (0,453), ce qui confirme que le modèle colle aux données observées. La durée moyenne d'un client est de **41 mois**, tandis que la durée moyenne *restreinte* à 60 mois de Kaplan-Meier valait 34 mois : l'écart (7 mois) est la part de la vie *au-delà de 60 mois*, que Kaplan-Meier ne peut pas chiffrer et que le modèle extrapole. Et la durée moyenne **exponentielle** de la section 5.1.5 (48 mois) était trop optimiste.
 
-**L'offre de bienvenue en valait-elle la peine ?** Elle augmente la CLV de 166 à 206 € par client, soit un gain de **40 €** d'actualisé. Si l'offre coûte, par hypothèse, 10 € par client, le gain net est de 30 € par client. Comme l'offre est randomisée, cette différence est une estimation de **l'effet causal** de l'offre sur la valeur. Voyons si le résultat dépend des hypothèses :
+**L'offre de bienvenue en valait-elle la peine ?** Elle augmente la CLV de 166 à 206 € par client, soit un gain de **40 €** d'actualisé. Si l'offre coûte, par hypothèse, 10 € par client, le gain net est de 30 € par client. Comme l'offre est randomisée, cette différence est une estimation de **l'effet causal** de l'offre sur la valeur. Voyons si le résultat dépend des hypothèses.
 
-```python
+```python hide
 S0, S1 = S_groupe(groupes["sans offre"]), S_groupe(groupes["avec offre"])
 cout_offre = 10.0
 print(f"CLV sans offre : {m_mensuelle * np.sum(S0 / (1 + taux) ** mois):.1f} € | avec offre : {m_mensuelle * np.sum(S1 / (1 + taux) ** mois):.1f} €\n")
@@ -346,10 +405,19 @@ CLV sans offre : 165.8 € | avec offre : 205.8 €
 
 gain net par client (CLV avec offre - CLV sans offre - coût de 10 €), selon les hypothèses :
                  marge 3 €/mois  marge 6 €/mois  marge 9 €/mois
-taux 0.5 %/mois             16.5             42.9             69.4
-taux 1.0 %/mois             10.0             30.0             50.0
-taux 2.0 %/mois              2.4             14.7             27.1
+taux 0.5 %/mois            16.5            42.9            69.4
+taux 1.0 %/mois            10.0            30.0            50.0
+taux 2.0 %/mois             2.4            14.7            27.1
 ```
+
+Gain net par client (CLV avec offre $-$ CLV sans offre $-$ coût de 10 €), selon les hypothèses :
+
+| Taux d'actualisation | marge 3 €/mois | marge 6 €/mois | marge 9 €/mois |
+|---|---:|---:|---:|
+| 0,5 % par mois | 16,5 | 42,9 | 69,4 |
+| 1,0 % par mois | 10,0 | 30,0 | 50,0 |
+| 2,0 % par mois | 2,4 | 14,7 | 27,1 |
+
 
 Le gain net reste **positif dans les neuf cas testés**, mais son ordre de grandeur varie d'un facteur 30 : de 69 € par client (marge de 9 €, actualisation faible) à seulement 2,4 € (marge de 3 €, actualisation de 2 % par mois), c'est-à-dire presque rien. La conclusion « l'offre est rentable » est donc **robuste** ; la conclusion « elle rapporte 30 € par client » ne l'est pas. Voilà exactement le genre d'information utile : on peut dire à la gérante que l'offre ne perd pas d'argent dans ce domaine d'hypothèses, et lui demander sa vraie marge pour chiffrer le gain.
 
@@ -359,7 +427,7 @@ Le gain net reste **positif dans les neuf cas testés**, mais son ordre de grand
 
 Nos modèles ne connaissent ni la qualité du service reçu, ni la satisfaction du client. Or l'enquête de satisfaction (`donnees/enquete_satisfaction.csv`) en mesure une partie : les notes `q5` à `q8` portent sur le service et la livraison. Environ 60 % des clients ont répondu. Que se passe-t-il si l'on ajoute leur **note moyenne de service** au modèle de survie, sur les répondants ?
 
-```python
+```python hide
 q = pd.read_csv("donnees/enquete_satisfaction.csv")
 q["service"] = q[["q5", "q6", "q7", "q8"]].mean(axis=1)
 rep = c.merge(q[["id_client", "service"]], on="id_client")
@@ -386,6 +454,8 @@ coefficient du service (par écart-type de la note) : 0.262 (ET 0.031) -> durée
 rapport de vraisemblance : chi2 = 71.2 (1 ddl), p = 3.2e-17
 ```
 
+Sur les 1 212 répondants, ajouter la note de service fait passer la log-vraisemblance de $-2\,785{,}8$ à $-2\,750{,}2$ (rapport de vraisemblance : $\chi^2=71{,}2$ à 1 degré de liberté, $p=3\times10^{-17}$) ; son coefficient vaut 0,262 (erreur standard 0,031) par écart-type de la note.
+
 Un client dont la note de service est **un écart-type au-dessus de la moyenne** reste en moyenne environ **30 % plus longtemps** (facteur 1,30) : le service compte, et le test du rapport de vraisemblance le confirme. C'est un exemple concret de ce qu'apportent les **variables explicatives pertinentes** (et du travail de construction d'indicateurs de la section 3.2 de ce volume, l'analyse factorielle, pour condenser huit notes en un score de service).
 
 ### 5.4.7 Révéler la vérité
@@ -394,7 +464,7 @@ Comme les données sont simulées, nous pouvons maintenant comparer nos estimati
 $$\ln T=3{,}6+0{,}30\,F_2+0{,}35\,\mathrm{offre}+\big\{\text{Boutique }{+}0{,}30,\ \text{Site }0,\ \text{Réseaux }{-}0{,}15\big\}+0{,}008\,(\mathrm{âge}-36)+\sigma W,$$
 où $F_2$ est un **facteur de sensibilité au service** (loi normale centrée réduite) **que le fichier ne contient pas**, et où $\sigma=1/1{,}35\approx0{,}74$. On peut même reconstruire ce facteur manquant avec le générateur de données, et ajuster le modèle « oracle » qui le connaît :
 
-```python
+```python hide
 import sys
 sys.path.insert(0, "build")
 import donnees2
@@ -405,7 +475,7 @@ se_o = np.sqrt(np.diag(oracle["cov"]))
 # Valeurs vraies, exprimées dans la même paramétrisation que notre modèle (âge centré en 36 dans le générateur,
 # référence = Boutique, donc Réseaux = -0.15 - 0.30 et Site = 0 - 0.30)
 vrai = {"(constante)": 3.6 + 0.30 - 0.008 * 36, "offre_bienvenue": 0.35, "age": 0.008,
-        "canal_acquisition_Instagram": -0.15 - 0.30, "canal_acquisition_Site": 0.0 - 0.30}
+        "canal_acquisition_Réseaux": -0.15 - 0.30, "canal_acquisition_Site": 0.0 - 0.30}
 lignes = []
 for j, nom in enumerate(noms):
     lignes.append({"paramètre": nom, "vérité": vrai[nom], "estimé (sans F2)": wb["theta"][j], "ET": se[j],
@@ -418,21 +488,33 @@ print(pd.DataFrame(lignes).round(3).to_string(index=False))
 ```
 <!--sortie-->
 ```text
-                  paramètre  vérité  estimé (sans F2)    ET  écart / ET  oracle (avec F2)
-                (constante)   3.612             3.526 0.097      -0.890             3.562
-            offre_bienvenue   0.350             0.313 0.049      -0.753             0.299
-                        age   0.008             0.010 0.002       0.955             0.009
-canal_acquisition_Instagram  -0.450            -0.480 0.064      -0.471            -0.486
-     canal_acquisition_Site  -0.300            -0.245 0.067       0.817            -0.242
-          forme k = 1/sigma   1.350             1.322   NaN         NaN             1.400
-      F2 (facteur manquant)   0.300               NaN   NaN         NaN             0.310
+                paramètre  vérité  estimé (sans F2)    ET  écart / ET  oracle (avec F2)
+              (constante)   3.612             3.526 0.097      -0.890             3.562
+          offre_bienvenue   0.350             0.313 0.049      -0.753             0.299
+                      age   0.008             0.010 0.002       0.955             0.009
+canal_acquisition_Réseaux  -0.450            -0.480 0.064      -0.471            -0.486
+   canal_acquisition_Site  -0.300            -0.245 0.067       0.817            -0.242
+        forme k = 1/sigma   1.350             1.322   NaN         NaN             1.400
+    F2 (facteur manquant)   0.300               NaN   NaN         NaN             0.310
 ```
+
+| Paramètre | Vérité | Estimé sans $F_2$ | Erreur standard | Écart (en erreurs standard) | Modèle « oracle » (avec $F_2$) |
+|---|---:|---:|---:|---:|---:|
+| constante | 3,612 | 3,526 | 0,097 | −0,89 | 3,562 |
+| offre de bienvenue | 0,350 | 0,313 | 0,049 | −0,75 | 0,299 |
+| âge | 0,008 | 0,010 | 0,002 | 0,96 | 0,009 |
+| canal Réseaux | −0,450 | −0,480 | 0,064 | −0,47 | −0,486 |
+| canal Site | −0,300 | −0,245 | 0,067 | 0,82 | −0,242 |
+| forme $k=1/\sigma$ | 1,350 | 1,322 | | | 1,400 |
+| facteur manquant $F_2$ | 0,300 | | | | 0,310 |
 
 Que montre cette comparaison ?
 
 1. **Tous les coefficients du modèle réaliste sont à moins d'une erreur standard de la vérité** (colonne « écart / ET ») : la méthode retrouve ce qu'on a programmé (effet de l'offre : $+0{,}31$ estimé contre $+0{,}35$ ; les canaux et l'âge aussi).
 2. Le modèle **oracle**, qui connaît le facteur manquant, retrouve **son coefficient** ($\approx0{,}31$ pour une vérité de 0,30). Il estime aussi une forme de $1{,}40$, contre $1{,}32$ pour le modèle sans $F_2$ : la vraie valeur (1,35) se situe entre les deux, et l'écart entre les deux estimations est précisément ce que prédit le point suivant. (De même, sur les répondants à l'enquête, la forme passe de 1,31 à 1,37 quand on ajoute la note de service.)
 3. Le **déplacement de la forme** est un phénomène classique : quand une variable qui joue sur le risque est **omise**, le risque observé pour l'ensemble de la population est un **mélange** de risques individuels ; les clients les plus fragiles partent les premiers, de sorte que les survivants sont de plus en plus robustes. La population semble avoir un risque qui augmente **moins vite** que celui de chaque individu. En termes de modèle, on parle d'**hétérogénéité non observée** (ou de **fragilité**, *frailty*). Elle est inévitable : il y a toujours des variables que l'on ne mesure pas.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : application 5.5, exercices 5.9 et 5.11.
 
 > ✅ **À retenir**
 > - Un modèle **paramétrique** parie sur la loi de la durée. Il permet d'**extrapoler**, de calculer des durées moyennes et d'être plus précis que Cox *si la forme est bonne*.

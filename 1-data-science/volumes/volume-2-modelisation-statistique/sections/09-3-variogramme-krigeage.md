@@ -1,6 +1,6 @@
 ## 9.3 Variogramme et krigeage
 
-> 💡 **Intuition.** la gérante veut promettre un délai à une cliente de Zaghouan, où personne n'a encore été livré. Que peut-on dire ? Les livraisons **proches** de cette adresse sont informatives, celles qui sont loin le sont moins, et deux livraisons voisines l'une de l'autre se répètent (elles apportent à peu près la même information). Le **variogramme** mesure à quelle vitesse la ressemblance entre deux mesures s'estompe quand la distance augmente. Le **krigeage** s'en sert pour fabriquer, en tout point, la **meilleure moyenne pondérée** des mesures voisines, avec une **marge d'erreur**.
+> 💡 **Intuition.** La gérante veut promettre un délai à une cliente d'un quartier où personne n'a encore été livré. Que peut-on dire ? Les livraisons **proches** de cette adresse sont informatives, celles qui sont loin le sont moins, et deux livraisons voisines l'une de l'autre se répètent (elles apportent à peu près la même information). Le **variogramme** mesure à quelle vitesse la ressemblance entre deux mesures s'estompe quand la distance augmente. Le **krigeage** s'en sert pour fabriquer, en tout point, la **meilleure moyenne pondérée** des mesures voisines, avec une **marge d'erreur**.
 
 ### 9.3.1 De la corrélation entre voisines à une fonction de la distance
 
@@ -32,9 +32,9 @@ Avec $n$ points, l'estimateur classique de la semi-variance à la distance $h$ e
 
 $$\hat\gamma(h)=\frac{1}{2N(h)}\sum_{(i,j)\in N(h)}(z_i-z_j)^2,$$
 
-où $N(h)$ est l'ensemble des paires dont la distance est « à peu près » $h$ (on découpe les distances en **classes** de largeur fixe) et $N(h)$ leur nombre. Le code suivant fabrique cet estimateur. Nous le validons d'abord sur les quatre points ci-dessus.
+où $N(h)$ est l'ensemble des paires dont la distance est « à peu près » $h$ (on découpe les distances en **classes** de largeur fixe) et $N(h)$ leur nombre. Nous l'avons programmé (cahier, application 9.4) et validé d'abord sur les quatre points ci-dessus : voici sa sortie, avec le nombre de paires de chaque classe.
 
-```python
+```python hide-code
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -79,9 +79,9 @@ print(variogramme_empirique(P4, z4, largeur=1.0, hmax=3.0).to_string(index=False
 3.0    2.0       1
 ```
 
-Les trois lignes redonnent nos calculs à la main : 1,0 ; 2,5 ; 2,0. Passons aux 200 livraisons. Voici d'abord le code qui les a fabriquées, c'est-à-dire la **vérité** que nous allons chercher à retrouver (nous ne la regarderons qu'après l'analyse). C'est un champ aléatoire gaussien stationnaire de covariance exponentielle, observé avec un bruit de mesure.
+Les trois lignes redonnent nos calculs à la main : 1,0 ; 2,5 ; 2,0. Passons aux 200 livraisons. Elles ont été fabriquées par un générateur (`build/donnees_ch09.py`, reconstruit dans le cahier, application 9.4) dont les réglages sont la **vérité** que nous allons chercher à retrouver (nous ne la regarderons qu'après l'analyse) : un champ aléatoire gaussien stationnaire de covariance exponentielle, observé avec un bruit de mesure. Les 200 délais ont une moyenne de 4,27 jours et une variance de 1,21 jour².
 
-```python
+```python hide
 def livraisons(seed=27, n=200, cote=100.0, sill=1.0, a=12.0, pepite=0.4, moyenne=4.0):
     rng = np.random.default_rng(seed)
     g = np.linspace(2, cote - 2, 25)                          # grille de prédiction 25 x 25
@@ -112,7 +112,7 @@ n = 200 | moyenne = 4.27 jours | variance = 1.21
 
 Calculons le variogramme empirique de ces données, avec des classes de 5 km jusqu'à 50 km (la moitié de la taille du domaine : au-delà, les paires deviennent rares et dépendent de la forme du domaine, c'est la règle de pouce usuelle).
 
-```python
+```python hide-code
 emp = variogramme_empirique(coords, z, largeur=5.0, hmax=50.0)
 print(emp.round(3).to_string(index=False))
 ```
@@ -149,7 +149,7 @@ La **portée pratique** est la distance où le variogramme atteint 95 % de son p
 
 Pour ajuster un modèle, on cherche $(c_0,c,a)$ qui rapprochent le modèle des points empiriques par **moindres carrés pondérés**. Les classes contenant beaucoup de paires sont plus fiables et celles où $\gamma$ est petit ont une variance plus faible, d'où les poids (de Cressie) $N(h)/\gamma_{\text{modèle}}(h)^2$ : on minimise $\sum_k N_k\big(\hat\gamma_k/\gamma_k(\theta)-1\big)^2$.
 
-```python
+```python hide-code
 def gamma_sph(h, c0, c, a):
     h = np.asarray(h, dtype=float)
     g = np.where(h < a, c0 + c * (1.5 * h / a - 0.5 * (h / a) ** 3), c0 + c)
@@ -198,7 +198,7 @@ exponentiel   0.038           1.277         1.315    8.136              24.407  
 
 Les trois modèles proposent un **palier total** voisin (entre 1,28 et 1,32), mais des décompositions différentes entre pépite et portée : le modèle exponentiel trouve presque une pépite nulle et une portée pratique d'environ 24 km, le gaussien une pépite de 0,39 et une portée de 18 km. Leurs **critères** d'ajustement sont très proches (47,2 pour l'exponentiel, 48,1 et 48,4 pour les deux autres) : l'exponentiel est légèrement meilleur, mais **les données ne permettent pas de trancher** entre les formes. Regardons-les sur la figure.
 
-```python
+```python hide
 BLEU, ORANGE, AQUA, VIOLET, ROUGE = "#2a78d6", "#eb6834", "#1baf7a", "#4a3aa7", "#e34948"
 hh = np.linspace(0.01, 50, 300)
 fig, ax = plt.subplots(figsize=(7.4, 4.6))
@@ -226,7 +226,7 @@ figure enregistrée
 
 **Cet ajustement est-il typique ?** Une seule série de 200 mesures est un seul tirage ; il est légitime de se demander ce qui se passerait avec d'autres tirages du même processus. Faisons l'expérience : nous répétons la simulation avec 30 graines différentes, nous réajustons à chaque fois le modèle exponentiel et nous regardons la dispersion des paramètres estimés.
 
-```python
+```python hide-code
 rangs = []
 for s in range(100, 130):
     d_s, _ = livraisons(seed=s)
@@ -248,7 +248,7 @@ portee_pratique    36.0    28.92      15.88      52.00
 palier_total        1.4     1.38       1.05       1.63
 ```
 
-> ⚠️ **Ce qu'il faut retenir de cette expérience.** Sur 30 tirages, le palier total est estimé avec une assez bonne précision (médiane 1,38 pour une vérité de 1,4), mais la pépite varie de 0,10 à 0,54 (entre le 10e et le 90e percentile) et la portée pratique de 16 à 52 km, pour des vérités de 0,4 et 36 km. La **médiane** de la portée pratique (29 km) est elle-même inférieure à la vérité : l'ajustement a tendance à la sous-estimer. Notre tirage (pépite 0,04, portée 24 km) est dans la queue basse de la distribution, sans être aberrant. Même avec 200 points, les paramètres du variogramme sont donc **peu précis** : la pépite et la portée sont particulièrement difficiles à identifier, parce que l'une et l'autre se jouent dans les toutes premières classes de distance, qui contiennent peu de paires. Ce n'est pas un défaut de notre code, c'est la nature du problème. Deux conséquences pratiques : (1) ne jamais donner un variogramme ajusté comme un fait certain, (2) comme nous le verrons, le **krigeage** est heureusement assez peu sensible aux petites erreurs de variogramme.
+> ⚠️ **Ce qu'il faut retenir de cette expérience.** Sur 30 tirages, le palier total est estimé avec une assez bonne précision (médiane 1,38 pour une vérité de 1,4), mais la pépite varie de 0,10 à 0,54 (entre le 10e et le 90e percentile) et la portée pratique de 16 à 52 km, pour des vérités de 0,4 et 36 km. La **médiane** de la portée pratique (29 km) est elle-même inférieure à la vérité : l'ajustement a tendance à la sous-estimer. Notre tirage (pépite 0,04, portée 24 km) est dans la queue basse de la distribution, sans être aberrant. Même avec 200 points, les paramètres du variogramme sont donc **peu précis** : la pépite et la portée sont particulièrement difficiles à identifier, parce que l'une et l'autre se jouent dans les toutes premières classes de distance, qui contiennent peu de paires. Ce n'est pas un défaut du programme, c'est la nature du problème. Deux conséquences pratiques : (1) ne jamais donner un variogramme ajusté comme un fait certain, (2) comme nous le verrons, le **krigeage** est heureusement assez peu sensible aux petites erreurs de variogramme.
 
 ### 9.3.4 Le krigeage : la meilleure moyenne pondérée
 
@@ -270,9 +270,9 @@ La contrainte $\sum\lambda_i=1$ garantit que le prédicteur est **sans biais** q
 
 Trois choses à remarquer dans ce système. (1) Les poids dépendent **des distances entre les points de mesure** (la matrice $\Gamma$, qui sait que deux points voisins sont redondants) *et* de la distance de chaque point à la cible ($\gamma_0$) : on n'est pas une simple pondération par l'inverse de la distance. (2) La variance de krigeage $\sigma_K^2$ ne dépend **que de la géométrie et du variogramme**, pas des valeurs mesurées. (3) Le système est linéaire de taille $(n+1)$ : un seul appel à `numpy.linalg.solve`.
 
-**Un exemple à la main.** Prenons le cas le plus simple : une dimension, un variogramme **linéaire** $\gamma(h)=h$, deux points de mesure à $x=0$ (valeur 10) et $x=3$ (valeur 16), et une cible à $x=1$. Alors $\Gamma=\begin{pmatrix}0&3\\3&0\end{pmatrix}$ et $\gamma_0=(1,2)^\top$. Le système s'écrit $3\lambda_2+m=1$, $3\lambda_1+m=2$, $\lambda_1+\lambda_2=1$. En soustrayant les deux premières équations, $3(\lambda_1-\lambda_2)=1$, donc $\lambda_1=\tfrac23$, $\lambda_2=\tfrac13$ et $m=0$. La prédiction vaut $\tfrac23\times10+\tfrac13\times16=12$ et la variance $\lambda^\top\gamma_0+m=\tfrac23+\tfrac23+0=\tfrac43$. Ce résultat porte un enseignement : **dans ce cas particulier, le krigeage est l'interpolation linéaire** (de 10 à 16 en trois km, soit 12 à 1 km). Vérifions avec une fonction générale.
+**Un exemple à la main.** Prenons le cas le plus simple : une dimension, un variogramme **linéaire** $\gamma(h)=h$, deux points de mesure à $x=0$ (valeur 10) et $x=3$ (valeur 16), et une cible à $x=1$. Alors $\Gamma=\begin{pmatrix}0&3\\3&0\end{pmatrix}$ et $\gamma_0=(1,2)^\top$. Le système s'écrit $3\lambda_2+m=1$, $3\lambda_1+m=2$, $\lambda_1+\lambda_2=1$. En soustrayant les deux premières équations, $3(\lambda_1-\lambda_2)=1$, donc $\lambda_1=\tfrac23$, $\lambda_2=\tfrac13$ et $m=0$. La prédiction vaut $\tfrac23\times10+\tfrac13\times16=12$ et la variance $\lambda^\top\gamma_0+m=\tfrac23+\tfrac23+0=\tfrac43$. Ce résultat porte un enseignement : **dans ce cas particulier, le krigeage est l'interpolation linéaire** (de 10 à 16 en trois km, soit 12 à 1 km). Vérifions-le en quelques lignes : le système bordé se construit par blocs et se résout d'un seul appel.
 
-```python
+```python hide
 def krigeage_ordinaire(coords, z, cibles, modele, params):
     """Krigeage ordinaire : renvoie prédictions, variances de krigeage et poids (une colonne par cible)."""
     n = len(z)
@@ -298,9 +298,23 @@ print("poids :", lam.ravel().round(4), "| prédiction :", pred.round(4), "| vari
 poids : [0.6667 0.3333] | prédiction : [12.] | variance : [1.3333]
 ```
 
+```python
+x, z1, x0 = np.array([0.0, 3.0]), np.array([10.0, 16.0]), 1.0           # deux mesures, une cible
+gam = lambda h: np.abs(h)                                                 # variogramme linéaire  γ(h) = h
+A = np.block([[gam(x[:, None] - x[None, :]), np.ones((2, 1))],            # matrice bordée  [[Γ, 1], [1ᵀ, 0]]
+              [np.ones((1, 2)), np.zeros((1, 1))]])
+sol = np.linalg.solve(A, np.append(gam(x - x0), 1.0))                     # second membre  (γ0, 1)
+lam, m = sol[:2], sol[2]
+print("poids :", lam.round(4), "| prédiction :", round(float(lam @ z1), 4), "| variance :", round(float(lam @ gam(x - x0) + m), 4))
+```
+<!--sortie-->
+```text
+poids : [0.6667 0.3333] | prédiction : 12.0 | variance : 1.3333
+```
+
 Nous retrouvons les poids $\frac23,\frac13$, la prédiction 12 et la variance $\frac43$ du calcul à la main. Revenons aux livraisons, avec le modèle **exponentiel** ajusté. Prédisons d'abord en un point précis, par exemple l'adresse $(40,\,60)$, et examinons les poids.
 
-```python
+```python hide-code
 mod, par = gamma_exp, ajustements["exponentiel"]
 cible = np.array([[40.0, 60.0]])
 pred, var, lam = krigeage_ordinaire(coords, z, cible, mod, par)
@@ -333,7 +347,7 @@ Les poids les plus forts reviennent aux livraisons **les plus proches** de la ci
 
 Prédisons maintenant en chacun des 625 points d'une grille régulière (le jeu `verite` contient aussi le **vrai** champ en ces points, grâce à la simulation) et comparons à trois alternatives : la **moyenne globale**, la méthode de l'**inverse de la distance au carré** (IDW, une moyenne pondérée sans variogramme) et le krigeage.
 
-```python
+```python hide-code
 grille = verite[["x", "y"]].to_numpy()
 pred_k, var_k, _ = krigeage_ordinaire(coords, z, grille, mod, par)
 
@@ -362,7 +376,7 @@ RMSE par rapport au VRAI champ sur les 625 points de la grille :
 
 Dessinons le vrai champ, la prédiction par krigeage et l'écart-type de krigeage.
 
-```python
+```python hide
 fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.4))
 vmin, vmax = min(vrai.min(), pred_k.min()), max(vrai.max(), pred_k.max())
 cartes = [(vrai, "Vrai champ (connu par simulation)", "Oranges", dict(vmin=vmin, vmax=vmax)),
@@ -391,7 +405,7 @@ Contre le vrai champ, le krigeage obtient une erreur quadratique de 0,645 jour, 
 
 De quoi dépend cette incertitude ? Mesurons-le : pour chaque point de la grille, la distance au point de mesure le plus proche, et la façon dont l'écart-type de krigeage évolue avec elle, puis une comparaison entre les points proches d'un bord du domaine et les autres.
 
-```python
+```python hide-code
 dmin = distances(grille, coords).min(axis=1)                     # distance au point mesuré le plus proche
 sd_k = np.sqrt(var_k)
 bord = np.minimum.reduce([grille[:, 0], 100 - grille[:, 0], grille[:, 1], 100 - grille[:, 1]])
@@ -419,7 +433,7 @@ L'écart-type de krigeage est presque une fonction croissante de la distance à 
 
 Comparer au vrai champ n'est possible que sur données simulées. Dans une vraie étude, on évalue par **validation croisée** : on retire une partie des mesures, on les prédit avec le reste, et on compare. Notre fichier contient une colonne `pli` (cinq plis de 40 points). Pour être honnête, il faut **réajuster le variogramme à chaque pli, uniquement sur les données d'entraînement** : sinon, le variogramme aurait « vu » les points à prédire.
 
-```python
+```python hide-code
 plis = liv["pli"].to_numpy()
 pred_cv = {"moyenne": np.empty(len(z)), "IDW": np.empty(len(z)), "krigeage": np.empty(len(z))}
 sig_cv = np.empty(len(z))
@@ -455,9 +469,9 @@ Trois lectures. **(1)** Les trois méthodes sont comparées sur **les mêmes** 2
 
 > 💡 **Remarque sur la mesure d'erreur.** Notre cible, dans cette validation, est la **mesure bruitée** $Z$ (ce que l'on observerait), qui contient la pépite. Une partie de l'erreur est donc irréductible, quelle que soit la qualité du modèle : même un krigeage parfait ne peut pas prédire le bruit de mesure. C'est pour cela que le RMSE de la validation croisée est supérieur à celui calculé plus haut contre le champ sans bruit.
 
-**Une alternative sans variogramme : un lissage par spline.** On peut aussi prédire le délai comme une fonction lisse $f(x,y)$ des coordonnées, par une **spline de plaque mince**, comme le fait `mgcv` en R (le modèle additif généralisé de la section 2.5 de ce volume). Voici le même protocole de validation croisée, avec les mêmes plis :
+**Une alternative sans variogramme : un lissage par spline.** On peut aussi prédire le délai comme une fonction lisse $f(x,y)$ des coordonnées, par une **spline de plaque mince**, comme le fait `mgcv` en R (le modèle additif généralisé de la section 2.5 de ce volume). Le même protocole de validation croisée, avec les mêmes plis, a été appliqué à une spline (le code R est dans le cahier, application 9.4) :
 
-```r
+```r hide
 library(mgcv)
 d <- read.csv("donnees/ch09-livraisons.csv")
 pred <- numeric(nrow(d))
@@ -484,7 +498,7 @@ La spline obtient une erreur de 0,974 jour, quasiment identique à celle du krig
 
 **Si la moyenne n'est pas constante.** Le variogramme présuppose un processus stationnaire. Si la moyenne varie dans l'espace (une **tendance** : par exemple, les délais augmentent avec l'éloignement du dépôt), le variogramme empirique **monte sans jamais se stabiliser**, parce que les paires éloignées diffèrent aussi par leur niveau moyen. Illustrons-le en ajoutant aux délais une tendance linéaire de $0{,}04$ jour par km vers l'est, puis en l'ôtant par régression avant de calculer le variogramme.
 
-```python
+```python hide-code
 z_tend = z + 0.04 * coords[:, 0]                                  # tendance ajoutée : +0,04 jour/km vers l'est
 X = np.column_stack([np.ones(len(z)), coords])
 beta = np.linalg.lstsq(X, z_tend, rcond=None)[0]
@@ -511,7 +525,7 @@ tendance estimée par régression :  [ 4.325e+00  4.200e-02 -3.000e-03] (constan
 
 **Si le phénomène dépend de la direction** (*anisotropie*) : un délai peut varier plus vite le long d'un axe routier que perpendiculairement. On le détecte en calculant des variogrammes **directionnels** (en ne gardant que les paires orientées dans une direction, à une tolérance d'angle près). S'ils diffèrent, un variogramme unique est inadapté.
 
-```python
+```python hide
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2))
 ax1.plot(e_ref["h"], e_ref["gamma"], "o-", color=AQUA, label="sans tendance")
 ax1.plot(e_tend["h"], e_tend["gamma"], "o-", color=ROUGE, label="avec une tendance linéaire non retirée")
@@ -538,7 +552,7 @@ figure enregistrée
 
 À gauche, la tendance non retirée fait monter le variogramme bien au-delà du palier (de 0,84 à 3,29 entre 8 et 67 km), alors que le retrait de la tendance par régression redonne une courbe presque identique à celle sans tendance. La régression retrouve d'ailleurs la tendance ajoutée : une pente de 0,042 jour par km vers l'est pour 0,04 en vérité, et une pente nulle (−0,003) vers le nord. À droite, les deux directions **ne sont pas superposées** : la courbe nord-sud est au-dessus de la courbe est-ouest à toutes les distances. Faut-il y voir de l'**anisotropie** ? Avec des données réelles, on ne peut pas le savoir d'emblée : des variogrammes directionnels sont calculés sur des secteurs d'angle étroits, donc sur **moins de paires**, et sont bruités. La bonne démarche est de **calibrer** ce que le hasard seul produit. Résumons l'écart par un rapport moyen $\gamma_{\text{N-S}}/\gamma_{\text{E-O}}$ sur les classes de distance, puis calculons le même rapport sur 60 jeux simulés **isotropes** (le même processus, 60 autres graines).
 
-```python
+```python hide-code
 def rapport_ns_eo(c, zz):
     ns_ = variogramme_empirique(c, zz, largeur=7.5, hmax=45.0, angle=90, tol=22.5)["gamma"].to_numpy()
     eo_ = variogramme_empirique(c, zz, largeur=7.5, hmax=45.0, angle=0, tol=22.5)["gamma"].to_numpy()
@@ -576,3 +590,5 @@ Le rapport observé (1,24) est dans la queue haute de ce que le hasard produit s
 > - Le **krigeage ordinaire** est le meilleur prédicteur linéaire sans biais : on résout $\begin{pmatrix}\Gamma&\mathbf 1\\\mathbf 1^\top&0\end{pmatrix}\binom{\lambda}{m}=\binom{\gamma_0}{1}$, la prédiction est $\lambda^\top z$ et la variance $\lambda^\top\gamma_0+m$.
 > - On le **valide** par validation croisée *avec réajustement du variogramme à chaque pli*, et on contrôle les barres d'erreur par les résidus standardisés et la couverture.
 > - Limites : **stationnarité** (tendance), **anisotropie**, **extrapolation**, et un variogramme qui est une estimation, pas une vérité.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 9 : applications 9.4 et 9.5, exercices 9.5, 9.6 et 9.11.

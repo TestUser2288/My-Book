@@ -15,7 +15,7 @@ L'**analyse de survie** (on dit aussi *analyse des durées*) est la branche de l
 - **5.3 Le modèle de Cox à risques proportionnels** : une régression pour les durées, le modèle le plus utilisé de la discipline. Comment l'ajuster, l'interpréter, le vérifier.
 - **5.4 Modèles de durée paramétriques** : exponentiel, Weibull, log-normal ; extrapoler au-delà des données et calculer la **valeur vie client**.
 - ➕ **5.5 Pour aller plus loin : les risques concurrents** : quand plusieurs événements peuvent interrompre la durée et s'excluent mutuellement.
-- **5.6 Exercices corrigés** et bilan.
+- **Bilan du chapitre.** Les applications guidées et les exercices corrigés sont dans le **cahier** (chapitre 5), auquel renvoient les encadrés 📒 de chaque section.
 
 ## Les données de ce chapitre
 
@@ -30,4 +30,4 @@ Nous utilisons le fichier `donnees/clients.csv`, déjà présenté en début de 
 
 > 📦 **Des données simulées.** Comme dans tout le volume, ces données sont **simulées** avec une graine fixe : nous connaissons donc la loi qui les a engendrées. Nous ne la révélerons qu'à la fin du chapitre (section 5.4.7), pour pouvoir vérifier ce que les méthodes retrouvent, et ce qu'elles retrouvent mal. Faites comme si la gérante ne la connaissait pas.
 
-> 🛠️ **Les outils.** Nous écrivons à la main les estimateurs importants (Kaplan-Meier, log-rank, vraisemblance de Cox, maximum de vraisemblance paramétrique) pour comprendre ce qu'ils calculent, puis nous les comparons aux bibliothèques : `statsmodels` (`SurvfuncRight`, `survdiff`, `PHReg`), `lifelines`, et le paquet R `survival`, qui est la référence de la discipline. Chaque fois qu'une comparaison est faite, elle est **exécutée**.
+> 🧭 **Les outils.** Les estimateurs importants (Kaplan-Meier, log-rank, vraisemblance de Cox, maximum de vraisemblance paramétrique, incidences cumulées) ont été **écrits à la main** pour s'assurer de comprendre ce qu'ils calculent, puis comparés aux bibliothèques : `statsmodels` (`SurvfuncRight`, `survdiff`, `PHReg`), `lifelines` et le paquet R `survival`, qui est la référence de la discipline. Ces comparaisons ont été exécutées et leurs résultats sont cités dans le texte ; le code complet est dans le **cahier** (applications 5.1 à 5.6) et dans le fichier `build/outils_ch05.py`.

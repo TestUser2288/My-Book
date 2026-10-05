@@ -20,14 +20,14 @@ $$\ln\bigl(\pi_kf_k(\mathbf x)\bigr)=\ln\pi_k-\tfrac12\ln|\Sigma_k|-\tfrac12(\ma
 >
 > et l'on classe $\mathbf x$ dans le groupe de plus grand $\delta_k$. La frontière entre deux groupes $k$ et $l$ est l'ensemble des $\mathbf x$ où $\delta_k=\delta_l$ : c'est une équation du **premier degré** en $\mathbf x$, donc un **hyperplan**. D'où le nom d'**analyse discriminante linéaire** (LDA, *linear discriminant analysis*). Si l'on abandonne l'hypothèse $\Sigma_k=\Sigma$, les termes quadratiques ne s'annulent plus et la frontière est une quadrique : c'est l'**analyse discriminante quadratique** (QDA).
 
-**Un exemple à la main, avec une seule variable.** la gérante note la satisfaction (de 1 à 5) de chaque cliente. Parmi celles qui **n'ont pas** racheté, la satisfaction moyenne est $\mu_0=3$ ; parmi celles qui ont racheté, $\mu_1=4$. Dans les deux groupes, l'écart-type est $\sigma=0{,}8$. Pour deux groupes et une variable, la règle « $\delta_1(x)>\delta_0(x)$ » équivaut à
+**Un exemple à la main, avec une seule variable.** La gérante note la satisfaction (de 1 à 5) de chaque cliente. Parmi celles qui **n'ont pas** racheté, la satisfaction moyenne est $\mu_0=3$ ; parmi celles qui ont racheté, $\mu_1=4$. Dans les deux groupes, l'écart-type est $\sigma=0{,}8$. Pour deux groupes et une variable, la règle « $\delta_1(x)>\delta_0(x)$ » équivaut à
 
 $$x>\frac{\mu_0+\mu_1}{2}+\frac{\sigma^2}{\mu_1-\mu_0}\ln\frac{\pi_0}{\pi_1}.$$
 
 - **Groupes de même taille** ($\pi_0=\pi_1=0{,}5$) : le logarithme est nul, et le seuil est le **milieu** des deux moyennes, $3{,}5$. Au-dessus de $3{,}5$, on prédit « rachète ».
 - **Beaucoup de non-racheteuses** ($\pi_0=0{,}7$, $\pi_1=0{,}3$) : le seuil devient $3{,}5+\dfrac{0{,}64}{1}\ln\dfrac{0{,}7}{0{,}3}\approx3{,}5+0{,}64\times0{,}847\approx4{,}04$. Comme la population compte surtout des non-racheteuses, la règle devient **plus exigeante** avant de prédire « rachète » : le seuil est remonté vers le groupe rare.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -61,9 +61,9 @@ Dans la pratique, les paramètres sont inconnus : on les remplace par leurs esti
 
 > ⚠️ **Le nombre de paramètres.** La LDA estime $Kp$ moyennes et $p(p+1)/2$ covariances (une seule matrice) ; la QDA estime $Kp$ moyennes et $K\,p(p+1)/2$ covariances (une par groupe). Pour $p=3$ variables et $K=2$ groupes : $6+6=12$ paramètres (plus les proportions) pour la LDA, contre $6+12=18$ pour la QDA. Avec $p=30$ variables, la différence devient énorme (465 paramètres de covariance contre 930). La QDA est plus **flexible** mais plus **variable** : avec peu de données, la LDA, plus simple, est souvent meilleure même quand ses hypothèses ne sont pas tout à fait vraies. C'est le compromis biais-variance du volume I.
 
-**Application : prédire le rachat.** Reprenons le questionnaire de satisfaction (section 3.2.8). Chaque répondante a deux scores (produits, service), un âge, et l'on sait si elle a **racheté dans les 12 mois** (`rachat_12m`). On met de côté 362 répondantes pour **tester** la règle sur des données qu'elle n'a jamais vues (l'évaluation sur données de test est approfondie au volume III) ; le reste (850) sert à l'ajuster.
+**Un exemple sur les données : prédire le rachat.** Reprenons le questionnaire de satisfaction (section 3.2.8). Chaque répondante a deux scores (produits, service), un âge, et l'on sait si elle a **racheté dans les 12 mois** (`rachat_12m`). On met de côté 362 répondantes pour **tester** la règle sur des données qu'elle n'a jamais vues (l'évaluation sur données de test est approfondie au volume III) ; le reste (850) sert à l'ajuster.
 
-```python
+```python hide
 q = pd.read_csv("donnees/enquete_satisfaction.csv")
 c = pd.read_csv("donnees/clients.csv")
 q["score_produits"] = q[["q1", "q2", "q3", "q4"]].mean(axis=1)
@@ -84,9 +84,14 @@ répondantes : 1212 | apprentissage : 850 | test : 362
 part de rachat dans l'échantillon : 0.505
 ```
 
-Écrivons la LDA nous-mêmes, en trois fonctions :
+Écrite à la main (trois petites fonctions : estimer, calculer les scores $\delta_k$, en déduire les probabilités ; voir l'application 3.5 du cahier), la LDA estime, sur les 850 répondantes d'apprentissage, des probabilités a priori de $0{,}499$ et $0{,}501$ et les moyennes suivantes :
 
-```python
+| | score produits | score service | âge |
+|---|---:|---:|---:|
+| pas de rachat | 3,46 | 3,42 | 36,82 |
+| rachat | 3,78 | 3,68 | 35,60 |
+
+```python hide
 def lda_ajuster(X, y):
     classes = np.unique(y)
     n, K = len(X), len(classes)
@@ -121,9 +126,14 @@ pas de rachat            3.46           3.42  36.82
 rachat                   3.78           3.68  35.60
 ```
 
-Comparons à la bibliothèque, puis évaluons sur les 362 répondantes de test, en ajoutant la QDA :
+Évaluons maintenant la règle sur les 362 répondantes de test, et comparons-la à la bibliothèque (`scikit-learn`) et à la QDA :
 
-```python
+| | précision (test) | AUC (test) |
+|---|---:|---:|
+| LDA | 0,657 | 0,705 |
+| QDA | 0,638 | 0,708 |
+
+```python hide
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.metrics import accuracy_score, roc_auc_score
 
@@ -173,9 +183,9 @@ Les deux méthodes ont donc **la même forme**, mais elles ne **calculent pas** 
 - la **LDA** estime les moyennes et la covariance, puis en déduit $\boldsymbol\beta=\hat\Sigma^{-1}(\hat{\boldsymbol\mu}_1-\hat{\boldsymbol\mu}_0)$ : elle modélise **comment les $\mathbf x$ sont distribués dans chaque groupe** (modèle *génératif*) ;
 - la **régression logistique** maximise directement la vraisemblance de $P(G\mid\mathbf x)$ (modèle *discriminatif*) et ne dit rien de la distribution des $\mathbf x$.
 
-Comparons les coefficients sur nos données :
+Comparons les coefficients des trois approches sur nos données :
 
-```python
+```python hide-code
 from sklearn.linear_model import LogisticRegression
 
 beta = np.linalg.solve(Sw, mu[1] - mu[0])
@@ -213,7 +223,7 @@ où $B$ est la covariance **entre** groupes (dispersion des moyennes de groupes 
 
 Illustrons-le avec les **600 clientes simulées** de la section 3.3, dont on connaît les trois profils (occasionnelles, fidèles, cadeaux). Les variables sont leurs deux caractéristiques standardisées.
 
-```python
+```python hide
 Sb_n = np.zeros((2, 2))
 moy_gen = Zs.mean(axis=0)
 Sw_n = np.zeros((2, 2))
@@ -262,3 +272,5 @@ Avec trois groupes et deux variables, il y a deux axes discriminants (au plus $K
 > - La log-cote de la LDA est **linéaire** : même forme que la **régression logistique** (section 2.2), estimée autrement (modèle génératif contre discriminatif).
 > - **Fisher** : la LDA maximise le rapport variance entre groupes / variance intra-groupe ; avec $K$ groupes, au plus $K-1$ axes discriminants.
 > - Les probabilités a priori déplacent le seuil ; on évalue toujours sur des données de test.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.5, exercice 3.13.

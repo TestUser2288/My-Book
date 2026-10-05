@@ -11,9 +11,9 @@ Rappelons (volume I, section 3.1.7) que le coefficient de corrélation de Pearso
 - le **tau de Kendall** $\tau$ : la probabilité que deux observations soient « concordantes » (l'une est plus grande dans les deux variables) moins la probabilité qu'elles soient « discordantes » ;
 - le **rho de Spearman** : la corrélation de Pearson des **rangs**.
 
-*Exemple à la main.* Quatre clients, avec (panier, nombre de commandes) = $(10,1),(20,3),(30,2),(40,4)$. Il y a $\binom42=6$ paires. Paires concordantes (les deux variables vont dans le même sens) : $\{1,2\},\{1,3\},\{1,4\},\{2,4\},\{3,4\}$ : 5. Paire discordante : $\{2,3\}$ (le panier monte de 20 à 30 mais les commandes passent de 3 à 2) : 1. Donc $\tau=(5-1)/6=0{,}667$.
+*Exemple à la main.* Quatre clients, avec (panier, nombre de commandes) = $(10,1),(20,3),(30,2),(40,4)$. Il y a $\binom42=6$ paires. Paires concordantes (les deux variables vont dans le même sens) : $\{1,2\},\{1,3\},\{1,4\},\{2,4\},\{3,4\}$ : 5. Paire discordante : $\{2,3\}$ (le panier monte de 20 à 30 mais les commandes passent de 3 à 2) : 1. Donc $\tau=(5-1)/6=0{,}667$. Le rho de Spearman de ces quatre clients vaut 0,8. Et si l'on remplace les paniers par leur logarithme et les nombres de commandes par leur carré (deux transformations croissantes), le tau reste exactement $0{,}667$, alors que la corrélation de Pearson passe de 0,8 à 0,7592.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -81,11 +81,13 @@ Pour obtenir une dépendance dans la queue **supérieure** (les deux variables s
 
 ### 6.6.5 Deux copules, même tau, comportements extrêmes opposés
 
-Fixons $\tau=0{,}5$ (une dépendance modérément forte). Alors $\rho=\sin(\pi/4)=0{,}7071$ pour la copule gaussienne et $\theta=2\tau/(1-\tau)=2$ pour Clayton. Nous simulons 200 000 couples de chacune, et nous comparons à la formule exacte la probabilité que les deux variables soient simultanément parmi les 1 %, 5 % ou 10 % **les plus petites**.
+Fixons $\tau=0{,}5$ (une dépendance modérément forte). Alors $\rho=\sin(\pi/4)=0{,}7071$ pour la copule gaussienne et $\theta=2\tau/(1-\tau)=2$ pour Clayton. Nous simulons 200 000 couples de chacune. Le premier générateur est la définition même de la copule gaussienne (on prend des normales corrélées, on les passe dans $\Phi$) ; le second est l'algorithme de Marshall-Olkin ci-dessus (un facteur commun gamma $V$, deux exponentielles) :
+
+```python hide
+from scipy.stats import norm, kendalltau, multivariate_normal
+```
 
 ```python
-from scipy.stats import norm, kendalltau, multivariate_normal
-
 def sim_gauss(rho, n, rng):
     z = rng.multivariate_normal([0, 0], [[1, rho], [rho, 1]], n)
     return norm.cdf(z)
@@ -94,7 +96,9 @@ def sim_clayton(theta, n, rng):
     v = rng.gamma(1 / theta, 1.0, n)                      # facteur commun
     e = rng.exponential(size=(n, 2))
     return (1 + e / v[:, None]) ** (-1 / theta)
+```
 
+```python hide
 tau = 0.5
 rho = np.sin(np.pi * tau / 2)
 theta = 2 * tau / (1 - tau)
@@ -128,9 +132,17 @@ tau de Kendall simulé (sur 5 000 points) : gaussienne 0.500 | Clayton 0.506
 dépendance de queue : lambda_L de Clayton = 2^(-1/theta) = 0.707 ; celle de la gaussienne = 0
 ```
 
+On compare à la formule exacte la probabilité que les deux variables soient simultanément parmi les 1 %, 5 % ou 10 % **les plus petites** (le tau de Kendall simulé vaut 0,500 pour la gaussienne et 0,506 pour Clayton ; $\lambda_L=2^{-1/\theta}=0{,}707$ pour Clayton, 0 pour la gaussienne) :
+
+| $q$ | indépendance $q^2$ | gaussienne : exact | gaussienne : simulé | Clayton : exact | Clayton : simulé | Clayton / gaussienne |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0,10 | 0,01000 | 0,04739 | 0,04682 | 0,07089 | 0,07184 | 1,50 |
+| 0,05 | 0,00250 | 0,01992 | 0,01959 | 0,03538 | 0,03565 | 1,78 |
+| 0,01 | 0,00010 | 0,00273 | 0,00281 | 0,00707 | 0,00681 | 2,59 |
+
 Les formules exactes et les simulations s'accordent. Lecture : avec le **même tau** de 0,5, la probabilité que les deux variables soient *simultanément* parmi les 1 % les plus petites est de 0,71 % avec Clayton contre 0,27 % avec la gaussienne, soit **2,6 fois plus** (dernière colonne), et le rapport **augmente à mesure que l'événement devient plus rare** (1,5 à 10 %, 1,8 à 5 %, 2,6 à 1 %). Pour référence, sous indépendance, cette probabilité serait de 0,01 %. Voici le dessin des deux nuages de points : même dépendance « moyenne », des queues très différentes.
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -171,9 +183,14 @@ Procédure standard (« semi-paramétrique ») :
 2. estimer le paramètre de la copule, soit par **inversion du tau de Kendall** (calculer $\hat\tau$ puis résoudre $\tau(\theta)=\hat\tau$ : $\hat\rho=\sin(\pi\hat\tau/2)$, $\hat\theta=2\hat\tau/(1-\hat\tau)$), soit par **maximum de vraisemblance** sur les pseudo-observations ;
 3. **choisir** entre familles par la vraisemblance (comme en 1.4 : l'AIC compte les paramètres ; ici une famille à un paramètre contre une autre à un paramètre : la comparaison directe des log-vraisemblances suffit).
 
-La vraisemblance fait appel à la **densité de copule** $c(u,v)=\partial^2C/\partial u\,\partial v$, que voici : pour Clayton, $c_\theta(u,v)=(1+\theta)(uv)^{-\theta-1}(u^{-\theta}+v^{-\theta}-1)^{-2-1/\theta}$ ; pour la gaussienne, avec $x=\Phi^{-1}(u)$ et $y=\Phi^{-1}(v)$, $c_\rho(u,v)=\dfrac1{\sqrt{1-\rho^2}}\exp\!\Bigl(-\dfrac{\rho^2(x^2+y^2)-2\rho xy}{2(1-\rho^2)}\Bigr)$. Avant d'attaquer un cas réel, **testons la procédure sur des données simulées dont on connaît la copule** : nous simulons 500 couples gaussiens, puis 500 couples de Clayton (avec des marginales quelconques, exponentielle et log-normale : le rang les efface), et nous demandons à la procédure de retrouver la bonne copule.
+La vraisemblance fait appel à la **densité de copule** $c(u,v)=\partial^2C/\partial u\,\partial v$, que voici : pour Clayton, $c_\theta(u,v)=(1+\theta)(uv)^{-\theta-1}(u^{-\theta}+v^{-\theta}-1)^{-2-1/\theta}$ ; pour la gaussienne, avec $x=\Phi^{-1}(u)$ et $y=\Phi^{-1}(v)$, $c_\rho(u,v)=\dfrac1{\sqrt{1-\rho^2}}\exp\!\Bigl(-\dfrac{\rho^2(x^2+y^2)-2\rho xy}{2(1-\rho^2)}\Bigr)$. Avant d'attaquer un cas réel, **testons la procédure sur des données simulées dont on connaît la copule** : nous simulons 500 couples gaussiens, puis 500 couples de Clayton (avec des marginales quelconques, exponentielle et log-normale : le rang les efface), et nous demandons à la procédure de retrouver la bonne copule :
 
-```python
+| données | $\hat\tau$ | $\hat\rho$ | $\hat\theta$ (inversion) | $\hat\theta$ (max. de vraisemblance) | log-vraisemblance gaussienne | log-vraisemblance Clayton |
+|---|---:|---:|---:|---:|---:|---:|
+| gaussiennes ($\rho=0{,}71$) | 0,452 | 0,652 | 1,65 | 1,08 | **137,0** | 85,6 |
+| Clayton ($\theta=2$) | 0,564 | 0,774 | 2,58 | 2,34 | 203,4 | **251,5** |
+
+```python hide
 from scipy.optimize import minimize_scalar
 
 def pseudo_obs(x, y):
@@ -215,11 +232,11 @@ données gaussiennes (rho = 0,71)       0.452 0.652               1.65        1.
 
 Dans chaque cas, la famille qui a engendré les données obtient la **plus grande log-vraisemblance** (137,0 contre 85,6 pour les données gaussiennes ; 251,5 contre 203,4 pour les données de Clayton) : la procédure sait distinguer. Pour les données de Clayton, les deux estimations de $\theta$ (2,58 par inversion du tau, 2,34 par maximum de vraisemblance) sont voisines du vrai $\theta=2$, à l'erreur d'échantillonnage près (cet échantillon de 500 points a un tau empirique de 0,56 au lieu de 0,50). Notez qu'en cas de mauvaise famille (Clayton ajustée sur données gaussiennes) les deux méthodes d'estimation de $\theta$ divergent (1,65 contre 1,08) : c'est un signal de mauvaise spécification. (Avec 500 points, la différence de log-vraisemblance est nette ; avec 50, elle ne le serait pas.)
 
-### 6.6.7 Applications
+### 6.6.7 Deux études de cas
 
-**Un cas réel (simulé) de dépendance faible.** Dans le fichier `clients.csv`, le panier moyen et le nombre de commandes par an des acheteurs sont-ils liés ? Les clients qui achètent souvent sont-ils aussi ceux qui dépensent plus par commande ? Le nombre de commandes est un entier : de nombreuses égalités rendent les rangs ambigus (la copule n'est pas unique pour des marginales discrètes). Nous **départageons les égalités au hasard**, par une petite astuce standard.
+**Un cas réel (simulé) de dépendance faible.** Dans le fichier `clients.csv`, le panier moyen et le nombre de commandes par an des acheteurs sont-ils liés ? Les clients qui achètent souvent sont-ils aussi ceux qui dépensent plus par commande ? Le nombre de commandes est un entier : de nombreuses égalités rendent les rangs ambigus (la copule n'est pas unique pour des marginales discrètes). Nous **départageons les égalités au hasard**, par une petite astuce standard. Sur les 1 740 acheteurs, le tau de Kendall vaut 0,079 et le rho de Spearman 0,118 ; la log-vraisemblance est 12,8 pour la gaussienne et 3,4 pour Clayton. La part de clients dans le décile supérieur des **deux** variables à la fois est de 0,0121 observée, contre 0,0100 sous indépendance et 0,0142 sous la copule gaussienne ajustée.
 
-```python
+```python hide
 clients = pd.read_csv("donnees/clients.csv")
 ach = clients[clients["nb_commandes_an"] > 0]
 rng = np.random.default_rng(682)
@@ -244,9 +261,9 @@ part de clients dans les 10 % supérieurs pour LES DEUX variables : observée 0.
 
 La dépendance est **réelle mais faible** (tau de Kendall de 0,079) : la copule gaussienne prédit 1,42 % de clients dans le décile supérieur des deux variables à la fois, contre 1,00 % sous indépendance ; la fréquence observée (1,21 %, soit 21 clients sur 1 740) se situe entre les deux, et un si petit effectif ne permet pas de trancher. Rien d'alarmant et rien d'exploitable : il est tout aussi important de savoir quand une dépendance est **négligeable**. (Dans le générateur de données, le goût pour les produits, facteur latent, influence légèrement les deux variables.)
 
-**Le vrai problème : deux transporteurs en même temps.** Revenons à notre inquiétude. La gérante observe depuis 1 500 jours les retards moyens de ses deux transporteurs (simulés ici ; graine 683). Le transporteur A a des retards (en jours) de marginale Pareto généralisée décalée de 1, $\xi=0{,}25$, $\sigma=1{,}5$ ; le B de $\xi=0{,}20$, $\sigma=2$. **La vraie dépendance** (que la gérante ignore) est une copule de Clayton **retournée** de $\theta=1{,}5$ : les deux transporteurs sont **simultanément très en retard** bien plus souvent que ne le laisserait croire une dépendance gaussienne. Elle ajuste les deux familles et calcule la probabilité qu'*un même jour*, les deux retards dépassent leur propre 99ᵉ centile.
+**Le vrai problème : deux transporteurs en même temps.** Revenons à notre inquiétude. La gérante observe depuis 1 500 jours les retards moyens de ses deux transporteurs (simulés ici ; graine 683). Le transporteur A a des retards (en jours) de marginale Pareto généralisée décalée de 1, $\xi=0{,}25$, $\sigma=1{,}5$ ; le B de $\xi=0{,}20$, $\sigma=2$. **La vraie dépendance** (que la gérante ignore) est une copule de Clayton **retournée** de $\theta=1{,}5$ : les deux transporteurs sont **simultanément très en retard** bien plus souvent que ne le laisserait croire une dépendance gaussienne. Elle ajuste les deux familles et calcule la probabilité qu'*un même jour*, les deux retards dépassent leur propre 99ᵉ centile. Sur les 1 500 jours simulés, les retards moyens sont de 2,94 jours pour A et 3,39 pour B (maxima : 23,1 et 31,4). Le tau de Kendall estimé est 0,416, d'où $\hat\rho=0{,}608$ pour la gaussienne et $\hat\theta=1{,}42$ pour Clayton ; les log-vraisemblances sont 332,6 (gaussienne), 11,0 (Clayton, queue inférieure) et 431,7 (Clayton retournée, queue supérieure).
 
-```python
+```python hide
 def gpd_inv(u_, xi_, sg):                                  # fonction de répartition inverse de la GPD décalée de 1 (6.5)
     return 1 + sg / xi_ * ((1 - u_) ** (-xi_) - 1)
 
@@ -274,9 +291,17 @@ tau de Kendall estimé : 0.416  ->  rho = 0.608 (gaussienne) ; theta = 1.42 (Cla
 log-vraisemblance : gaussienne 332.6 | Clayton (queue inférieure) 11.0 | Clayton retournée (queue supérieure) 431.7
 ```
 
-La comparaison des log-vraisemblances désigne sans ambiguïté la **Clayton retournée**, la bonne famille : elle dépasse la gaussienne d'une centaine d'unités de log-vraisemblance (431,7 contre 332,6), alors que la Clayton « classique » (dépendance dans la queue inférieure, ce qui est le mauvais côté) est de loin la pire des trois (11,0). Le $\hat\theta=1{,}42$ obtenu est proche du vrai 1,5. Maintenant, le calcul qui compte :
+La comparaison des log-vraisemblances désigne sans ambiguïté la **Clayton retournée**, la bonne famille : elle dépasse la gaussienne d'une centaine d'unités de log-vraisemblance (431,7 contre 332,6), alors que la Clayton « classique » (dépendance dans la queue inférieure, ce qui est le mauvais côté) est de loin la pire des trois (11,0). Le $\hat\theta=1{,}42$ obtenu est proche du vrai 1,5. Maintenant, le calcul qui compte, la probabilité que les deux retards dépassent leur 99ᵉ centile le même jour, sous chaque modèle (mêmes marginales, seules les copules diffèrent) :
 
-```python
+| modèle | probabilité | fois plus que l'indépendance | une fois tous les… (jours) |
+|---|---:|---:|---:|
+| indépendance | 0,00010 | 1,0 | 10 000 |
+| copule gaussienne ajustée | 0,00193 | 19,3 | 518 |
+| Clayton retournée ajustée | 0,00615 | 61,5 | 163 |
+| **vérité** ($\theta=1{,}5$) | 0,00630 | 63,0 | 159 |
+| observé sur les 1 500 jours | 0,00533 | 53,3 | 188 |
+
+```python hide
 qq = 0.99
 # P(les deux retards dépassent leur 99e centile) sous chaque modèle (marginales identiques : seules les copules diffèrent)
 p_indep = (1 - qq) ** 2
@@ -313,3 +338,5 @@ C'est la leçon centrale de cette section. À marginales identiques et à dépen
 > - **Gaussienne** : pas de dépendance de queue. **Clayton** : dépendance de queue inférieure ($\lambda_L=2^{-1/\theta}$) ; sa version **retournée** donne une dépendance de queue supérieure.
 > - On estime une copule sur des **pseudo-observations** (rangs divisés par $n+1$), par inversion du tau ou maximum de vraisemblance ; on **valide la procédure sur des données simulées** de copule connue.
 > - **À même tau, des copules différentes ont des comportements extrêmes très différents** : la probabilité d'événements simultanément rares dépend presque uniquement de la copule. C'est le risque principal d'un choix par défaut (gaussien).
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 6 : application 6.6, exercice 6.14.

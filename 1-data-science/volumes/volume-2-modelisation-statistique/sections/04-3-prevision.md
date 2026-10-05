@@ -12,9 +12,9 @@ La meilleure prévision ponctuelle de $Y_{T+h}$ à partir de ce qu'on sait à la
 > $$\hat y_{T+h}=\mu+\varphi^{h}(Y_T-\mu),\qquad \operatorname{Var}(Y_{T+h}-\hat y_{T+h})=\sigma^2\sum_{j=0}^{h-1}\varphi^{2j}=\sigma^2\,\frac{1-\varphi^{2h}}{1-\varphi^2}.$$
 > La prévision **revient vers la moyenne** à vitesse géométrique, et l'incertitude **croît** de $\sigma^2$ (à un pas) vers la variance de la série elle-même, $\sigma^2/(1-\varphi^2)$. $\blacksquare$
 
-> 💡 **Exemple à la main.** Avec $\varphi=0{,}6$, $\mu=0$, $\sigma=1$ et $Y_T=2$ : $\hat y_{T+1}=0{,}6\times2=1{,}2$ ; $\hat y_{T+2}=0{,}6\times1{,}2=0{,}72$ ; $\hat y_{T+3}=0{,}432$. Les demi-largeurs des intervalles à 95 % sont $1{,}96\sqrt{1}=1{,}96$ ; $1{,}96\sqrt{1+0{,}36}\approx2{,}286$ ; $1{,}96\sqrt{1+0{,}36+0{,}1296}\approx2{,}392$, et tendent vers $1{,}96/\sqrt{1-0{,}36}=2{,}45$. L'avenir lointain n'est pas plus prévisible que « la valeur moyenne, avec la dispersion habituelle ».
+> 💡 **Exemple à la main** (`statsmodels`, appliqué à ces valeurs, retrouve exactement ces nombres). Avec $\varphi=0{,}6$, $\mu=0$, $\sigma=1$ et $Y_T=2$ : $\hat y_{T+1}=0{,}6\times2=1{,}2$ ; $\hat y_{T+2}=0{,}6\times1{,}2=0{,}72$ ; $\hat y_{T+3}=0{,}432$. Les demi-largeurs des intervalles à 95 % sont $1{,}96\sqrt{1}=1{,}96$ ; $1{,}96\sqrt{1+0{,}36}\approx2{,}286$ ; $1{,}96\sqrt{1+0{,}36+0{,}1296}\approx2{,}392$, et tendent vers $1{,}96/\sqrt{1-0{,}36}=2{,}45$. L'avenir lointain n'est pas plus prévisible que « la valeur moyenne, avec la dispersion habituelle ».
 
-```python
+```python hide
 import warnings
 warnings.filterwarnings("ignore")
 import numpy as np
@@ -47,9 +47,9 @@ demi-largeurs (formule)     : [1.96  2.286 2.392]
 limite 1,96 / racine(1 - phi^2) : 2.45
 ```
 
-Pour un MA(1), la prévision à un pas utilise le dernier choc, et **au-delà d'un pas la prévision est la moyenne** (le choc n'a plus d'effet). Et pour une série **différenciée** ($d=1$), la prévision n'est pas stationnaire : c'est la dernière valeur (plus une éventuelle dérive), et l'incertitude ne se stabilise **jamais**. Comparons la demi-largeur d'un intervalle à 95 % pour une marche aléatoire ($\sigma=1$) et pour l'AR(1) précédent :
+Pour un MA(1), la prévision à un pas utilise le dernier choc, et **au-delà d'un pas la prévision est la moyenne** (le choc n'a plus d'effet). Et pour une série **différenciée** ($d=1$), la prévision n'est pas stationnaire : c'est la dernière valeur (plus une éventuelle dérive), et l'incertitude ne se stabilise **jamais**. Voici la demi-largeur d'un intervalle à 95 % pour une marche aléatoire ($\sigma=1$) et pour l'AR(1) précédent, selon l'horizon :
 
-```python
+```python hide-code
 print(" horizon   marche aléatoire   AR(1), phi = 0,6")
 for h in (1, 3, 12, 60):
     print(f"{h:8d}   {1.96 * np.sqrt(h):16.2f}   {1.96 * np.sqrt((1 - phi ** (2 * h)) / (1 - phi ** 2)):16.2f}")
@@ -72,9 +72,16 @@ Nos modèles prévoient $\log(\text{ca})$. Pour annoncer des euros, on revient p
 - **Les intervalles** se transforment sans difficulté : si $[L,U]$ est un intervalle à 95 % pour $\log y$, alors $[e^L,e^U]$ en est un pour $y$ (l'exponentielle est croissante).
 - **La prévision ponctuelle** $e^{\hat y}$ est la **médiane** de la loi de $Y$, pas sa moyenne : si $\log Y\sim\mathcal N(m,s^2)$, alors $\mathbb E[Y]=e^{m+s^2/2}$. Pour des erreurs de l'ordre de 0,07 en log, le facteur $e^{s^2/2}$ vaut environ 1,0025 : négligeable ici. Il ne le serait pas pour une série plus volatile.
 
-Voyons ce que donnent nos trois modèles (A, B, C de 4.2) sur les 24 mois mis de côté. Rappelons les objets : `train` (96 mois), `test` (24 mois), `mod_A`, `mod_B`, `mod_C` ajustés **sur `train` seulement**.
+Voyons ce que donnent nos trois modèles (A, B, C de 4.2) sur les 24 mois mis de côté : ils sont ajustés **sur les 96 mois d'apprentissage seulement**, puis on leur demande la prévision des 24 mois suivants. Avec `statsmodels`, c'est un appel :
 
-```python
+```python noexec
+prev = modele.get_forecast(24, exog=X_test)          # prévision des 24 mois de test
+prev.predicted_mean, prev.conf_int(alpha=0.05)        # valeur centrale (en log) et intervalle à 95 %
+```
+
+Les résultats, en comptant combien des 24 mois réels tombent dans l'intervalle à 95 % :
+
+```python hide-code
 v = pd.read_csv("donnees/ventes_mensuelles.csv", parse_dates=["mois"]).set_index("mois")
 v.index.freq = "MS"
 y = np.log(v["ca"])
@@ -113,9 +120,9 @@ C : régression + AR(1)             : 21 mois sur 24 dans l'intervalle à 95 %  
 
 En régression ordinaire (chapitre 1), on peut tirer au hasard 20 % des observations pour les tenir à l'écart et évaluer le modèle dessus : les observations sont indépendantes. En série temporelle, **c'est une faute** : un mois « tenu à l'écart » a ses voisins dans l'échantillon d'apprentissage, et le modèle peut les interpoler. On estime alors la capacité du modèle à **combler un trou**, pas à **prévoir**.
 
-Voyons cela sur un cas où le piège est spectaculaire. Ajustons des régressions où la tendance est un **polynôme** de degré $1$, $3$, $6$ ou $10$ (plus saison et COVID) sur nos 96 mois d'apprentissage, et évaluons-les de deux façons : **(a)** en tenant à l'écart 24 mois tirés au hasard ; **(b)** en apprenant sur les 72 premiers mois et en prévoyant les 24 suivants (donc toujours *dans* la période d'apprentissage : nous ne touchons pas aux données de test).
+Voyons cela sur un cas où le piège est spectaculaire. Nous ajustons des régressions où la tendance est un **polynôme** de degré $1$, $3$, $6$ ou $10$ (plus saison et COVID) sur nos 96 mois d'apprentissage, et nous les évaluons de deux façons : **(a)** en tenant à l'écart 24 mois tirés au hasard (moyenne de 50 tirages) ; **(b)** en apprenant sur les 72 premiers mois et en prévoyant les 24 suivants (donc toujours *dans* la période d'apprentissage : nous ne touchons pas aux données de test). Erreurs quadratiques moyennes (RMSE, en logarithme) :
 
-```python
+```python hide-code
 tt = np.arange(96) / 95                                        # le temps ramené à [0, 1]
 M = mois_ind.values[:96]
 covid96 = X["covid"].values[:96]
@@ -172,7 +179,7 @@ Pour mesurer l'erreur, quatre indicateurs usuels, avec $e_t=y_t-\hat y_t$ l'erre
 
 > 💡 **Exemple à la main.** Valeurs réelles $100,120,90,110$ ; prévisions $110,115,100,105$. Erreurs : $-10,\,5,\,-10,\,5$. MAE $=(10+5+10+5)/4=7{,}5$. RMSE $=\sqrt{(100+25+100+25)/4}=\sqrt{62{,}5}\approx7{,}91$. MAPE $=\frac{100}{4}\left(\frac{10}{100}+\frac5{120}+\frac{10}{90}+\frac5{110}\right)\approx7{,}46\,\%$. Si le naïf saisonnier avait une MAE de $5$ sur l'apprentissage, la MASE vaudrait $7{,}5/5=1{,}5$ : **pire** que la référence.
 
-```python
+```python hide
 def mesures(reel, prevu, ref_apprentissage=None):
     e = np.asarray(reel, float) - np.asarray(prevu, float)
     sortie = {"MAE": np.mean(np.abs(e)), "RMSE": np.sqrt(np.mean(e ** 2)), "MAPE": 100 * np.mean(np.abs(e) / np.abs(reel))}
@@ -187,9 +194,9 @@ print({k: round(float(x), 3) for k, x in mesures([100, 120, 90, 110], [110, 115,
 {'MAE': 7.5, 'RMSE': 7.906, 'MAPE': 7.456, 'MASE': 1.5}
 ```
 
-Appliquons-les à nos cinq prévisions des 24 mois de test, **en euros** (on revient de l'échelle logarithmique par l'exponentielle) :
+Appliquons-les à nos cinq prévisions des 24 mois de test, **en euros** (on revient de l'échelle logarithmique par l'exponentielle). Le tableau est trié par RMSE ; la première ligne rappelle la croissance annuelle moyenne observée en apprentissage, utilisée par le naïf avec dérive :
 
-```python
+```python hide-code
 ca_train = np.exp(train)
 echelle = np.mean(np.abs(ca_train.values[12:] - ca_train.values[:-12]))     # MAE du naïf saisonnier dans l'échantillon
 g = (train - train.shift(12)).mean()                                        # croissance annuelle moyenne (en log)
@@ -221,10 +228,10 @@ C : régression + AR(1)         175.374  227.290   8.366  0.823       -0.070    
 naïf saisonnier                309.604  386.582  13.487  1.452        0.141       0.169
 ```
 
-Lisons ce tableau (trié par RMSE en euros ; `biais (log)` est la moyenne de $y-\hat y$ en logarithme, donc un biais **positif** signifie que le modèle **sous-estime**).
+Lisons ce tableau (`biais (log)` est la moyenne de $y-\hat y$ en logarithme, donc un biais **positif** signifie que le modèle **sous-estime**).
 
 - Le **naïf saisonnier simple** est le plus mauvais, avec une MASE de 1,45 (pire que lui-même sur l'apprentissage) et un biais de $+0{,}14$ : il répète l'année passée sans tenir compte de la croissance, et donc sous-estime d'environ 14 %.
-- Le **naïf saisonnier avec dérive**, trois lignes de code, est déjà très honorable : MASE de 0,74, MAPE de 6,7 %. Il **bat deux de nos trois modèles ARIMA** (A et C) sur cette fenêtre, en euros comme en MAPE. Voilà pourquoi on ne néglige jamais les références simples.
+- Le **naïf saisonnier avec dérive**, une règle élémentaire, est déjà très honorable : MASE de 0,74, MAPE de 6,7 %. Il **bat deux de nos trois modèles ARIMA** (A et C) sur cette fenêtre, en euros comme en MAPE. Voilà pourquoi on ne néglige jamais les références simples.
 - Le modèle **B** est le seul à faire nettement mieux que la référence (MASE de 0,64, MAPE de 6,1 %). Les modèles **A** et **C** ont un biais négatif d'environ $-0{,}07$ : ils **surestiment** de 7 % en moyenne. Nous verrons en 4.3.8 pourquoi.
 
 > ⚠️ **Prévoir en euros ou en logarithme ?** Nous avons optimisé les modèles en log (erreurs relatives), mais nous les jugeons en euros (ce qui intéresse la gérante) : une erreur de 300 € en décembre et de 300 € en février n'ont pas le même poids en log, mais le même en euros. Quand l'objectif métier est en unités de la série, évaluez dans ces unités.
@@ -233,9 +240,9 @@ Lisons ce tableau (trié par RMSE en euros ; `biais (log)` est la moyenne de $y-
 
 Le tableau précédent donne un classement. Mais il repose sur **un seul** découpage, 24 erreurs **corrélées entre elles** (une erreur en mars annonce souvent une erreur en avril), et sur un seul tirage du hasard. Deux garde-fous.
 
-**(1) Le plancher du bruit.** Même le *meilleur modèle possible* ne peut pas prévoir mieux que le bruit qui reste. Le modèle C estime les erreurs d'un AR(1) autour de la tendance et de la saison ; leur écart-type est $\sigma/\sqrt{1-\varphi^2}$ :
+**(1) Le plancher du bruit.** Même le *meilleur modèle possible* ne peut pas prévoir mieux que le bruit qui reste. Le modèle C estime les erreurs d'un AR(1) autour de la tendance et de la saison ; leur écart-type est $\sigma/\sqrt{1-\varphi^2}$, soit $0{,}0715$ ici (contre $0{,}0603$ pour les chocs d'un mois à l'autre).
 
-```python
+```python hide
 sigma2, phi_C = mod_C.params["sigma2"], mod_C.params["ar.L1"]
 print("écart-type de l'écart à la tendance et à la saison (modèle C) :", round(np.sqrt(sigma2 / (1 - phi_C ** 2)), 4))
 print("écart-type des chocs d'un mois à l'autre                       :", round(np.sqrt(sigma2), 4))
@@ -248,9 +255,9 @@ print("écart-type des chocs d'un mois à l'autre                       :", roun
 
 Pour des prévisions à long terme (au-delà de quelques mois), aucun modèle ne peut descendre durablement sous une erreur de l'ordre de 0,07 en logarithme (environ 7 %) : c'est la limite physique. Un écart de 0,01 entre deux modèles n'est pas une différence que 24 points permettent d'établir.
 
-**(2) Un bootstrap par blocs.** Pour quantifier l'incertitude sur l'écart de performance entre deux modèles, on rééchantillonne les **différences d'erreurs quadratiques** par **blocs** de 6 mois consécutifs (pour conserver la corrélation) : si l'intervalle à 95 % de la différence moyenne **contient 0**, l'avantage d'un modèle n'est pas établi.
+**(2) Un bootstrap par blocs.** Pour quantifier l'incertitude sur l'écart de performance entre deux modèles, on rééchantillonne les **différences d'erreurs quadratiques** par **blocs** de 6 mois consécutifs (pour conserver la corrélation) : si l'intervalle à 95 % de la différence moyenne **contient 0**, l'avantage d'un modèle n'est pas établi. Voici les résultats pour quatre paires de modèles (intervalle à 95 % de la différence d'erreur quadratique moyenne du premier moins celle du second) :
 
-```python
+```python hide-code
 def bootstrap_blocs(e1, e2, L=6, B=4000, graine=0):
     """Intervalle à 95 % de la différence moyenne des erreurs quadratiques (modèle 1 - modèle 2), par blocs de L mois."""
     rng = np.random.default_rng(graine)
@@ -290,9 +297,9 @@ Un seul découpage ne donne qu'un seul exemple d'erreur. Pour en avoir plusieurs
 
 > ⚠️ **Honnêteté.** Ces origines (décembre 2023 à décembre 2024) sont celles de notre jeu de test : nous réutilisons la **même période**, avec un autre usage. Les structures des modèles (A, B, C) ont été choisies en 4.2 sur l'apprentissage seul ; ce qui est ré-estimé à chaque origine, ce sont les paramètres. Il n'y a donc pas de fuite, mais il n'y a pas non plus de nouvelles données : le test de 24 mois est « utilisé » ici et ne servira plus à rien d'autre.
 
-On ajoute une cinquième prévision, une **combinaison** : la moyenne des prévisions des trois modèles A, B, C (la combinaison de prévisions est connue pour être robuste : les erreurs de modèles différents ne se corrigent qu'en partie, mais elles se corrigent).
+On ajoute une sixième prévision, une **combinaison** : la moyenne des prévisions des trois modèles A, B, C (la combinaison de prévisions est connue pour être robuste : les erreurs de modèles différents ne se corrigent qu'en partie, mais elles se corrigent). Résultat : RMSE en logarithme, 13 origines × 12 horizons.
 
-```python
+```python hide-code
 H = 12
 origines = list(range(96, 109))                       # 13 origines : fin décembre 2023, ..., fin décembre 2024
 
@@ -363,15 +370,19 @@ naïf saisonnier                     0.1081  0.1213  0.1100  0.1264  0.0707
 
 Trois enseignements, que les chiffres du tableau confirment :
 
-1. **Le naïf saisonnier simple est nettement le moins bon** : il ne sait pas que la série croît. Le naïf **avec dérive** (RMSE de 0,084), trois lignes de code, fait déjà beaucoup mieux, et fait presque jeu égal avec le modèle C (0,081) : **toujours essayer les références simples**.
+1. **Le naïf saisonnier simple est nettement le moins bon** : il ne sait pas que la série croît. Le naïf **avec dérive** (RMSE de 0,084), une règle élémentaire, fait déjà beaucoup mieux, et fait presque jeu égal avec le modèle C (0,081) : **toujours essayer les références simples**.
 2. **Les modèles ARIMA/régression sont proches les uns des autres**, avec un avantage au modèle B (RMSE global de 0,067), qui combine différence saisonnière (il s'adapte au niveau de l'an dernier) et tendance déterministe. La **combinaison** A+B+C (0,069) est presque aussi bonne, **sans avoir à choisir**, et elle est la meilleure aux horizons 1, 6 et 12 du tableau.
 3. L'erreur **ne croît pas régulièrement avec l'horizon** (le graphique est irrégulier, avec seulement 13 origines) : elle se situe entre 0,05 et 0,10 pour tous les modèles ARIMA, c'est-à-dire autour du plancher de 0,07 évoqué en 4.3.5. Les écarts entre courbes sont petits devant cette bande de bruit.
 
-### 4.3.7 Application : les ventes de 2026
+### 4.3.7 De la prévision mensuelle à la prévision de l'année : les ventes de 2026
 
 La gérante prépare son budget. Nous prévoyons maintenant 2026 avec le modèle retenu (B), ajusté sur les **120** mois, en supposant une promotion en décembre 2026 (prévue par la gérante), pas de COVID. Outre la prévision mois par mois, on lui donne une **prévision de l'année entière** avec son incertitude, obtenue par **simulation** : on tire 2 000 trajectoires futures plausibles du modèle (en respectant la corrélation entre mois) et on additionne les 12 mois de chacune.
 
-```python
+Le chiffre d'affaires de 2025 était de 27 630 €. Pour 2026, le modèle prévoit une médiane de **29 169 €** (soit +5,6 %), avec un intervalle à 80 % de 27 823 à 30 597 € et un intervalle à 95 % de 27 073 à 31 397 €. Mois par mois, la prévision va de 1 414 € en janvier à 4 195 € en décembre (intervalle à 95 % de 3 541 à 4 970 €), comme le montre la figure.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.1 (construire cette prévision pas à pas).
+
+```python hide
 X_2026 = pd.DataFrame({"promo": [0.0] * 11 + [1.0], "covid": [0.0] * 12},
                       index=pd.date_range("2026-01-01", periods=12, freq="MS"))
 final = SARIMAX(y, exog=X, order=(1, 0, 0), seasonal_order=(0, 1, 1, 12), trend="ct").fit(disp=False, maxiter=300)
@@ -416,18 +427,18 @@ plt.savefig("figures/ch04-prevision-2026.png", bbox_inches="tight")
 <!--sortie-->
 ```text
          prévision (€)  IC95 bas  IC95 haut
-2026-01            1414      1214       1648
-2026-02            1694      1434       2001
-2026-03            2130      1799       2522
-2026-04            2207      1863       2614
-2026-05            2495      2106       2956
-2026-06            2881      2431       3413
-2026-07            2864      2418       3393
-2026-08            2637      2226       3124
-2026-09            2067      1745       2449
-2026-10            1873      1581       2219
-2026-11            2602      2197       3083
-2026-12            4195      3541       4970
+2026-01           1414      1214       1648
+2026-02           1694      1434       2001
+2026-03           2130      1799       2522
+2026-04           2207      1863       2614
+2026-05           2495      2106       2956
+2026-06           2881      2431       3413
+2026-07           2864      2418       3393
+2026-08           2637      2226       3124
+2026-09           2067      1745       2449
+2026-10           1873      1581       2219
+2026-11           2602      2197       3083
+2026-12           4195      3541       4970
 
 total 2025 observé : 27,630 €
 total 2026 prévu   : médiane 29,169 € | intervalle à 80 % [27,823 ; 30,597] | à 95 % [27,073 ; 31,397]
@@ -442,9 +453,13 @@ La gérante peut retenir trois messages : (1) **le profil de l'année** : le cre
 
 ### 4.3.8 Révélation : comment les données ont été fabriquées
 
-Les ventes de la boutique sont **simulées**. Il est temps de lever le voile. Voici la recette complète : une tendance exponentielle (+0,75 % par mois), une saisonnalité **déterministe** (un facteur multiplicatif par mois), un bruit **AR(1)** (coefficient 0,5, chocs de 0,07), un effet de promotion (+10 % en log), et un choc COVID (−0,55 en log, mars à juin 2020).
+Les ventes de la boutique sont **simulées**. Il est temps de lever le voile. Voici la recette complète (le script `build/donnees2.py` la reproduit exactement) :
 
-```python
+$$\log y_t=\log 1000+0{,}0075\,t+\log s_{\text{mois}(t)}+\eta_t+0{,}10\,\text{promo}_t-0{,}55\,\text{covid}_t,\qquad \eta_t=0{,}5\,\eta_{t-1}+\varepsilon_t,\ \ \varepsilon_t\sim\mathcal N(0,0{,}07^2),$$
+
+soit une tendance exponentielle (+0,75 % par mois), une saisonnalité **déterministe** (un facteur multiplicatif $s$ par mois, de 0,62 en janvier à 1,55 en décembre), un bruit **AR(1)** (coefficient 0,5, chocs de 0,07), un effet de promotion (+10 % en log) et un choc COVID (−0,55 en log, mars à juin 2020).
+
+```python hide
 def simuler_ventes(graine):
     """La recette exacte du fichier ventes_mensuelles.csv (graine 2018)."""
     rng = np.random.default_rng(graine)
@@ -469,9 +484,9 @@ print("la recette reproduit exactement le fichier :", np.allclose(recette["ca"].
 la recette reproduit exactement le fichier : True
 ```
 
-Comparons ce que les modèles ont **estimé** à ce qui a été **programmé** :
+Comparons ce que les modèles ont **estimé** à ce qui a été **programmé** (paramètres, puis profil saisonnier) :
 
-```python
+```python hide-code
 vrai_saison = np.log(np.array([0.62, 0.72, 0.95, 1.00, 1.12, 1.18, 1.22, 1.15, 0.90, 0.78, 1.05, 1.55]))
 estim_saison = np.r_[0.0, mod_C.params[[f"m_{k:02d}" for k in range(2, 13)]].values]          # relatif à janvier
 tab_vrai = pd.DataFrame({"programmé": [0.0075, 0.10, -0.55, 0.5, 0.07],
@@ -480,11 +495,6 @@ tab_vrai = pd.DataFrame({"programmé": [0.0075, 0.10, -0.55, 0.5, 0.07],
                          "modèle C": [mod_C.params["t"], mod_C.params["promo"], mod_C.params["covid"], mod_C.params["ar.L1"], np.sqrt(mod_C.params["sigma2"])]},
                         index=["pente de la tendance (par mois)", "effet promo (log)", "effet COVID (log)", "AR(1) : phi", "chocs : sigma"])
 print(tab_vrai.round(4).to_string())
-print()
-saison_cmp = pd.DataFrame({"programmé": vrai_saison - vrai_saison[0], "estimé (modèle C)": estim_saison},
-                          index=["jan", "fév", "mar", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"])
-print("profil saisonnier, en log et relativement à janvier :")
-print(saison_cmp.round(2).T.to_string())
 ```
 <!--sortie-->
 ```text
@@ -494,7 +504,16 @@ effet promo (log)                   0.1000    0.1061    0.0995    0.1063
 effet COVID (log)                  -0.5500   -0.5371   -0.5055   -0.5408
 AR(1) : phi                         0.5000       NaN       NaN    0.5388
 chocs : sigma                       0.0700       NaN       NaN    0.0603
+```
 
+```python hide-code
+saison_cmp = pd.DataFrame({"programmé": vrai_saison - vrai_saison[0], "estimé (modèle C)": estim_saison},
+                          index=["jan", "fév", "mar", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"])
+print("profil saisonnier, en log et relativement à janvier :")
+print(saison_cmp.round(2).T.to_string())
+```
+<!--sortie-->
+```text
 profil saisonnier, en log et relativement à janvier :
                    jan   fév   mar   avr   mai  juin  juil  août  sept   oct   nov   déc
 programmé          0.0  0.15  0.43  0.48  0.59  0.64  0.68  0.62  0.37  0.23  0.53  0.92
@@ -503,9 +522,9 @@ estimé (modèle C)  0.0  0.18  0.46  0.51  0.59  0.66  0.70  0.61  0.37  0.20  
 
 Les modèles ont **retrouvé** la recette : la pente de la tendance (0,0077 estimé pour 0,0075), l'effet de la promotion (0,106 pour 0,10), l'effet du COVID (de $-0{,}51$ à $-0{,}54$ pour $-0{,}55$), la saison mois par mois (écarts de quelques centièmes en log), le coefficient AR (0,54 pour 0,5) ; seule la taille des chocs est un peu sous-estimée (0,060 pour 0,07). Et nos soupçons étaient fondés : la tendance et la saison étaient bien **déterministes**, ce que laissaient entendre les tests ambigus de 4.1.6 et les MA proches de $-1$ de 4.2.4. Le modèle C a la **structure exacte** de la vérité.
 
-**Pourtant, C n'a pas gagné le concours de 4.3.4.** Pourquoi un modèle correctement spécifié perd-il ? La réponse tient au bruit. Calculons ce que valait le **bruit programmé** sur les deux périodes :
+**Pourtant, C n'a pas gagné le concours de 4.3.4.** Pourquoi un modèle correctement spécifié perd-il ? La réponse tient au bruit. Le **bruit programmé** valait, en moyenne, $-0{,}014$ pendant l'apprentissage et $-0{,}0695$ sur les 24 mois de test (écart-type $0{,}066$) ; le biais moyen des prévisions du modèle C sur le test est de $-0{,}0696$.
 
-```python
+```python hide
 print("bruit AR(1) programmé, moyenne : apprentissage =", round(bruit[:"2023-12"].mean(), 4), "| test =", round(bruit["2024-01":].mean(), 4))
 print("écart-type du bruit sur le test :", round(bruit["2024-01":].std(), 4), "| RMSE du « modèle parfait » (qui connaîtrait tous les paramètres) :", round(np.sqrt((bruit["2024-01":] ** 2).mean()), 4))
 print("biais moyen des prévisions du modèle C sur le test :", round(float(np.mean(test - prev_log["C : régression + AR(1)"])), 4))
@@ -519,9 +538,9 @@ biais moyen des prévisions du modèle C sur le test : -0.0696
 
 Le bruit programmé sur les 24 mois de test est **négativement décalé** en moyenne : $-0{,}0695$ en log, soit environ 7 % de ventes en dessous de la tendance et de la saison (contre $-0{,}014$ pendant l'apprentissage). Le modèle C, qui ne croit qu'à la tendance et à la saison, prévoit « la tendance » : son erreur moyenne ($y-\hat y$ vaut $-0{,}0696$ en moyenne, contre $-0{,}0695$ pour le bruit) est **exactement ce bruit**. Le « biais » de C n'est pas un défaut du modèle : c'est la trajectoire du hasard. Même un « modèle parfait » qui connaîtrait tous les paramètres aurait une RMSE de 0,095 sur ces 24 mois, **plus** que le modèle B (0,074, en log). C'est la malchance de cet échantillon de test : la série est restée sous sa tendance pendant deux ans, et le modèle B, qui **s'ajuste au niveau récent** grâce à sa différence saisonnière, a bénéficié de cette persistance. (Dans cette situation, il a *parié* sur la persistance des écarts, et il a gagné. Ce pari est bon quand les écarts sont persistants et mauvais quand ils sont transitoires.)
 
-Un test sur **une** trajectoire ne distingue pas « bon modèle » et « modèle chanceux ». La seule façon de le savoir est de **rejouer le hasard** : tirons plusieurs historiques complets avec la même recette (graines différentes), ajustons B et C sur les 96 premiers mois de chacun, prévoyons les 24 suivants, et comparons les erreurs.
+Un test sur **une** trajectoire ne distingue pas « bon modèle » et « modèle chanceux ». La seule façon de le savoir est de **rejouer le hasard** : nous avons tiré 30 historiques complets avec la même recette (graines différentes), ajusté B et C sur les 96 premiers mois de chacun, prévu les 24 suivants et comparé les erreurs. RMSE moyenne en logarithme : $0{,}129$ pour le naïf avec dérive, $0{,}111$ pour B et $0{,}088$ pour C ; C bat B dans 25 historiques sur 30, et le naïf avec dérive dans 30 sur 30.
 
-```python
+```python hide
 mois_calendaire = lambda idx: pd.get_dummies(pd.Series(idx.month, index=idx).astype(str).str.zfill(2), prefix="m", drop_first=True, dtype=float)
 
 def un_essai(graine):
@@ -555,6 +574,8 @@ C bat B dans 25 historiques sur 30 ; C bat le naïf avec dérive dans 30 sur 30
 ```
 
 Sur 30 historiques, c'est le **modèle de structure exacte (C)** qui a en moyenne la meilleure performance, mais il **ne gagne pas à chaque fois** : le résultat d'un seul découpage dépend beaucoup de la trajectoire du bruit. C'est exactement ce qu'on attend de la statistique : une conclusion se juge sur la **répétition**, pas sur un tirage.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.4 (validation à origine glissante), exercices 4.6, 4.7 et 4.13.
 
 > ✅ **À retenir.**
 > - Une prévision est un **couple** (valeur, incertitude). Pour un AR(1) : $\hat y_{T+h}=\mu+\varphi^h(Y_T-\mu)$ et la variance de l'erreur croît de $\sigma^2$ vers $\sigma^2/(1-\varphi^2)$ ; avec une différence première, elle croît **sans limite**.

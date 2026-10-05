@@ -22,9 +22,9 @@ Le point le plus subtil est l'**unité expérimentale** : c'est la plus petite e
 
 ### 8.1.2 Première règle : randomiser
 
-Supposons que la gérante teste deux vitrines, A et B, sans effet réel : les deux sont aussi efficaces. Elle installe A du **lundi au jeudi** et B du **vendredi au dimanche**, pendant quatre semaines. Or le week-end, la boutique vend plus (disons 60 € de plus par jour en moyenne, quel que soit l'agencement). Elle va conclure que B est meilleure : le **jour de la semaine** est un **facteur de confusion** : il influence la réponse *et* est lié à l'affectation des traitements (le chapitre 7 en donne la théorie). Voyons l'ampleur du dégât par simulation, en comparant cette affectation à une affectation **tirée au hasard** (14 jours pour A, 14 pour B).
+Supposons que la gérante teste deux vitrines, A et B, sans effet réel : les deux sont aussi efficaces. Elle installe A du **lundi au jeudi** et B du **vendredi au dimanche**, pendant quatre semaines. Or le week-end, la boutique vend plus (disons 60 € de plus par jour en moyenne, quel que soit l'agencement). Elle va conclure que B est meilleure : le **jour de la semaine** est un **facteur de confusion** : il influence la réponse *et* est lié à l'affectation des traitements (le chapitre 7 en donne la théorie). Voyons l'ampleur du dégât par simulation, en comparant cette affectation à une affectation **tirée au hasard** (14 jours pour A, 14 pour B), sur 2 000 expériences simulées (le programme est dans le cahier, application 8.1).
 
-```python
+```python hide
 import numpy as np
 from scipy import stats
 
@@ -55,7 +55,7 @@ affectation naïve    : écart moyen B - A =   60.3 € ; écart-type =   9.4 ; 
 affectation aléatoire: écart moyen B - A =   -0.1 € ; écart-type =  14.8 ; 'effet significatif' dans   5.2 % des expériences
 ```
 
-On le lit ainsi : avec l'affectation naïve, la différence B − A est **systématiquement** d'environ 60 € (le biais) et le test « détecte » un effet qui n'existe pas dans **100 %** des 2 000 expériences simulées. Avec l'affectation aléatoire, la différence est **centrée sur zéro** (−0,1 € en moyenne) et le test se trompe dans 5,2 % des cas, **exactement ce que promet son niveau** $\alpha=5\,\%$.
+Résultat : avec l'affectation naïve, la différence B − A est **systématiquement** d'environ 60 € (le biais) et le test « détecte » un effet qui n'existe pas dans **100 %** des 2 000 expériences simulées. Avec l'affectation aléatoire, la différence est **centrée sur zéro** (−0,1 € en moyenne) et le test se trompe dans 5,2 % des cas, **exactement ce que promet son niveau** $\alpha=5\,\%$.
 
 > 📐 **Pourquoi ça marche.** Quand on tire les étiquettes au hasard, le week-end a la **même chance** d'avoir reçu A ou B. Les jours « forts » se répartissent donc équitablement entre les deux traitements *en espérance* : le facteur de confusion, même **inconnu** ou **non mesuré**, cesse d'être confondu avec le traitement. C'est le seul procédé qui protège aussi contre les causes que l'on n'a pas pensé à noter. De plus, c'est le tirage au sort lui-même qui **justifie** les p-valeurs : c'est exactement la logique du test de permutation (volume I, section 3.7.4), où les étiquettes sont mélangées au hasard pour fabriquer la loi de la statistique sous l'hypothèse « aucun effet ».
 
@@ -67,7 +67,7 @@ Une seule journée par vitrine ne dit rien : la différence entre deux journées
 
 > ⚠️ **Répétition ne veut pas dire mesure répétée.** C'est l'erreur la plus fréquente, et elle s'appelle la **pseudo-réplication**. Si la gérante interroge **40 clients** chaque jour, ces 40 réponses du même jour partagent la même vitrine **et** les mêmes aléas de la journée (météo, jour de marché…) : ce ne sont pas 40 unités indépendantes, mais **une** unité mesurée 40 fois. Voyons ce qu'il en coûte. On simule deux vitrines **sans aucune différence**, 5 jours chacune, 40 clients par jour, avec un aléa propre à chaque jour.
 
-```python
+```python hide
 rng = np.random.default_rng(83)
 
 faux, bon = 0, 0
@@ -93,7 +93,7 @@ Alors qu'il n'y a **aucun effet**, le premier test crie victoire dans **57 %** d
 
 ### 8.1.4 Troisième règle : bloquer
 
-La répétition réduit le bruit, mais certaines sources de variabilité sont **connues à l'avance** : les semaines ne se ressemblent pas (soldes, fêtes), les lots de matière première non plus. Plutôt que de laisser cette variabilité gonfler le bruit, on l'**isole** : on découpe l'expérience en **blocs** de conditions homogènes (par exemple une semaine par bloc) et, **dans chaque bloc**, on teste **tous** les traitements, en randomisant l'ordre dans le bloc. Les comparaisons se font alors à l'intérieur des blocs, à conditions égales. La section 8.2.8 montre, chiffres à l'appui, ce que cela change.
+La répétition réduit le bruit, mais certaines sources de variabilité sont **connues à l'avance** : les semaines ne se ressemblent pas (soldes, fêtes), les lots de matière première non plus. Plutôt que de laisser cette variabilité gonfler le bruit, on l'**isole** : on découpe l'expérience en **blocs** de conditions homogènes (par exemple une semaine par bloc) et, **dans chaque bloc**, on teste **tous** les traitements, en randomisant l'ordre dans le bloc. Les comparaisons se font alors à l'intérieur des blocs, à conditions égales. Concrètement, au lieu de tirer au sort l'agencement de vitrine de 48 journées issues de huit semaines mélangées, on teste les **quatre agencements chaque semaine**, dans un ordre tiré au sort : la semaine, ses soldes et sa météo, deviennent un point de comparaison commun et non plus une source de bruit. La section 8.2.8 montre, chiffres à l'appui, ce que cela change.
 
 > ✅ **La devise de Fisher, en une ligne** : **Bloquez ce que vous pouvez, randomisez ce que vous ne pouvez pas bloquer, et répétez pour mesurer le bruit.**
 
@@ -108,7 +108,7 @@ L'instinct dit : « pour savoir ce que fait chaque facteur, changeons-les un par
 
 **La démarche OFAT.** On part de la situation actuelle (standard, prix normal : 50). On change l'emballage : 55, c'est mieux (+5), on adopte le cadeau. Puis, avec le cadeau, on change le prix : 60, c'est mieux (+5), on adopte la promo. Conclusion : « la meilleure combinaison est *cadeau + promo*, 60 commandes ». Or la vraie meilleure est **standard + promo : 62**. L'emballage cadeau, qui aide au prix normal, **gêne** quand il y a une promotion (−2) : on dit qu'il y a **interaction** entre les deux facteurs. L'OFAT l'a manquée, car il n'a **jamais** testé « standard + promo ».
 
-```python
+```python hide
 import pandas as pd
 
 vrai = pd.DataFrame({"prix normal": [50, 55], "promo -10 %": [62, 60]}, index=["standard", "cadeau"])
@@ -139,11 +139,11 @@ effet de la promo en standard   : 12 | en cadeau       : 5
 effet principal du cadeau A = 1.5, de la promo B = 8.5, interaction AB = -3.5
 ```
 
-Le tableau le dit sans ambiguïté : **l'effet d'un facteur dépend du niveau de l'autre**. Parler de « l'effet du cadeau » tout court n'a alors plus de sens.
+Les effets se lisent directement dans le tableau : le cadeau apporte **+5** au prix normal mais **−2** en promotion ; la promotion apporte **+12** en emballage standard mais seulement **+5** en cadeau. **L'effet d'un facteur dépend du niveau de l'autre.** On résume cela par l'**effet principal** du cadeau (la moyenne de ses deux effets : $1{,}5$), celui de la promotion ($8{,}5$) et l'**interaction** (la demi-différence entre les deux effets du cadeau : $-3{,}5$ ; ces définitions sont précisées en 8.3). Parler de « l'effet du cadeau » tout court n'a alors plus de sens.
 
-**L'OFAT est aussi moins précis.** Supposons un bruit d'écart-type $\sigma$ sur chaque essai. Avec 4 essais, l'OFAT en consacre deux à la situation de départ (sinon on ne mesure aucun bruit) puis un essai pour chaque facteur modifié : l'effet de A s'estime par $y_A-\bar y_0$, de variance $\sigma^2(1+\tfrac12)=1{,}5\sigma^2$. Le plan **factoriel** utilise les **mêmes 4 essais** (les quatre cases du tableau) et estime l'effet de A par $\tfrac12\left[(y_{\text{cadeau, normal}}+y_{\text{cadeau, promo}})-(y_{\text{std, normal}}+y_{\text{std, promo}})\right]$, de variance $\tfrac14\cdot4\sigma^2=\sigma^2$. Chaque essai y sert **deux fois** : une fois pour chaque facteur. Vérifions par simulation.
+**L'OFAT est aussi moins précis.** Supposons un bruit d'écart-type $\sigma$ sur chaque essai. Avec 4 essais, l'OFAT en consacre deux à la situation de départ (sinon on ne mesure aucun bruit) puis un essai pour chaque facteur modifié : l'effet de A s'estime par $y_A-\bar y_0$, de variance $\sigma^2(1+\tfrac12)=1{,}5\sigma^2$. Le plan **factoriel** utilise les **mêmes 4 essais** (les quatre cases du tableau) et estime l'effet de A par $\tfrac12\left[(y_{\text{cadeau, normal}}+y_{\text{cadeau, promo}})-(y_{\text{std, normal}}+y_{\text{std, promo}})\right]$, de variance $\tfrac14\cdot4\sigma^2=\sigma^2$. Chaque essai y sert **deux fois** : une fois pour chaque facteur. Vérifions par simulation (100 000 expériences rejouées, avec $\sigma=4$).
 
-```python
+```python hide
 rng = np.random.default_rng(84)
 sigma, n_sim = 4.0, 100000
 mu = {"std_normal": 50, "cadeau_normal": 55, "std_promo": 62, "cadeau_promo": 60}
@@ -176,3 +176,5 @@ Deux enseignements. D'abord, à nombre d'essais égal, le plan factoriel est plu
 > - **Répéter** pour estimer et réduire le bruit, mais **ne pas confondre** répétition (unités indépendantes) et mesures répétées (pseudo-réplication).
 > - **Bloquer** pour retirer du bruit les sources de variabilité connues.
 > - Changer **un facteur à la fois** est moins précis et **aveugle aux interactions** ; les plans **factoriels** font varier tous les facteurs ensemble.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 8 : application 8.1, exercice 8.1.

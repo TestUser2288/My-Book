@@ -2,9 +2,9 @@
 
 > 💡 **Intuition.** Un logiciel produit un tableau de coefficients quoi qu'on lui donne, même si le modèle est absurde. Les p-valeurs et les intervalles du 1.2 ne valent **que si les hypothèses H1 à H5 sont à peu près vraies**. Faire des diagnostics, c'est la visite médicale du modèle : on regarde ce qui reste *après* l'ajustement (les résidus), parce que les erreurs d'un modèle bien spécifié ne doivent contenir **aucune structure**. Si l'on voit une courbe, un entonnoir ou un point isolé dans les résidus, c'est que le modèle a raté quelque chose.
 
-Voici la préparation (mêmes données qu'en 1.1 et 1.2). Nous chargeons en plus les **ventes mensuelles** de la boutique, qui nous serviront de deuxième terrain d'observation :
+Nous reprenons les données des sections précédentes (modèles `m2` sur le log du panier et `m_niv` sur le panier en euros) et nous chargeons en plus les **ventes mensuelles** de la boutique (120 mois), qui nous serviront de deuxième terrain d'observation.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -55,9 +55,9 @@ Un point à fort levier « attire » la droite vers lui : son résidu est mécan
 | **standardisé** (*studentisé en interne*) | $r_i=\dfrac{\hat\varepsilon_i}{s\sqrt{1-h_{ii}}}$ | variance ≈ 1 pour tous : comparable |
 | **studentisé externe** | $t_i=\dfrac{\hat\varepsilon_i}{s_{(i)}\sqrt{1-h_{ii}}}$ | $s_{(i)}$ = écart-type estimé **sans** l'observation $i$ ; suit exactement une loi $t_{n-p-1}$ si le modèle est correct : sert à **tester** si $i$ est aberrante |
 
-Vérifions la formule du résidu standardisé à la main, puis avec `statsmodels`, en reprenant les quatre commandes du 1.1.1 (où les leviers valaient 0,7 ; 0,3 ; 0,3 ; 0,7) :
+Sur les quatre commandes du 1.1.1 (leviers 0,7 ; 0,3 ; 0,3 ; 0,7, résidus bruts −0,6 ; −1,2 ; +4,2 ; −2,4, écart-type résiduel $s=\sqrt{12{,}6}\approx3{,}55$), la formule donne les résidus standardisés hmtBc0{,}309$ ; hmtBc0{,}404$ ; {,}414$ ; hmtBc1{,}234$ ; `statsmodels` retrouve exactement les mêmes valeurs. On voit que le dernier point (levier 0,7) a un résidu brut de −2,4 qui, une fois standardisé, pèse presque autant que celui du point C.
 
-```python
+```python hide
 x4 = np.array([1, 2, 3, 4]); y4 = np.array([22, 41, 66, 79])
 X4 = np.column_stack([np.ones(4), x4])
 H4 = X4 @ np.linalg.inv(X4.T @ X4) @ X4.T
@@ -90,7 +90,7 @@ Trois graphiques suffisent à repérer l'essentiel :
 
 Mettons en concurrence **deux modèles pour le même phénomène** : le panier en euros (`m_niv`) et son logarithme (`m2`). Le premier est celui que l'on écrirait « naturellement » ; le second celui que nous avons choisi en 1.1.7 parce que le panier est asymétrique. Les diagnostics vont nous dire si ce choix était justifié.
 
-```python
+```python hide
 def diagnostics(modele, axes, titre):
     ajuste = modele.fittedvalues
     r = modele.get_influence().resid_studentized_internal
@@ -134,7 +134,7 @@ Des tests formalisent ce que l'œil voit.
 
 **Variance non constante : le test de Breusch-Pagan.** Idée : si la variance dépend des variables explicatives, alors les carrés des résidus $\hat\varepsilon_i^2$ (estimations grossières de la variance) doivent être **prévisibles** à partir de $\mathbf X$. On régresse donc $\hat\varepsilon_i^2$ sur les mêmes variables ; si cette régression a un $R^2$ non négligeable, on rejette l'homoscédasticité. La statistique est $\text{LM}=n\,R^2_{\text{aux}}\sim\chi^2_{p-1}$ sous $H_0$ (variance constante). Calculons-la à la main pour les deux modèles et comparons à `statsmodels` :
 
-```python
+```python hide
 def breusch_pagan_main(modele):
     e2 = modele.resid.to_numpy() ** 2
     Xm = modele.model.exog
@@ -149,13 +149,15 @@ for nom, m in [("panier en €", m_niv), ("log du panier", m2)]:
 ```
 <!--sortie-->
 ```text
-panier en €   LM (main) =  35.90  p = 7.86e-08 | statsmodels : LM =  35.90  p = 7.86e-08
+panier en €    LM (main) =  35.90  p = 7.86e-08 | statsmodels : LM =  35.90  p = 7.86e-08
 log du panier  LM (main) =   1.92  p = 5.90e-01 | statsmodels : LM =   1.92  p = 5.90e-01
 ```
 
-**Normalité des erreurs.** Le test de Shapiro-Wilk et celui de Jarque-Bera (fondé sur l'asymétrie et l'aplatissement, volume I, section 3.7.5) comparent les résidus à une loi normale. Avec un grand $n$, ils détectent des écarts minuscules sans importance pratique : le diagramme Q-Q reste l'outil principal.
+Pour le modèle en euros, `LM` vaut 35,9 (p-valeur de $8\times10^{-8}$) : l'homoscédasticité est nettement rejetée ; pour le modèle en logarithme, `LM` vaut 1,92 (p-valeur de 0,59) : on ne la rejette pas. Le calcul à la main coïncide avec celui de `statsmodels`.
 
-```python
+**Normalité des erreurs.** Le test de Shapiro-Wilk et celui de Jarque-Bera (fondé sur l'asymétrie et l'aplatissement, volume I, section 3.7.5) comparent les résidus à une loi normale. Avec un grand $n$, ils détectent des écarts minuscules sans importance pratique : le diagramme Q-Q reste l'outil principal. Ici, l'asymétrie des résidus vaut 1,40 en euros (excès d'aplatissement de 3,84) contre 0,11 (−0,06) en logarithme ; les deux tests rejettent très nettement la normalité pour le modèle en euros (p-valeurs inférieures à $10^{-28}$) et ne la rejettent pas pour le modèle en logarithme (0,23 et 0,16).
+
+```python hide
 for nom, m in [("panier en €", m_niv), ("log du panier", m2)]:
     r = m.resid
     jb, pjb, sk, ku = sm.stats.jarque_bera(r)
@@ -163,13 +165,13 @@ for nom, m in [("panier en €", m_niv), ("log du panier", m2)]:
 ```
 <!--sortie-->
 ```text
-panier en €   asymétrie =  1.40 | aplatissement (excès) =  3.84 | Shapiro p = 1.25e-29 | Jarque-Bera p = 0.00e+00
+panier en €    asymétrie =  1.40 | aplatissement (excès) =  3.84 | Shapiro p = 1.25e-29 | Jarque-Bera p = 0.00e+00
 log du panier  asymétrie =  0.11 | aplatissement (excès) = -0.06 | Shapiro p = 2.34e-01 | Jarque-Bera p = 1.63e-01
 ```
 
 **Autocorrélation des erreurs (H4 : erreurs non corrélées).** Quand les observations sont ordonnées dans le temps, les erreurs successives peuvent se ressembler. Le test de **Durbin-Watson** mesure cela : $\text{DW}=\dfrac{\sum_{i\ge2}(\hat\varepsilon_i-\hat\varepsilon_{i-1})^2}{\sum_i\hat\varepsilon_i^2}\approx2(1-\hat\rho)$, où $\hat\rho$ est l'autocorrélation d'ordre 1 des résidus. Une valeur proche de 2 indique l'absence d'autocorrélation ; **inférieure à 2**, une autocorrélation positive. Les clients n'ont pas d'ordre naturel, donc ce test n'a pas de sens pour eux : utilisons plutôt les ventes mensuelles, avec le modèle d'une **tendance simple** $\text{ventes}_t=\beta_0+\beta_1 t+\varepsilon_t$, en niveau puis en logarithme.
 
-```python
+```python hide
 mv_niv = smf.ols("ca ~ t", data=ventes).fit()
 mv_log = smf.ols("np.log(ca) ~ t", data=ventes).fit()
 for nom, m in [("ca ~ t", mv_niv), ("log(ca) ~ t", mv_log)]:
@@ -217,7 +219,7 @@ Certaines observations pèsent beaucoup plus que d'autres dans l'ajustement. Il 
 
 **Un petit exemple pour voir.** Six points : cinq bien alignés sur une droite de pente environ 2, et un sixième, **très à droite** ($x=12$), qui s'écarte de la tendance.
 
-```python
+```python hide
 xs = np.array([1, 2, 3, 4, 5, 12.0])
 ys = np.array([2.1, 3.9, 6.2, 7.8, 10.1, 14.0])          # le dernier point devrait être vers 24 si la tendance se poursuivait
 Xs = np.column_stack([np.ones(6), xs])
@@ -270,6 +272,8 @@ Cook par réajustement : [3.600e-01 6.000e-02 1.000e-02 4.000e-02 2.300e-01 1.64
 figure enregistrée
 ```
 
+Sur ces six points, la pente vaut 1,03 avec les six points et 1,99 sans le sixième ; le levier du sixième point est de 0,89 (levier moyen $p/n=0{,}33$), son résidu standardisé de seulement −1,99, et sa distance de Cook de 16,4 (contre 0,36 au plus pour les cinq autres) ; sans lui, la tendance prévoyait 23,9 en $x=12$, alors qu'on a observé 14,0. Le calcul du résidu studentisé externe sans réajustement coïncide avec `statsmodels`.
+
 ![Un point à fort levier (rouge, x = 12) tire la droite orange vers lui. Sans ce point, la droite bleue suit le reste du nuage, et prévoit environ 24 en x = 12.](figures/ch01-levier.png)
 
 Remarquez la leçon, qui surprend toujours : **le point influent a un résidu petit**. Comme la droite est tirée vers lui, son résidu brut est modeste (voyez la ligne des résidus), alors qu'il est très loin de ce que la tendance des cinq autres points prévoyait. C'est son **levier** (proche de 0,9, très au-dessus de la moyenne $p/n\approx0{,}33$) et sa **distance de Cook** qui le trahissent. Un diagnostic fondé sur les seuls résidus l'aurait laissé passer. Et la formule de Cook, retrouvée ici par réajustement sans chaque point, confirme le raccourci.
@@ -278,17 +282,22 @@ Remarquez la leçon, qui surprend toujours : **le point influent a un résidu pe
 
 ```python
 infl = m2.get_influence()
-h = infl.hat_matrix_diag
-cook = infl.cooks_distance[0]
+h, cook = infl.hat_matrix_diag, infl.cooks_distance[0]
+print(f"levier max = {h.max():.4f} | Cook max = {cook.max():.4f} | clients avec Cook > 4/n : {(cook > 4 / len(h)).sum()}")
+```
+<!--sortie-->
+```text
+levier max = 0.0089 | Cook max = 0.0067 | clients avec Cook > 4/n : 84
+```
+
+```python hide
 n, p = m2.model.exog.shape
 print(f"n = {n}, p = {p} | levier moyen p/n = {p/n:.4f} | levier maximal = {h.max():.4f} | seuil 2p/n = {2*p/n:.4f}")
 print(f"distance de Cook maximale = {cook.max():.4f} | seuil usuel 4/n = {4/n:.4f} | seuil d'alerte forte : 1")
 print(f"nombre de clients au-dessus de 4/n : {(cook > 4/n).sum()} sur {n} ({100*(cook > 4/n).mean():.1f} %)")
-print()
 top = pd.DataFrame({"age": df["age"].to_numpy(), "canal": df["canal"].to_numpy(), "panier": df["panier_moyen"].to_numpy(),
                     "résidu stud. ext.": infl.resid_studentized_external, "levier": h, "Cook": cook}).sort_values("Cook", ascending=False).head(5)
 print(top.round(4).to_string())
-print()
 print(m2.outlier_test().sort_values("unadj_p").head(3).round(4))
 ```
 <!--sortie-->
@@ -296,14 +305,12 @@ print(m2.outlier_test().sort_values("unadj_p").head(3).round(4))
 n = 1740, p = 4 | levier moyen p/n = 0.0023 | levier maximal = 0.0089 | seuil 2p/n = 0.0046
 distance de Cook maximale = 0.0067 | seuil usuel 4/n = 0.0023 | seuil d'alerte forte : 1
 nombre de clients au-dessus de 4/n : 84 sur 1740 (4.8 %)
-
-      age      canal  panier  résidu stud. ext.  levier    Cook
-864    43       Site  245.06             3.7254  0.0019  0.0067
-747    48   Boutique   25.53            -2.9552  0.0030  0.0066
-1060   66  Réseaux  131.04             1.9415  0.0061  0.0058
-140    50       Site  189.89             2.8562  0.0027  0.0055
-439    22  Réseaux  124.39             2.8921  0.0025  0.0052
-
+      age     canal  panier  résidu stud. ext.  levier    Cook
+864    43      Site  245.06             3.7254  0.0019  0.0067
+747    48  Boutique   25.53            -2.9552  0.0030  0.0066
+1060   66   Réseaux  131.04             1.9415  0.0061  0.0058
+140    50      Site  189.89             2.8562  0.0027  0.0055
+439    22   Réseaux  124.39             2.8921  0.0025  0.0052
       student_resid  unadj_p  bonf(p)
 1001         3.7254   0.0002   0.3502
 180          3.3254   0.0009   1.0000
@@ -315,7 +322,7 @@ Aucun client n'a un levier ou une distance de Cook préoccupants : le plus grand
 - Le seuil « $D_i>4/n$ » est une **règle de dépistage**, pas un test : avec $n$ grand elle signale toujours quelques points (ici environ 5 % des clients), simplement parce que certains points sont toujours un peu plus éloignés que d'autres. Ce qui compte est qu'**aucun** ne soit isolé du lot. Regardez les valeurs, pas seulement le seuil.
 - Le test des résidus studentisés externes, ajusté pour le nombre de tests (correction de **Bonferroni**, volume I, section 3.5.5), est un vrai test de « valeur aberrante » : la plus grande valeur absolue (environ 3,73) a une p-valeur brute de 0,0002, mais parmi 1 740 observations on s'attend à de telles valeurs : une fois la correction de Bonferroni appliquée, la p-valeur ajustée est de 0,35, rien de significatif.
 
-> 🛠️ **Que faire d'une observation influente ?** Ne la supprimez **pas** automatiquement. (1) Vérifiez qu'il ne s'agit pas d'une **erreur de saisie** (un panier de 5 000 € au lieu de 50). (2) Si elle est authentique, regardez comment les conclusions changent **avec et sans** elle, et rapportez les deux. (3) Si elle représente un phénomène réel mais rare, envisagez une méthode **robuste** (section 1.6). Retirer un point « parce qu'il gêne » est l'une des formes les plus courantes de falsification involontaire.
+> 💡 **Que faire d'une observation influente ?** Ne la supprimez **pas** automatiquement. (1) Vérifiez qu'il ne s'agit pas d'une **erreur de saisie** (un panier de 5 000 € au lieu de 50). (2) Si elle est authentique, regardez comment les conclusions changent **avec et sans** elle, et rapportez les deux. (3) Si elle représente un phénomène réel mais rare, envisagez une méthode **robuste** (section 1.6). Retirer un point « parce qu'il gêne » est l'une des formes les plus courantes de falsification involontaire.
 
 ### 1.3.5 La multicolinéarité : quand deux variables disent la même chose
 
@@ -329,7 +336,7 @@ Si deux variables explicatives sont presque redondantes, le modèle ne peut pas 
 
 **Provoquons le problème.** Ajoutons au modèle `m2` l'âge **exprimé en mois**, mesuré avec un petit bruit (le client indique son âge « à peu près » ; l'âge en mois est quasiment $12\times$ l'âge en années) :
 
-```python
+```python hide
 rng = np.random.default_rng(3)
 df["age_mois"] = 12 * df["age"] + rng.normal(0, 3, len(df))         # presque redondant avec l'âge en années
 print("corrélation âge (années) / âge (mois) :", round(np.corrcoef(df["age"], df["age_mois"])[0, 1], 4))
@@ -345,12 +352,12 @@ print("R² de m2 :", round(m2.rsquared, 4), "| R² avec age_mois :", round(mc.rs
 <!--sortie-->
 ```text
 corrélation âge (années) / âge (mois) : 0.9997
-                       m2 : coef  m2 : se  avec age_mois : coef  avec age_mois : se
+                     m2 : coef  m2 : se  avec age_mois : coef  avec age_mois : se
 C(canal)[T.Réseaux]    -0.3368   0.0225               -0.3377              0.0225
-C(canal)[T.Site]         -0.1571   0.0231               -0.1580              0.0231
-Intercept                 4.2206   0.0175                3.2552              1.2998
-a                         0.0092   0.0008               -0.0176              0.0361
-age_mois                     NaN      NaN                0.0022              0.0030
+C(canal)[T.Site]       -0.1571   0.0231               -0.1580              0.0231
+Intercept               4.2206   0.0175                3.2552              1.2998
+a                       0.0092   0.0008               -0.0176              0.0361
+age_mois                   NaN      NaN                0.0022              0.0030
 
 VIF : {'Intercept': 1.0, 'C(canal)[T.Site]': 1.5, 'C(canal)[T.Réseaux]': 1.5, 'a': 1828.5, 'age_mois': 1828.6}
 R² de m2 : 0.1657 | R² avec age_mois : 0.166  (prédictions aussi bonnes)
@@ -360,7 +367,7 @@ Les prédictions sont aussi bonnes (le $R^2$ ne bouge pas), mais regardez les co
 
 **Une colinéarité plus sournoise : les termes polynomiaux non centrés.** Si l'on ajoute le carré de l'âge pour tester une courbure, $\text{âge}$ et $\text{âge}^2$ sont très corrélés (les deux croissent ensemble). Le **centrage** règle le problème :
 
-```python
+```python hide
 df["age2_brut"] = df["age"] ** 2
 df["a2"] = df["a"] ** 2
 mq_brut = smf.ols("log_panier ~ age + age2_brut + C(canal)", data=df).fit()
@@ -378,7 +385,7 @@ centré (a, a²)           VIF = [1.0, 1.5, 1.5, 1.0, 1.0] | p-valeur du terme q
 
 Le terme quadratique n'est pas significatif dans les deux cas (la p-valeur du terme du second degré est identique avec ou sans centrage, comme il se doit : on décrit le *même* modèle), mais les VIF passent de plus de 30 à 1 après centrage, ce qui rend les coefficients lisibles. L'âge n'a pas de courbure détectable : la relation avec le log-panier est bien linéaire (H1 est plausible).
 
-> 🛠️ **Que faire en cas de multicolinéarité ?** (1) **Retirer** une des variables redondantes, ou les **combiner** en une seule (moyenne, indice). (2) **Centrer** les variables avant de créer des puissances ou des interactions. (3) Si l'on tient à garder toutes les variables et que l'objectif est la **prédiction**, la **régularisation** (Ridge, section 1.5) stabilise les coefficients. (4) Si l'objectif est d'**interpréter** un effet précis, il faut accepter qu'on ne peut pas séparer l'effet de deux variables quasi identiques : il est plus honnête de le dire.
+> 💡 **Que faire en cas de multicolinéarité ?** (1) **Retirer** une des variables redondantes, ou les **combiner** en une seule (moyenne, indice). (2) **Centrer** les variables avant de créer des puissances ou des interactions. (3) Si l'on tient à garder toutes les variables et que l'objectif est la **prédiction**, la **régularisation** (Ridge, section 1.5) stabilise les coefficients. (4) Si l'objectif est d'**interpréter** un effet précis, il faut accepter qu'on ne peut pas séparer l'effet de deux variables quasi identiques : il est plus honnête de le dire.
 
 ### 1.3.6 Variance non constante : que faire ?
 
@@ -394,7 +401,7 @@ Pour `m_niv`, nous avons vu que le défaut est net. Trois remèdes :
 
 Comparons, pour `m_niv`, les erreurs standard classiques, robustes (HC3), et celles d'un bootstrap des couples (qui ne fait aucune hypothèse sur la variance) :
 
-```python
+```python hide
 m_hc3 = smf.ols("panier_moyen ~ a + C(canal)", data=df).fit(cov_type="HC3")
 Xn, yn = m_niv.model.exog, m_niv.model.endog
 rng = np.random.default_rng(8)
@@ -403,20 +410,20 @@ print(pd.DataFrame({"se classique": m_niv.bse, "se robuste (HC3)": m_hc3.bse, "s
 ```
 <!--sortie-->
 ```text
-                       se classique  se robuste (HC3)  se bootstrap
-Intercept                     1.149             1.306         1.274
-C(canal)[T.Site]              1.518             1.688         1.659
+                     se classique  se robuste (HC3)  se bootstrap
+Intercept                   1.149             1.306         1.274
+C(canal)[T.Site]            1.518             1.688         1.659
 C(canal)[T.Réseaux]         1.478             1.511         1.522
-a                             0.055             0.055         0.055
+a                           0.055             0.055         0.055
 ```
 
-Les erreurs standard robustes sont plus proches du bootstrap que les erreurs classiques pour la constante, le coefficient du Site et celui d'Réseaux : la formule classique **sous-estimait** l'incertitude de ces coefficients (de 12 % environ pour la constante et le Site). Pour le coefficient de l'âge, tout concorde. L'écart n'est pas énorme, mais il va dans le sens qu'annonce la théorie. Dans les modèles où l'hétéroscédasticité est plus forte, il peut être considérable.
+Les erreurs standard robustes sont plus proches du bootstrap que les erreurs classiques pour la constante, le coefficient du Site et celui de Réseaux : la formule classique **sous-estimait** l'incertitude de ces coefficients (de 12 % environ pour la constante et le Site : pour le Site, 1,52 par la formule classique, 1,69 en robuste et 1,66 par bootstrap). Pour le coefficient de l'âge, tout concorde. L'écart n'est pas énorme, mais il va dans le sens qu'annonce la théorie. Dans les modèles où l'hétéroscédasticité est plus forte, il peut être considérable.
 
 ### 1.3.7 Courbure et variables manquantes : lire les graphiques de résidus partiels
 
 Pour déceler une relation **non linéaire** avec une variable précise $x_j$, on trace les **résidus partiels** : $\hat\varepsilon_i+\hat\beta_jx_{ij}$ contre $x_{ij}$. Si la relation est linéaire, le nuage suit la droite de pente $\hat\beta_j$ ; une courbure systématique suggère d'ajouter un terme (carré, logarithme, ou une transformation plus flexible, cf. les GAM de la section 2.5).
 
-```python
+```python hide
 fig, ax = plt.subplots(figsize=(6.6, 4.0))
 partiel = m2.resid + m2.params["a"] * df["a"]
 ax.scatter(df["age"], partiel, s=7, color=GRIS, alpha=0.45)
@@ -439,6 +446,8 @@ figure enregistrée
 Le lissage orange épouse la droite bleue : la linéarité en l'âge est acceptable (ce que le test du terme quadratique, plus haut, confirmait). Notez que le lissage s'écarte un peu aux âges extrêmes, où il y a peu de clients : c'est du bruit d'échantillonnage, pas de la structure.
 
 **Verdict sur `m2`.** Le modèle `log_panier ~ a + C(canal)` passe les contrôles : linéarité plausible, variance constante (Breusch-Pagan non significatif), résidus proches de la normale, aucune observation influente, pas de colinéarité entre ses variables. Les intervalles du 1.2 sont donc fiables. Ce n'est **pas** une preuve que le modèle est « vrai » (des variables importantes peuvent manquer), seulement que ses hypothèses ne sont pas manifestement violées.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.5, exercices 1.6, 1.8 et 1.10.
 
 > ✅ **À retenir (1.3).**
 > - Les résidus d'un bon modèle ne contiennent **aucune structure**. Regardez : résidus contre ajustées (courbure, entonnoir), Q-Q (normalité), échelle-position (variance).

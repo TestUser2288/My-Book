@@ -29,9 +29,20 @@ La loi des grands nombres (volume I, section 2.4) dit que la moyenne empirique c
 | 9 | (0,70 ; 0,10) | 0,50 | oui |
 | 10 | (0,25 ; 0,65) | 0,485 | oui |
 
-Huit fléchettes sur dix sont dedans : $\hat\pi=4\times0{,}8=3{,}2$. Pas très précis, mais l'idée est là. Laissons maintenant l'ordinateur lancer plus de fléchettes :
+Huit fléchettes sur dix sont dedans : $\hat\pi=4\times0{,}8=3{,}2$. Pas très précis, mais l'idée est là. Laissons maintenant l'ordinateur lancer un million de fléchettes. L'estimateur de Monte-Carlo tient en trois lignes :
 
 ```python
+rng = np.random.default_rng(640)
+xy = rng.random((1_000_000, 2))                        # un million de fléchettes dans le carré
+print(4 * ((xy**2).sum(axis=1) < 1).mean())            # 4 fois la proportion dans le quart de disque
+```
+<!--sortie-->
+```text
+3.140556
+```
+Avec un million de fléchettes, on trouve $3{,}1406$ : l'erreur est de l'ordre du millième (le chiffre exact dépend de la graine du générateur).
+
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -62,7 +73,17 @@ dix fléchettes à la main : dedans = 8 -> pi estimé = 3.2
 1000000     3.14366  0.00207               0.00164
 ```
 
-L'estimation s'approche de $\pi$ quand $n$ grandit, **sans jamais être exacte**. Mais à quelle vitesse ? C'est la question suivante.
+En faisant varier le nombre de fléchettes $n$, l'estimation s'approche de $\pi$, **sans jamais être exacte** :
+
+| $n$ | estimation | erreur | écart-type théorique de l'estimateur |
+|---:|---:|---:|---:|
+| 100 | 3,12000 | −0,02159 | 0,16422 |
+| 1 000 | 3,15200 | 0,01041 | 0,05193 |
+| 10 000 | 3,13000 | −0,01159 | 0,01642 |
+| 100 000 | 3,13760 | −0,00399 | 0,00519 |
+| 1 000 000 | 3,14366 | 0,00207 | 0,00164 |
+
+Mais à quelle vitesse l'erreur décroît-elle ? C'est la question suivante.
 
 ### 6.2.2 La vitesse de convergence : $1/\sqrt n$
 
@@ -70,9 +91,16 @@ Chaque terme $g(X_i)$ est une variable aléatoire de variance $\sigma^2=\mathrm{
 $$\mathrm{Var}(\hat\theta_n)=\frac{\sigma^2}{n},\qquad\text{donc}\qquad \text{erreur type}=\frac{\sigma}{\sqrt n}.$$
 Le théorème central limite (volume I, section 2.4) dit en plus que, pour $n$ grand, $\hat\theta_n\approx\mathcal N(\theta,\sigma^2/n)$ : on obtient donc un **intervalle de confiance** de Monte-Carlo, $\hat\theta_n\pm1{,}96\,\hat\sigma/\sqrt n$, où $\hat\sigma$ est l'écart-type empirique des $g(X_i)$. Pour $\pi$, $g=4\cdot\mathbf 1\{\dots\}$ est une variable qui vaut 4 avec la probabilité $p=\pi/4$ et 0 sinon, d'où $\sigma^2=16\,p(1-p)=\pi(4-\pi)$ : c'est la formule utilisée dans le code ci-dessus.
 
-**Conséquence pratique.** Pour **diviser l'erreur par 10**, il faut **100 fois plus de simulations**. Pour gagner une décimale de précision, 100 fois plus de calcul. C'est lent. Vérifions-le par une expérience : pour chaque $n$, on répète 300 fois l'estimation de $\pi$ et on mesure l'écart-type observé des estimations.
+**Conséquence pratique.** Pour **diviser l'erreur par 10**, il faut **100 fois plus de simulations**. Pour gagner une décimale de précision, 100 fois plus de calcul. C'est lent. Vérifions-le par une expérience : pour chaque $n$, on répète 300 fois l'estimation de $\pi$ et on mesure l'écart-type observé des estimations. Résultat :
 
-```python
+| $n$ | écart-type observé | théorie $\sigma/\sqrt n$ |
+|---:|---:|---:|
+| 100 | 0,16832 | 0,16422 |
+| 1 000 | 0,05164 | 0,05193 |
+| 10 000 | 0,01591 | 0,01642 |
+| 100 000 | 0,00503 | 0,00519 |
+
+```python hide
 rng = np.random.default_rng(621)
 tailles = [100, 1_000, 10_000, 100_000]
 reps = 300
@@ -98,9 +126,9 @@ print(f"\npente de log(écart-type) en fonction de log(n) : {pente:.3f}   (théo
 pente de log(écart-type) en fonction de log(n) : -0.508   (théorie : -0.5)
 ```
 
-La pente vaut presque exactement $-1/2$ : doubler le nombre de chiffres décimaux coûte un facteur $10^4$ en simulations.
+La pente de $\log(\text{écart-type})$ en fonction de $\log n$ vaut $-0{,}508$, presque exactement $-1/2$ : doubler le nombre de chiffres décimaux coûte un facteur $10^4$ en simulations.
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -142,9 +170,9 @@ plt.close()
 
 ![À gauche : 1 000 fléchettes dans le carré, bleues si elles tombent dans le quart de disque, orange sinon. À droite : l'écart-type de l'estimateur de π en fonction du nombre de simulations, en échelles logarithmiques ; il suit la droite de pente −1/2.](figures/ch06-monte-carlo-pi.png)
 
-> 💡 **Pourquoi utiliser une méthode si lente ?** En dimension 1, une méthode déterministe (les rectangles du volume I, section 1.2) est bien plus efficace : l'erreur de la règle des trapèzes décroît comme $1/n^2$. Mais la vitesse $1/\sqrt n$ de Monte-Carlo a une propriété extraordinaire : **elle ne dépend pas de la dimension**. Un quadrillage de 10 points par axe demande $10^{d}$ évaluations en dimension $d$ ; Monte-Carlo, lui, garde le même rythme. Illustration : le volume de la boule unité en dimension 10, dont la valeur exacte est $\pi^{5}/5!\approx2{,}5502$.
+> 💡 **Pourquoi utiliser une méthode si lente ?** En dimension 1, une méthode déterministe (les rectangles du volume I, section 1.2) est bien plus efficace : l'erreur de la règle des trapèzes décroît comme $1/n^2$. Mais la vitesse $1/\sqrt n$ de Monte-Carlo a une propriété extraordinaire : **elle ne dépend pas de la dimension**. Un quadrillage de 10 points par axe demande $10^{d}$ évaluations en dimension $d$ ; Monte-Carlo, lui, garde le même rythme. Illustration : le volume de la boule unité en dimension 10, dont la valeur exacte est $\pi^{5}/5!\approx2{,}5502$. On tire un million de points dans le cube $[-1,1]^{10}$ (de volume $2^{10}$) et on compte ceux qui tombent dans la boule : l'estimation vaut $2{,}602\pm0{,}101$ (intervalle à 95 %), compatible avec la valeur exacte. Un quadrillage de 10 points par axe aurait demandé dix milliards d'évaluations.
 
-```python
+```python hide
 from math import gamma, pi
 
 d = 10
@@ -170,7 +198,7 @@ un quadrillage de 10 points par axe aurait demandé 10 000 000 000 évaluations
 
 > ⚠️ **Le revers de la médaille.** Remarquez que seule une fraction minuscule des points tombe dans la boule en dimension 10 (2 541 sur un million, soit 0,25 %) : le cube est « presque vide de boule ». Cette inefficacité s'aggrave avec la dimension. Les sections 6.2.5 (échantillonnage préférentiel) et 6.3 (MCMC) sont les réponses à ce problème : mettre les points **là où ils comptent**.
 
-### 6.2.3 Application : faut-il envoyer l'offre de bienvenue à tout le monde ?
+### 6.2.3 Propager toute l'incertitude jusqu'à une décision
 
 En 6.1.4, nous avons montré que l'offre de bienvenue augmente la probabilité de rachat d'environ 12 points. Mais elle **coûte** quelque chose : la remise accordée. Faut-il l'offrir à tous les futurs clients ?
 
@@ -181,9 +209,9 @@ Posons les hypothèses de l'étude (inventées pour l'exercice, à remplacer par
 
 Le gain net **par client** de la politique « envoyer l'offre » vaut donc
 $$G=(\theta_1-\theta_0)\times m-c,\qquad m=0{,}30\times\text{panier moyen d'un acheteur},\quad c=1{,}50.$$
-Les inconnues sont $\theta_1,\theta_0$ (nous avons leurs lois a posteriori, 6.1.4) et $m$ (nous le « simulons » par rééchantillonnage des paniers observés, c'est un bootstrap). Monte-Carlo permet de propager **toute** l'incertitude jusqu'au résultat, ce qu'aucune formule simple ne ferait :
+Les inconnues sont $\theta_1,\theta_0$ (nous avons leurs lois a posteriori, 6.1.4) et $m$ (nous le « simulons » par rééchantillonnage des paniers observés, c'est un bootstrap). Monte-Carlo permet de propager **toute** l'incertitude jusqu'au résultat, ce qu'aucune formule simple ne ferait. Concrètement, on fabrique 100 000 « scénarios » : dans chacun, on tire $\theta_1$ et $\theta_0$ dans leurs lois a posteriori, une marge moyenne $m$ par rééchantillonnage des paniers, et on calcule $G$. La distribution des $G$ est la réponse. Avec une marge moyenne de 18,37 € par rachat (panier moyen des acheteurs : 61,23 €) :
 
-```python
+```python hide
 clients = pd.read_csv("donnees/clients.csv")
 # Rappel de 6.1.4 : lois a posteriori Beta(1 + succès, 1 + échecs) pour chaque groupe
 resume = clients.groupby("offre_bienvenue")["rachat_12m"].agg(["size", "sum"])
@@ -218,7 +246,7 @@ P(l'offre est rentable)   : 0.964
 pour 5 000 nouveaux clients : gain attendu +3656 € ; dans 95 % des scénarios le gain dépasse +312 €
 ```
 
-C'est le genre de réponse qu'attend vraiment une décisionnaire : pas « l'effet est significatif » mais « *l'offre est très probablement rentable (environ 96 % de chances), le gain attendu est de 0,73 € par client, soit 3 700 € pour 5 000 clients, et dans 95 % des scénarios on gagne au moins 300 €* ». Remarquez que le gain par client reste **modeste** et que l'intervalle à 90 % ([+0,06 ; +1,40] €) s'approche de zéro : l'offre n'est pas une mine d'or, et un coût de 2 € (au lieu de 1,50) la rendrait douteuse. Les chiffres de coût et de marge étant inventés, la bonne pratique est de refaire le calcul pour plusieurs valeurs. Observez aussi que **toutes** les sources d'incertitude (les deux taux, la marge) sont propagées d'un seul mouvement, simplement en les simulant ensemble.
+Le calcul donne un gain net moyen de $+0{,}731$ € par client (intervalle à 90 % : [+0,062 ; +1,400] €), une probabilité de 0,964 que l'offre soit rentable, et, pour 5 000 nouveaux clients, un gain attendu de +3 656 € (dépassant +312 € dans 95 % des scénarios). C'est le genre de réponse qu'attend vraiment une décisionnaire : pas « l'effet est significatif » mais « *l'offre est très probablement rentable (environ 96 % de chances), le gain attendu est de 0,73 € par client, soit 3 700 € pour 5 000 clients, et dans 95 % des scénarios on gagne au moins 300 €* ». Remarquez que le gain par client reste **modeste** et que l'intervalle à 90 % ([+0,06 ; +1,40] €) s'approche de zéro : l'offre n'est pas une mine d'or, et un coût de 2 € (au lieu de 1,50) la rendrait douteuse. Les chiffres de coût et de marge étant inventés, la bonne pratique est de refaire le calcul pour plusieurs valeurs. Observez aussi que **toutes** les sources d'incertitude (les deux taux, la marge) sont propagées d'un seul mouvement, simplement en les simulant ensemble.
 
 > 🧪 **Point de rigueur.** Le calcul suppose que l'effet de l'offre sur le rachat se traduit, pour chaque client qui rachète en plus, par un panier « moyen ». Dans les données simulées, l'offre agit sur la *probabilité* de rachat (c'est vrai par construction) ; une vraie étude vérifierait aussi si les clients « incités » dépensent autant que les autres. Un modèle ne répond qu'à la question qu'on lui a posée.
 
@@ -232,9 +260,9 @@ Jusqu'ici, nous avons utilisé `rng.random`, `stats.beta.rvs`, etc., comme des b
 >
 > *Démonstration.* Pour tout $x$, $P(X\le x)=P(F^{-1}(U)\le x)=P(U\le F(x))=F(x)$, car $F$ est croissante et $P(U\le u)=u$ pour $u\in[0,1]$. $\square$
 
-*Exemple.* Le délai d'attente d'un colis suit une loi exponentielle de moyenne 3 jours, $F(x)=1-e^{-x/3}$. En résolvant $u=1-e^{-x/3}$ : $x=-3\ln(1-u)$. On simule donc des délais avec `-3 * np.log(1 - u)`.
+*Exemple.* Le délai d'attente d'un colis suit une loi exponentielle de moyenne 3 jours, $F(x)=1-e^{-x/3}$. En résolvant $u=1-e^{-x/3}$ : $x=-3\ln(1-u)$. On simule donc des délais avec `-3 * np.log(1 - u)`, où `u` est un tirage uniforme. Avec 100 000 tirages, la moyenne simulée est 3,007 (théorie : 3) et l'écart-type 3,001 (théorie : 3) ; la probabilité simulée d'un délai de 3 jours au plus est 0,6311, contre 0,6321 exactement.
 
-```python
+```python hide
 rng = np.random.default_rng(626)
 u = rng.random(100_000)
 delais = -3 * np.log(1 - u)                       # inversion : F^{-1}(u) pour F(x) = 1 - exp(-x/3)
@@ -262,9 +290,9 @@ L'inversion est parfaite quand on connaît $F^{-1}$ (exponentielle, Weibull, Cau
 >
 > *Démonstration.* La probabilité d'accepter un tirage $X\in dx$ est $g(x)\,dx\cdot\dfrac{f(x)}{Mg(x)}=\dfrac{f(x)}{M}dx$. Sommée sur $x$, elle vaut $\int\dfrac{f}{M}=\dfrac1M$ : c'est la probabilité d'acceptation. La densité de $X$ **sachant qu'il est accepté** est donc $\dfrac{f(x)/M}{1/M}=f(x)$. $\square$
 
-*Exemple.* Simulons la loi a posteriori $\mathrm{Beta}(8,4)$ de 6.1 avec une proposition uniforme sur $[0,1]$ ($g=1$). Il faut $M\ge\max f$ : le maximum de la densité est atteint en $\theta=(8-1)/(8+4-2)=0{,}7$ et vaut environ 2,94.
+*Exemple.* Simulons la loi a posteriori $\mathrm{Beta}(8,4)$ de 6.1 avec une proposition uniforme sur $[0,1]$ ($g=1$). Il faut $M\ge\max f$ : le maximum de la densité est atteint en $\theta=(8-1)/(8+4-2)=0{,}7$ et vaut $M\approx2{,}9351$, d'où une probabilité d'acceptation théorique $1/M=0{,}3407$. Sur 200 000 essais, le taux d'acceptation observé est 0,3428 (68 564 tirages conservés), la moyenne des tirages conservés 0,6665 (exacte : 0,6667) et leur écart-type 0,1305 (exact : 0,1307).
 
-```python
+```python hide
 cible = stats.beta(8, 4)
 M = cible.pdf(0.7)
 print(f"maximum de la densité Beta(8,4) : M = {M:.4f}   -> probabilité d'acceptation théorique 1/M = {1 / M:.4f}")
@@ -296,7 +324,7 @@ L'idée de l'échantillonnage préférentiel : **tirer là où l'événement se 
 $$\int g(x)f(x)dx=\int g(x)\frac{f(x)}{h(x)}h(x)dx=\mathbb E_h\!\left[g(X)\,w(X)\right],\qquad w=\frac fh .$$
 L'estimateur $\hat\theta=\frac1n\sum g(X_i)w(X_i)$ est donc **sans biais** (même démonstration : un changement de variable dans l'intégrale), pourvu que $h>0$ partout où $gf\ne0$. Pour $P(Z>4)$, on choisit $h=\mathcal N(4,1)$ : la moitié des tirages dépasse 4.
 
-```python
+```python hide
 def naif(n, rng):
     return (rng.standard_normal(n) > 4).mean()
 
@@ -327,9 +355,19 @@ L'écart-type de l'estimateur naïf (5,8 $\times10^{-5}$) est plus grand que la 
 
 > ⚠️ **Choisir $h$ avec soin.** Une proposition mal placée peut être aussi mauvaise que la méthode naïve : trop loin de la zone d'intérêt, quelques tirages portent presque tout le poids et l'estimation devient instable. On mesure cette dégénérescence par la **taille d'échantillon effective** (*effective sample size*), calculée sur les contributions $c_i=g(X_i)\,w(X_i)$ :
 > $$\mathrm{ESS}=\frac{\left(\sum_i c_i\right)^2}{\sum_i c_i^{2}},$$
-> qui vaut $n$ si toutes les contributions sont égales et 1 si un seul tirage porte tout. Nous retrouverons cette idée d'ESS en 6.4. Faisons varier le centre $c$ de la proposition $h=\mathcal N(c,1)$ (le cas $c=0$ est la méthode naïve) :
+> qui vaut $n$ si toutes les contributions sont égales et 1 si un seul tirage porte tout. Nous retrouverons cette idée d'ESS en 6.4. Faisons varier le centre $c$ de la proposition $h=\mathcal N(c,1)$ (le cas $c=0$ est la méthode naïve), avec 300 répétitions de 10 000 tirages :
 
-```python
+| centre $c$ | part de tirages $>4$ | ESS moyenne | écart-type de l'estimateur | erreur relative |
+|---:|---:|---:|---:|---:|
+| 0 | 0,0000 | 0,3 | $6{,}16\times10^{-5}$ | 1,946 |
+| 2 | 0,0228 | 187,1 | $2{,}34\times10^{-6}$ | 0,074 |
+| 3 | 0,1584 | 965,9 | $1{,}04\times10^{-6}$ | 0,033 |
+| **4** | 0,4996 | **1 814,0** | $6{,}81\times10^{-7}$ | **0,022** |
+| 5 | 0,8413 | 1 235,0 | $8{,}03\times10^{-7}$ | 0,025 |
+| 6 | 0,9771 | 304,9 | $1{,}68\times10^{-6}$ | 0,053 |
+| 8 | 1,0000 | 3,2 | $3{,}53\times10^{-5}$ | 1,114 |
+
+```python hide
 def ess(v):
     return v.sum()**2 / (v**2).sum() if v.sum() > 0 else 0.0
 
@@ -376,7 +414,14 @@ Il reste sans biais pour tout $c$, et sa variance est minimale pour $c^{*}=\math
 
 On compare les quatre méthodes à budget égal ($n=1\,000$ évaluations de $f$), en répétant 500 fois l'expérience :
 
-```python
+| méthode | moyenne | biais | écart-type | gain de variance |
+|---|---:|---:|---:|---:|
+| naïf | 0,747244 | 0,000420 | 0,006639 | 1 |
+| antithétique | 0,746821 | −0,000003 | 0,001311 | 25,6 |
+| variable de contrôle | 0,746816 | −0,000008 | 0,000942 | 49,7 |
+| stratifié | 0,746838 | 0,000013 | 0,000645 | 105,9 |
+
+```python hide
 f = lambda x: np.exp(-x**2)
 I_exact = 0.7468241328124270                                       # valeur de référence (fonction erreur)
 rng = np.random.default_rng(630)
@@ -424,9 +469,9 @@ Les quatre méthodes sont (à peu près) **sans biais** (la colonne `biais` est 
 
 Le bootstrap du volume I (section 3.3.5) *est* une méthode de Monte-Carlo : au lieu de simuler à partir d'une loi théorique, on simule à partir de la **loi empirique** (on rééchantillonne les données avec remise). Il existe une version « bayésienne » : plutôt que de tirer des entiers (nombre de fois que chaque observation apparaît), on tire des **poids continus** $w\sim\mathrm{Dirichlet}(1,\dots,1)$ et on calcule la statistique pondérée. Les deux donnent des résultats très proches ; le bootstrap bayésien a l'avantage d'une interprétation directe : c'est la loi *a posteriori* d'un modèle sans forme paramétrique, avec un a priori très diffus.
 
-Application : la **médiane** du panier des acheteurs de la boutique (une statistique sans formule d'erreur simple).
+Exemple : la **médiane** du panier des acheteurs acquis par le canal Boutique (une statistique sans formule d'erreur simple). Sur 449 acheteurs, la médiane observée est 67,92 € ; le bootstrap classique donne un intervalle à 95 % de [64,62 ; 70,61] (écart-type 1,56), le bootstrap bayésien [64,66 ; 70,61] (écart-type 1,55), pratiquement le même.
 
-```python
+```python hide
 boutique = clients[(clients["canal_acquisition"] == "Boutique") & (clients["panier_moyen"] > 0)]["panier_moyen"].to_numpy()
 n_b = len(boutique)
 rng = np.random.default_rng(631)
@@ -460,3 +505,5 @@ bootstrap bayésien  : IC95 [64.66 ; 70.61]  (écart-type 1.55)
 > - Les **variables antithétiques, de contrôle et la stratification** réduisent la variance à nombre de tirages égal.
 > - Le **bootstrap** est un Monte-Carlo sur la loi empirique ; sa version bayésienne tire des poids de Dirichlet.
 > - Quand ni l'inversion ni le rejet ne marchent (cas général d'une loi a posteriori), il reste les **chaînes de Markov** : section 6.3.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 6 : application 6.2, exercices 6.5 à 6.7.

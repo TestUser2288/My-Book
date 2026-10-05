@@ -10,10 +10,9 @@ La statistique **bayésienne** répond directement à cette question, en appliqu
 
 - **6.1 Inférence bayésienne et lois a priori** : la formule de Bayes pour un paramètre, des exemples à la main, les lois conjuguées, le choix de l'a priori, la loi prédictive.
 - **6.2 Méthodes de Monte-Carlo** : estimer une espérance ou une probabilité en **simulant**, vitesse de convergence en $1/\sqrt n$, échantillonnage préférentiel, réduction de variance.
-- **6.3 MCMC** : quand on ne sait pas simuler directement, on fabrique une **chaîne de Markov** dont la loi limite est celle qu'on veut. Metropolis-Hastings et Gibbs, écrits en quelques lignes de NumPy.
+- **6.3 MCMC** : quand on ne sait pas simuler directement, on fabrique une **chaîne de Markov** dont la loi limite est celle qu'on veut. Metropolis-Hastings et Gibbs, dont les cœurs tiennent en quelques lignes de NumPy.
 - **6.4 Vérification des modèles bayésiens** : savoir si la chaîne a convergé, si le modèle est plausible, comment comparer deux modèles.
 - ➕ **Pour aller plus loin** : la théorie des **valeurs extrêmes** (6.5) et les **copules** (6.6), qui modélisent les événements rares et la dépendance.
-- **6.7 Exercices corrigés**.
 
 > 🧭 **Comment lire ce chapitre.** Les sections 6.1 et 6.2 sont indépendantes l'une de l'autre et se lisent bien d'un trait. La section 6.3 suppose 6.1 (pour le sens de la loi *a posteriori*) et 6.2 (pour le sens d'« échantillon simulé »). La section 6.4 suppose 6.3. Les sections ➕ 6.5 et 6.6 demandent seulement le chapitre 2 du volume I (et, pour la simulation par inversion, la section 6.2.4) ; elles peuvent être lues à part.
 
@@ -21,4 +20,4 @@ La statistique **bayésienne** répond directement à cette question, en appliqu
 
 > ⚠️ **Honnêteté sur les outils.** Les bibliothèques bayésiennes professionnelles (PyMC, Stan) **ne sont pas installées** dans l'environnement qui a servi à produire ce livre. Leur code est montré dans la section 6.3.7, marqué « non exécuté ». Tous les algorithmes dont nous donnons les résultats sont **écrits à la main en NumPy** : c'est aussi la meilleure façon de comprendre ce que ces bibliothèques font à votre place.
 
-> 🛠️ **Matériel.** Tout le code est en Python (NumPy, SciPy, pandas, matplotlib, statsmodels). Les graines sont fixées : vous retrouverez les mêmes nombres que dans le livre, à de très légères variations près selon les versions des bibliothèques.
+> 📒 **Le code et les exercices.** Dans ce livre, le code n'apparaît que lorsque l'algorithme est le sujet (la marche de Metropolis, l'échantillonneur de Gibbs, le log-posterior). Toutes les simulations, tous les graphiques et tous les chiffres cités sont pourtant produits par du code exécuté, avec des graines fixes. Le **cahier d'exercices et d'applications** (chapitre 6) donne ce code pas à pas, six applications guidées et quatorze exercices corrigés. Les graines sont fixées : vous retrouverez les mêmes nombres, à de très légères variations près selon les versions des bibliothèques.

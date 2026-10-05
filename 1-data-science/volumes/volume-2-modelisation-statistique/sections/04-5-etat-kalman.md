@@ -33,9 +33,11 @@ Le coefficient $K_t$ s'appelle le **gain de Kalman**. Il vaut entre 0 et 1 et ar
 
 ### 4.5.3 Le filtre de Kalman en numpy, et comparaison avec statsmodels
 
-Voici le filtre complet pour le niveau local. Il traite aussi les **observations manquantes** (une valeur `NaN`) : on ne fait alors **que la prédiction**, sans mise à jour, et l'incertitude grandit. À chaque étape, il cumule la **log-vraisemblance** gaussienne des innovations (c'est ce qu'optimisent les logiciels pour estimer les variances).
+Le filtre complet pour le niveau local tient en une vingtaine de lignes (nous le programmons pas à pas dans l'application 4.2 du cahier). Il traite aussi les **observations manquantes** (une valeur `NaN`) : on ne fait alors **que la prédiction**, sans mise à jour, et l'incertitude grandit. À chaque étape, il cumule la **log-vraisemblance** gaussienne des innovations (c'est ce qu'optimisent les logiciels pour estimer les variances).
 
-```python
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.2 (le filtre de Kalman en numpy).
+
+```python hide
 import warnings
 warnings.filterwarnings("ignore")
 import numpy as np
@@ -96,9 +98,9 @@ Le filtre écrit en numpy retrouve les valeurs calculées à la main (101,667 ; 
 
 #### Estimer les variances
 
-Dans la pratique, on ne connaît pas $\sigma_\varepsilon^2$ ni $\sigma_\eta^2$ : on les **estime par maximum de vraisemblance**. Testons sur un niveau local **simulé** de 200 points (variances programmées : 4 et 1) :
+Dans la pratique, on ne connaît pas $\sigma_\varepsilon^2$ ni $\sigma_\eta^2$ : on les **estime par maximum de vraisemblance**. Sur un niveau local **simulé** de 200 points (variances programmées : 4 pour le bruit d'observation et 1 pour le niveau), l'estimation par maximum de vraisemblance donne $3{,}05$ (erreur type $0{,}45$) et $1{,}45$ (erreur type $0{,}38$).
 
-```python
+```python hide
 rng = np.random.default_rng(5)
 n = 200
 niveau = 100 + np.cumsum(rng.normal(0, 1.0, n))               # sigma_eta = 1
@@ -123,9 +125,9 @@ variance du niveau                     1.0   1.453        0.382
 
 Quand le filtre a tourné assez longtemps, le gain $K_t$ **se stabilise** à une valeur $K_\infty$. Calculons-la pour $\sigma_\varepsilon^2=4$ et $\sigma_\eta^2=1$ : en régime permanent, la variance prédite $p=P_{t+1|t}$ vérifie $p=\dfrac{p\,\sigma_\varepsilon^2}{p+\sigma_\varepsilon^2}+\sigma_\eta^2$. En multipliant par $p+4$ : $p(p+4)=4p+(p+4)$, soit $p^2-p-4=0$, d'où $p=\dfrac{1+\sqrt{17}}2\approx2{,}562$ et $K_\infty=\dfrac p{p+4}\approx0{,}390$.
 
-Or, une fois $K$ constant, la mise à jour devient $a_{t|t}=a_{t-1|t-1}+K\,(y_t-a_{t-1|t-1})=K\,y_t+(1-K)\,a_{t-1|t-1}$ : exactement le **lissage exponentiel simple** de paramètre $\alpha=K_\infty$ (la moyenne mobile exponentielle bien connue des prévisionnistes). Le lissage exponentiel est donc le filtre de Kalman d'un niveau local en régime permanent. Vérifions-le numériquement :
+Or, une fois $K$ constant, la mise à jour devient $a_{t|t}=a_{t-1|t-1}+K\,(y_t-a_{t-1|t-1})=K\,y_t+(1-K)\,a_{t-1|t-1}$ : exactement le **lissage exponentiel simple** de paramètre $\alpha=K_\infty$ (la moyenne mobile exponentielle bien connue des prévisionnistes). Le lissage exponentiel est donc le filtre de Kalman d'un niveau local en régime permanent. Une vérification numérique sur la série simulée le confirme.
 
-```python
+```python hide
 r = kalman_niveau_local(y_sim, 4.0, 1.0, a0=100.0, P0=25.0)
 p = (1 + np.sqrt(17)) / 2
 print("gain final du filtre :", round(r["K"][-1], 5), "| théorie p/(p+4) :", round(p / (p + 4), 5))
@@ -149,7 +151,7 @@ Le gain converge vers sa valeur théorique, et le lissage exponentiel avec $\alp
 
 L'intérêt des modèles d'espace d'états est de **mettre bout à bout** des composantes comprises : un niveau, une pente, une saison, des variables explicatives. C'est ce qu'on appelle un **modèle structurel**. Pour nos ventes (en logarithme, 96 mois d'apprentissage), prenons un niveau, une pente, une saison de période 12 et les variables `promo` et `covid`. Pour commencer, laissons la pente évoluer aléatoirement (le « *local linear trend* » classique) :
 
-```python
+```python hide
 v = pd.read_csv("donnees/ventes_mensuelles.csv", parse_dates=["mois"]).set_index("mois")
 v.index.freq = "MS"
 y = np.log(v["ca"])
@@ -170,31 +172,34 @@ beta.promo          0.11356
 beta.covid         -0.54473
 ```
 
-L'estimation donne une **variance de la pente égale à zéro** (`sigma2.trend`) : les données disent que la pente est **constante**. Le modèle se simplifie alors en un niveau qui dérive à vitesse constante plus un bruit de niveau (en langage statsmodels : `level="rwdrift"`, une marche aléatoire avec dérive). Gardons ce modèle, plus simple, avec une saison **déterministe** (profil fixe), et regardons ce qu'il estime et comment il prévoit les 24 mois de test :
+L'estimation donne une **variance de la pente égale à zéro** (`sigma2.trend` $=0{,}0000$ ; les autres variances valent $0{,}0014$ pour le bruit irrégulier et $0{,}0028$ pour le niveau) : les données disent que la pente est **constante**. Le modèle se simplifie alors en un niveau qui dérive à vitesse constante plus un bruit de niveau (en langage statsmodels : `level="rwdrift"`, une marche aléatoire avec dérive). Gardons ce modèle, plus simple, avec une saison **déterministe** (profil fixe) :
 
 ```python
 mod_ss = UnobservedComponents(train, exog=Xtr, level="rwdrift", seasonal=12, stochastic_seasonal=False)
 fit_ss = mod_ss.fit(disp=False, maxiter=300)
 print(pd.Series(fit_ss.params, index=mod_ss.param_names).round(4).to_string())
-
-prev_ss = fit_ss.get_forecast(24, exog=Xte).predicted_mean
-print("\nRMSE (log) sur les 24 mois de test :", round(np.sqrt(np.mean((test - prev_ss) ** 2)), 4),
-      "| biais (y - prévision) :", round(float(np.mean(test - prev_ss)), 4))
-print("pour comparaison (4.3) : modèle B 0,0738 ; naïf avec dérive 0,0849 ; modèle A 0,0997 ; modèle C 0,1008")
 ```
 <!--sortie-->
 ```text
 sigma2.level    0.0054
 beta.promo      0.1090
 beta.covid     -0.5263
-
-RMSE (log) sur les 24 mois de test : 0.0819 | biais (y - prévision) : -0.0364
-pour comparaison (4.3) : modèle B 0,0738 ; naïf avec dérive 0,0849 ; modèle A 0,0997 ; modèle C 0,1008
 ```
 
-Le modèle structurel a une erreur de test d'environ 0,082, entre celle du modèle B (0,074) et celle des modèles A et C (environ 0,10). Il estime que l'effet de la promotion vaut environ $+0{,}11$ et celui du COVID environ $-0{,}53$, des valeurs voisines de celles de 4.2. Voyons les composantes que l'on peut **lire** dans ce modèle : le niveau lissé (la « vraie » tendance, débarrassée de la saison et du bruit) et le profil saisonnier.
+```python hide
+prev_ss = fit_ss.get_forecast(24, exog=Xte).predicted_mean
+print("\nRMSE (log) sur les 24 mois de test :", round(np.sqrt(np.mean((test - prev_ss) ** 2)), 4),
+      "| biais (y - prévision) :", round(float(np.mean(test - prev_ss)), 4))
+```
+<!--sortie-->
+```text
 
-```python
+RMSE (log) sur les 24 mois de test : 0.0819 | biais (y - prévision) : -0.0364
+```
+
+Les variances et les effets estimés sont ci-dessus ; sur les 24 mois de test, le modèle structurel a une erreur (RMSE en logarithme) de $0{,}082$ et un biais de $-0{,}036$ : cette erreur se situe entre celle du modèle B (0,074) et celle des modèles A et C (environ 0,10). Il estime que l'effet de la promotion vaut environ $+0{,}11$ et celui du COVID environ $-0{,}53$, des valeurs voisines de celles de 4.2. Voyons les composantes que l'on peut **lire** dans ce modèle : le niveau lissé (la « vraie » tendance, débarrassée de la saison et du bruit) et le profil saisonnier.
+
+```python hide
 noms = mod_ss.state_names                                                         # noms des composantes de l'état caché
 niveau_lisse = pd.Series(fit_ss.smoothed_state[noms.index("level")], index=train.index)         # composante de niveau
 saison_lisse = pd.Series(fit_ss.smoothed_state[noms.index("seasonal")], index=train.index)       # composante saisonnière à la date t
@@ -225,11 +230,13 @@ composantes de l'état : ['level', 'trend', 'seasonal', 'seasonal.L1'] ...
 
 ![À gauche : le logarithme du chiffre d'affaires (gris) et le niveau lissé par le filtre de Kalman (violet) qui en retire la saison et le bruit. À droite : le profil saisonnier estimé, avec le pic de décembre et le creux de janvier.](figures/ch04-structurel.png)
 
+Le profil saisonnier estimé donne $+59\ \%$ en décembre et $-38\ \%$ en janvier par rapport au niveau.
+
 ### 4.5.6 Combler un trou : les données manquantes
 
-Un atout décisif du filtre de Kalman est de traiter les **observations manquantes** sans bricolage : à une date sans mesure, il ne fait que prédire (l'incertitude grandit), et le **lissage** (qui utilise aussi l'avenir) reconstitue la valeur manquante avec son intervalle d'incertitude. Un cas réaliste : les registres de la gérante ont perdu les ventes de **mars à août 2022**. Nous effaçons ces six mois de la série d'apprentissage (nous connaissons les vraies valeurs, ce qui permet de vérifier), ajustons le modèle sur ce qui reste, puis **reconstituons** les mois manquants.
+Un atout décisif du filtre de Kalman est de traiter les **observations manquantes** sans bricolage : à une date sans mesure, il ne fait que prédire (l'incertitude grandit), et le **lissage** (qui utilise aussi l'avenir) reconstitue la valeur manquante avec son intervalle d'incertitude. Un cas réaliste : les registres de la gérante ont perdu les ventes de **mars à août 2022**. Nous effaçons ces six mois de la série d'apprentissage (nous connaissons les vraies valeurs, ce qui permet de vérifier), ajustons le modèle sur ce qui reste, puis **reconstituons** les mois manquants. Résultats (en logarithme du chiffre d'affaires), avec l'intervalle d'incertitude de Kalman et, pour comparer, deux méthodes sans modèle (interpolation linéaire, et « même mois l'an dernier » corrigé de la croissance annuelle) :
 
-```python
+```python hide-code
 trou = train["2022-03":"2022-08"].index
 vraies = train[trou].copy()
 train_trou = train.copy()
@@ -269,6 +276,8 @@ mois réels dans l'intervalle à 95 % de Kalman : 6 sur 6
 ```
 
 Le filtre reconstitue les six mois avec une erreur quadratique moyenne de 0,09 en logarithme (soit 9 %) et les six vraies valeurs tombent dans son intervalle à 95 %, plus large au milieu du trou (là où l'on est le plus loin des mesures). C'est bien mieux que l'**interpolation linéaire** (0,38), qui ignore la saison et lisse une bosse qui existe réellement. La comparaison avec la méthode « l'an dernier corrigé de la croissance » (0,10) est plus serrée : elle utilise déjà la saison, mais pas l'information des mois qui entourent le trou. Les écarts du filtre ne sont pas nuls : la plus grosse erreur, en mai, est d'environ 0,16.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : exercice 4.10.
 
 > ✅ **À retenir.**
 > - Un **modèle d'espace d'états** distingue un **état caché** (niveau, pente, saison…) qui évolue, et des **observations bruitées**. Les ARIMA en sont un cas particulier.

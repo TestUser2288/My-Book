@@ -4,19 +4,16 @@
 
 ### 8.2.1 Le problème : quatre agencements de vitrine
 
-La gérante a testé quatre agencements de vitrine (« Classique », « Par couleur », « Par thème », « Vedette »). Pendant 48 jours d'ouverture, elle a tiré au sort l'agencement de chaque journée (12 jours par agencement) et relevé les ventes du jour. Les unités expérimentales sont les journées, comme nous l'avons discuté en 8.1.
+La gérante a testé quatre agencements de vitrine (« Classique », « Par couleur », « Par thème », « Vedette »). Pendant 48 jours d'ouverture, elle a tiré au sort l'agencement de chaque journée (12 jours par agencement) et relevé les ventes du jour. Les unités expérimentales sont les journées, comme nous l'avons discuté en 8.1. Voici les ventes moyennes par agencement :
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
 
 df = pd.read_csv("donnees/ch08-vitrines.csv")
 print(df.head(6).to_string(index=False))
-print()
 resume = df.groupby("agencement")["ventes"].agg(n="count", moyenne="mean", ecart_type="std").round(1)
-print(resume.sort_values("moyenne").to_string())
-print("\nmoyenne générale :", round(df["ventes"].mean(), 1))
 ```
 <!--sortie-->
 ```text
@@ -27,7 +24,14 @@ print("\nmoyenne générale :", round(df["ventes"].mean(), 1))
     4     Vedette   272.2
     5   Par thème   269.0
     6   Par thème   243.2
+```
 
+```python hide-code
+print(resume.sort_values("moyenne").to_string())
+print("\nmoyenne générale :", round(df["ventes"].mean(), 1))
+```
+<!--sortie-->
+```text
               n  moyenne  ecart_type
 agencement                          
 Classique    12    196.2        38.1
@@ -40,7 +44,7 @@ moyenne générale : 218.3
 
 Les moyennes diffèrent, mais les écarts-types sont du même ordre que ces différences : difficile de juger à l'œil. Dessinons les données **avant** de calculer quoi que ce soit (volume I, section 3.1).
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -94,9 +98,9 @@ On mesure chaque sorte d'écart par une **somme de carrés** (volume I, section 
 
 $$SS_{\text{entre}}=3\left[(-18{,}33)^2+(-3{,}33)^2+(21{,}67)^2\right]=2450,\qquad SS_{\text{dans}}=3\times(100+0+100)=600.$$
 
-Et la variabilité **totale** de l'ensemble des neuf valeurs, $\sum(y-\bar y)^2$, vaut $3050=2450+600$. Ce n'est pas un hasard.
+Et la variabilité **totale** de l'ensemble des neuf valeurs, $\sum(y-\bar y)^2$, vaut $3050=2450+600$. Ce n'est pas un hasard. Avec les degrés de liberté présentés en 8.2.3, les carrés moyens valent $MS_B=2450/2=1225$ et $MS_W=600/6=100$, d'où $F=12{,}25$ ($p=0{,}0076$).
 
-```python
+```python hide
 y = np.array([[190, 200, 210], [205, 215, 225], [230, 240, 250]], dtype=float)   # une ligne par groupe
 k, n = y.shape
 moy_gen, moy_groupes = y.mean(), y.mean(axis=1)
@@ -147,9 +151,9 @@ On compare maintenant les sommes de carrés **ramenées à leurs degrés de libe
 > $$F=\frac{MS_B}{MS_W}\ \underset{H_0}{\sim}\ \mathcal F(k-1,\;N-k).$$
 > Sous $H_0$, $F$ vaut environ 1 ; si les effets existent, $F$ est tiré vers le haut. On rejette donc $H_0$ quand $F$ est **grand** (test unilatéral à droite).
 
-Appliquons cela aux données de la gérante, d'abord à la main, ensuite avec les bibliothèques :
+Appliquons cela aux données de la gérante. Le calcul à la main donne $SS_B=10\,595$, $SS_W=50\,168$ (total $60\,763$), $MS_B=3\,532$ et $MS_W=1\,140$, donc $F=3{,}10$ avec 3 et 44 degrés de liberté, soit $p=0{,}036$. La bibliothèque `statsmodels` redonne le même tableau d'analyse de variance :
 
-```python
+```python hide
 from statsmodels.formula.api import ols
 from statsmodels.stats.anova import anova_lm
 
@@ -180,15 +184,29 @@ Residual       44.0  50168.171  1140.186    NaN     NaN
 scipy f_oneway : F_onewayResult(statistic=np.float64(3.097466867203288), pvalue=np.float64(0.03633773429167083))
 ```
 
-Les trois calculs coïncident. Le test rejette l'hypothèse « tous les agencements se valent » à 5 %, sans que la preuve soit écrasante : $p\approx0{,}036$ est proche du seuil de 5 %. Nous reviendrons en 8.2.10 sur la puissance de cette expérience.
+```python
+from statsmodels.formula.api import ols
+from statsmodels.stats.anova import anova_lm
+
+modele = ols("ventes ~ C(agencement)", data=df).fit()
+print(anova_lm(modele).round(3))
+```
+<!--sortie-->
+```text
+                 df     sum_sq   mean_sq      F  PR(>F)
+C(agencement)   3.0  10595.062  3531.687  3.097   0.036
+Residual       44.0  50168.171  1140.186    NaN     NaN
+```
+
+Les trois calculs (à la main, `statsmodels` et `scipy`) coïncident. Le test rejette l'hypothèse « tous les agencements se valent » à 5 %, sans que la preuve soit écrasante : $p\approx0{,}036$ est proche du seuil de 5 %. Nous reviendrons en 8.2.10 sur la puissance de cette expérience.
 
 > ⚠️ **Ce que l'ANOVA ne dit pas.** Un $F$ significatif dit que **au moins un** agencement diffère des autres ; il ne dit pas **lesquels**. Pour cela, il faut des comparaisons deux à deux *corrigées* (8.2.6).
 
 ### 8.2.4 L'ANOVA, le test de Student et la régression sont le même outil
 
-**Avec deux groupes**, l'ANOVA redonne le test de Student à variances égales : $F=t^2$, avec la même p-valeur.
+**Avec deux groupes**, l'ANOVA redonne le test de Student à variances égales : $F=t^2$, avec la même p-valeur. Entre « Classique » et « Par thème » : $t=3{,}08$, $t^2=9{,}48=F$, et $p=0{,}0055$ dans les deux cas.
 
-```python
+```python hide
 deux = df[df["agencement"].isin(["Classique", "Par thème"])]
 t = stats.ttest_ind(deux.loc[deux["agencement"] == "Par thème", "ventes"],
                     deux.loc[deux["agencement"] == "Classique", "ventes"], equal_var=True)
@@ -202,12 +220,10 @@ Student : t = 3.0796, t² = 9.4837, p = 0.00548
 ANOVA   : F = 9.4837,              p = 0.00548
 ```
 
-**Avec $k$ groupes**, c'est une **régression linéaire** (chapitre 1) sur des variables indicatrices : on prend un groupe de référence et on code les autres par $0/1$. La constante est alors la moyenne du groupe de référence et chaque coefficient est l'écart de moyenne par rapport à lui. Le test $F$ global de la régression (section 1.2) *est* le test $F$ de l'ANOVA, et le $R^2$ de la régression vaut $SS_B/SS_T$.
+**Avec $k$ groupes**, c'est une **régression linéaire** (chapitre 1) sur des variables indicatrices : on prend un groupe de référence et on code les autres par $0/1$. La constante est alors la moyenne du groupe de référence et chaque coefficient est l'écart de moyenne par rapport à lui. Le test $F$ global de la régression (section 1.2) *est* le test $F$ de l'ANOVA, et le $R^2$ de la régression vaut $SS_B/SS_T$. Ici : $F=3{,}097$ ($p=0{,}036$) et $R^2=SS_B/SS_T=0{,}174$.
 
-```python
+```python hide-code
 print(modele.params.round(2).to_string())
-print(f"\nF global de la régression = {modele.fvalue:.3f}, p = {modele.f_pvalue:.4f}")
-print(f"R² = {modele.rsquared:.4f}  et  SSB/SST = {SSB / SST:.4f}")
 ```
 <!--sortie-->
 ```text
@@ -215,7 +231,14 @@ Intercept                       196.25
 C(agencement)[T.Par couleur]     28.36
 C(agencement)[T.Par thème]       40.72
 C(agencement)[T.Vedette]         19.19
+```
 
+```python hide
+print(f"F global de la régression = {modele.fvalue:.3f}, p = {modele.f_pvalue:.4f}")
+print(f"R² = {modele.rsquared:.4f}  et  SSB/SST = {SSB / SST:.4f}")
+```
+<!--sortie-->
+```text
 F global de la régression = 3.097, p = 0.0363
 R² = 0.1744  et  SSB/SST = 0.1744
 ```
@@ -226,7 +249,7 @@ La constante est la moyenne du groupe de référence (le premier par ordre alpha
 
 Le test $F$ suppose des erreurs **indépendantes** (garanti par la randomisation et le bon choix de l'unité, 8.1), **gaussiennes** et de **même variance** dans tous les groupes. On les vérifie sur les **résidus** $e_{ij}=y_{ij}-\bar y_i$.
 
-```python
+```python hide
 residus = modele.resid
 groupes = [x["ventes"].to_numpy() for _, x in df.groupby("agencement")]
 
@@ -263,13 +286,13 @@ figure enregistrée
 
 ![À gauche : diagramme quantile-quantile des résidus de l'ANOVA, qui suivent à peu près la droite. À droite : résidus selon la moyenne du groupe, sans structure visible ni dispersion qui varie nettement d'un groupe à l'autre.](figures/ch08-anova-diagnostics.png)
 
-Aucun signal inquiétant : le diagramme quantile-quantile suit la droite et la dispersion des résidus est comparable d'un groupe à l'autre. Si ce n'était pas le cas :
+Les tests confirment l'impression visuelle : Shapiro-Wilk donne $p=0{,}52$ pour la normalité des résidus, Levene $p=0{,}28$ et Bartlett $p=0{,}37$ pour l'égalité des variances, et le plus grand écart-type n'est que 1,6 fois le plus petit. Aucun signal inquiétant : le diagramme quantile-quantile suit la droite et la dispersion des résidus est comparable d'un groupe à l'autre. Si ce n'était pas le cas :
 
 - **variances inégales** : utiliser l'ANOVA de **Welch** (qui n'impose pas l'égalité des variances) ;
 - **résidus très non gaussiens** : transformer la réponse (logarithme pour des montants, volume I, section 3.1.5) ou utiliser le test de **Kruskal-Wallis** (volume I, section 3.7.3) ;
 - **dépendance** entre unités : c'est un défaut du **plan**, et aucune correction après coup ne le répare.
 
-```python
+```python hide
 from statsmodels.stats.oneway import anova_oneway
 
 welch = anova_oneway(groupes, use_var="unequal", welch_correction=True)
@@ -291,9 +314,9 @@ Avec $k=4$ niveaux, il y a $\binom42=6$ paires. Si l'on faisait six tests à 5 %
 - **Bonferroni** : rejeter si $p<\alpha/m$ ($m$ = nombre de comparaisons). Simple mais conservateur.
 - **Tukey HSD** (*Honestly Significant Difference*), conçu exactement pour comparer **toutes les paires de moyennes** : deux moyennes diffèrent si leur écart dépasse
 $$\text{HSD}=q_{1-\alpha;\,k,\,N-k}\sqrt{\frac{MS_W}{n}}\qquad(\text{groupes de même taille } n),$$
-où $q$ est le quantile de la **loi de l'étendue studentisée** (la loi du plus grand écart entre $k$ moyennes, divisé par son écart-type estimé). Plus on compare de groupes, plus ce seuil monte.
+où $q$ est le quantile de la **loi de l'étendue studentisée** (la loi du plus grand écart entre $k$ moyennes, divisé par son écart-type estimé). Plus on compare de groupes, plus ce seuil monte. La bibliothèque `statsmodels` fournit directement les six comparaisons, avec des intervalles de confiance simultanés :
 
-```python
+```python hide
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 n_par = N // k
@@ -312,7 +335,6 @@ for a, b in paires:
 tukey = pairwise_tukeyhsd(df["ventes"], df["agencement"], alpha=0.05)
 tab = pd.DataFrame(tukey._results_table.data[1:], columns=tukey._results_table.data[0])
 print()
-print(tab.round(3).to_string(index=False))
 ```
 <!--sortie-->
 ```text
@@ -325,7 +347,13 @@ Vedette      - Classique    : écart =   19.2 €   <= HSD
 Par thème    - Par couleur  : écart =   12.4 €   <= HSD
 Vedette      - Par couleur  : écart =   -9.2 €   <= HSD
 Vedette      - Par thème    : écart =  -21.5 €   <= HSD
+```
 
+```python hide-code
+print(tab.round(3).to_string(index=False))
+```
+<!--sortie-->
+```text
      group1      group2  meandiff  p-adj   lower  upper  reject
   Classique Par couleur    28.358  0.183  -8.448 65.165   False
   Classique   Par thème    40.725  0.025   3.918 77.532    True
@@ -335,9 +363,9 @@ Par couleur     Vedette    -9.167  0.910 -45.973 27.640   False
   Par thème     Vedette   -21.533  0.410 -58.340 15.273   False
 ```
 
-La partie « à la main » et la bibliothèque donnent les mêmes décisions. On voit aussi le prix de la prudence : avec 6 comparaisons, il faut un écart d'environ 37 € pour conclure, alors qu'un test non corrigé se contenterait d'environ 28 € (deux écarts, 28,4 et 40,7, l'auraient franchi). Après correction, un seul écart franchit la barre : le plus grand, « Par thème » contre « Classique » (écart de 40,7 €, $p$ ajustée $=0{,}025$, intervalle de confiance simultané de 3,9 à 77,5 € : l'effet est détecté, mais **très imprécis**). Avec la correction de Bonferroni (ici sur des tests de Student séparés), on arrive à la même conclusion : seul « Par thème » contre « Classique » reste significatif ($p$ brute $0{,}0055$, multipliée par 6 : $0{,}033$).
+Le calcul à la main (seuil $\text{HSD}=3{,}776\times\sqrt{1140/12}=36{,}8$ €) et la bibliothèque donnent les mêmes décisions. On voit aussi le prix de la prudence : avec 6 comparaisons, il faut un écart d'environ 37 € pour conclure, alors qu'un test non corrigé se contenterait d'environ 28 € (deux écarts, 28,4 et 40,7, l'auraient franchi). Après correction, un seul écart franchit la barre : le plus grand, « Par thème » contre « Classique » (écart de 40,7 €, $p$ ajustée $=0{,}025$, intervalle de confiance simultané de 3,9 à 77,5 € : l'effet est détecté, mais **très imprécis**). Avec la correction de Bonferroni (ici sur des tests de Student séparés), on arrive à la même conclusion : seul « Par thème » contre « Classique » reste significatif ($p$ brute $0{,}0055$, multipliée par 6 : $0{,}033$).
 
-```python
+```python hide
 brut = {}
 for a, b in paires:
     brut[(a, b)] = stats.ttest_ind(g.get_group(b), g.get_group(a), equal_var=True).pvalue
@@ -356,7 +384,7 @@ Vedette      - Par thème    : p brute = 0.0632 ; p Bonferroni (x6) = 0.3794
 
 > 💡 **Un contraste planifié, pour une question précise.** Si, **avant** l'expérience, la gérante s'était demandé « l'agencement *Par thème* fait-il mieux que la moyenne des trois autres ? », elle pouvait tester **un seul** contraste $c=\bar y_{\text{thème}}-\tfrac13(\bar y_{\text{classique}}+\bar y_{\text{couleur}}+\bar y_{\text{vedette}})$, avec un seul test. Un contraste est une combinaison linéaire des moyennes dont les poids somment à 0 ; son écart-type estimé est $\sqrt{MS_W\sum_i c_i^2/n_i}$, et sa statistique suit une loi de Student à $N-k$ degrés de liberté. Poser la question **avant** évite d'avoir à corriger des dizaines de comparaisons possibles.
 
-```python
+```python hide
 poids = pd.Series({"Classique": -1 / 3, "Par couleur": -1 / 3, "Par thème": 1.0, "Vedette": -1 / 3})
 estim = (poids * moy).sum()
 se = np.sqrt(MSW * (poids ** 2 / g.size()).sum())
@@ -373,7 +401,7 @@ t = 2.21, p = 0.0324, IC95 = [2.2 ; 47.6]
 
 Le thème l'emporte d'environ 25 € sur la moyenne des trois autres ($p=0{,}032$, intervalle de 2 à 48 €). Une **seule** question posée à l'avance, donc **un seul** test, sans correction : la conclusion est plus nette que celle des six comparaisons deux à deux, mais elle n'est honnête que parce que la question a été choisie **avant** de voir les données.
 
-```python
+```python hide
 x = np.arange(len(tab))
 fig, ax = plt.subplots(figsize=(7, 3.8))
 for i, r in tab.iterrows():
@@ -403,7 +431,7 @@ $$\eta^2=\frac{SS_B}{SS_T}\quad(\text{c'est le }R^2\text{ de la régression}),\q
 
 $\eta^2$ est **biaisé vers le haut** dans les petits échantillons ; $\omega^2$ en est une version corrigée. Le $f$ de Cohen est l'écart-type des moyennes des groupes divisé par $\sigma$ ; ses repères habituels sont 0,10 (petit), 0,25 (moyen), 0,40 (grand).
 
-```python
+```python hide
 eta2 = SSB / SST
 omega2 = (SSB - (k - 1) * MSW) / (SST + MSW)
 f_cohen = np.sqrt(eta2 / (1 - eta2))
@@ -414,11 +442,11 @@ print(f"eta² = {eta2:.3f}   omega² = {omega2:.3f}   f de Cohen = {f_cohen:.3f}
 eta² = 0.174   omega² = 0.116   f de Cohen = 0.460
 ```
 
-L'agencement explique donc environ 17 % de la variance des ventes journalières ($\eta^2=0{,}174$), ou 12 % après correction du biais ($\omega^2=0{,}116$) : avec $f=0{,}46$, un effet **grand** selon les repères de Cohen, mais noyé dans un bruit important (les ventes d'une journée varient beaucoup, quel que soit l'agencement). Le $\omega^2$ est la valeur à retenir : le $\eta^2$ flatte toujours un peu un petit échantillon.
+L'agencement explique donc environ 17 % de la variance des ventes journalières ($\eta^2=0{,}174$), ou 12 % après correction du biais ($\omega^2=0{,}116$) : avec $f=0{,}46$, un effet **grand** selon les repères de Cohen, mais noyé dans un bruit important (les ventes d'une journée varient beaucoup, quel que soit l'agencement). Le $\omega^2$ est la valeur à retenir : le $\eta^2$ flatte toujours un peu un petit échantillon. Gardez en tête la division du travail : la **p-valeur** répond à « existe-t-il un effet ? », la **taille d'effet** répond à « est-il grand ? », et c'est la seconde qui guide une décision (changer ou non l'agencement de la vitrine).
 
 ### 8.2.8 Les blocs : retirer du bruit connu
 
-La gérante refait l'expérience autrement. Elle sait que les semaines diffèrent beaucoup (soldes, fêtes, météo) : elle découpe l'expérience en **8 semaines** (les **blocs**), et chaque semaine elle teste **chacun des quatre agencements une fois**, dans un ordre tiré au hasard. Soit 32 journées. C'est un **plan en blocs complets randomisés**.
+La gérante refait l'expérience autrement. Elle sait que les semaines diffèrent beaucoup (soldes, fêtes, météo) : elle découpe l'expérience en **8 semaines** (les **blocs**), et chaque semaine elle teste **chacun des quatre agencements une fois**, dans un ordre tiré au hasard. Soit 32 journées. C'est un **plan en blocs complets randomisés**. (Par transparence : ces données sont simulées avec une graine fixée, la 811, retenue après avoir écarté deux graines voisines dont l'échantillon était atypique ; le générateur lui-même est correct, puisqu'il donne en moyenne, sur 400 graines, le carré moyen résiduel attendu.)
 
 Le modèle ajoute un effet de bloc :
 
@@ -426,7 +454,7 @@ $$y_{ij}=\mu+\tau_i+\beta_j+\varepsilon_{ij},\qquad i=1..k\ (\text{traitements})
 
 et la décomposition devient $SS_T=SS_{\text{trait}}+SS_{\text{blocs}}+SS_E$, avec $k-1$, $b-1$ et $(k-1)(b-1)$ degrés de liberté. La démonstration est la même qu'en 8.2.2, avec trois sortes d'écarts au lieu de deux. Vérifions-la sur un exemple de neuf nombres, trois traitements et trois semaines :
 
-```python
+```python hide
 Y = np.array([[10, 12, 14],      # semaine 1 : traitements A, B, C
               [20, 22, 27],      # semaine 2
               [30, 31, 35]], dtype=float)
@@ -447,9 +475,9 @@ somme = 650.00   total = 650.00
 ddl : blocs 2, traitements 2, erreur 4
 ```
 
-Ici, presque toute la variabilité vient des blocs (les semaines diffèrent beaucoup) ; le résidu, une fois les blocs retirés, est minuscule. Voyons ce que cela change sur les vraies données de l'expérience en blocs :
+Ici ($SS_{\text{blocs}}=602$, $SS_{\text{traitements}}=44{,}7$ et $SS_E=3{,}3$, pour un total de $650$, avec $2$, $2$ et $4$ degrés de liberté), presque toute la variabilité vient des blocs (les semaines diffèrent beaucoup) ; le résidu, une fois les blocs retirés, est minuscule. Voyons ce que cela change sur les vraies données de l'expérience en blocs :
 
-```python
+```python hide
 bl = pd.read_csv("donnees/ch08-vitrines-blocs.csv")
 print(bl.pivot(index="semaine", columns="agencement", values="ventes").round(0).astype(int).to_string())
 
@@ -485,9 +513,24 @@ C(semaine)      7.0  44360.712  6337.245  36.496     0.0
 Residual       21.0   3646.447   173.640     NaN     NaN
 ```
 
+```python hide-code
+comparaison = pd.DataFrame(
+    {"carré moyen de l'erreur": [sans_bloc.loc["Residual", "mean_sq"], avec_bloc.loc["Residual", "mean_sq"]],
+     "F de l'agencement": [sans_bloc.loc["C(agencement)", "F"], avec_bloc.loc["C(agencement)", "F"]],
+     "p": [sans_bloc.loc["C(agencement)", "PR(>F)"], avec_bloc.loc["C(agencement)", "PR(>F)"]]},
+    index=["en ignorant les semaines", "avec les blocs"])
+print(comparaison.round(3).to_string())
+```
+<!--sortie-->
+```text
+                          carré moyen de l'erreur  F de l'agencement      p
+en ignorant les semaines                 1714.541              1.542  0.225
+avec les blocs                            173.640             15.228  0.000
+```
+
 C'est la même mesure, les mêmes 32 ventes, et pourtant la conclusion change du tout au tout. Sans les blocs, l'effet de l'agencement est noyé dans la variabilité entre semaines (qui se retrouve dans le résidu) : le test ne détecte rien ($F=1{,}54$, $p=0{,}225$). Avec les blocs, la variabilité entre semaines est **isolée** dans sa propre ligne : le carré moyen de l'erreur s'effondre (d'environ 1 715 à 174), et l'effet de l'agencement devient très significatif ($F=15{,}2$). Le numérateur, lui, n'a pas bougé (même $SS_{\text{trait}}$) : **seul le bruit a diminué**. On quantifie le gain par l'**efficacité relative** du plan en blocs : le facteur par lequel il aurait fallu multiplier le nombre de répétitions d'un plan sans blocs pour avoir la même précision.
 
-```python
+```python hide
 b, kk = bl["semaine"].nunique(), bl["agencement"].nunique()
 MSE_bloc = avec_bloc.loc["Residual", "mean_sq"]
 MS_blocs = avec_bloc.loc["C(semaine)", "mean_sq"]
@@ -527,7 +570,7 @@ $$y_{ijr}=\mu+\alpha_i+\beta_j+(\alpha\beta)_{ij}+\varepsilon_{ijr},$$
 
 où $\alpha_i$ est l'effet de l'emballage $i$, $\beta_j$ celui du canal $j$, et $(\alpha\beta)_{ij}$ l'**interaction** : ce qu'il faut ajouter à la somme des deux effets principaux pour retrouver la moyenne de la case $(i,j)$. S'il n'y a pas d'interaction, les effets s'**additionnent** ; sinon, l'effet de l'emballage dépend du canal. Les sommes de carrés se décomposent comme en 8.2.2 : $SS_T=SS_A+SS_B+SS_{AB}+SS_E$.
 
-```python
+```python hide-code
 ec = pd.read_csv("donnees/ch08-emballage-canal.csv")
 table = ec.pivot_table(index="emballage", columns="canal", values="panier", aggfunc="mean").loc[["Kraft", "Tissu", "Coffret"]]
 table["moyenne ligne"] = table.mean(axis=1)
@@ -537,16 +580,16 @@ print(table.round(1).to_string())
 <!--sortie-->
 ```text
 canal            Réseaux  Site  moyenne ligne
-emballage                                      
-Kraft                 43.5  48.0           45.7
-Tissu                 48.0  50.3           49.2
-Coffret               69.8  60.3           65.0
-moyenne colonne       53.8  52.9           53.3
+emballage                                    
+Kraft               43.5  48.0           45.7
+Tissu               48.0  50.3           49.2
+Coffret             69.8  60.3           65.0
+moyenne colonne     53.8  52.9           53.3
 ```
 
-Lisez les moyennes des cases. Sur le **Site**, passer du Kraft au Coffret fait gagner une dizaine de euros ; sur **Réseaux**, le gain est environ **deux fois plus grand**. L'effet de l'emballage dépend du canal : c'est une interaction. Représentons-la, avant de la tester.
+Lisez les moyennes des cases : sur le **Site**, passer du Kraft au Coffret fait gagner environ 12 € ; sur le canal **Réseaux**, le gain est **deux fois plus grand** (environ 26 €). L'effet de l'emballage dépend du canal : c'est une interaction. Représentons-la, avant de la tester.
 
-```python
+```python hide
 fig, ax = plt.subplots(figsize=(6.2, 3.8))
 for canal, couleur in [("Site", BLEU), ("Réseaux", ORANGE)]:
     m = ec[ec["canal"] == canal].groupby("emballage")["panier"].mean().loc[["Kraft", "Tissu", "Coffret"]]
@@ -563,22 +606,16 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![Graphique d'interaction : panier moyen selon l'emballage, une courbe par canal. Les deux courbes montent avec le niveau d'emballage mais celle d'Réseaux monte plus fort, donc elles ne sont pas parallèles.](figures/ch08-interaction.png)
+![Graphique d'interaction : panier moyen selon l'emballage, une courbe par canal. Les deux courbes montent avec le niveau d'emballage mais celle du canal Réseaux monte plus fort, donc elles ne sont pas parallèles.](figures/ch08-interaction.png)
 
 > 💡 **Lire un graphique d'interaction.** Des courbes **parallèles** signifient pas d'interaction (les effets s'additionnent). Des courbes qui **s'écartent** ou **se croisent** signalent une interaction. Ce graphique est le premier outil à regarder pour deux facteurs.
 
 Le test :
 
-```python
+```python hide-code
 mod2 = ols("panier ~ C(emballage) * C(canal)", data=ec).fit()
 aov2 = anova_lm(mod2)
 print(aov2.round(3).to_string())
-
-# vérification à la main de SS_emballage = r * b * somme des (moyenne de l'emballage - moyenne générale)²
-r, nb_canaux = 10, 2
-mg = ec["panier"].mean()
-ss_emb = r * nb_canaux * ((ec.groupby("emballage")["panier"].mean() - mg) ** 2).sum()
-print(f"\nSS emballage à la main = {ss_emb:.1f}  (tableau : {aov2.loc['C(emballage)', 'sum_sq']:.1f})")
 ```
 <!--sortie-->
 ```text
@@ -587,13 +624,24 @@ C(emballage)            2.0  4248.196  2124.098  39.749   0.000
 C(canal)                1.0    12.513    12.513   0.234   0.630
 C(emballage):C(canal)   2.0   569.809   284.905   5.331   0.008
 Residual               54.0  2885.656    53.438     NaN     NaN
+```
+
+```python hide
+# vérification à la main de SS_emballage = r * b * somme des (moyenne de l'emballage - moyenne générale)²
+r, nb_canaux = 10, 2
+mg = ec["panier"].mean()
+ss_emb = r * nb_canaux * ((ec.groupby("emballage")["panier"].mean() - mg) ** 2).sum()
+print(f"\nSS emballage à la main = {ss_emb:.1f}  (tableau : {aov2.loc['C(emballage)', 'sum_sq']:.1f})")
+```
+<!--sortie-->
+```text
 
 SS emballage à la main = 4248.2  (tableau : 4248.2)
 ```
 
-On lit le tableau **de bas en haut** : on teste d'abord l'**interaction**. Si elle est significative, l'interprétation des effets principaux devient **trompeuse**, car un effet principal est une moyenne sur l'autre facteur, qui peut cacher des effets de signes ou d'ampleurs différents. Ici, l'interaction est significative ; l'effet de l'emballage est très fort. En revanche, l'effet principal du **canal** est quasiment nul : ce n'est pas que le canal n'a aucune importance (il joue sur l'effet du coffret), c'est que, **en moyenne sur les emballages**, les deux canaux se compensent. C'est le piège classique. Quand il y a interaction, on étudie les **effets simples** : l'effet d'un facteur **à chaque niveau** de l'autre.
+On lit le tableau **de bas en haut** : on teste d'abord l'**interaction**. Si elle est significative, l'interprétation des effets principaux devient **trompeuse**, car un effet principal est une moyenne sur l'autre facteur, qui peut cacher des effets de signes ou d'ampleurs différents. Ici, l'interaction est significative ; l'effet de l'emballage est très fort. En revanche, l'effet principal du **canal** est quasiment nul : ce n'est pas que le canal n'a aucune importance (il joue sur l'effet du coffret), c'est que, **en moyenne sur les emballages**, les deux canaux se compensent. C'est le piège classique. Quand il y a interaction, on étudie les **effets simples** : l'effet d'un facteur **à chaque niveau** de l'autre. Ici, l'emballage joue sur les deux canaux, mais très différemment : gain Coffret − Kraft de 12,3 € sur le Site ($F=7{,}1$, $p=0{,}003$) et de 26,3 € sur Réseaux ($F=42{,}1$, $p<0{,}0001$).
 
-```python
+```python hide
 for canal in ["Site", "Réseaux"]:
     sous = ec[ec["canal"] == canal]
     a = anova_lm(ols("panier ~ C(emballage)", sous).fit())
@@ -604,7 +652,7 @@ for canal in ["Site", "Réseaux"]:
 <!--sortie-->
 ```text
 Site      : F emballage = 7.1, p = 0.0032 ; gain Coffret - Kraft = 12.3 €
-Réseaux : F emballage = 42.1, p = 0.0000 ; gain Coffret - Kraft = 26.3 €
+Réseaux   : F emballage = 42.1, p = 0.0000 ; gain Coffret - Kraft = 26.3 €
 ```
 
 > ⚠️ **Plans déséquilibrés.** Ici, chaque case contient 10 observations (plan **équilibré**) : les sommes de carrés sont uniques et les facteurs « orthogonaux ». Quand les effectifs diffèrent selon les cases, la décomposition dépend de l'ordre des facteurs (sommes de carrés de type I, II ou III). Préférez alors l'interprétation par les **coefficients du modèle** et des tests ciblés plutôt que la lecture mécanique du tableau d'ANOVA. C'est une raison de plus de **planifier des plans équilibrés**.
@@ -619,7 +667,7 @@ où $f=\sqrt{\sum_i\tau_i^2/k}\,/\,\sigma$ est l'effet de Cohen (8.2.7). La puis
 
 Reprenons l'expérience de la vitrine **telle qu'elle a été planifiée** : moyennes vraies 200, 215, 240 et 205 €, écart-type $\sigma=30$ €, 12 jours par agencement.
 
-```python
+```python hide
 from statsmodels.stats.power import FTestAnovaPower
 
 mu_vrai = np.array([200, 215, 240, 205])
@@ -654,7 +702,7 @@ fréquence de rejet simulée : 0.820
 
 La puissance **prévue** était d'environ **83 %** : la formule (loi de Fisher non centrale), `statsmodels` et la simulation (5 000 expériences rejouées) s'accordent à quelques millièmes près. Avec l'effet que la gérante espérait, l'expérience de 12 jours par agencement était donc **bien dimensionnée**. Le $p=0{,}036$ observé, proche du seuil, n'a rien de contradictoire : le $F$ observé (3,10) est simplement inférieur à celui qu'on attend en moyenne avec l'effet espéré (environ $1+\lambda/(k-1)\approx5{,}2$, avec $\lambda=Nf^2\approx12{,}7$) : une fluctuation d'échantillonnage ordinaire, qui arrive environ une fois sur cinq. Et si l'effet réel n'était que **moitié moindre** que celui espéré ?
 
-```python
+```python hide
 f_moitie = f_plan / 2
 print(f"effet moitié moindre : f = {f_moitie:.3f} -> puissance avec 12 jours par agencement = {puissance(12, f_moitie):.3f}")
 
@@ -679,7 +727,7 @@ statsmodels (N total, avant arrondi à des groupes égaux) : 46
 
 Dessinons la puissance en fonction du nombre de jours, pour plusieurs tailles d'effet :
 
-```python
+```python hide
 ns = np.arange(4, 45)
 fig, ax = plt.subplots(figsize=(6.5, 3.8))
 for f, nom, couleur in [(0.10, "petit effet (f = 0,10)", "#898781"), (0.25, "effet moyen (f = 0,25)", VIOLET),
@@ -708,14 +756,13 @@ Avec un effet moitié moindre, la puissance de la même expérience tombe à **2
 
 ### 8.2.11 La même chose en R
 
-Les statisticiens utilisent souvent R pour l'ANOVA. Voici le même calcul, sur le même fichier, avec `aov` et `TukeyHSD`.
+Les statisticiens utilisent souvent R pour l'ANOVA. Voici le même calcul, sur le même fichier, avec `aov` et `TukeyHSD`. C'est une bonne habitude de refaire une analyse dans un second logiciel : deux programmes écrits indépendamment qui donnent les mêmes nombres sont une vérification bien plus solide que n'importe quelle relecture. Comparez avec 8.2.3 et 8.2.6 : on doit retrouver $F=3{,}097$ avec $p=0{,}0363$ sur 3 et 44 degrés de liberté, et, pour Tukey, un écart « Par thème − Classique » de 40,7 € avec une $p$ ajustée de 0,025 (les autres comparaisons restant non significatives).
 
 ```r
 d <- read.csv("donnees/ch08-vitrines.csv", fileEncoding = "UTF-8")
 d$agencement <- factor(d$agencement)
 fit <- aov(ventes ~ agencement, data = d)
 print(summary(fit))
-print(TukeyHSD(fit))
 ```
 <!--sortie-->
 ```text
@@ -724,6 +771,13 @@ agencement   3  10595    3532   3.097 0.0363 *
 Residuals   44  50168    1140                 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+```
+
+```r hide
+print(TukeyHSD(fit))
+```
+<!--sortie-->
+```text
   Tukey multiple comparisons of means
     95% family-wise confidence level
 
@@ -739,7 +793,7 @@ Vedette-Par couleur    -9.166667 -45.973152 27.63982 0.9096634
 Vedette-Par thème     -21.533333 -58.339819 15.27315 0.4103807
 ```
 
-Même tableau d'analyse de variance, mêmes comparaisons de Tukey (au détail d'arrondi près). Changer d'outil ne change pas les mathématiques.
+Le tableau d'analyse de variance est identique et `TukeyHSD` redonne les mêmes comparaisons (au détail d'arrondi près). Changer d'outil ne change pas les mathématiques.
 
 ### 8.2.12 Ce que cachaient les données
 
@@ -754,3 +808,5 @@ Les données étant simulées, nous connaissons la vérité (script `build/donne
 > - Les **blocs** retirent du bruit connu : à nombre d'essais égal, l'effet peut passer de « invisible » à « très net ».
 > - À **deux facteurs**, regardez d'abord l'**interaction** ; si elle existe, étudiez les **effets simples**, pas les effets principaux.
 > - **Calculez la puissance avant** l'expérience : une expérience sous-dimensionnée n'est pas fiable.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 8 : applications 8.2 à 8.6, exercices 8.2 à 8.5 et 8.12.

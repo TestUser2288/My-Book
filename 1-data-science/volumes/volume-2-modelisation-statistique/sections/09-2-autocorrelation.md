@@ -1,6 +1,6 @@
 ## 9.2 Autocorrélation spatiale
 
-> 💡 **Intuition.** La carte des ventes par délégation (9.1) semble faite d'îlots. Pour savoir si cette impression est réelle, on pose une question simple : **la valeur d'une zone ressemble-t-elle à la moyenne de ses voisines ?** Si oui, les valeurs sont *positivement autocorrélées dans l'espace*. Si les zones voisines s'opposent (une forte entourée de faibles), l'autocorrélation est *négative*. Si le voisinage n'apprend rien sur la valeur, il n'y en a pas. L'indice de Moran transforme cette question en un nombre, et un test de permutation dit si ce nombre est plus grand que ce que le hasard produirait.
+> 💡 **Intuition.** La carte des ventes par zone (9.1) semble faite d'îlots. Pour savoir si cette impression est réelle, on pose une question simple : **la valeur d'une zone ressemble-t-elle à la moyenne de ses voisines ?** Si oui, les valeurs sont *positivement autocorrélées dans l'espace*. Si les zones voisines s'opposent (une forte entourée de faibles), l'autocorrélation est *négative*. Si le voisinage n'apprend rien sur la valeur, il n'y en a pas. L'indice de Moran transforme cette question en un nombre, et un test de permutation dit si ce nombre est plus grand que ce que le hasard produirait.
 
 ### 9.2.1 Définir « voisin » : la matrice de poids
 
@@ -15,7 +15,7 @@ On **standardise** presque toujours par ligne : on divise chaque ligne par sa so
 
 Un exemple minuscule que nous garderons pour les calculs à la main : une grille $3\times3$ de neuf zones numérotées de 0 à 8 ligne par ligne, avec la contiguïté « tour ».
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -56,7 +56,7 @@ S0 (somme de tous les poids) : 24
 
 Les coins ont 2 voisines, les bords 3, le centre 4 : au total $S_0=24$ liens orientés, soit 12 frontières communes comptées dans les deux sens. Pour obtenir la version standardisée par ligne, il suffit de diviser chaque ligne par sa somme.
 
-```python
+```python hide
 def std_lignes(W):
     """Standardise par ligne : chaque ligne somme à 1 (les lignes de zéros sont laissées intactes)."""
     s = W.sum(axis=1, keepdims=True)
@@ -133,9 +133,9 @@ $$\operatorname{Var}(I)=\frac{n^2S_1-nS_2+3S_0^2}{(n^2-1)S_0^2}-\mathbb E[I]^2,$
 avec $S_1=\frac12\sum_{ij}(w_{ij}+w_{ji})^2$ et $S_2=\sum_i\big(\sum_j w_{ij}+\sum_j w_{ji}\big)^2$. On forme alors $z_I=(I-\mathbb E[I])/\sqrt{\operatorname{Var}(I)}$ et on le compare à une loi normale centrée réduite.
 2. **Permutations.** Plus simple et sans hypothèse de loi : on **mélange** les valeurs sur les zones $B$ fois, on recalcule $I$ à chaque fois, et on regarde où tombe la valeur observée parmi ces $B$ valeurs. C'est le *test de permutation* du volume I (section 3.7.4), appliqué à l'espace. La p-valeur unilatérale pour une autocorrélation positive est $\dfrac{1+\#\{I^*\ge I_{\text{obs}}\}}{B+1}$.
 
-Appliquons-les à nos 144 délégations, avec la contiguïté « reine » (8 voisins). Voici d'abord le code qui a fabriqué les ventes (la même fonction est dans `build/donnees_ch09.py`). On part de bruits indépendants $e_i$ et on les propage dans l'espace par $z=(I-\rho W)^{-1}e$ : un **modèle autorégressif spatial** (SAR), où chaque zone est un reflet de ses voisines, avec une force $\rho=0{,}9$.
+Appliquons-les à nos 144 zones, avec la contiguïté « reine » (8 voisins). Les ventes ont été fabriquées par un **modèle autorégressif spatial** (SAR) : on part de bruits indépendants $e_i$ et on les propage dans l'espace par $z=(I-\rho W)^{-1}e$, de sorte que chaque zone est un reflet de ses voisines, avec une force $\rho=0{,}9$ (le générateur est dans `build/donnees_ch09.py`, et reconstruit pas à pas dans le cahier, application 9.2).
 
-```python
+```python hide
 def contiguite_reine(n_lig, n_col):
     """Voisins par un côté ou un coin (8 directions)."""
     n = n_lig * n_col
@@ -148,7 +148,7 @@ def contiguite_reine(n_lig, n_col):
                         W[i * n_col + j, (i + di) * n_col + (j + dj)] = 1
     return W
 
-def delegations(seed=9, n_lig=12, n_col=12, rho=0.9):
+def grille_zones(seed=9, n_lig=12, n_col=12, rho=0.9):
     rng = np.random.default_rng(seed)
     W = std_lignes(contiguite_reine(n_lig, n_col))
     n = n_lig * n_col
@@ -160,10 +160,10 @@ def delegations(seed=9, n_lig=12, n_col=12, rho=0.9):
                          "population": pop, "ventes_hab": np.round(50 + 8 * z, 2),
                          "ventes_bruit": np.round(rng.normal(50, 8, n), 2)})
 
-deleg = delegations()
-fichier = pd.read_csv("donnees/ch09-delegations.csv")
-print("identique au fichier fourni :", np.allclose(deleg[["ventes_hab", "ventes_bruit"]], fichier[["ventes_hab", "ventes_bruit"]]))
-print(deleg[["ventes_hab", "ventes_bruit"]].describe().round(2).to_string())
+zones = grille_zones()
+fichier = pd.read_csv("donnees/ch09-zones.csv")
+print("identique au fichier fourni :", np.allclose(zones[["ventes_hab", "ventes_bruit"]], fichier[["ventes_hab", "ventes_bruit"]]))
+print(zones[["ventes_hab", "ventes_bruit"]].describe().round(2).to_string())
 ```
 <!--sortie-->
 ```text
@@ -181,9 +181,9 @@ max         81.49         71.64
 
 Nous disposons de deux variables : `ventes_hab` (structurée dans l'espace) et `ventes_bruit` (du bruit indépendant, **sans** structure spatiale ; sa moyenne et son écart-type sont proches de ceux de l'autre variable, sans être identiques). Cette deuxième variable est notre *témoin* : un bon indice doit y voir du hasard.
 
-```python
+```python hide-code
 W = std_lignes(contiguite_reine(12, 12))
-n = len(deleg)
+n = len(zones)
 
 def stats_poids(W):
     S0 = W.sum()
@@ -210,7 +210,7 @@ def moran_permutations(y, W, B=9999, seed=1):
 
 lignes = []
 for nom in ["ventes_hab", "ventes_bruit"]:
-    y = deleg[nom].to_numpy()
+    y = zones[nom].to_numpy()
     I, E, sd, zI = moran_normal(y, W)
     sim = moran_permutations(y, W)
     p_perm = (1 + (sim >= I).sum()) / (len(sim) + 1)
@@ -233,9 +233,9 @@ La variable structurée a un indice de Moran nettement positif et une p-valeur p
 
 On voit mieux ce que mesure $I$ avec le **diagramme de Moran** (le nuage de la moyenne des voisines contre la valeur de la zone) et l'histogramme de la distribution nulle :
 
-```python
+```python hide
 BLEU, ORANGE, AQUA, ROUGE = "#2a78d6", "#eb6834", "#1baf7a", "#e34948"
-y = deleg["ventes_hab"].to_numpy()
+y = zones["ventes_hab"].to_numpy()
 zc = y - y.mean()
 lag = W @ zc
 I_obs = moran(y, W)
@@ -270,8 +270,8 @@ La pente du diagramme est **égale** à l'indice de Moran, comme annoncé. L'his
 
 **La sensibilité au choix de $W$.** Le résultat dépend-il de notre définition du voisinage ? Recalculons $I$ avec cinq définitions, construites à partir des **distances** entre les centres des zones, ce qui est la façon de faire pour des points dans l'espace quelconques.
 
-```python
-xy = deleg[["x", "y"]].to_numpy()
+```python hide-code
+xy = zones[["x", "y"]].to_numpy()
 Dd = np.sqrt(((xy[:, None, :] - xy[None, :, :]) ** 2).sum(axis=2))      # distances euclidiennes (km)
 
 def poids_bande(D, d):
@@ -298,7 +298,7 @@ for nom, Wv in variantes.items():
     sim_v = moran_permutations(y, Ws, B=999, seed=3)
     I_v = moran(y, Ws)
     lignes.append({"definition": nom, "voisins_moyens": Wv.sum(axis=1).mean(), "I": I_v,
-                   "I_temoin": moran(deleg["ventes_bruit"].to_numpy(), Ws),
+                   "I_temoin": moran(zones["ventes_bruit"].to_numpy(), Ws),
                    "p_permutation": (1 + (sim_v >= I_v).sum()) / 1000})
 with pd.option_context("display.float_format", "{:.3f}".format, "display.width", 150):
     print(pd.DataFrame(lignes).to_string(index=False))
@@ -325,7 +325,7 @@ Le numérateur est la somme des carrés des **différences** entre voisines, qui
 
 > 📐 **Le lien avec le variogramme (9.3).** Le terme $\frac12(y_i-y_j)^2$ est exactement la *semi-variance* d'une paire, la brique du variogramme. L'indice de Geary est donc, à une normalisation près, une moyenne de semi-variances **sur les paires voisines** divisée par la variance totale. C'est une première approximation du variogramme à une seule distance.
 
-```python
+```python hide-code
 def geary(y, W):
     y = np.asarray(y, dtype=float)
     z = y - y.mean()
@@ -338,7 +338,7 @@ def geary_permutations(y, W, B=999, seed=4):
 
 lignes = []
 for nom in ["ventes_hab", "ventes_bruit"]:
-    yy = deleg[nom].to_numpy()
+    yy = zones[nom].to_numpy()
     C = geary(yy, W)
     sim_c = geary_permutations(yy, W)
     lignes.append({"variable": nom, "C": C, "moyenne_perm": sim_c.mean(), "p_perm (C petit)": (1 + (sim_c <= C).sum()) / (len(sim_c) + 1)})
@@ -368,7 +368,7 @@ Avec une matrice standardisée par ligne, la somme des $I_i$ vaut exactement $n\
 
 Pour savoir si un $I_i$ est significatif, on utilise une **permutation conditionnelle** : on garde la valeur de la zone $i$ fixe, on mélange les autres valeurs sur les autres zones, et on recalcule $I_i$. Mais attention : nous faisons **144 tests à la fois**. Comme au volume I (section 3.5.5), sans correction nous attendrions environ 7 faux positifs (5 % de 144) même sur des données sans structure ; nous utiliserons la procédure de **Benjamini-Hochberg**.
 
-```python
+```python hide-code
 def lisa(y, W, B=999, seed=2):
     """Moran local, quadrant, et p-valeur bilatérale par permutation conditionnelle."""
     rng = np.random.default_rng(seed)
@@ -406,11 +406,11 @@ def benjamini_hochberg(p, alpha=0.05):
 lignes = []
 resultats = {}
 for nom in ["ventes_hab", "ventes_bruit"]:
-    Ii, quad, pv = lisa(deleg[nom].to_numpy(), W)
+    Ii, quad, pv = lisa(zones[nom].to_numpy(), W)
     rej = benjamini_hochberg(pv)
     resultats[nom] = (Ii, quad, pv, rej)
     comptes = pd.Series(np.where(rej, quad, "non significatif")).value_counts()
-    lignes.append({"variable": nom, "somme_Ii/n": Ii.sum() / len(Ii), "I_global": moran(deleg[nom].to_numpy(), W),
+    lignes.append({"variable": nom, "somme_Ii/n": Ii.sum() / len(Ii), "I_global": moran(zones[nom].to_numpy(), W),
                    "p<0.05 brut": int((pv < 0.05).sum()), "significatifs (BH)": int(rej.sum()),
                    "HH": int(comptes.get("HH", 0)), "LL": int(comptes.get("LL", 0)),
                    "HL": int(comptes.get("HL", 0)), "LH": int(comptes.get("LH", 0))})
@@ -426,7 +426,7 @@ ventes_bruit     -0.0214   -0.0214            5                   0   0   0   0 
 
 La première colonne vérifie la propriété annoncée : la moyenne des $I_i$ est bien l'indice de Moran global. Sur le témoin, 5 zones sur 144 (3 %, soit à peu près les 5 % attendus du hasard) sortent avec la p-valeur brute : c'est le prix des tests multiples. La correction de Benjamini-Hochberg les écarte **toutes** (0 zone significative). Sur la variable structurée, 49 zones sont significatives avant correction et 35 après : 11 îlots de fortes valeurs (HH), 22 de faibles valeurs (LL) et 2 valeurs atypiques (LH). Regardons la carte des zones significatives.
 
-```python
+```python hide
 couleurs = {"HH": ROUGE, "LL": BLEU, "HL": ORANGE, "LH": AQUA, "ns": "#e8e6df"}
 fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.8))
 for ax, nom in zip(axes, ["ventes_hab", "ventes_bruit"]):
@@ -455,13 +455,13 @@ figure enregistrée
 
 La carte de gauche **localise** les îlots : l'indice global disait *qu'il y en a*, les indices locaux disent *où*. À droite, le témoin est quasiment vide.
 
-> ⚠️ **Deux précautions.** (1) Les indices locaux ne sont **pas indépendants** (zones voisines partagent des voisines), donc le taux de faux positifs effectif est mal maîtrisé même avec la correction de Benjamini-Hochberg : on considère les zones signalées comme des **pistes à examiner**, pas comme des découvertes. (2) Les zones **en bordure** de la carte ont moins de voisines : leurs indices sont plus bruités (nous y reviendrons à la section 9.5).
+> ⚠️ **Deux précautions.** (1) Les indices locaux ne sont **pas indépendants** (zones voisines partagent des voisines), donc le taux de faux positifs effectif est mal maîtrisé même avec la correction de Benjamini-Hochberg : on considère les zones signalées comme des **pistes à examiner**, pas comme des découvertes. (2) Les zones **en bordure** de la carte ont moins de voisines : leurs indices sont plus bruités (nous le mesurons dans le cahier, exercice 9.8).
 
 ### 9.2.5 Pourquoi cela compte : la régression qui voit des relations qui n'existent pas
 
 Revenons à l'avertissement de 9.1.1 : l'autocorrélation rend les erreurs-types usuelles **trop petites**. Mesurons-le. Nous simulons **deux variables sans aucun lien** (deux champs spatiaux SAR indépendants, avec la même force $\rho=0{,}9$ que plus haut), nous régressons l'une sur l'autre par moindres carrés ordinaires et nous testons la pente à 5 %. Si la méthode est honnête, nous devrions rejeter à tort dans environ **5 %** des cas. Nous recommençons 1 000 fois.
 
-```python
+```python hide-code
 from scipy import stats
 
 A = np.linalg.inv(np.eye(n) - 0.9 * W)                         # (I - rho W)^-1, rho = 0,9
@@ -497,7 +497,7 @@ Le résultat est sans appel : au lieu des 5 % promis, le test usuel rejette à t
 
 > 💡 **Le remède, dans son principe.** Il faut tenir compte de la dépendance dans le calcul. Si l'on **connaissait** la structure de covariance $\Sigma$ des erreurs, on appliquerait les **moindres carrés généralisés** (MCG), c'est-à-dire des moindres carrés sur des données *blanchies*. Pour notre modèle SAR, le blanchiment est explicite : multiplier le vecteur $y$ par $(I-\rho W)$ « défait » la propagation. Vérifions que cela rétablit le niveau du test, en supposant ici $\rho$ connu (c'est le cas idéal ; en pratique on l'estime).
 
-```python
+```python hide-code
 T = np.eye(n) - 0.9 * W                                        # opérateur de blanchiment (rho connu)
 un = np.ones(n)
 rejets = 0
@@ -528,7 +528,7 @@ Moran des résidus MCO (première paire) : 0.425 | p-valeur par permutation : 0.
 
 Avec les moindres carrés généralisés, le niveau du test retombe à 5,3 %, tout près des 5 % annoncés. Et, comme le montre la dernière ligne, il existe un **signal d'alarme** simple pour une analyse réelle : calculer l'indice de Moran des **résidus** du modèle. S'il est significatif, les erreurs ne sont pas indépendantes et les erreurs-types usuelles sont à écarter.
 
-> 🛠️ **En pratique.** On ne connaît pas $\rho$ : on l'estime avec un **modèle autorégressif spatial** (le *spatial lag* ou le *spatial error model*, estimés par maximum de vraisemblance), ou l'on modélise la covariance par un variogramme (section 9.3, krigeage universel), ou l'on utilise des **erreurs-types robustes par blocs spatiaux**. Les outils exacts sortent du cadre de ce chapitre, mais le message est général : *si vos observations sont proches dans l'espace, testez l'autocorrélation des résidus avant de lire vos p-valeurs.*
+> 💡 **En pratique.** On ne connaît pas $\rho$ : on l'estime avec un **modèle autorégressif spatial** (le *spatial lag* ou le *spatial error model*, estimés par maximum de vraisemblance), ou l'on modélise la covariance par un variogramme (section 9.3, krigeage universel), ou l'on utilise des **erreurs-types robustes par blocs spatiaux**. Les outils exacts sortent du cadre de ce chapitre, mais le message est général : *si vos observations sont proches dans l'espace, testez l'autocorrélation des résidus avant de lire vos p-valeurs.*
 
 > ✅ **À retenir.**
 > - Pour parler d'autocorrélation, il faut **définir le voisinage** : une matrice de poids $W$ (contiguïté, $k$ voisins, bande de distance), presque toujours standardisée par ligne. Ce choix fait partie du résultat.
@@ -536,3 +536,5 @@ Avec les moindres carrés généralisés, le niveau du test retombe à 5,3 %, to
 > - **Geary** ($\mathbb E[C]=1$, $C<1$ pour une autocorrélation positive) est plus sensible aux différences locales.
 > - Les **indices locaux** (LISA) disent *où* sont les îlots (HH, LL) et les valeurs atypiques (HL, LH) ; avec 144 tests, il faut **corriger** (Benjamini-Hochberg).
 > - Ignorer l'autocorrélation fait **rejeter à tort** bien plus souvent que 5 % : testez l'indice de Moran des résidus avant de croire une p-valeur.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 9 : applications 9.2 et 9.3, exercices 9.3, 9.4, 9.7, 9.8 et 9.9.

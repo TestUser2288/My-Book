@@ -2,9 +2,9 @@
 
 > 💡 **Intuition.** Les coefficients de `m2` (−0,34 pour Réseaux, +0,009 par année d'âge…) sont calculés sur **un** échantillon de 1 740 clients. Avec un autre échantillon, on aurait obtenu d'autres valeurs. La question de l'inférence est : *de combien ces chiffres peuvent-ils bouger ?* et donc *que peut-on affirmer sur la vraie valeur ?* C'est exactement l'esprit du chapitre 3 du volume I (intervalles de confiance, tests), appliqué maintenant à chaque coefficient d'un modèle.
 
-On part des mêmes données qu'en 1.1. Voici la préparation (identique), que nous ne détaillerons plus :
+On part des mêmes données qu'en 1.1 : les 1 740 clients actifs, et les modèles `m1` (âge), `m2` (âge et canal) et `m3` (avec interaction) déjà ajustés.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -53,9 +53,9 @@ Pour un coefficient $\beta_j$, la formule (1) donne $\hat\beta_j\sim\mathcal N(\
 
 $$\boxed{\;T_j=\frac{\hat\beta_j-\beta_j}{\operatorname{se}(\hat\beta_j)}\;\sim\;t_{n-p}\;}$$
 
-Reconstruisons à la main le tableau de `statsmodels` pour `m2`, colonne par colonne :
+Reconstruire à la main le tableau de `statsmodels` pour `m2`, colonne par colonne, est un excellent exercice (cahier, application 1.3). Avec $s=0{,}3705$ et le quantile de Student $t_{1736,\,0{,}975}=1{,}961$ (presque 1,96 : $n-p=1\,736$ est grand), on obtient exactement le tableau du logiciel :
 
-```python
+```python hide-code
 X = m2.model.exog
 y = m2.model.endog
 n, p = X.shape
@@ -77,17 +77,17 @@ print(f"s = {np.sqrt(s2):.4f} | quantile t(n-p, 97,5 %) = {crit:.4f}  (presque 1
 ```
 <!--sortie-->
 ```text
-                         coef  std err         t  P>|t|  IC bas  IC haut
-Intercept              4.2206   0.0175  241.3693    0.0  4.1863   4.2549
-C(canal)[T.Site]      -0.1571   0.0231   -6.8065    0.0 -0.2024  -0.1119
+                       coef  std err         t  P>|t|  IC bas  IC haut
+Intercept            4.2206   0.0175  241.3693    0.0  4.1863   4.2549
+C(canal)[T.Site]    -0.1571   0.0231   -6.8065    0.0 -0.2024  -0.1119
 C(canal)[T.Réseaux] -0.3368   0.0225  -14.9770    0.0 -0.3809  -0.2927
-a                      0.0092   0.0008   10.8618    0.0  0.0075   0.0108
+a                    0.0092   0.0008   10.8618    0.0  0.0075   0.0108
 
 identique à statsmodels : True True True
 s = 0.3705 | quantile t(n-p, 97,5 %) = 1.9613  (presque 1,96 : n - p = 1736 est grand)
 ```
 
-Chaque colonne a désormais une origine claire : l'erreur standard vient de $s\sqrt{c_{jj}}$, la statistique $t$ est le rapport coefficient / erreur standard, la p-valeur est la probabilité qu'un Student à $n-p$ degrés de liberté dépasse $|t|$ en valeur absolue, et l'intervalle de confiance est $\hat\beta_j\pm t_{n-p,\,0{,}975}\operatorname{se}(\hat\beta_j)$ (c'est la construction du volume I, section 3.3.3, appliquée à chaque coefficient).
+Chaque colonne a ainsi une origine claire : l'erreur standard vient de $s\sqrt{c_{jj}}$, la statistique $t$ est le rapport coefficient / erreur standard, la p-valeur est la probabilité qu'un Student à $n-p$ degrés de liberté dépasse $|t|$ en valeur absolue, et l'intervalle de confiance est $\hat\beta_j\pm t_{n-p,\,0{,}975}\operatorname{se}(\hat\beta_j)$ (c'est la construction du volume I, section 3.3.3, appliquée à chaque coefficient).
 
 ### 1.2.2 Tester un coefficient, lire un intervalle
 
@@ -97,9 +97,9 @@ Dans le tableau précédent, les trois coefficients du canal et de l'âge ont de
 
 > ⚠️ **Rappels du volume I, appliqués ici.** (1) Une p-valeur n'est **pas** la probabilité que $H_0$ soit vraie (3.5.2). (2) « Significatif » n'est pas « important » (3.5.3) : avec 1 740 clients, même un très petit effet serait détecté. Il faut donc toujours lire **l'estimation et son intervalle**, pas seulement le test. (3) Si l'on teste beaucoup de coefficients, il faut se méfier des faux positifs (3.5.5) : nous y reviendrons au 1.4.
 
-L'**intervalle de confiance** est bien plus informatif que la p-valeur. Pour Réseaux, l'intervalle sur le log-panier est environ $[-0{,}381\,;-0{,}293]$ ; en passant à l'exponentielle (une fonction croissante conserve les bornes), on obtient une **fourchette sur l'effet multiplicatif** :
+L'**intervalle de confiance** est bien plus informatif que la p-valeur. Pour Réseaux, l'intervalle sur le log-panier est environ $[-0{,}381\,;-0{,}293]$ ; en passant à l'exponentielle (une fonction croissante conserve les bornes), on obtient une **fourchette sur l'effet multiplicatif** : pour le Site, −14,5 % (intervalle à 95 % : de −18,3 % à −10,6 %) ; pour Réseaux, −28,6 % (de −31,7 % à −25,4 %) ; et pour dix ans d'âge de plus, +9,6 % (de +7,8 % à +11,4 %).
 
-```python
+```python hide
 ic = m2.conf_int()
 for nom in ["C(canal)[T.Site]", "C(canal)[T.Réseaux]"]:
     bas, haut = ic.loc[nom]
@@ -110,24 +110,24 @@ print(f"{'a (10 ans de plus)':24s} effet sur le panier : {100*(np.exp(10*m2.para
 <!--sortie-->
 ```text
 C(canal)[T.Site]         effet sur le panier : -14.5 %   IC95 % : [-18.3 % ; -10.6 %]
-C(canal)[T.Réseaux]    effet sur le panier : -28.6 %   IC95 % : [-31.7 % ; -25.4 %]
+C(canal)[T.Réseaux]      effet sur le panier : -28.6 %   IC95 % : [-31.7 % ; -25.4 %]
 a (10 ans de plus)       effet sur le panier : +9.6 %   IC95 % : [+7.8 % ; +11.4 %]
 ```
 
 La phrase honnête à transmettre à la gérante est donc : « *à âge égal, un client acquis par Réseaux dépense environ 29 % de moins qu'un client de la boutique ; avec 95 % de confiance, la vraie différence se situe entre 25 % et 32 % de moins* ». Et pour l'âge : « *dix ans de plus sont associés à un panier de 8 à 11 % plus élevé* ».
 
-**Un test peut aussi porter sur une combinaison de coefficients.** Par exemple : « le Site et Réseaux ont-ils le même panier (à âge égal) ? ». L'hypothèse est $H_0:\beta_{\text{Site}}-\beta_{\text{Réseaux}}=0$, c'est-à-dire $H_0:\mathbf c^\top\boldsymbol\beta=0$ avec $\mathbf c=(0,1,-1,0)^\top$. La variance de $\mathbf c^\top\hat{\boldsymbol\beta}$ est $\sigma^2\mathbf c^\top(\mathbf X^\top\mathbf X)^{-1}\mathbf c$ : les covariances entre coefficients **comptent** (on ne peut pas se contenter de lire les deux erreurs standard du tableau).
+**Un test peut aussi porter sur une combinaison de coefficients.** Par exemple : « le Site et Réseaux ont-ils le même panier (à âge égal) ? ». L'hypothèse est $H_0:\beta_{\text{Site}}-\beta_{\text{Réseaux}}=0$, c'est-à-dire $H_0:\mathbf c^\top\boldsymbol\beta=0$ avec $\mathbf c=(0,1,-1,0)^\top$. La variance de $\mathbf c^\top\hat{\boldsymbol\beta}$ est $\sigma^2\mathbf c^\top(\mathbf X^\top\mathbf X)^{-1}\mathbf c$ : les covariances entre coefficients **comptent** (on ne peut pas se contenter de lire les deux erreurs standard du tableau). Ici, l'écart estimé vaut 0,180 (erreur standard 0,021), soit $t\approx8{,}7$ : à âge égal, le Site dépense significativement plus que Réseaux.
 
-```python
+```python hide
 c = np.array([0, 1, -1, 0])
 diff = c @ beta
 se_diff = np.sqrt(s2 * c @ XtX_inv @ c)
-print(f"beta_Site - beta_Instagram = {diff:.4f} | erreur standard = {se_diff:.4f} | t = {diff/se_diff:.2f} | p = {2*stats.t.sf(abs(diff/se_diff), n-p):.2e}")
+print(f"beta_Site - beta_Reseaux = {diff:.4f} | erreur standard = {se_diff:.4f} | t = {diff/se_diff:.2f} | p = {2*stats.t.sf(abs(diff/se_diff), n-p):.2e}")
 print(m2.t_test("C(canal)[T.Site] - C(canal)[T.Réseaux] = 0"))
 ```
 <!--sortie-->
 ```text
-beta_Site - beta_Instagram = 0.1796 | erreur standard = 0.0207 | t = 8.69 | p = 8.16e-18
+beta_Site - beta_Reseaux = 0.1796 | erreur standard = 0.0207 | t = 8.69 | p = 8.16e-18
                              Test for Constraints                             
 ==============================================================================
                  coef    std err          t      P>|t|      [0.025      0.975]
@@ -146,7 +146,7 @@ Comment tester que le **canal** compte, quand il se traduit par *deux* coefficie
 >
 > L'intuition est limpide : le numérateur mesure **combien l'ajustement se dégrade** (par contrainte) quand on retire les variables ; le dénominateur est l'échelle de bruit du modèle complet. Si retirer les variables ne dégrade pas plus que du bruit, $F$ est proche de 1.
 
-```python
+```python hide
 # Le canal compte-t-il ?  M0 : log_panier ~ a   (m1)    contre   M1 : log_panier ~ a + canal   (m2)
 scr0, scr1 = m1.ssr, m2.ssr
 q = int(m2.df_model - m1.df_model)
@@ -165,7 +165,7 @@ SCR0 = 269.94 | SCR1 = 238.30 | q = 2 | F = 115.26 | p = 9.98e-48
 1    1736.0  238.2975      2.0  31.6431  115.26     0.0
 ```
 
-La statistique $F$ calculée à la main coïncide avec celle de `anova_lm`. Le canal est donc **très significatif** dans son ensemble.
+On trouve $\text{SCR}_0=269{,}94$, $\text{SCR}_1=238{,}30$ et $q=2$, donc $F\approx115{,}3$ (p-valeur de l'ordre de $10^{-47}$) : le calcul à la main coïncide avec la fonction `anova_lm` de `statsmodels`. Le canal est donc **très significatif** dans son ensemble.
 
 Le même outil teste d'autres questions :
 
@@ -173,7 +173,7 @@ Le même outil teste d'autres questions :
 - **L'interaction âge × canal** (1.1.9) : `m3` contre `m2`, avec $q=2$ contraintes (« les deux différences de pente sont nulles »).
 - **Un cas particulier** : quand $q=1$, $F=t^2$ (le test $F$ d'un seul coefficient est le carré du test $t$).
 
-```python
+```python hide
 print("Interaction âge x canal (m2 contre m3) :")
 print(sm.stats.anova_lm(m2, m3).round(4))
 print()
@@ -194,7 +194,7 @@ cas q = 1 : t² de l'âge = 117.979 | F de la suppression de l'âge = 117.979
 test global (m2) : F = 114.93 | p = 6.88e-68
 ```
 
-Pour l'interaction, la p-valeur est grande : rien n'indique que l'effet de l'âge diffère selon le canal. Le modèle plus simple `m2` suffit.
+Pour l'interaction, $F\approx0{,}11$ et la p-valeur vaut 0,90 : rien n'indique que l'effet de l'âge diffère selon le canal, le modèle plus simple `m2` suffit. Les deux autres vérifications se passent bien : pour $q=1$, le carré de la statistique $t$ de l'âge (117,98) est exactement le $F$ de sa suppression, et le test global de `m2` donne $F\approx114{,}9$.
 
 > 🧪 **Que se passe-t-il si les erreurs ne sont pas normales ?** Pour un grand échantillon, le théorème central limite (volume I, section 2.4.3) assure que $\hat{\boldsymbol\beta}$ est approximativement normal même si les erreurs ne le sont pas, de sorte que les tests $t$ et $F$ restent *approximativement* valides (avec les lois asymptotiques). Pour un petit échantillon avec des erreurs très asymétriques, il vaut mieux recourir au **bootstrap** (voir plus bas).
 
@@ -209,9 +209,9 @@ Deux questions très différentes se cachent derrière « prédire » :
 > $$\text{IC de la moyenne :}\ \ \hat y_0\pm t_{n-p,\,0{,}975}\;s\sqrt{h_0},\qquad\text{intervalle de prédiction :}\ \ \hat y_0\pm t_{n-p,\,0{,}975}\;s\sqrt{1+h_0}.$$
 > Dans le second cas, l'erreur de prévision est $y_0-\hat y_0=\varepsilon_0-\mathbf x_0^\top(\hat{\boldsymbol\beta}-\boldsymbol\beta)$ : somme de deux termes **indépendants** ($\varepsilon_0$ est un nouveau bruit, indépendant de l'échantillon), d'où la variance $\sigma^2(1+h_0)$.
 
-**À la main, sur les quatre commandes du 1.1.1.** Quel montant prévoir pour une commande de **5 articles** ? On a $\hat y_0=3+19{,}6\times5=101$ €, $s^2=\text{SCR}/(n-p)=25{,}2/2=12{,}6$, et $\mathbf x_0=(1,5)^\top$ donne $h_0=\frac1{20}(30-2\cdot10\cdot5+4\cdot25)=\frac{30}{20}=1{,}5$ (calcul avec $(\mathbf X^\top\mathbf X)^{-1}=\frac1{20}\begin{pmatrix}30&-10\\-10&4\end{pmatrix}$). Avec $n-p=2$ degrés de liberté, $t_{2,\,0{,}975}\approx4{,}303$ : IC de la moyenne $101\pm4{,}303\sqrt{12{,}6\times1{,}5}\approx101\pm18{,}7$ ; intervalle de prédiction $101\pm4{,}303\sqrt{12{,}6\times2{,}5}\approx101\pm24{,}2$. Vérifions :
+**À la main, sur les quatre commandes du 1.1.1.** Quel montant prévoir pour une commande de **5 articles** ? On a $\hat y_0=3+19{,}6\times5=101$ €, $s^2=\text{SCR}/(n-p)=25{,}2/2=12{,}6$, et $\mathbf x_0=(1,5)^\top$ donne $h_0=\frac1{20}(30-2\cdot10\cdot5+4\cdot25)=\frac{30}{20}=1{,}5$ (calcul avec $(\mathbf X^\top\mathbf X)^{-1}=\frac1{20}\begin{pmatrix}30&-10\\-10&4\end{pmatrix}$). Avec $n-p=2$ degrés de liberté, $t_{2,\,0{,}975}\approx4{,}303$ : IC de la moyenne $101\pm4{,}303\sqrt{12{,}6\times1{,}5}\approx101\pm18{,}7$ ; intervalle de prédiction $101\pm4{,}303\sqrt{12{,}6\times2{,}5}\approx101\pm24{,}2$. Le logiciel donne les mêmes bornes : de 82,3 à 119,7 pour la moyenne, de 76,9 à 125,2 pour une observation.
 
-```python
+```python hide
 x4 = np.array([1, 2, 3, 4]); y4 = np.array([22, 41, 66, 79])
 d4 = pd.DataFrame({"x": x4, "y": y4})
 mp = smf.ols("y ~ x", d4).fit()
@@ -234,15 +234,15 @@ Ces intervalles sont énormes parce que $n=4$ et que $x_0=5$ est **hors de la pl
 
 **Sur les clients de la boutique.** Dessinons, pour les clients acquis par Réseaux, le nuage log-panier contre âge avec la droite ajustée par `m2`, la bande de confiance de la moyenne et la bande de prédiction.
 
-```python
+```python hide
 grille = pd.DataFrame({"age": np.arange(18, 76)})
 grille["a"] = grille["age"] - 36
 grille["canal"] = pd.Categorical(["Réseaux"] * len(grille), categories=["Boutique", "Site", "Réseaux"])
 pf = m2.get_prediction(grille).summary_frame(alpha=0.05)
 
-insta = df[df["canal"] == "Réseaux"]
+res_soc = df[df["canal"] == "Réseaux"]
 fig, ax = plt.subplots(figsize=(7.4, 4.6))
-ax.scatter(insta["age"], insta["log_panier"], s=9, color=GRIS, alpha=0.55, label="clients Réseaux")
+ax.scatter(res_soc["age"], res_soc["log_panier"], s=9, color=GRIS, alpha=0.55, label="clients Réseaux")
 ax.fill_between(grille["age"], pf["obs_ci_lower"], pf["obs_ci_upper"], color=ORANGE, alpha=0.15, label="intervalle de prédiction à 95 % (un client)")
 ax.fill_between(grille["age"], pf["mean_ci_lower"], pf["mean_ci_upper"], color=BLEU, alpha=0.45, label="intervalle de confiance à 95 % (le panier moyen)")
 ax.plot(grille["age"], pf["mean"], color=BLEU, lw=2)
@@ -251,9 +251,9 @@ ax.set_ylabel("log du panier moyen")
 ax.legend(frameon=False, loc="upper left", fontsize=8.5)
 ax.set_ylim(2.3, 5.9)
 plt.savefig("figures/ch01-bandes-prediction.png", dpi=200, bbox_inches="tight")
-dans = ((insta["log_panier"] >= np.interp(insta["age"], grille["age"], pf["obs_ci_lower"])) &
-        (insta["log_panier"] <= np.interp(insta["age"], grille["age"], pf["obs_ci_upper"]))).mean()
-print(f"part des {len(insta)} clients Réseaux situés dans l'intervalle de prédiction à 95 % : {100*dans:.1f} %")
+dans = ((res_soc["log_panier"] >= np.interp(res_soc["age"], grille["age"], pf["obs_ci_lower"])) &
+        (res_soc["log_panier"] <= np.interp(res_soc["age"], grille["age"], pf["obs_ci_upper"]))).mean()
+print(f"part des {len(res_soc)} clients Réseaux situés dans l'intervalle de prédiction à 95 % : {100*dans:.1f} %")
 ```
 <!--sortie-->
 ```text
@@ -264,11 +264,26 @@ part des 687 clients Réseaux situés dans l'intervalle de prédiction à 95 % :
 
 Deux observations. La bande de **confiance** est étroite et se resserre autour de l'âge moyen (là où $h_0$ est minimal), tout en s'évasant aux âges extrêmes. La bande de **prédiction** est quasi parallèle à la droite et très large : elle est dominée par le terme « $1$ » (le bruit individuel), que **rien** ne peut réduire, même avec un échantillon infini. Retenons : *on peut connaître très précisément le panier moyen d'un groupe, et pourtant prévoir très mal le panier d'un individu*.
 
-En euros, il suffit d'appliquer l'exponentielle aux bornes (la transformation est croissante) :
+En euros, il suffit d'appliquer l'exponentielle aux bornes (la transformation est croissante). Voici, pour un client Réseaux de 25 ans, l'appel de `statsmodels` qui fournit tout :
 
 ```python
-nouveau = pd.DataFrame({"a": [25 - 36], "canal": pd.Categorical(["Réseaux"], categories=["Boutique", "Site", "Réseaux"])})
-r = m2.get_prediction(nouveau).summary_frame(alpha=0.05).iloc[0]
+profil = pd.DataFrame({"a": [25 - 36], "canal": pd.Categorical(["Réseaux"], categories=["Boutique", "Site", "Réseaux"])})
+pred = m2.get_prediction(profil).summary_frame(alpha=0.05)
+print(pred.round(3).T)      # mean_ci_* : confiance sur la moyenne ; obs_ci_* : prédiction pour un client
+```
+<!--sortie-->
+```text
+                   0
+mean           3.783
+mean_se        0.017
+mean_ci_lower  3.750
+mean_ci_upper  3.816
+obs_ci_lower   3.056
+obs_ci_upper   4.510
+```
+
+```python hide
+r = pred.iloc[0]
 print(f"log-panier prédit : {r['mean']:.3f}")
 print(f"panier médian prédit : {np.exp(r['mean']):.1f} € | IC95 % de la médiane : [{np.exp(r['mean_ci_lower']):.1f} ; {np.exp(r['mean_ci_upper']):.1f}] €")
 print(f"un nouveau client Réseaux de 25 ans : panier entre {np.exp(r['obs_ci_lower']):.1f} et {np.exp(r['obs_ci_upper']):.1f} € avec 95 % de confiance")
@@ -280,13 +295,13 @@ panier médian prédit : 43.9 € | IC95 % de la médiane : [42.5 ; 45.4] €
 un nouveau client Réseaux de 25 ans : panier entre 21.2 et 91.0 € avec 95 % de confiance
 ```
 
-Remarquez le vocabulaire : l'exponentielle des bornes de l'IC de $\mathbb E[\log y]$ donne un intervalle pour la **médiane** de $y$ (et non pour sa moyenne, cf. 1.1.8). L'intervalle de prédiction, lui, se transforme sans difficulté, car il concerne une observation.
+Le log-panier prédit vaut 3,783, soit un panier **médian** de 43,9 € (intervalle de confiance à 95 % : de 42,5 à 45,4 €) ; un nouveau client Réseaux de 25 ans aura, avec 95 % de confiance, un panier entre 21,2 et 91,0 €. Remarquez le vocabulaire : l'exponentielle des bornes de l'IC de $\mathbb E[\log y]$ donne un intervalle pour la **médiane** de $y$ (et non pour sa moyenne, cf. 1.1.8). L'intervalle de prédiction, lui, se transforme sans difficulté, car il concerne une observation.
 
 ### 1.2.5 Vérifier la théorie par simulation : la couverture des intervalles
 
-Tout ceci repose sur H1-H5. Que vaut vraiment « 95 % de confiance » ? Vérifions-le comme on vérifie un théorème : en **répétant l'expérience** un grand nombre de fois quand on connaît la vérité. Utilisons le plan d'expérience réel $\mathbf X$ de `m2` (mêmes 1 740 clients), des coefficients vrais $\boldsymbol\beta^\star$ choisis par nous, un bruit normal d'écart-type 0,37, et générons 4 000 jeux de données. Pour chacun, nous construisons l'intervalle à 95 % du coefficient d'Réseaux et vérifions s'il contient la vraie valeur.
+Tout ceci repose sur H1-H5. Que vaut vraiment « 95 % de confiance » ? Vérifions-le comme on vérifie un théorème : en **répétant l'expérience** un grand nombre de fois quand on connaît la vérité. Utilisons le plan d'expérience réel $\mathbf X$ de `m2` (mêmes 1 740 clients), des coefficients vrais $\boldsymbol\beta^\star$ choisis par nous, un bruit normal d'écart-type 0,37, et générons 4 000 jeux de données. Pour chacun, nous construisons l'intervalle à 95 % du coefficient de Réseaux et vérifions s'il contient la vraie valeur.
 
-```python
+```python hide
 rng = np.random.default_rng(12)
 beta_etoile = np.array([4.22, -0.17, -0.34, 0.009])               # nos « vrais » coefficients
 sigma_v = 0.37
@@ -308,21 +323,21 @@ print("part de |t| > 1,96 quand H0 est vraie (erreur de type I) pour l'âge :", 
 <!--sortie-->
 ```text
 couverture empirique de l'IC à 95 % :
-Intercept                0.944
-C(canal)[T.Site]         0.951
+Intercept              0.944
+C(canal)[T.Site]       0.951
 C(canal)[T.Réseaux]    0.948
-a                        0.950
+a                      0.950
 statistique t pour Réseaux : moyenne = 0.008 | écart-type = 1.01 | écart-type théorique de t(n-p) = 1.001
 part de |t| > 1,96 quand H0 est vraie (erreur de type I) pour l'âge : 0.05
 ```
 
-Les intervalles à 95 % couvrent la vraie valeur dans environ 95 % des jeux de données, pour chacun des quatre coefficients, et la statistique $t$ centrée sur la vérité se comporte comme une loi de Student (moyenne nulle, écart-type voisin de 1). Quand l'hypothèse nulle est vraie, le test $t$ à 5 % se trompe dans environ 5 % des cas : c'est exactement ce que promet la théorie. **Mais** n'oublions pas que cette simulation **respecte** H1 à H5 par construction. Dans la vraie vie, la couverture dépend de la qualité du modèle : c'est tout l'objet de la section 1.3.
+Les intervalles à 95 % couvrent la vraie valeur dans environ 95 % des jeux de données (94,4 %, 95,1 %, 94,8 % et 95,0 % pour les quatre coefficients), et la statistique $t$ centrée sur la vérité se comporte comme une loi de Student (moyenne nulle, écart-type voisin de 1). Quand l'hypothèse nulle est vraie, le test $t$ à 5 % se trompe dans environ 5 % des cas : c'est exactement ce que promet la théorie. **Mais** n'oublions pas que cette simulation **respecte** H1 à H5 par construction. Dans la vraie vie, la couverture dépend de la qualité du modèle : c'est tout l'objet de la section 1.3.
 
 ### 1.2.6 Quand on ne veut pas supposer la normalité : le bootstrap des couples
 
 Le bootstrap du volume I (section 3.3.5) s'étend à la régression : on tire au hasard, **avec remise**, des **clients entiers** (le vecteur $(y_i,\mathbf x_i)$, d'où le nom de « bootstrap des couples »), on réajuste le modèle sur chaque rééchantillon, et on observe la variabilité des coefficients. Aucune formule, aucune hypothèse de normalité.
 
-```python
+```python hide
 rng = np.random.default_rng(5)
 B_boot = 2000
 coefs = np.empty((B_boot, p))
@@ -337,14 +352,14 @@ print(comp.round(4).to_string())
 ```
 <!--sortie-->
 ```text
-                       IC t (bas)  IC t (haut)  IC bootstrap (bas)  IC bootstrap (haut)  se (formule)  se (bootstrap)
-Intercept                  4.1863       4.2549              4.1868               4.2545        0.0175          0.0172
-C(canal)[T.Site]          -0.2024      -0.1119             -0.2021              -0.1131        0.0231          0.0227
+                     IC t (bas)  IC t (haut)  IC bootstrap (bas)  IC bootstrap (haut)  se (formule)  se (bootstrap)
+Intercept                4.1863       4.2549              4.1868               4.2545        0.0175          0.0172
+C(canal)[T.Site]        -0.2024      -0.1119             -0.2021              -0.1131        0.0231          0.0227
 C(canal)[T.Réseaux]     -0.3809      -0.2927             -0.3794              -0.2931        0.0225          0.0216
-a                          0.0075       0.0108              0.0075               0.0108        0.0008          0.0008
+a                        0.0075       0.0108              0.0075               0.0108        0.0008          0.0008
 ```
 
-Les deux approches donnent des intervalles quasi identiques : ici, la formule théorique est fiable. Le bootstrap devient précieux quand les hypothèses sont douteuses (erreurs très asymétriques, petit échantillon, quantité d'intérêt compliquée comme un rapport de coefficients).
+Les deux approches donnent des intervalles quasi identiques (pour Réseaux : erreur standard de 0,0225 par la formule contre 0,0216 par bootstrap ; intervalle de −0,381 à −0,293 contre −0,379 à −0,293) : ici, la formule théorique est fiable. Le bootstrap devient précieux quand les hypothèses sont douteuses (erreurs très asymétriques, petit échantillon, quantité d'intérêt compliquée comme un rapport de coefficients).
 
 ### 1.2.7 Retour aux questions de la gérante
 
@@ -354,8 +369,8 @@ Nous pouvons maintenant répondre honnêtement aux trois questions de l'introduc
 2. **« Est-ce le canal ou l'âge ? »** Le test $F$ du canal est très significatif **à âge égal** (1.2.3) : ce n'est pas l'âge. Et réciproquement.
 3. **« Quel panier prévoir pour un nouveau client ? »** Un intervalle de prédiction, large (1.2.4).
 
-```python
-c1 = np.array([0, 0, 1, 20.0])              # coef_Instagram + 20 * coef_age  (par rapport à la référence « Boutique, 30 ans »)
+```python hide
+c1 = np.array([0, 0, 1, 20.0])              # coef_Reseaux + 20 * coef_age  (par rapport à la référence « Boutique, 30 ans »)
 est = c1 @ beta
 se_c = np.sqrt(s2 * c1 @ XtX_inv @ c1)
 bas, haut = est - crit * se_c, est + crit * se_c
@@ -370,6 +385,8 @@ c0 -0.1534    0.028 -5.4802    0.0         -0.2083          -0.0985
 ```
 
 Un client Réseaux de 50 ans dépense donc, en moyenne géométrique, environ **14 % de moins** qu'un client de la boutique de 30 ans : les 20 ans d'âge de plus compensent un peu plus de la moitié de l'écart de canal. Cette comparaison de deux profils précis, avec son intervalle (de −19 % à −9 %), est typiquement ce qu'une simple comparaison de moyennes de groupes ne peut pas donner.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : applications 1.3 et 1.4, exercices 1.4 et 1.5.
 
 > ✅ **À retenir (1.2).**
 > - Sous H1-H5, $\hat{\boldsymbol\beta}\sim\mathcal N(\boldsymbol\beta,\sigma^2(\mathbf X^\top\mathbf X)^{-1})$, $\text{SCR}/\sigma^2\sim\chi^2_{n-p}$, et les deux sont indépendants : d'où $T_j=(\hat\beta_j-\beta_j)/\operatorname{se}(\hat\beta_j)\sim t_{n-p}$ avec $\operatorname{se}(\hat\beta_j)=s\sqrt{c_{jj}}$.

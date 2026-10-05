@@ -15,15 +15,17 @@ Les **modèles linéaires généralisés** (*generalized linear models*, GLM) co
 
 ## Le chemin de ce chapitre
 
-- **2.1 Le cadre des GLM** : pourquoi la droite ne suffit plus ; les trois ingrédients (loi, prédicteur linéaire, lien) ; la famille exponentielle ; l'algorithme des moindres carrés repondérés itérés (IRLS), écrit à la main.
+- **2.1 Le cadre des GLM** : pourquoi la droite ne suffit plus ; les trois ingrédients (loi, prédicteur linéaire, lien) ; la famille exponentielle ; l'algorithme des moindres carrés repondérés itérés (IRLS), suivi pas à pas.
 - **2.2 Régression logistique** : expliquer un oui/non ; cotes (*odds*) et rapports de cotes ; effets marginaux ; ROC, AUC, calibration.
 - **2.3 Régression de Poisson et Gamma** : expliquer un comptage (avec exposition, surdispersion, loi binomiale négative) et un montant positif.
 - **2.4 Déviance, qualité d'ajustement, vérification du modèle** : comparer des modèles emboîtés, lire les résidus, détecter un modèle qui ne tient pas.
 - ➕ **Pour aller plus loin** : les modèles additifs généralisés, GAM (2.5) ; les modèles à excès de zéros, surdispersés, et la loi de Tweedie (2.6).
-- **2.7 Exercices corrigés**.
+- **Bilan du chapitre**, avec la « vérité dévoilée » : ce que nos modèles ont retrouvé du mécanisme simulé.
+
+> 📒 **Le cahier.** Les calculs détaillés (IRLS programmé, vérifications, évaluations de modèles), neuf applications guidées et quatorze exercices corrigés sont dans le **cahier d'exercices et d'applications**, chapitre 2. Le livre y renvoie par une ligne `📒 Pour s'entraîner` en fin de section.
 
 > 💡 **Le fil conducteur : 2 000 clients de la boutique.** Nous travaillons sur le fichier `donnees/clients.csv` : un client par ligne, avec son âge, sa ville, son canal d'acquisition, sa dépense annuelle, s'il a racheté, combien de commandes il a passées. Une colonne est particulière : `offre_bienvenue` (0 ou 1) a été **attribuée au hasard** (la gérante a tiré à pile ou face l'envoi d'un bon de bienvenue). Nous y reviendrons : un tirage au hasard permet de répondre à « *l'offre fait-elle racheter ?* » sans arrière-pensée.
 
 > 📦 **Les données sont simulées.** Comme dans le volume I, le jeu de données est fabriqué par un programme (graine fixe), ce qui permet à chacun de retrouver les mêmes nombres. Il a un avantage pédagogique énorme : **nous connaissons la vérité**. À la fin du chapitre, nous la dévoilerons, pour voir ce que nos modèles ont retrouvé, et ce qu'ils ont manqué. Un fichier complémentaire (`donnees/ch02-sessions.csv`, section 2.5) est également simulé ; le jeu `donnees/enquete_satisfaction.csv` (notes de 1 à 5 de 1 200 répondants) sert à la section 2.2.
 
-> 🛠️ **Outils.** Nous utilisons `statsmodels` (formules à la R : `"y ~ x1 + x2"`), `numpy` et `scipy`. Quelques blocs en **R** (`glm`, `mgcv`) montrent que les mêmes modèles s'écrivent presque pareil dans l'autre grand langage de la statistique. Pour la théorie des chapitres précédents, nous renvoyons au volume I (vraisemblance : section 3.2 ; tests : section 3.4) et au chapitre 1 de ce volume (régression linéaire, moindres carrés).
+> 🧭 **Outils.** Les résultats viennent de `statsmodels` (formules à la R : `"y ~ x1 + x2"`) et, pour les GAM et la loi de Tweedie, du paquet R `mgcv`, qui sert aussi de contrôle croisé. Le livre ne montre que les appels essentiels : le reste du code (vérifications, figures) est dans le cahier et dans les sources. Pour la théorie des chapitres précédents, nous renvoyons au volume I (vraisemblance : section 3.2 ; tests : section 3.4) et au chapitre 1 de ce volume (régression linéaire, moindres carrés).

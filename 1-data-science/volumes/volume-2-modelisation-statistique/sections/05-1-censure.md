@@ -19,7 +19,7 @@ Commençons petit, avec huit clients que la gérante a suivis dans son cahier. P
 
 Quelle est la durée de fidélité d'un client « typique » ? Trois réponses viennent naturellement, et **les trois sont fausses**.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -45,7 +45,7 @@ print("(3) clients partis / clients observés       :", clients8["parti"].mean()
 
 Le dessin rend la situation limpide. Chaque ligne est un client ; le trait s'arrête quand on cesse de l'observer ; le point plein marque un départ, le cercle vide un client **encore présent**, dont l'histoire continue hors du cadre.
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -81,9 +81,9 @@ figure enregistrée
 
 > ⚠️ **Une durée censurée n'est pas une donnée manquante.** On ne la supprime pas, et on ne la remplace pas par la durée observée. Elle dit : « *cette personne a survécu au moins jusque-là* ». C'est exactement l'information que les méthodes de ce chapitre exploitent.
 
-**Mesurer l'erreur.** Avec huit clients, on ne peut pas savoir ce qui est « juste ». Faisons donc une **expérience contrôlée**, possible parce que nous simulons : nous créons 5 000 clients dont nous **connaissons les vraies durées** (une loi de Weibull, que nous définirons au 5.1.3), puis nous les « observons » en coupant l'étude à une date quelconque entre 6 et 60 mois après leur inscription.
+**Mesurer l'erreur.** Avec huit clients, on ne peut pas savoir ce qui est « juste ». Faisons donc une **expérience contrôlée**, possible parce que nous simulons : nous créons 5 000 clients dont nous **connaissons les vraies durées** (une loi de Weibull, que nous définirons au 5.1.3), puis nous les « observons » en coupant l'étude à une date quelconque entre 6 et 60 mois après leur inscription (l'expérience est détaillée dans le cahier, application 5.1).
 
-```python
+```python hide
 from math import gamma, log
 
 rng = np.random.default_rng(51)
@@ -148,7 +148,7 @@ C'est le « total de risque » accumulé depuis l'origine.
 
 **Exemple à la main : le risque constant.** Supposons que, chaque mois, un client encore présent ait la même chance de partir : $h(t)=\lambda=0{,}03$ par mois. Alors $H(t)=0{,}03\,t$ et $S(t)=e^{-0{,}03t}$ : la loi **exponentielle** du volume I. Au bout de 12 mois, $S(12)=e^{-0{,}36}\approx0{,}698$ : 70 % des clients sont encore là. La médiane vérifie $S(t)=0{,}5$, soit $t=\ln 2/0{,}03\approx23{,}1$ mois. La moyenne vaut $1/\lambda\approx33{,}3$ mois.
 
-```python
+```python hide
 lam = 0.03
 print("S(12)     =", round(np.exp(-lam * 12), 4))
 print("médiane   =", round(np.log(2) / lam, 2), "mois")
@@ -167,7 +167,7 @@ Un risque constant a une propriété remarquable (et très restrictive) : la loi
 $$h(t)=\frac{k}{\sigma}\Big(\frac t\sigma\Big)^{k-1},\qquad H(t)=\Big(\frac t\sigma\Big)^{k},\qquad S(t)=\exp\!\Big[-\Big(\frac t\sigma\Big)^{k}\Big].$$
 Le risque est **décroissant** si $k<1$, **constant** si $k=1$ (c'est l'exponentielle, avec $\lambda=1/\sigma$), **croissant** si $k>1$. La médiane est $\sigma(\ln 2)^{1/k}$ et la moyenne $\sigma\,\Gamma(1+1/k)$.
 
-```python
+```python hide
 import matplotlib.pyplot as plt
 
 t = np.linspace(0.01, 60, 400)
@@ -205,9 +205,9 @@ Remarquez que les quatre courbes de survie se croisent au même point, à $t=\si
 > $$E[T]=\int_0^\infty E\big[\mathbf 1_{\{T>t\}}\big]\,dt=\int_0^\infty P(T>t)\,dt=\int_0^\infty S(t)\,dt.$$
 > Cette formule sera notre boussole : estimer la durée moyenne, c'est estimer **l'aire sous la courbe de survie**.
 
-Vérifions-la numériquement pour la Weibull ($k=1{,}35$, $\sigma=36$) :
+Vérification numérique pour la Weibull ($k=1{,}35$, $\sigma=36$) : l'aire sous $S$ vaut 33,01 mois, exactement la valeur de la formule $\sigma\,\Gamma(1+1/k)$ ; la médiane est de $\sigma(\ln2)^{1/k}\approx27{,}4$ mois.
 
-```python
+```python hide
 from scipy.integrate import quad
 
 aire, _ = quad(lambda s: np.exp(-(s / 36) ** 1.35), 0, np.inf)
@@ -226,7 +226,7 @@ médiane σ (ln 2)^(1/k) : 27.44 mois
 
 Nous avons parlé de censure « à droite » sans la définir précisément. Il en existe plusieurs sortes, qu'il faut savoir reconnaître car elles ne se traitent pas de la même façon.
 
-| Type | Ce que l'on sait | Exemple chez la boutique |
+| Type | Ce que l'on sait | Exemple pour la boutique |
 |---|---|---|
 | **À droite** | $T > c$ : l'événement n'a pas eu lieu à la fin de l'observation | un client inscrit en mars 2025, toujours actif en décembre |
 | **À gauche** | $T < c$ : l'événement a *déjà* eu lieu avant la première observation | on découvre en 2025 qu'un client de la base n'a rien acheté depuis une date inconnue, avant l'étude |
@@ -244,7 +244,7 @@ On distingue encore, pour la censure à droite :
 
 Regardons ce que contient notre fichier : quelle part des durées censurées est purement administrative ?
 
-```python
+```python hide
 c = pd.read_csv("donnees/clients.csv")
 c["date_inscription"] = pd.to_datetime(c["date_inscription"])
 c["suivi_possible"] = (pd.Timestamp("2025-12-31") - c["date_inscription"]).dt.days / 30.4375
@@ -287,9 +287,9 @@ En dérivant, $\ell'(\lambda)=D/\lambda-\sum y_i=0$, donc
 $$\hat\lambda=\frac{D}{\sum_i y_i}=\frac{\text{nombre de départs observés}}{\text{total des mois d'exposition}}.$$
 Le dénominateur est l'**exposition**, en « mois-clients » : chaque client, parti ou censuré, contribue par **tout** le temps qu'il a passé sous observation. La dérivée seconde $-D/\lambda^2$ donne l'écart-type $\hat\lambda/\sqrt D$.
 
-Sur nos huit clients : $D=4$ départs et $\sum y_i=3+5+6+8+10+12+14+14=72$ mois-clients, donc $\hat\lambda=4/72\approx0{,}056$ par mois. La durée moyenne estimée est $1/\hat\lambda=18$ mois et la médiane $18\ln2\approx12{,}5$ mois. Vérifions avec un optimiseur, puis appliquons aux 2 000 clients :
+Sur nos huit clients : $D=4$ départs et $\sum y_i=3+5+6+8+10+12+14+14=72$ mois-clients, donc $\hat\lambda=4/72\approx0{,}056$ par mois. La durée moyenne estimée est $1/\hat\lambda=18$ mois et la médiane $18\ln2\approx12{,}5$ mois. Un optimiseur numérique retrouve le même $\hat\lambda$ pour les huit clients ; appliquons maintenant la formule aux 2 000 clients.
 
-```python
+```python hide
 from scipy.optimize import minimize_scalar
 
 def log_vraisemblance_exp(lam, y, d):
@@ -316,7 +316,11 @@ durée moyenne estimée 1/λ̂ = 47.9 mois | médiane ln2/λ̂ = 33.2 mois
 pour comparer : moyenne naïve de toutes les durées = 23.4 mois
 ```
 
+Sur les 2 000 clients : $D=977$ départs pour $46\,761$ mois-clients d'exposition, donc $\hat\lambda=0{,}0209$ par mois (IC95 : de 0,0196 à 0,0222), une durée moyenne estimée de $1/\hat\lambda=47{,}9$ mois et une médiane de $\ln2/\hat\lambda=33{,}2$ mois. Pour comparer, la moyenne naïve de toutes les durées vaut 23,4 mois.
+
 L'estimation exponentielle donne environ 48 mois de durée moyenne, plus du double de la moyenne naïve (23 mois). Est-elle pour autant fiable ? Elle repose sur une hypothèse très forte : un risque **constant**. Si le vrai risque est croissant ou décroissant, l'estimation est biaisée. Il nous faut donc une méthode qui **ne suppose pas la forme du risque** : c'est l'objet de la section suivante.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : application 5.1, exercices 5.1 à 5.3.
 
 > ✅ **À retenir**
 > - Une durée est **censurée à droite** quand l'événement n'a pas eu lieu à la fin de l'observation : on sait seulement $T>y$. Ce n'est pas une donnée manquante.

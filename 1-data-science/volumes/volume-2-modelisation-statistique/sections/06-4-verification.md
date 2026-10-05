@@ -8,7 +8,7 @@ Dans tout ce qui suit, un échantillon MCMC n'est jamais « bon par nature » : 
 
 Nous reprenons les quatre chaînes de la régression logistique de 6.3.5, lancées depuis des points de départ **dispersés**. Le premier diagnostic, et le plus parlant, est le dessin : la **trace** de chaque chaîne, et la distribution des valeurs prises, chaîne par chaîne.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -52,7 +52,7 @@ Ce qu'on cherche (et ce que l'on voit ici) : (i) **les quatre chaînes, parties 
 > $$\widehat R=\sqrt{\frac{\widehat{\mathrm{var}}^+}{W}}\ \ge\ 1\ \text{(approximativement)}.$$
 > Si les chaînes sont bien mélangées, $B\approx W$ et $\widehat R\approx1$ ; si elles sont chacune bloquées dans un coin différent, $B\gg W$ et $\widehat R\gg1$. On utilise aujourd'hui la version **« découpée »** (*split*-$\widehat R$) : on coupe chaque chaîne en deux moitiés avant de calculer, ce qui permet de détecter aussi une chaîne qui dérive lentement (ses deux moitiés ne se ressemblent pas). La recommandation actuelle est $\widehat R<1{,}01$ (l'ancien seuil de 1,1 est jugé trop laxiste).
 
-```python
+```python hide
 def split_rhat(ch):
     """ch : tableau (m chaînes, n itérations). Split-R-chapeau de Gelman-Rubin."""
     m, n = ch.shape
@@ -80,17 +80,32 @@ paramètre  R-chapeau (chauffe incluse)  R-chapeau (chauffe écartée)  ESS
     const                       1.0037                       1.0010 1281
     offre                       1.0064                       1.0023 1276
     age_c                       1.0163                       1.0009 1114
-Réseaux                       1.0022                       1.0037 1158
+  Réseaux                       1.0022                       1.0037 1158
      Site                       1.0043                       1.0024 1205
 ```
+
+Le tableau suivant donne le $\widehat R$ de chaque coefficient, avec et sans la chauffe, et l'ESS totale :
+
+| coefficient | $\widehat R$ (chauffe incluse) | $\widehat R$ (chauffe écartée) | ESS |
+|---|---:|---:|---:|
+| constante | 1,0037 | 1,0010 | 1 281 |
+| offre | 1,0064 | 1,0023 | 1 276 |
+| âge | **1,0163** | 1,0009 | 1 114 |
+| Réseaux | 1,0022 | 1,0037 | 1 158 |
+| Site | 1,0043 | 1,0024 | 1 205 |
 
 Deux enseignements. D'abord, **écarter la chauffe améliore le diagnostic** : en gardant les 1 000 premières itérations, le $\widehat R$ de l'âge est de 1,016 (au-dessus du seuil de 1,01) ; une fois la chauffe retirée, les cinq $\widehat R$ sont inférieurs à 1,004 : les quatre chaînes disent la même chose. (L'effet est modeste ici parce que la loi est presque gaussienne et que la chaîne s'y installe vite ; dans un modèle plus difficile, la chauffe peut faire la différence entre $\widehat R=1{,}5$ et $\widehat R=1{,}00$.) Ensuite, les **ESS** sont de l'ordre de 1 100 à 1 300 : pour estimer une moyenne ou un intervalle de crédibilité à 95 %, la règle usuelle est de viser au moins 400 à 1 000 ; nous sommes dans la fourchette. (Pour des quantiles extrêmes, il en faut davantage.)
 
 > ⚠️ **Ce que l'ESS que nous calculons simplifie.** Nous additionnons les ESS de chaque chaîne. Les logiciels (Stan, ArviZ) utilisent une version qui combine les autocorrélations de toutes les chaînes et des transformations par rangs : elle est plus fiable pour les lois à queues lourdes. Pour nos besoins, l'ordre de grandeur est le même.
 
-**Que se passe-t-il quand la convergence échoue ?** Un diagnostic n'a de valeur que si on a vu au moins une fois à quoi il ressemble quand il détecte quelque chose. Prenons une loi cible à **deux bosses**, mélange à parts égales de $\mathcal N(-4,1)$ et $\mathcal N(4,1)$ (moyenne exacte : 0), et lançons quatre chaînes de Metropolis de points de départ $-6,-2,2,6$, avec un pas petit (0,5) puis grand (6).
+**Que se passe-t-il quand la convergence échoue ?** Un diagnostic n'a de valeur que si on a vu au moins une fois à quoi il ressemble quand il détecte quelque chose. Prenons une loi cible à **deux bosses**, mélange à parts égales de $\mathcal N(-4,1)$ et $\mathcal N(4,1)$ (moyenne exacte : 0), et lançons quatre chaînes de Metropolis de points de départ $-6,-2,2,6$, avec un pas petit (0,5) puis grand (6) :
 
-```python
+| pas | moyennes des 4 chaînes | moyenne globale | $\widehat R$ | ESS |
+|---:|---|---:|---:|---:|
+| 0,5 | −4,08 ; 3,71 ; 4,06 ; 3,92 | 1,90 | **3,072** | 546 |
+| 6,0 | −0,16 ; 0,16 ; −0,28 ; 0,17 | −0,03 | 1,002 | 1 430 |
+
+```python hide
 def log_bimodale(x):
     return np.logaddexp(stats.norm.logpdf(x, -4, 1), stats.norm.logpdf(x, 4, 1))
 
@@ -125,9 +140,15 @@ Même si la chaîne est parfaite, le modèle peut être faux. Le test de bon sen
 
 *Remarque :* il ne s'agit pas d'un test au sens du volume I : le $p_B$ n'est pas uniforme sous le modèle vrai (il est conservateur, car les données servent deux fois : à ajuster le modèle et à le tester). On l'utilise comme **indicateur de désaccord**, pas comme un seuil de décision.
 
-**Retour sur le modèle de Poisson de 6.1.8.** Nous avions modélisé le nombre de commandes annuelles `nb_commandes_an` des 504 clients de la boutique par une loi de Poisson de paramètre $\lambda$ commun, et obtenu l'a posteriori $\mathrm{Gamma}(2087;\ 504{,}5)$. Il avait l'air parfait : un intervalle étroit. Soumettons-le à la vérification.
+**Retour sur le modèle de Poisson de 6.1.8.** Nous avions modélisé le nombre de commandes annuelles `nb_commandes_an` des 504 clients acquis par le canal Boutique par une loi de Poisson de paramètre $\lambda$ commun, et obtenu l'a posteriori $\mathrm{Gamma}(2087;\ 504{,}5)$. Il avait l'air parfait : un intervalle étroit. Soumettons-le à la vérification : on tire 2 000 valeurs de $\lambda$ dans cet a posteriori, on simule pour chacune un jeu de 504 comptages de Poisson, et on compare trois statistiques de ces jeux répliqués aux valeurs observées.
 
-```python
+| statistique | observée | répliques : moyenne | répliques : 2,5 % – 97,5 % | $p$ bayésien |
+|---|---:|---:|---|---:|
+| variance / moyenne | 3,324 | 1,000 | [0,879 ; 1,127] | 0,0 |
+| part de zéros | 0,109 | 0,016 | [0,006 ; 0,030] | 0,0 |
+| maximum | 21 | 11,541 | [10 ; 14] | 0,0 |
+
+```python hide
 clients = pd.read_csv("donnees/clients.csv")
 b = clients.loc[clients["canal_acquisition"] == "Boutique", "nb_commandes_an"].to_numpy()
 n_b = len(b)
@@ -164,7 +185,7 @@ Le verdict est sans appel. La variance observée est **3,3 fois la moyenne**, al
 
 **Réparation : la loi binomiale négative.** On suppose que le paramètre de Poisson **varie d'un client à l'autre** selon une loi gamma ; en intégrant cette variation (la marginalisation d'un mélange gamma-Poisson, que nous retrouverons au chapitre 2, section 2.6), le nombre de commandes suit une loi **binomiale négative** de moyenne $\mu$ et de paramètre de dispersion $k$ : $\mathrm{Var}=\mu+\mu^2/k$. Quand $k\to\infty$, on retrouve Poisson ; plus $k$ est petit, plus la surdispersion est forte. Il n'y a plus de conjugaison, donc… on utilise notre MCMC. Paramétrons $\theta=(\log\mu,\log k)$ pour travailler sur des réels, avec des a priori $\log\mu\sim\mathcal N(1,2^2)$ et $\log k\sim\mathcal N(0,2^2)$, larges.
 
-```python
+```python hide
 def log_post_nb(theta):
     mu, k = np.exp(theta[0]), np.exp(theta[1])
     log_vrais = stats.nbinom.logpmf(b, k, k / (k + mu)).sum()
@@ -199,9 +220,15 @@ k  : médiane 1.817  IC95 [1.513 ; 2.199]
 rappel Poisson (6.1.8) : IC95 de lambda [3.961 ; 4.316], largeur 0.355 | binomiale négative : largeur de mu 0.639
 ```
 
-Les chaînes sont saines ($\widehat R$ proche de 1, ESS élevées). La dispersion $k$ est estimée à environ 1,8 (intervalle environ [1,5 ; 2,2]), loin de l'infini de Poisson. Notez surtout que **l'intervalle de crédibilité de la moyenne est plus large que celui du modèle de Poisson** (largeur 0,64 contre 0,36) : le modèle de Poisson **sous-estimait l'incertitude** en la faisant porter par une moyenne unique, alors que les clients varient. C'est l'effet typique d'un modèle trop simple : intervalles trop étroits. Les données étant simulées, la vérité est connue : le générateur utilise justement une dispersion $k=2$ (avec, en plus, d'autres sources d'hétérogénéité : le goût pour les produits et l'âge) : le $k$ estimé est cohérent. Revérifions le modèle réparé avec les mêmes statistiques :
+Les chaînes sont saines (taux d'acceptation de 0,35 à 0,37 ; $\widehat R$ de 1,0029 pour $\log\mu$ et 1,0019 pour $\log k$ ; ESS de 1 951 et 2 241). L'a posteriori de la moyenne est de 4,134 (intervalle à 95 % [3,817 ; 4,457]) ; la dispersion $k$ a pour médiane 1,817 (intervalle [1,513 ; 2,199]), loin de l'infini de Poisson. Notez surtout que **l'intervalle de crédibilité de la moyenne est plus large que celui du modèle de Poisson** (largeur 0,639 contre 0,355) : le modèle de Poisson **sous-estimait l'incertitude** en la faisant porter par une moyenne unique, alors que les clients varient. C'est l'effet typique d'un modèle trop simple : intervalles trop étroits. Les données étant simulées, la vérité est connue : le générateur utilise justement une dispersion $k=2$ (avec, en plus, d'autres sources d'hétérogénéité : le goût pour les produits et l'âge) : le $k$ estimé est cohérent. Revérifions le modèle réparé avec les mêmes statistiques :
 
-```python
+| statistique | observée | répliques : moyenne | répliques : 2,5 % – 97,5 % | $p$ bayésien |
+|---|---:|---:|---|---:|
+| variance / moyenne | 3,324 | 3,287 | [2,653 ; 4,049] | 0,434 |
+| part de zéros | 0,109 | 0,117 | [0,083 ; 0,155] | 0,667 |
+| maximum | 21 | 22,964 | [17 ; 32] | 0,714 |
+
+```python hide
 idx = rng.choice(len(mu_s), 2000, replace=False)
 p_nb = k_s[idx] / (k_s[idx] + mu_s[idx])
 yrep_nb = rng.negative_binomial(k_s[idx][:, None], p_nb[:, None], size=(2000, n_b))
@@ -241,7 +268,7 @@ variance / moyenne     3.324                3.287              2.653            
            maximum    21.000               22.964             17.000              32.000       0.714
 ```
 
-![Vérification prédictive a posteriori de deux modèles pour le nombre de commandes annuelles des clients de la boutique. En haut, le modèle de Poisson : les histogrammes des trois statistiques répliquées (variance sur moyenne, part de zéros, maximum) sont loin de la valeur observée (trait rouge). En bas, la binomiale négative : la valeur observée est au milieu des répliques.](figures/ch06-ppc-poisson-binneg.png)
+![Vérification prédictive a posteriori de deux modèles pour le nombre de commandes annuelles des clients du canal Boutique. En haut, le modèle de Poisson : les histogrammes des trois statistiques répliquées (variance sur moyenne, part de zéros, maximum) sont loin de la valeur observée (trait rouge). En bas, la binomiale négative : la valeur observée est au milieu des répliques.](figures/ch06-ppc-poisson-binneg.png)
 
 Cette fois, les trois statistiques observées tombent **au milieu** des répliques (les $p_B$ sont loin de 0 et de 1). Le dessin résume la morale : en haut, les données (trait rouge) sont à l'extérieur du nuage des répliques de Poisson ; en bas, elles sont à l'intérieur de celui de la binomiale négative. **Le modèle n'est pas « prouvé vrai »** (aucun ne l'est), mais il a passé trois épreuves que l'autre a échouées.
 
@@ -251,9 +278,16 @@ Cette fois, les trois statistiques observées tombent **au milieu** des répliqu
 
 Avant même de regarder les données, on peut se demander ce que **l'a priori seul implique**. On simule des paramètres dans l'a priori, puis des données dans le modèle : on obtient la loi **prédictive a priori**. Si elle attribue des probabilités énormes à des scénarios absurdes, l'a priori est mal choisi.
 
-Pour la régression logistique du rachat, regardons ce que signifient des a priori $\beta_j\sim\mathcal N(0,s^2)$ de plus en plus larges, en calculant, pour chaque tirage de $\beta$, la **proportion prédite de clients qui rachètent** :
+Pour la régression logistique du rachat, regardons ce que signifient des a priori $\beta_j\sim\mathcal N(0,s^2)$ de plus en plus larges, en calculant, pour chaque tirage de $\beta$, la **proportion prédite de clients qui rachètent** (le taux de rachat réel observé est 0,509) :
 
-```python
+| écart-type $s$ de l'a priori | taux prédit (5 % – 95 %) | tirages avec taux $<5$ % ou $>95$ % | clients avec $p<1$ % ou $>99$ % (en moyenne) |
+|---:|---|---:|---:|
+| 0,5 | [0,28 ; 0,71] | 0,0 % | 0,0 % |
+| 1,5 | [0,12 ; 0,90] | 2,8 % | 8,6 % |
+| 2,5 | [0,05 ; 0,94] | 9,2 % | 28,7 % |
+| 10 | [0,01 ; 0,99] | 19,3 % | 79,2 % |
+
+```python hide
 rng = np.random.default_rng(644)
 sigmoide = lambda u: 1 / (1 + np.exp(-u))
 resultats, lignes = {}, []
@@ -281,7 +315,7 @@ taux de rachat réel observé : 0.509
 
 Lecture : avec $s=0{,}5$, l'a priori est **trop serré** : il n'autorise pratiquement que des taux entre 30 % et 70 %, alors que nous ne savons pas à l'avance qu'ils sont dans cette fourchette. Avec $s=10$, l'a priori est **absurde** : en moyenne, **79 % des clients** y ont une probabilité individuelle de rachat inférieure à 1 % ou supérieure à 99 %, et dans un tirage sur cinq le taux global est inférieur à 5 % ou supérieur à 95 %. Cela n'a rien d'une « ignorance » : c'est une opinion très tranchée, que nous n'avons aucune raison d'avoir. Le choix $s=2{,}5$ de la section 6.3.5 est déjà **généreux** (29 % des clients à probabilité individuelle extrême), $s=1{,}5$ plus prudent (9 %). Les deux autorisent une **large gamme de taux globaux** sans verser dans l'extrême ; nous vérifierons en 6.4.4 que le choix entre eux n'influence pas nos conclusions. Voici le dessin :
 
-```python
+```python hide
 fig, axes = plt.subplots(1, 3, figsize=(10.5, 3.2), sharey=True)
 for ax, s, coul in zip(axes, (0.5, 2.5, 10.0), (ORANGE, BLEU, VIOLET)):
     ax.hist(resultats[s], bins=np.linspace(0, 1, 41), color=coul, alpha=0.8)
@@ -307,9 +341,15 @@ plt.close()
 
 *Exemple à la main.* Une pièce (ou une offre) donne $y$ succès sur $n$ essais. $H_0$ : $\theta=0{,}5$ exactement. $H_1$ : $\theta$ est inconnu avec un a priori uniforme sur $[0,1]$. Alors $p(y\mid H_0)=\binom ny0{,}5^n$ et
 $$p(y\mid H_1)=\binom ny\int_0^1\theta^y(1-\theta)^{n-y}d\theta=\binom ny B(y+1,n-y+1)=\frac1{n+1}.$$
-(Résultat remarquable : avec un a priori uniforme, **chaque** valeur de $y$ entre 0 et $n$ est également probable a priori.) Pour $n=10,\ y=7$ : $p(y\mid H_0)=120/1024=0{,}1172$ et $p(y\mid H_1)=1/11=0{,}0909$. Donc $\mathrm{BF}_{10}=0{,}0909/0{,}1172=0{,}776$ : les données sont **un peu plus probables sous $H_0$** que sous $H_1$. Sept succès sur dix ne suffisent pas à abandonner la pièce équilibrée ! Le p-value fréquentiste bilatéral est 0,34 : le même message. Le code reproduit ce calcul et l'applique à nos données d'offre.
+(Résultat remarquable : avec un a priori uniforme, **chaque** valeur de $y$ entre 0 et $n$ est également probable a priori.) Pour $n=10,\ y=7$ : $p(y\mid H_0)=120/1024=0{,}1172$ et $p(y\mid H_1)=1/11=0{,}0909$. Donc $\mathrm{BF}_{10}=0{,}0909/0{,}1172=0{,}776$ : les données sont **un peu plus probables sous $H_0$** que sous $H_1$. Sept succès sur dix ne suffisent pas à abandonner la pièce équilibrée ! Le p-value fréquentiste bilatéral est 0,34 : le même message. Appliqué à trois cas (a priori uniforme sous $H_1$, probabilités 50/50 a priori) :
 
-```python
+| cas | fréquence | p-valeur (bilatérale) | $\mathrm{BF}_{10}$ | $P(H_1\mid\text{données})$ |
+|---|---:|---:|---:|---:|
+| 7 rachats sur 10 | 0,7000 | 0,34 | 0,776 | 0,437 |
+| offre : 578 sur 1 015 | 0,5695 | $1{,}1\times10^{-5}$ | 720 | 0,999 |
+| 50 400 sur 100 000 | 0,5040 | 0,012 | 0,0972 | 0,089 |
+
+```python hide
 from scipy.special import gammaln
 
 def log_bf10(y_, n_):
@@ -340,9 +380,16 @@ Trois cas, trois leçons. (1) *Peu de données* : le facteur de Bayes de 0,78 et
 
 **Le WAIC : juger un modèle par ses prédictions.** L'idée : un bon modèle est celui qui **prédit bien des données nouvelles**. Le critère **WAIC** (*widely applicable information criterion*) estime la qualité prédictive hors échantillon à partir des seuls tirages a posteriori :
 $$\mathrm{lppd}=\sum_{i=1}^n\log\!\Big(\frac1S\sum_{s=1}^S p(y_i\mid\theta^{(s)})\Big),\qquad p_{\mathrm{WAIC}}=\sum_{i=1}^n\mathrm{Var}_s\big[\log p(y_i\mid\theta^{(s)})\big],\qquad \mathrm{WAIC}=-2\,(\mathrm{lppd}-p_{\mathrm{WAIC}}).$$
-Le premier terme mesure l'ajustement aux données (plus il est grand, mieux le modèle colle) ; $p_{\mathrm{WAIC}}$ est le **nombre effectif de paramètres**, une pénalité qui punit la complexité (c'est l'analogue bayésien de la pénalité de l'AIC, section 1.4). **Plus le WAIC est petit, meilleur est le modèle.** Comparons quatre modèles du rachat, du plus simple au plus complet, en les estimant tous par notre MCMC :
+Le premier terme mesure l'ajustement aux données (plus il est grand, mieux le modèle colle) ; $p_{\mathrm{WAIC}}$ est le **nombre effectif de paramètres**, une pénalité qui punit la complexité (c'est l'analogue bayésien de la pénalité de l'AIC, section 1.4). **Plus le WAIC est petit, meilleur est le modèle.** Comparons quatre modèles du rachat, du plus simple au plus complet, en les estimant tous par notre MCMC (le critère est calculé à partir des tirages a posteriori, sans aucun ajustement supplémentaire) :
 
-```python
+| modèle | paramètres | $p_{\mathrm{WAIC}}$ | WAIC | AIC (maximum de vraisemblance) |
+|---|---:|---:|---:|---:|
+| M0 : constante | 1 | 1,00 | 2 773,9 | 2 773,9 |
+| M1 : + offre | 2 | 1,89 | 2 745,9 | 2 746,1 |
+| M2 : + canal | 4 | 4,26 | 2 732,1 | 2 731,6 |
+| M3 : + âge | 5 | 4,95 | **2 720,8** | 2 720,8 |
+
+```python hide
 def fit_mcmc_logit(colonnes, graine, n_chaines=4, n_iter=3000, chauffe=500, s=2.5):
     Xs = X[colonnes].to_numpy()
     emv_ = sm.Logit(y, Xs).fit(disp=0)
@@ -399,9 +446,16 @@ M2 - M3 : différence de WAIC =   11.4, erreur-type = 7.0
 
 Le WAIC **décroît** à mesure que l'on ajoute l'offre, puis le canal, puis l'âge. Le $p_{\mathrm{WAIC}}$ est très proche du nombre de paramètres (comme il se doit pour un modèle régulier avec beaucoup de données), et le WAIC est quasiment égal à l'AIC calculé par le maximum de vraisemblance : avec un a priori diffus et beaucoup de données, les deux critères racontent la même histoire. Les dernières lignes comparent les gains avec leur **incertitude** (un WAIC isolé ne signifie rien : seules les **différences entre modèles** comptent, et leur erreur-type). Une différence est jugée « claire » si elle dépasse environ deux erreurs-types. Ici, l'offre apporte un gain net (27,9 ± 10,9, soit 2,6 erreurs-types) ; le canal (13,8 ± 8,5) et l'âge (11,4 ± 7,0) apportent des gains d'environ 1,6 erreur-type : **plausibles mais non tranchés** par le WAIC seul. Cela ne contredit pas la section 6.3.5, où les intervalles de crédibilité de l'âge et du canal Réseaux excluent 0 : le WAIC répond à la question « *ce coefficient améliore-t-il la prédiction de clients nouveaux ?* », pas à « *ce coefficient est-il différent de zéro ?* ».
 
-**Sensibilité à l'a priori (6.1.6, enfin faite).** Terminons par l'analyse de sensibilité promise : le coefficient de l'offre change-t-il si l'on modifie l'écart-type $s$ de l'a priori ?
+**Sensibilité à l'a priori (6.1.6, enfin faite).** Terminons par l'analyse de sensibilité promise : le coefficient de l'offre change-t-il si l'on modifie l'écart-type $s$ de l'a priori ? (Moyenne a posteriori et intervalle de crédibilité à 95 % ; le maximum de vraisemblance donne 0,493.)
 
-```python
+| $s$ | moyenne a posteriori de $\beta_{\text{offre}}$ | intervalle à 95 % |
+|---:|---:|---|
+| 0,5 | 0,476 | [0,291 ; 0,653] |
+| 1,5 | 0,488 | [0,296 ; 0,672] |
+| 2,5 | 0,492 | [0,314 ; 0,665] |
+| 10 | 0,494 | [0,321 ; 0,658] |
+
+```python hide
 lignes = []
 for i, s_ in enumerate((0.5, 1.5, 2.5, 10.0)):
     tir, Xs, emv_ = fit_mcmc_logit(["const", "offre", "Réseaux", "Site", "age_c"], graine=660 + i, s=s_)
@@ -443,3 +497,5 @@ Voici la liste de contrôle qui résume cette section. Elle est le prolongement 
 > - **Vérification prédictive a priori** : examiner ce que l'a priori implique. Un a priori « vague » mal choisi (écart-type 10 sur un logit) est tout sauf neutre.
 > - **Facteur de Bayes** (rapport des vraisemblances marginales) : mesure intuitive mais très sensible à l'a priori (paradoxe de Lindley). **WAIC** : qualité prédictive estimée à partir des tirages ; comparer des modèles par leurs **différences** et leurs erreurs-types.
 > - Un a posteriori n'est valide que **conditionnellement au modèle** : la vérification du modèle est une étape à part entière, jamais facultative.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 6 : application 6.4, exercices 6.10 à 6.12.

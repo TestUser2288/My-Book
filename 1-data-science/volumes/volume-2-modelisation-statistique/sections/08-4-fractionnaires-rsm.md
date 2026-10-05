@@ -6,7 +6,7 @@
 
 Combien d'effets contient un plan complet, et de quel ordre ?
 
-```python
+```python hide-code
 import numpy as np
 import pandas as pd
 from math import comb
@@ -30,7 +30,7 @@ print(pd.DataFrame(lignes).to_string(index=False))
           7         128           7                      21         35                 64             127
 ```
 
-Avec 7 facteurs, un plan complet demande **128 essais** pour estimer 127 effets, dont **7 seulement** sont des effets principaux et **21** des interactions d'ordre 2 : les $99$ autres sont des interactions d'ordre 3 ou plus, presque toujours négligeables en pratique. C'est un énorme gaspillage. Le **principe de hiérarchie** dit que les effets principaux sont plus importants que les interactions d'ordre 2, elles-mêmes plus importantes que celles d'ordre 3, etc. Joint au principe de parcimonie (8.3.6), il justifie de **sacrifier les interactions d'ordre élevé**.
+Avec 7 facteurs, un plan complet demande **128 essais** pour estimer 127 effets, dont **7 seulement** sont des effets principaux et **21** des interactions d'ordre 2 : les $99$ autres sont des interactions d'ordre 3 ou plus, presque toujours négligeables en pratique. C'est un énorme gaspillage. Le **principe de hiérarchie** dit que les effets principaux sont plus importants que les interactions d'ordre 2, elles-mêmes plus importantes que celles d'ordre 3, etc. Joint au principe de parcimonie (8.3.6), il justifie de **sacrifier les interactions d'ordre élevé**. Le coût est aussi très concret : avec un essai par semaine, 128 essais représentent plus de deux ans d'expérience, pendant lesquels le contexte (prix des matières, concurrence, saisons) aura eu le temps de changer. Raison de plus pour ne pas payer des essais qui ne servent qu'à mesurer des interactions d'ordre 5, 6 ou 7 que l'on sait pratiquement nulles.
 
 ### 8.4.2 Une demi-fraction : le plan $2^{4-1}$
 
@@ -44,7 +44,7 @@ puisque $D\cdot D=I$ (le produit d'une colonne $\pm1$ par elle-même vaut $+1$).
 
 Vérifions-le numériquement, puis utilisons la **vraie** expérience : parmi les 16 essais de 8.3.6, ne gardons que les 8 pour lesquels $ABCD=+1$ (c'est exactement la fraction définie par $I=ABCD$) et comparons les effets estimés avec ceux du plan complet.
 
-```python
+```python hide
 def plan_2k(k):
     return np.array([[(1 if (i >> j) & 1 else -1) for j in range(k)] for i in range(2 ** k)])
 
@@ -68,14 +68,19 @@ tab = pd.DataFrame({"contraste estime": [noms_alias[i] for i in eff_demi.index],
                    index=eff_demi.index)
 print()
 print(len(demi), "essais retenus sur", len(g))
-print(tab.to_string())
-print("\nEffets du plan complet (16 essais) pour mémoire :", complet[["A", "B", "A:B", "D"]].round(2).to_dict())
 ```
 <!--sortie-->
 ```text
 colonne A = colonne BCD : True | AB = CD : True | AC = BD : True | AD = BC : True
 
 8 essais retenus sur 16
+```
+
+```python hide-code
+print(tab.to_string())
+```
+<!--sortie-->
+```text
       contraste estime  demi-fraction (8 essais)  somme des 2 effets du plan complet
 A              A + BCD                      9.00                                9.00
 B              B + ACD                     11.10                               11.10
@@ -84,6 +89,13 @@ C              C + ABD                     -1.20                               -
 A:C            AC + BD                     -0.45                               -0.45
 B:C            BC + AD                      0.15                                0.15
 A:B:C          ABC + D                      6.50                                6.50
+```
+
+```python hide
+print("\nEffets du plan complet (16 essais) pour mémoire :", complet[["A", "B", "A:B", "D"]].round(2).to_dict())
+```
+<!--sortie-->
+```text
 
 Effets du plan complet (16 essais) pour mémoire : {'A': 9.53, 'B': 12.2, 'A:B': -5.68, 'D': 5.2}
 ```
@@ -110,7 +122,7 @@ Pour cinq facteurs, un plan complet demande 32 essais. Un plan à **8 essais** s
 $$I=ABD=ACE=BCDE.$$
 Le plus court mot a 3 lettres : **résolution III**. Calculons toute la structure de confusion par programme : un effet est confondu avec son produit par chaque mot, et le produit de deux ensembles de lettres est la **différence symétrique** (les lettres communes s'annulent car $L^2=I$).
 
-```python
+```python hide
 def produit(u, v):
     return "".join(sorted(set(u) ^ set(v)))          # lettres communes éliminées
 
@@ -121,6 +133,9 @@ classes = {}
 for e in tous:
     classe = tuple(sorted({e} | {produit(e, w) for w in mots}, key=lambda s: (len(s), s)))
     classes[classe] = classes.get(classe, 0) + 1
+```
+
+```python hide-code
 print(len(tous), "effets possibles, répartis en", len(classes), "classes de confusion (8 essais = 7 contrastes + la moyenne) :\n")
 for c in sorted(classes, key=lambda c: (len(c[0]), c[0])):
     print("  " + " = ".join(x or "I" for x in c))
@@ -143,7 +158,7 @@ Chaque ligne est une **classe de confusion** : les effets d'une même ligne ne p
 
 > ⚠️ **Une simulation instructive.** Supposons que la vérité soit la suivante : A a un effet de $+6$, B de $+4$, **A et B ont une interaction de $+8$**, et **D n'a aucun effet**. (Nous le savons parce que nous simulons ; dans la vraie vie, on l'ignore.) On exécute les 8 essais du plan $2^{5-2}$.
 
-```python
+```python hide-code
 rng = np.random.default_rng(87)
 A, B, C = plan_2k(3).T
 D, E = A * B, A * C                                           # générateurs de la fraction
@@ -169,7 +184,7 @@ Le tableau annonce un « effet de D » d'environ **8** (la colonne D, qui est au
 
 **Le remède : le repliement (*fold-over*).** On exécute une **seconde série de 8 essais** en **inversant tous les signes** du plan ($A\to-A$, etc.). Les relations de définition de longueur impaire changent de signe d'un bloc à l'autre et disparaissent du plan combiné ; il ne reste que $I=BCDE$ : on obtient un plan de **résolution IV à 16 essais**, dans lequel les effets principaux sont séparés de toutes les interactions d'ordre 2.
 
-```python
+```python hide
 X1 = plan_2k(3)
 bloc1 = pd.DataFrame({"A": X1[:, 0], "B": X1[:, 1], "C": X1[:, 2]})
 bloc2 = -bloc1                                                # repliement : tous les signes inversés
@@ -213,7 +228,7 @@ Après le repliement, l'effet de **D** est proche de zéro et celui de l'interac
 
 ### 8.4.5 Optimiser un réglage : les surfaces de réponse
 
-Jusqu'ici, nous cherchions *quels* facteurs comptent. Voici une autre question : **quel réglage donne la meilleure réponse ?** la gérante cuit ses céramiques de Ville B au four et veut maximiser le **pourcentage de pièces sans défaut**. Deux réglages continus : la **température** (autour de 1 000 °C) et la **durée** (autour de 6 heures). La **méthodologie des surfaces de réponse** (*response surface methodology*) procède par étapes :
+Jusqu'ici, nous cherchions *quels* facteurs comptent. Voici une autre question : **quel réglage donne la meilleure réponse ?** la gérante cuit ses céramiques au four et veut maximiser le **pourcentage de pièces sans défaut**. Deux réglages continus : la **température** (autour de 1 000 °C) et la **durée** (autour de 6 heures). La **méthodologie des surfaces de réponse** (*response surface methodology*) procède par étapes :
 
 1. un plan factoriel à deux niveaux **avec points au centre** pour détecter si la réponse est une surface **plane** (modèle du premier ordre) ou **courbe** ;
 2. si la surface est plane, on suit le **chemin de plus forte pente** (la direction du gradient) jusqu'à ce que la réponse cesse de monter ;
@@ -221,7 +236,7 @@ Jusqu'ici, nous cherchions *quels* facteurs comptent. Voici une autre question :
 
 On travaille en **unités codées** : $x_1=(\text{température}-1000)/40$ et $x_2=\text{durée}-6$, de sorte que le centre est $(0,0)$ et le cube vaut $\pm1$. Voici le plan composite centré réalisé : 4 points **factoriels** $(\pm1,\pm1)$, 4 points **axiaux** $(\pm\sqrt2,0)$ et $(0,\pm\sqrt2)$, et **5 répétitions du point central**, soit 13 essais.
 
-```python
+```python hide
 cc = pd.read_csv("donnees/ch08-ccd-cuisson.csv")
 print(cc.sort_values("ordre").to_string(index=False))
 ```
@@ -247,7 +262,7 @@ print(cc.sort_values("ordre").to_string(index=False))
 
 **Étape 1 : y a-t-il de la courbure ?** Avec les seuls points factoriels et centraux, on compare la moyenne des points factoriels à celle du centre : si la surface était plane, elles seraient égales en moyenne. L'écart-type est estimé par les 5 répétitions du centre.
 
-```python
+```python hide
 centre = cc[(cc.x1 == 0) & (cc.x2 == 0)]
 fact = cc[(cc.x1.abs() == 1) & (cc.x2.abs() == 1)]
 ss_pe = ((centre.reussite - centre.reussite.mean()) ** 2).sum()
@@ -269,7 +284,7 @@ erreur pure : s = 1.15 (4 ddl) ; t = -12.53 ; p = 0.0002
 pentes du premier ordre (points factoriels) : b1 = 2.27, b2 = 0.72
 ```
 
-Le centre est **nettement au-dessus** de la moyenne des coins : la réponse a un **sommet** à l'intérieur du carré, et un modèle plan serait faux. Inutile de suivre un chemin de plus forte pente : nous sommes déjà près de l'optimum, et il faut un modèle courbe.
+Le centre est **nettement au-dessus** de la moyenne des coins (83,8 % de pièces sans défaut au centre contre 74,1 % aux coins ; avec l'erreur pure estimée sur les 5 répétitions, $s=1{,}15$, la statistique vaut $t=-12{,}5$ et $p=0{,}0002$) : la réponse a un **sommet** à l'intérieur du carré, et un modèle plan serait faux. Inutile de suivre un chemin de plus forte pente : nous sommes déjà près de l'optimum, et il faut un modèle courbe.
 
 ### 8.4.6 Ajuster le modèle quadratique
 
@@ -278,6 +293,23 @@ $$y=\beta_0+\beta_1x_1+\beta_2x_2+\beta_{11}x_1^2+\beta_{22}x_2^2+\beta_{12}x_1x
 C'est une **régression linéaire** (linéaire en les $\beta$) sur six colonnes : les moindres carrés du chapitre 1 s'appliquent tels quels.
 
 ```python
+import statsmodels.formula.api as smf
+
+q = smf.ols("reussite ~ x1 + x2 + I(x1**2) + I(x2**2) + x1:x2", data=cc).fit()
+print(q.params.round(2))
+```
+<!--sortie-->
+```text
+Intercept     83.80
+x1             2.87
+x2             0.57
+I(x1 ** 2)    -3.69
+I(x2 ** 2)    -6.09
+x1:x2          2.68
+dtype: float64
+```
+
+```python hide
 q = smf.ols("reussite ~ x1 + x2 + I(x1**2) + I(x2**2) + x1:x2", data=cc).fit()
 noms = {"Intercept": "β0", "x1": "β1 (x1)", "x2": "β2 (x2)", "I(x1 ** 2)": "β11 (x1²)", "I(x2 ** 2)": "β22 (x2²)", "x1:x2": "β12 (x1 x2)"}
 coef = pd.DataFrame({"estimation": q.params, "ET": q.bse, "t": q.tvalues, "p": q.pvalues}).rename(index=noms)
@@ -297,13 +329,13 @@ print(f"\nR² = {q.rsquared:.3f} ; R² ajusté = {q.rsquared_adj:.3f} ; s = {np.
 R² = 0.980 ; R² ajusté = 0.966 ; s = 1.10 (7 ddl)
 ```
 
-Les termes quadratiques et le produit $x_1x_2$ sont significatifs ; l'effet linéaire de $x_2$ ne l'est pas. On le **garde** quand même : par le principe de hiérarchie, on ne retire pas un terme d'ordre 1 si des termes d'ordre supérieur qui le contiennent ($x_2^2$, $x_1x_2$) sont dans le modèle (retirer $\beta_2$ reviendrait à imposer que le sommet soit au centre en $x_2$, ce qui dépend du choix d'origine du codage).
+Les termes quadratiques et le produit $x_1x_2$ sont significatifs ($p<0{,}01$) ; l'effet linéaire de $x_2$ ne l'est pas ($p=0{,}18$). Le modèle explique $R^2=98{,}0\ \%$ de la variabilité, avec un écart-type résiduel $s=1{,}10$ sur 7 degrés de liberté. On le **garde** quand même : par le principe de hiérarchie, on ne retire pas un terme d'ordre 1 si des termes d'ordre supérieur qui le contiennent ($x_2^2$, $x_1x_2$) sont dans le modèle (retirer $\beta_2$ reviendrait à imposer que le sommet soit au centre en $x_2$, ce qui dépend du choix d'origine du codage).
 
 **Le modèle est-il adapté ?** Avec les répétitions au centre, on peut séparer le résidu en **erreur pure** (variabilité entre répétitions) et **défaut d'ajustement** (écart systématique entre le modèle et les moyennes des points) :
 $$SS_{\text{résidu}}=SS_{\text{pur}}+SS_{\text{défaut}},\qquad F=\frac{SS_{\text{défaut}}/(\text{ddl}_{\text{res}}-\text{ddl}_{\text{pur}})}{SS_{\text{pur}}/\text{ddl}_{\text{pur}}}.$$
 Si $F$ est grand, le modèle quadratique est insuffisant (il faudrait un ordre supérieur ou une autre échelle).
 
-```python
+```python hide
 ss_def, df_def = q.ssr - ss_pe, q.df_resid - df_pe
 F_def = (ss_def / df_def) / (ss_pe / df_pe)
 print(f"SS résidu = {q.ssr:.2f} = SS erreur pure {ss_pe:.2f} ({df_pe} ddl) + SS défaut d'ajustement {ss_def:.2f} ({int(df_def)} ddl)")
@@ -326,7 +358,7 @@ $$\hat y=\beta_0+b^\top x+x^\top Bx,\qquad B=\begin{pmatrix}\beta_{11}&\beta_{12
 > $$x_s=-\tfrac12B^{-1}b,\qquad \hat y_s=\beta_0+\tfrac12\,b^\top x_s.$$
 > (En effet, $Bx_s=-b/2$ donc $x_s^\top Bx_s=-b^\top x_s/2$, et $\hat y_s=\beta_0+b^\top x_s-b^\top x_s/2$.) La nature de ce point se lit sur les **valeurs propres** de $B$ (volume I, section 1.1.3) : le hessien de $\hat y$ vaut $2B$. Si **toutes** les valeurs propres sont **négatives**, $x_s$ est un **maximum** ; toutes **positives**, un minimum ; de signes **mixtes**, un **col** (point selle), qui n'est pas un optimum. Les **vecteurs propres** donnent les axes de la surface : le long de l'axe de plus petite valeur propre en valeur absolue, la réponse varie peu (une « **crête** » : plusieurs réglages donnent presque le même résultat).
 
-```python
+```python hide
 p = q.params
 b = np.array([p["x1"], p["x2"]])
 B = np.array([[p["I(x1 ** 2)"], p["x1:x2"] / 2], [p["x1:x2"] / 2, p["I(x2 ** 2)"]]])
@@ -368,7 +400,7 @@ La figure (code dans `build/fig_ch08.py`) montre les courbes de niveau : des **e
 
 **Confirmer.** Un optimum prédit par un modèle est une **hypothèse** : on la teste par quelques **essais de confirmation** au réglage proposé. Nous simulons ici trois fournées au sommet estimé (avec le vrai processus, que nous connaissons, et son bruit de 0,9) :
 
-```python
+```python hide
 def vrai_taux(x1, x2):
     return 84 + 3 * x1 + 1 * x2 - 4 * x1 ** 2 - 6 * x2 ** 2 + 2.5 * x1 * x2
 
@@ -394,7 +426,7 @@ moyenne = 84.0 %, dans l'intervalle de prédiction : True
 
 L'idée de la **$D$-optimalité** : la variance des coefficients estimés est proportionnelle à $(X^\top X)^{-1}$ (chapitre 1, section 1.2) ; on cherche les essais qui rendent cette matrice « la plus petite », c'est-à-dire qui **maximisent $\det(X^\top X)$**. Le **volume** de l'ellipsoïde de confiance de $\hat\beta$ est en effet proportionnel à $\det(X^\top X)^{-1/2}$. On le fait par un **algorithme d'échange** : on part de $n$ points tirés dans un ensemble de **candidats**, et on remplace un point par un candidat tant que cela augmente le déterminant.
 
-```python
+```python hide
 def info(points):
     x1, x2 = points[:, 0], points[:, 1]
     Xm = np.column_stack([np.ones(len(points)), x1, x2, x1 ** 2, x2 ** 2, x1 * x2])      # modèle quadratique
@@ -478,3 +510,5 @@ Sur le domaine carré, l'algorithme retrouve **exactement** la grille $3\times3$
 > - Les **surfaces de réponse** cherchent le meilleur réglage : détecter la **courbure** (points au centre), puis ajuster un **modèle quadratique** avec un **plan composite centré** (points factoriels, axiaux, centraux).
 > - Le **point stationnaire** $x_s=-\tfrac12B^{-1}b$ est un maximum si les valeurs propres de $B$ sont négatives ; vérifiez qu'il est **dans le domaine**, testez le **défaut d'ajustement**, **confirmez** par des essais.
 > - Les **plans optimaux** ($D$-optimalité) calculent un plan quand le domaine ou le budget sortent des cadres classiques ; ils dépendent du modèle supposé.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 8 : applications 8.9 à 8.11, exercices 8.9 à 8.11.

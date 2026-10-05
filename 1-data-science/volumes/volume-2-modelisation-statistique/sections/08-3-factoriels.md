@@ -10,7 +10,7 @@ La gérante veut booster les commandes hebdomadaires de sa boutique en ligne. Tr
 |---|---|---|
 | **A** : emballage | standard | cadeau |
 | **B** : prix | normal | promotion de 10 % |
-| **C** : relance | e-mail | stories Réseaux |
+| **C** : relance | e-mail | publication sur les réseaux sociaux |
 
 Il y a $2^3=8$ combinaisons. Chaque combinaison est testée sur **deux semaines** (deux **répétitions**), tirées au hasard dans le calendrier : $16$ semaines au total. La réponse est le nombre de commandes de la semaine.
 
@@ -18,7 +18,7 @@ Il y a $2^3=8$ combinaisons. Chaque combinaison est testée sur **deux semaines*
 
 Voici le plan, avec le tableau des signes de tous les effets possibles. Les colonnes d'interaction sont les **produits** des colonnes des facteurs concernés : si A et B valent $-1$ et $+1$, l'interaction AB vaut $-1\times(+1)=-1$.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -63,13 +63,24 @@ BC   0  0  0  0   0   0   8    0
 ABC  0  0  0  0   0   0   0    8
 ```
 
+| | I | A | B | C | AB | AC | BC | ABC |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| (1) | 1 | −1 | −1 | −1 | 1 | 1 | 1 | −1 |
+| a | 1 | 1 | −1 | −1 | −1 | −1 | 1 | 1 |
+| b | 1 | −1 | 1 | −1 | −1 | 1 | −1 | 1 |
+| ab | 1 | 1 | 1 | −1 | 1 | −1 | −1 | −1 |
+| c | 1 | −1 | −1 | 1 | 1 | −1 | −1 | 1 |
+| ac | 1 | 1 | −1 | 1 | −1 | 1 | −1 | −1 |
+| bc | 1 | −1 | 1 | 1 | −1 | −1 | 1 | −1 |
+| abc | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+
 Les huit lignes sont les huit combinaisons (« a » signifie A haut, B et C bas ; « abc », tout haut ; « (1) », tout bas). Le produit $S^\top S$ vaut $8\times$ la matrice identité : **les huit colonnes sont orthogonales** (le produit scalaire de deux colonnes distinctes est nul) et chacune a une norme de $\sqrt8$. Tout ce chapitre repose sur cette propriété.
 
 ### 8.3.2 Les effets, à la main
 
 Les données de l'expérience (ordre des essais tiré au hasard, puis rangées en ordre standard) :
 
-```python
+```python hide
 f3 = pd.read_csv("donnees/ch08-factoriel-2p3.csv")
 print("Les 5 premières semaines dans l'ordre d'exécution (tiré au hasard) :")
 print(f3.head(5)[["ordre", "A", "B", "C", "commandes"]].to_string(index=False))
@@ -78,7 +89,6 @@ cel = f3.pivot_table(index=["C", "B", "A"], columns="replicat", values="commande
 cel["moyenne"] = cel.mean(axis=1)
 cel.index = S.index                                          # même ordre standard que le tableau des signes
 print("\nRésultats par combinaison :")
-print(cel.round(2).to_string())
 ```
 <!--sortie-->
 ```text
@@ -91,6 +101,13 @@ Les 5 premières semaines dans l'ordre d'exécution (tiré au hasard) :
      5  1  1 -1       68.4
 
 Résultats par combinaison :
+```
+
+```python hide-code
+print(cel.round(2).to_string())
+```
+<!--sortie-->
+```text
 replicat     1     2  moyenne
 (1)       49.9  45.9    47.90
 a         57.1  65.3    61.20
@@ -110,17 +127,23 @@ L'**interaction** AB est la demi-différence entre l'effet de A quand B est haut
 
 $$\text{effet}=\frac{1}{4}\sum_{i=1}^{8}s_i\,\bar y_i\qquad\left(\text{plus généralement }\frac{1}{2^{k-1}}\sum_i s_i\bar y_i\right).$$
 
-```python
+```python hide
 ybar = cel["moyenne"].to_numpy()
 effets = {c: (S[c].to_numpy() * ybar).sum() / 4 for c in ["A", "B", "C", "AB", "AC", "BC", "ABC"]}
 print("Détail pour A : moyenne des cellules A haut =", round(ybar[S.A.to_numpy() == 1].mean(), 2),
       "; A bas =", round(ybar[S.A.to_numpy() == -1].mean(), 2))
+```
+<!--sortie-->
+```text
+Détail pour A : moyenne des cellules A haut = 65.11 ; A bas = 57.7
+```
+
+```python hide-code
 print(pd.Series(effets).round(2).to_string())
 print("\nmoyenne générale :", round(ybar.mean(), 2))
 ```
 <!--sortie-->
 ```text
-Détail pour A : moyenne des cellules A haut = 65.11 ; A bas = 57.7
 A       7.41
 B      13.46
 C       3.44
@@ -132,11 +155,11 @@ ABC     3.44
 moyenne générale : 61.41
 ```
 
-Lisez le résultat comme une phrase : « passer de l'emballage standard à l'emballage cadeau fait varier les commandes de $\ldots$ en moyenne », etc. L'effet du **prix** (B) est le plus grand ; l'interaction AB est négative : l'effet du cadeau est plus faible en promotion, ce qui rappelle exactement l'exemple de 8.1.5.
+Lisez le résultat comme une phrase : « passer de l'emballage standard à l'emballage cadeau fait varier les commandes de $+7{,}4$ en moyenne », etc. L'effet du **prix** (B) est le plus grand ; l'interaction AB est négative : l'effet du cadeau est plus faible en promotion, ce qui rappelle exactement l'exemple de 8.1.5.
 
 > 📐 **L'algorithme de Yates.** Avant les ordinateurs, on calculait tous les effets avec une procédure d'additions et de soustractions, qui reste élégante. On écrit les moyennes en ordre standard $(1),a,b,ab,c,ac,bc,abc$. À chaque étape, la nouvelle colonne contient d'abord les **sommes** de paires voisines, puis leurs **différences** (second moins premier). Après $k$ étapes, on obtient les « contrastes » dans l'ordre $I,A,B,AB,C,AC,BC,ABC$ ; il suffit de diviser par $2^{k-1}$ pour obtenir les effets (et par $2^k$ pour la moyenne).
 
-```python
+```python hide
 def yates(y):
     cols, col = [np.array(y, float)], np.array(y, float)
     for _ in range(int(np.log2(len(y)))):
@@ -149,8 +172,10 @@ noms = ["I", "A", "B", "AB", "C", "AC", "BC", "ABC"]
 tab = pd.DataFrame(Y, index=noms, columns=["moyennes", "étape 1", "étape 2", "contraste (étape 3)"])
 tab["effet = contraste / 4"] = tab["contraste (étape 3)"] / 4
 tab.loc["I", "effet = contraste / 4"] = tab.loc["I", "contraste (étape 3)"] / 8       # la moyenne se divise par 8
+```
+
+```python hide-code
 print(tab.round(2).to_string())
-print("\nIdentique aux effets calculés plus haut :", all(np.isclose(tab.loc[c, "effet = contraste / 4"], effets[c]) for c in effets))
 ```
 <!--sortie-->
 ```text
@@ -163,6 +188,13 @@ C       48.65    13.30    20.55                13.75                   3.44
 AC      60.95    -4.35    33.30                11.75                   2.94
 BC      67.25    12.30   -17.65                12.75                   3.19
 ABC     75.65     8.40    -3.90                13.75                   3.44
+```
+
+```python hide
+print("\nIdentique aux effets calculés plus haut :", all(np.isclose(tab.loc[c, "effet = contraste / 4"], effets[c]) for c in effets))
+```
+<!--sortie-->
+```text
 
 Identique aux effets calculés plus haut : True
 ```
@@ -180,6 +212,25 @@ $$y=\beta_0+\beta_A x_A+\beta_B x_B+\beta_C x_C+\beta_{AB}x_Ax_B+\dots+\beta_{AB
 Deux conséquences remarquables. **La précision est la même pour tous les effets** et ne dépend que du nombre total d'essais $N$ : tous les essais servent à chaque effet. Et comme les estimateurs sont **non corrélés**, le fait de retirer un effet du modèle ne change pas les estimations des autres. Il reste à estimer $\sigma^2$ : avec des **répétitions**, on dispose de l'**erreur pure**, la variabilité entre les répétitions d'une même combinaison.
 
 ```python
+import statsmodels.formula.api as smf
+
+mod = smf.ols("commandes ~ A * B * C", data=f3).fit()
+res = pd.DataFrame({"effet": 2 * mod.params, "écart-type": 2 * mod.bse, "p": mod.pvalues}).drop("Intercept")
+print(res.round(3))
+```
+<!--sortie-->
+```text
+        effet  écart-type      p
+A       7.413        2.28  0.012
+B      13.463        2.28  0.000
+A:B    -5.388        2.28  0.046
+C       3.437        2.28  0.170
+A:C     2.937        2.28  0.234
+B:C     3.188        2.28  0.200
+A:B:C   3.438        2.28  0.170
+```
+
+```python hide
 mod = smf.ols("commandes ~ A * B * C", data=f3).fit()          # A*B*C = tous les effets principaux et interactions
 N = len(f3)
 res = pd.DataFrame({"effet": 2 * mod.params, "ET": 2 * mod.bse, "t": mod.tvalues, "p": mod.pvalues}).drop("Intercept")
@@ -206,9 +257,9 @@ erreur pure : s² = 20.80 (ddl = 8) ; statsmodels : 20.80
 écart-type d'un effet = 2 s / sqrt(N) = 2 x 4.56 / 4 = 2.280
 ```
 
-La colonne « effet » redonne les effets du calcul à la main (au facteur de moyenne près pour $I$). Les écarts-types des effets sont **tous identiques**, comme le prédit le théorème, et valent environ 2,3 commandes. Chaque effet a **1 degré de liberté** et la même statistique $t=\text{effet}/\text{ET}$, à $N-8=8$ degrés de liberté (erreur pure). Dans un plan factoriel, la décomposition de la variance de 8.2 devient limpide : la somme de carrés de l'effet $j$ vaut $N\widehat\beta_j^{\,2}=N\cdot(\text{effet}_j/2)^2$.
+La colonne « effet » redonne les effets du calcul à la main (au facteur de moyenne près pour $I$). Les écarts-types des effets sont **tous identiques**, comme le prédit le théorème, et valent environ 2,3 commandes (l'erreur pure vaut $s^2=20{,}80$ avec 8 degrés de liberté, soit $s=4{,}56$, et $2s/\sqrt{16}=2{,}28$). Chaque effet a **1 degré de liberté** et la même statistique $t=\text{effet}/\text{ET}$, à $N-8=8$ degrés de liberté (erreur pure). Dans un plan factoriel, la décomposition de la variance de 8.2 devient limpide : la somme de carrés de l'effet $j$ vaut $N\widehat\beta_j^{\,2}=N\cdot(\text{effet}_j/2)^2$ (par exemple $SS_B=725{,}0$ et $SS_A=219{,}8$, contre $166{,}4$ pour l'erreur pure et $1\,396{,}9$ au total ; le tableau d'analyse de variance et cette formule donnent les mêmes valeurs).
 
-```python
+```python hide
 aov = anova_lm(mod)
 ss = (N * (res["effet"] / 2) ** 2).round(1)
 verif = pd.DataFrame({"SS (tableau d'ANOVA)": aov["sum_sq"].drop("Residual").round(1).to_numpy(),
@@ -232,11 +283,16 @@ SS erreur pure = 166.4 ; SS total = 1396.9 ; somme des SS des effets + erreur = 
 
 ### 8.3.4 Lire l'expérience : quels effets comptent ?
 
-Au seuil de 5 %, trois effets ressortent : le **prix** (B), l'**emballage** (A) et leur **interaction** (AB). Les effets de la relance (C) et des autres interactions sont plus petits que le bruit ne permet de le distinguer ($p>0{,}15$ pour chacun). Représentons les résultats : le **cube des moyennes** (le code de ce dessin est dans `build/fig_ch08.py`) puis le graphique d'interaction AB.
+Au seuil de 5 %, trois effets ressortent : le **prix** (B), l'**emballage** (A) et leur **interaction** (AB). Les effets de la relance (C) et des autres interactions sont plus petits que le bruit ne permet de le distinguer ($p>0{,}15$ pour chacun). Représentons les résultats : le **cube des moyennes**, puis le graphique d'interaction AB.
 
 ![Les huit moyennes de cellules sur un cube dont les arêtes sont les trois facteurs : les valeurs les plus élevées se trouvent du côté « promotion » (haut du cube), et la plus élevée est « tout haut ».](figures/ch08-cube-2p3.png)
 
-```python
+```python hide
+import subprocess, sys
+subprocess.run([sys.executable, "build/fig_ch08.py", "cube", "rsm"], check=True)   # figures « cube » (8.3) et « surface de réponse » (8.4)
+```
+
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -270,16 +326,10 @@ On retrouve la même histoire qu'en 8.1.5 : l'emballage cadeau aide **surtout qu
 
 **Modèle réduit et prédiction.** Puisque les effets non significatifs ne se distinguent pas du bruit, on peut les retirer du modèle. Comme les estimateurs sont non corrélés, les effets restants **ne changent pas**, mais l'erreur est estimée avec plus de degrés de liberté. On peut alors prédire la réponse aux huit réglages et choisir le meilleur.
 
-```python
+```python hide
 red = smf.ols("commandes ~ A + B + A:B", data=f3).fit()
 print(red.params.round(3).to_string())
 print(f"\nR² complet = {mod.rsquared:.3f} ; R² réduit = {red.rsquared:.3f} ; s (erreur) = {np.sqrt(red.mse_resid):.2f} (ddl {int(red.df_resid)})\n")
-
-grille = pd.DataFrame([(a, b) for b in (-1, 1) for a in (-1, 1)], columns=["A", "B"])
-pred = red.get_prediction(grille).summary_frame(alpha=0.05)
-grille["prédiction"] = pred["mean"].round(1)
-grille["IC95 de la moyenne"] = [f"[{lo:.1f} ; {hi:.1f}]" for lo, hi in zip(pred["mean_ci_lower"], pred["mean_ci_upper"])]
-print(grille.to_string(index=False))
 ```
 <!--sortie-->
 ```text
@@ -289,7 +339,17 @@ B             6.731
 A:B          -2.694
 
 R² complet = 0.881 ; R² réduit = 0.759 ; s (erreur) = 5.29 (ddl 12)
+```
 
+```python hide-code
+grille = pd.DataFrame([(a, b) for b in (-1, 1) for a in (-1, 1)], columns=["A", "B"])
+pred = red.get_prediction(grille).summary_frame(alpha=0.05)
+grille["prédiction"] = pred["mean"].round(1)
+grille["IC95 de la moyenne"] = [f"[{lo:.1f} ; {hi:.1f}]" for lo, hi in zip(pred["mean_ci_lower"], pred["mean_ci_upper"])]
+print(grille.to_string(index=False))
+```
+<!--sortie-->
+```text
  A  B  prédiction IC95 de la moyenne
 -1 -1        48.3      [42.5 ; 54.0]
  1 -1        61.1      [55.3 ; 66.8]
@@ -303,7 +363,7 @@ Le meilleur réglage prédit est « emballage cadeau **et** promotion » (69,2 c
 
 Le modèle programmé pour simuler ces données (que nous dévoilons maintenant) contenait aussi un effet de la relance C (+4 commandes en effet) et une interaction BC (+3). Le tableau ne les a **pas détectés** : $p=0{,}17$ et $p=0{,}20$. Absence de preuve n'est pas preuve d'absence. Calculons la puissance de ce plan pour un effet de 4 commandes, avec le vrai bruit $\sigma=3{,}5$ : l'écart-type d'un effet vaut $2\sigma/\sqrt N$ ; la statistique $t$ suit, sous l'alternative, une loi de Student **non centrale** de paramètre $\delta=\Delta/(2\sigma/\sqrt N)$.
 
-```python
+```python hide-code
 sigma, delta_effet = 3.5, 4.0
 lignes = []
 for r in (1, 2, 3, 4, 6):
@@ -347,7 +407,7 @@ La seconde idée, **la méthode de Lenth**, chiffre cette intuition sans modèle
 
 Un effet dont la valeur absolue dépasse la SME est déclaré actif (la ME est plus permissive).
 
-```python
+```python hide
 g = pd.read_csv("donnees/ch08-factoriel-2p4.csv")
 mod4 = smf.ols("commandes ~ A * B * C * D", data=g).fit()
 eff = (2 * mod4.params).drop("Intercept")
@@ -382,7 +442,7 @@ ABD  -0.92     0.92                  False
 CD   -0.67     0.67                  False
 ```
 
-```python
+```python hide
 z = stats.norm.ppf(0.5 + 0.5 * (np.arange(1, m + 1) - 0.5) / m)
 fig, ax = plt.subplots(figsize=(6.4, 4.4))
 actifs = absolu > SME
@@ -407,9 +467,9 @@ figure enregistrée
 
 ![Diagramme demi-normal des 15 effets d'un plan 2⁴ non répliqué : onze points suivent la droite du bruit près de l'origine, quatre points actifs (B, A, AB et D) s'en détachent nettement et dépassent le seuil SME.](figures/ch08-demi-normal.png)
 
-Onze points alignés sur la droite du bruit, quatre points qui s'en détachent : **B, A, AB et D** (effets de 12,2, 9,5, −5,7 et 5,2 contre une SME de 4,7). Remarquez que D, avec 5,2, ne dépasse la SME que de peu : avec un bruit un peu plus fort, il aurait pu passer inaperçu. Les onze autres, dont toutes les interactions d'ordre 3 et 4, sont indiscernables du bruit. Ce résultat se confirme par une régression sur les seuls effets actifs, en reversant les degrés de liberté « libérés » (les 11 effets retirés) à l'**erreur** :
+Sur ces données, $s_0=1{,}01$, $\text{PSE}=0{,}90$, $\text{ME}=2{,}31$ et $\text{SME}=4{,}70$. Le diagramme montre onze points alignés sur la droite du bruit et quatre points qui s'en détachent : **B, A, AB et D** (effets de 12,2, 9,5, −5,7 et 5,2 contre une SME de 4,7). Remarquez que D, avec 5,2, ne dépasse la SME que de peu : avec un bruit un peu plus fort, il aurait pu passer inaperçu. Les onze autres, dont toutes les interactions d'ordre 3 et 4, sont indiscernables du bruit. Ce résultat se confirme par une régression sur les seuls effets actifs, en reversant les degrés de liberté « libérés » (les 11 effets retirés) à l'**erreur** : on obtient $s=1{,}45$ avec 11 degrés de liberté, $R^2=0{,}981$, et quatre effets tous significatifs ($p<0{,}001$).
 
-```python
+```python hide
 red4 = smf.ols("commandes ~ A + B + A:B + D", data=g).fit()
 t4 = pd.DataFrame({"effet": 2 * red4.params, "ET": 2 * red4.bse, "p": red4.pvalues}).drop("Intercept")
 print(t4.round(3).to_string())
@@ -441,3 +501,5 @@ Révélons la vérité (`build/donnees_ch08.py`).
 > - Les **interactions** sont lues sur le **graphique d'interaction** et le **cube** ; ne parlez pas d'un effet principal quand l'interaction domine.
 > - Sans répétition, le **diagramme demi-normal** et la **méthode de Lenth** repèrent les effets actifs en s'appuyant sur la **parcimonie des effets**.
 > - Un test non significatif ne prouve pas l'absence d'effet : calculez la **puissance** du plan pour l'effet qui compte.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 8 : applications 8.7 et 8.8, exercices 8.6 à 8.8 et 8.13.

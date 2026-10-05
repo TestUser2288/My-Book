@@ -1,6 +1,6 @@
 ## 3.3 Classification non supervisée
 
-> 💡 **Intuition.** la gérante a devant elle un millier de clientes et voudrait savoir « qui ressemble à qui ». On ne lui a donné aucune étiquette (« cliente fidèle », « cliente de passage ») : on veut que ce soient **les données elles-mêmes** qui proposent des groupes. C'est la **classification non supervisée** (*clustering*) : regrouper les individus de façon que ceux d'un même groupe se ressemblent plus entre eux qu'avec ceux des autres groupes. Deux familles de méthodes, simples et complémentaires : les **k-means** (on fixe le nombre de groupes et on optimise) et la **classification hiérarchique** (on construit un arbre de fusions successives).
+> 💡 **Intuition.** La gérante a devant elle un millier de clientes et voudrait savoir « qui ressemble à qui ». On ne lui a donné aucune étiquette (« cliente fidèle », « cliente de passage ») : on veut que ce soient **les données elles-mêmes** qui proposent des groupes. C'est la **classification non supervisée** (*clustering*) : regrouper les individus de façon que ceux d'un même groupe se ressemblent plus entre eux qu'avec ceux des autres groupes. Deux familles de méthodes, simples et complémentaires : les **k-means** (on fixe le nombre de groupes et on optimise) et la **classification hiérarchique** (on construit un arbre de fusions successives).
 
 > ⚠️ **Avertissement de départ.** Un algorithme de classification **rend toujours des groupes**, même quand il n'y en a aucun. Donnez-lui un nuage uniforme, il le découpera en morceaux avec le même aplomb. Tout ce que nous apprendrons dans cette section — choisir le nombre de groupes, mesurer leur qualité, tester leur stabilité — sert à répondre à la vraie question : *ces groupes existent-ils, ou est-ce moi qui les ai tracés ?*
 
@@ -35,9 +35,9 @@ On répète jusqu'à ce que plus aucun point ne change de groupe.
 
 Suivons la variance intra-groupe $W$ : avec les centres de départ $(1;\ 4)$ et les groupes $\{1,2\},\{4,9,11,12\}$, $W=(0+1)+(0+25+49+64)=139$ ; après la première mise à jour (centres $1{,}5$ et $9$), $W=0{,}5+38=38{,}5$ ; après la deuxième affectation, $W=19{,}75$ ; après la deuxième mise à jour, $W=28/3\approx9{,}33$. **$W$ n'a fait que diminuer** : $139\to38{,}5\to19{,}75\to9{,}33$.
 
-Le code suivant écrit l'algorithme et suit $W$ à chaque étape :
+Un petit programme qui suit $W$ à chaque étape retrouve exactement ces nombres ($139\to38{,}5\to19{,}75\to9{,}33$) et s'arrête au troisième tour, quand les centres ne bougent plus.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -74,9 +74,9 @@ convergence
 >
 > **Mais attention** : il s'arrête sur un **minimum local**, pas forcément global. Le résultat dépend des centres de départ.
 
-**Les centres de départ : k-means++ et redémarrages.** Deux précautions pour éviter les mauvais minima locaux. D'abord, **plusieurs départs aléatoires** (on garde la solution de plus petit $W$). Ensuite, l'initialisation **k-means++** : le premier centre est tiré au hasard parmi les points, puis chaque centre suivant est tiré avec une probabilité proportionnelle au **carré de la distance** au centre le plus proche déjà choisi. Les centres de départ sont ainsi bien étalés. Voici l'algorithme complet en NumPy :
+**Les centres de départ : k-means++ et redémarrages.** Deux précautions pour éviter les mauvais minima locaux. D'abord, **plusieurs départs aléatoires** (on garde la solution de plus petit $W$). Ensuite, l'initialisation **k-means++** : le premier centre est tiré au hasard parmi les points, puis chaque centre suivant est tiré avec une probabilité proportionnelle au **carré de la distance** au centre le plus proche déjà choisi. Les centres de départ sont ainsi bien étalés. L'algorithme complet (Lloyd, k-means++ et dix redémarrages) tient en une vingtaine de lignes de NumPy ; nous l'écrivons pas à pas dans l'application 3.3 du cahier.
 
-```python
+```python hide
 def kmeans(X, k, rng, n_init=10, max_iter=100):
     """k-means (algorithme de Lloyd, initialisation k-means++, n_init redémarrages)."""
     meilleur = None
@@ -104,9 +104,9 @@ def kmeans(X, k, rng, n_init=10, max_iter=100):
 
 - les **occasionnelles** (300) : peu de commandes, petit panier ;
 - les **fidèles** (200) : beaucoup de commandes, panier moyen ;
-- les **cadeaux** (100) : peu de commandes mais très gros panier (offrir un margoum).
+- les **cadeaux** (100) : peu de commandes mais très gros panier (offrir un cadeau de valeur).
 
-```python
+```python hide
 rng = np.random.default_rng(11)
 profils = {"occasionnelles": (300, (1.5, 35), (0.7, 8)),
            "fidèles": (200, (6.0, 50), (1.4, 10)),
@@ -143,7 +143,20 @@ inertie scikit-learn : 188.1
 indice de Rand ajusté (k-means de ce chapitre vs vrais profils) : 0.941
 ```
 
-Notre implémentation trouve **exactement** la même inertie que celle de `scikit-learn` (188,1). Les effectifs trouvés ($99$, $191$ et $310$) sont proches des vrais ($100$, $200$ et $300$) et l'accord avec les profils programmés est excellent ($\mathrm{ARI}\approx0{,}94$). Il n'est pas parfait, et ne le sera jamais : les nuages des « occasionnelles » et des « fidèles » se chevauchent un peu, et les clientes situées à la frontière sont inévitablement rangées au hasard de leur position.
+Voici l'appel de `scikit-learn` sur ces données (`Zs` désigne les variables standardisées) :
+
+```python
+from sklearn.cluster import KMeans
+
+km = KMeans(n_clusters=3, n_init=10, random_state=0).fit(Zs)
+print(round(km.inertia_, 1), np.bincount(km.labels_).tolist())
+```
+<!--sortie-->
+```text
+188.1 [191, 310, 99]
+```
+
+Notre propre implémentation (celle du cahier) trouve **exactement** la même inertie (188,1). Les effectifs trouvés ($191$, $310$ et $99$ ; l'ordre des étiquettes est arbitraire) sont proches des vrais ($200$, $300$ et $100$) et l'accord avec les profils programmés est excellent ($\mathrm{ARI}\approx0{,}94$). Il n'est pas parfait, et ne le sera jamais : les nuages des « occasionnelles » et des « fidèles » se chevauchent un peu, et les clientes situées à la frontière sont inévitablement rangées au hasard de leur position.
 
 > 💡 **L'indice de Rand ajusté (ARI).** Pour comparer deux partitions sans avoir à numéroter les groupes de la même façon, on compte les **paires de points** : une paire est « d'accord » si les deux partitions la placent ensemble toutes les deux, ou séparée toutes les deux. L'indice de Rand est la proportion de paires d'accord ; la version **ajustée** retire l'accord attendu du hasard, de sorte que $\mathrm{ARI}=1$ signifie des partitions identiques et $\mathrm{ARI}\approx0$ un accord de hasard. Nous nous en servirons pour mesurer à la fois l'exactitude (contre la vérité, quand on l'a) et la **stabilité** (entre deux exécutions).
 
@@ -166,9 +179,9 @@ $$s(i)=\frac{b(i)-a(i)}{\max\bigl(a(i),\,b(i)\bigr)}\in[-1,1].$$
 
 Proche de $1$ : le point est bien à l'intérieur de son groupe. Proche de $0$ : il est à la frontière. Négatif : il est probablement mal classé. La **silhouette moyenne** sur tous les points mesure la qualité globale de la partition ; on choisit le $k$ qui la maximise.
 
-*À la main, sur nos six clientes* ($\{1,2,4\}$ et $\{9,11,12\}$) : pour le point $4$, $a=(|4-1|+|4-2|)/2=2{,}5$ et $b=(|4-9|+|4-11|+|4-12|)/3=20/3\approx6{,}67$, donc $s(4)=(6{,}67-2{,}5)/6{,}67=0{,}625$. Vérifions avec une fonction écrite à la main, puis avec la bibliothèque.
+*À la main, sur nos six clientes* ($\{1,2,4\}$ et $\{9,11,12\}$) : pour le point $4$, $a=(|4-1|+|4-2|)/2=2{,}5$ et $b=(|4-9|+|4-11|+|4-12|)/3=20/3\approx6{,}67$, donc $s(4)=(6{,}67-2{,}5)/6{,}67=0{,}625$. Pour l'ensemble des six points, les silhouettes valent $0{,}793$ ; $0{,}827$ ; $0{,}625$ ; $0{,}625$ ; $0{,}827$ ; $0{,}793$, d'où une silhouette moyenne de $0{,}748$ (la fonction de la bibliothèque donne le même nombre).
 
-```python
+```python hide
 def silhouette_points(X, groupes):
     """Silhouette de chaque point (distances euclidiennes)."""
     D = np.sqrt(((X[:, None, :] - X[None, :, :]) ** 2).sum(axis=2))
@@ -199,7 +212,7 @@ silhouette moyenne (scikit-learn)    : 0.7483
 
 Appliquons les deux outils aux **trois groupes simulés** : le bon nombre est connu, c'est 3. Sachons-nous le retrouver ?
 
-```python
+```python hide-code
 lignes = []
 for k in range(1, 8):
     r = kmeans(Zs, k, np.random.default_rng(0))
@@ -221,7 +234,7 @@ k
 7    97.185               0.396
 ```
 
-Deux lectures concordantes. La **variance intra-groupe** s'effondre de $1\,200$ à $607$ puis à $188$ quand on passe de $1$ à $2$ puis à $3$ groupes (pour $k=1$, $W=n\times p=600\times2=1\,200$ puisque les variables sont standardisées), puis ne décroît plus que lentement : le **coude** est net en $k=3$. La **silhouette moyenne** atteint son maximum en $k=3$ ($0{,}676$) et chute ensuite. Les deux outils retrouvent le bon nombre de groupes. Pour interpréter une silhouette moyenne, on utilise des repères conventionnels (Kaufman et Rousseeuw) : au-dessus de $0{,}5$, la structure est réelle ; entre $0{,}25$ et $0{,}5$, elle est faible ; en dessous de $0{,}25$, on ne peut pas dire qu'il y ait une structure. Ces repères restent **indicatifs** : des variables très asymétriques produisent des silhouettes élevées même sans aucun groupe, et l'on ne peut interpréter une silhouette qu'en la comparant à celle d'un nuage témoin sans structure (voir l'exercice 12).
+Deux lectures concordantes. La **variance intra-groupe** s'effondre de $1\,200$ à $607$ puis à $188$ quand on passe de $1$ à $2$ puis à $3$ groupes (pour $k=1$, $W=n\times p=600\times2=1\,200$ puisque les variables sont standardisées), puis ne décroît plus que lentement : le **coude** est net en $k=3$. La **silhouette moyenne** atteint son maximum en $k=3$ ($0{,}676$) et chute ensuite. Les deux outils retrouvent le bon nombre de groupes. Pour interpréter une silhouette moyenne, on utilise des repères conventionnels (Kaufman et Rousseeuw) : au-dessus de $0{,}5$, la structure est réelle ; entre $0{,}25$ et $0{,}5$, elle est faible ; en dessous de $0{,}25$, on ne peut pas dire qu'il y ait une structure. Ces repères restent **indicatifs** : des variables très asymétriques produisent des silhouettes élevées même sans aucun groupe, et l'on ne peut interpréter une silhouette qu'en la comparant à celle d'un nuage témoin sans structure (voir l'exercice 3.12 du cahier).
 
 ![Choix du nombre de groupes : variance intra-groupe (le coude) et silhouette moyenne, pour les clientes simulées avec trois vrais profils et pour les clientes réelles de la boutique.](figures/ch03-choix-k.png)
 
@@ -249,7 +262,7 @@ Il reste à définir la **distance entre deux groupes** : c'est le **critère d'
 - *Fusion 3* : on fusionne $\{A,B\}$ et $\{C,D\}$. La distance entre eux vaut, selon le critère : **simple** $\min=d(B,C)=3$ ; **complet** $\max=d(A,D)=6$.
 - *Fusion 4* : on rattache $E$. Distance **simple** $=d(D,E)=5$ ; **complète** $=d(A,E)=11$.
 
-```python
+```python hide
 from scipy.cluster.hierarchy import linkage
 
 pts = np.array([[0.0], [1.0], [4.0], [6.0], [11.0]])
@@ -269,7 +282,7 @@ Les hauteurs de fusion confirment le calcul à la main : $1,\,2,\,3,\,5$ pour le
 
 Appliquons-le aux 600 clientes simulées (critère de Ward, variables standardisées), et comparons la partition à trois groupes ainsi obtenue à celle des k-means. (Pour le dessin, nous ne représenterons que 40 clientes : un dendrogramme de 600 feuilles serait illisible.)
 
-```python
+```python hide
 from scipy.cluster.hierarchy import fcluster, cophenet
 from scipy.spatial.distance import pdist
 
@@ -303,7 +316,7 @@ Les **deux dernières fusions** ont lieu à des hauteurs de $29{,}1$ et $34{,}3$
 
 Passons aux **vraies** clientes (celles du fichier `clients.csv`, qui sont simulées mais **sans** segments programmés, comme dans la plupart des situations réelles). Nous décrivons chaque cliente par quatre variables : nombre de commandes par an, panier moyen, durée de la relation et âge. On écarte la dépense annuelle (elle est quasiment le produit de deux autres variables), et les clientes sans commande (panier nul).
 
-```python
+```python hide-code
 c = pd.read_csv("donnees/clients.csv")
 act = c[c["nb_commandes_an"] > 0].copy()
 var = ["nb_commandes_an", "panier_moyen", "duree_mois", "age"]
@@ -339,7 +352,7 @@ Comparez avec le tableau des clientes simulées (3.3.3) : sur des données qui c
 
 Ce constat n'interdit pas de **segmenter** : pour un usage commercial, on a le droit de découper un continuum en tranches commodes, comme on découpe un âge en tranches de dix ans, pourvu que l'on **ne prétende pas** avoir découvert des types naturels de clientes. Prenons $k=4$ et décrivons les groupes :
 
-```python
+```python hide-code
 r4 = kmeans(Zc, 4, np.random.default_rng(0), n_init=10)
 act["segment"] = r4["groupes"]
 profil = act.groupby("segment").agg(effectif=("id_client", "size"), commandes=("nb_commandes_an", "mean"),
@@ -368,7 +381,7 @@ Ces portraits sont **utiles** (on n'enverra pas le même message à une étudian
 
 Il reste à tester si ces segments sont **stables** : si l'on tire d'autres clientes dans la même population, retrouve-t-on les mêmes groupes ? On ré-estime les k-means sur 30 échantillons bootstrap (volume I, section 3.3.5), on range **toutes** les clientes d'origine dans le groupe du centre le plus proche, et on compare à la partition de référence avec l'ARI.
 
-```python
+```python hide
 def stabilite(X, k, ref, rng, B=30):
     ari = []
     for _ in range(B):
@@ -399,9 +412,9 @@ Les clientes simulées avec de vrais groupes donnent une stabilité **quasi parf
 
 ### 3.3.6 Les pièges de la classification
 
-> ⚠️ **1. Les k-means supposent des groupes « arrondis ».** Comme ils minimisent des distances à des centres, ils découpent l'espace en polyèdres et échouent sur des formes allongées, incurvées ou de tailles très inégales. La classification hiérarchique à lien simple, au contraire, suit les chaînes de points voisins. Exemple classique, ci-dessous : deux « croissants » de lune.
+> ⚠️ **1. Les k-means supposent des groupes « arrondis ».** Comme ils minimisent des distances à des centres, ils découpent l'espace en polyèdres et échouent sur des formes allongées, incurvées ou de tailles très inégales. La classification hiérarchique à lien simple, au contraire, suit les chaînes de points voisins. Exemple classique, ci-dessous : deux « croissants » de lune. Les k-means les coupent en travers (indice de Rand ajusté de $0{,}23$ avec la vraie partition), alors que la classification hiérarchique à lien simple les retrouve parfaitement (indice de $1{,}0$).
 
-```python
+```python hide
 from sklearn.datasets import make_moons
 from sklearn.cluster import AgglomerativeClustering
 
@@ -435,3 +448,5 @@ ARI lien simple       : 1.0
 > - **$k$** : jamais choisi avec $W$ seule ; on regarde le **coude**, la **silhouette** $s(i)=\frac{b-a}{\max(a,b)}$, et surtout la **stabilité** (bootstrap + ARI).
 > - **Hiérarchique** : on fusionne pas à pas ; le **critère d'agrégation** (simple, complet, moyen, Ward) détermine la forme des groupes ; le **dendrogramme** montre toutes les échelles.
 > - Un algorithme de classification **rend toujours des groupes** : sans indicateurs de qualité et de stabilité, on ne peut pas savoir s'ils existent.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.3, exercices 3.9 à 3.12.

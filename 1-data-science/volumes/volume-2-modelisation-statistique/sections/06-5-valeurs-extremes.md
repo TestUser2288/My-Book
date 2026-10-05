@@ -30,9 +30,14 @@ Soit $X_1,\dots,X_n$ indépendantes de même loi, et $M_n=\max(X_1,\dots,X_n)$. 
 > $$G(z)=\exp\left\{-\left[1+\xi\,\frac{z-\mu}{\sigma}\right]^{-1/\xi}\right\},\qquad 1+\xi\frac{z-\mu}\sigma>0,$$
 > avec trois paramètres : **position** $\mu$, **échelle** $\sigma>0$, **forme** $\xi$ (le cas $\xi=0$ se lit comme la limite $\exp\{-e^{-(z-\mu)/\sigma}\}$, la loi de Gumbel).
 
-Autrement dit, comme le théorème central limite pour les moyennes (volume I, section 2.4), il existe un **résultat universel pour les maxima** : quelle que soit la loi d'origine (ou presque), le maximum d'un grand nombre de valeurs suit une loi GEV. Vérifions-le par simulation sur l'exemple exponentiel :
+Autrement dit, comme le théorème central limite pour les moyennes (volume I, section 2.4), il existe un **résultat universel pour les maxima** : quelle que soit la loi d'origine (ou presque), le maximum d'un grand nombre de valeurs suit une loi GEV. Vérifions-le par simulation sur l'exemple exponentiel : on tire 20 000 fois le maximum de 1 000 variables exponentielles, décalé de $\ln 1000\approx6{,}908$, et on compare à la loi de Gumbel.
 
-```python
+| $x$ | $-1$ | 0 | 1 | 2 | 3 |
+|---|---:|---:|---:|---:|---:|
+| $P(M_n-\ln n\le x)$ simulée | 0,0650 | 0,3685 | 0,6922 | 0,8711 | 0,9496 |
+| Gumbel $\exp(-e^{-x})$ | 0,0660 | 0,3679 | 0,6922 | 0,8734 | 0,9514 |
+
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -56,15 +61,15 @@ P(M - ln n <=  3) : simulé 0.9496 | Gumbel exp(-exp(-x)) = 0.9514
 test de Kolmogorov-Smirnov contre la loi de Gumbel : statistique 0.0044
 ```
 
-La loi de Gumbel colle presque parfaitement. Pour un **autre type de queue**, le résultat est différent : le maximum de variables à queue lourde (loi de Pareto) converge vers une loi de Fréchet, de $\xi>0$. Le type de la loi limite est dicté par la **queue** de la loi d'origine : c'est précisément pourquoi on peut modéliser un maximum sans connaître la loi des observations.
+La loi de Gumbel colle presque parfaitement (statistique de Kolmogorov-Smirnov : 0,0044). Pour un **autre type de queue**, le résultat est différent : le maximum de variables à queue lourde (loi de Pareto) converge vers une loi de Fréchet, de $\xi>0$. Le type de la loi limite est dicté par la **queue** de la loi d'origine : c'est précisément pourquoi on peut modéliser un maximum sans connaître la loi des observations.
 
 ### 6.5.3 Les données : des retards de livraison simulés, à queue lourde
 
-Pour que nous puissions **comparer à la vérité**, nous simulons un jeu de données de colis (il s'agit bien d'une **simulation**, de graine 671 ; ce ne sont pas des données réelles de la boutique). Dix ans (2016-2025) de livraisons : environ 3 colis par jour en moyenne (loi de Poisson), chacun avec une durée de livraison en jours qui suit une loi de **Pareto généralisée** décalée de 1 jour (la durée minimale) :
+Pour que nous puissions **comparer à la vérité**, nous simulons un jeu de données de colis (il s'agit bien d'une **simulation**, de graine 671 ; ce ne sont pas des données réelles). Dix ans (2016-2025) de livraisons : environ 3 colis par jour en moyenne (loi de Poisson), chacun avec une durée de livraison en jours qui suit une loi de **Pareto généralisée** décalée de 1 jour (la durée minimale) :
 $$P(\text{durée}>x)=\Bigl(1+\xi\,\frac{x-1}{\sigma}\Bigr)^{-1/\xi},\qquad x\ge1,$$
-avec $\xi=0{,}25$ (queue lourde modérée : la variance est finie, mais pas le moment d'ordre 4) et $\sigma=1{,}5$ jour. Nous garderons ces valeurs **cachées** de nos calculs : nous les utiliserons à la fin pour juger les estimations.
+avec $\xi=0{,}25$ (queue lourde modérée : la variance est finie, mais pas le moment d'ordre 4) et $\sigma=1{,}5$ jour. Nous garderons ces valeurs **cachées** de nos calculs : nous les utiliserons à la fin pour juger les estimations. Le jeu obtenu compte 10 981 colis sur 3 652 jours (3,01 par jour en moyenne) ; la durée moyenne est de 3,04 jours (écart-type 2,89), la médiane de 2,14, le maximum de 56,32.
 
-```python
+```python hide
 rng = np.random.default_rng(671)
 XI0, SIGMA0, COLIS_PAR_JOUR, JOURS = 0.25, 1.5, 3.0, 3652
 n_j = rng.poisson(COLIS_PAR_JOUR, JOURS)
@@ -98,7 +103,7 @@ La médiane est d'environ 2 jours, mais la queue est longue : 13 % des colis dé
 
 On découpe les dix ans en **blocs** (ici : les mois) et on garde le **plus long retard de chaque mois**, ce qui donne 120 maxima. D'après le théorème de la section 6.5.2, ces maxima suivent approximativement une loi GEV, dont on estime les paramètres par **maximum de vraisemblance** (volume I, section 3.2). (Attention : `scipy` paramètre la GEV par $c=-\xi$, signe opposé à la convention de ce livre.)
 
-```python
+```python hide
 maxima_m = colis.groupby(colis["date"].dt.to_period("M"))["duree"].max().to_numpy()
 print(f"{len(maxima_m)} maxima mensuels : min {maxima_m.min():.2f}, médiane {np.median(maxima_m):.2f}, max {maxima_m.max():.2f} jours")
 
@@ -119,15 +124,23 @@ GEV ajustée par maximum de vraisemblance : mu = 13.741, sigma = 4.772, xi = 0.3
 xi : IC95 bootstrap [0.213 ; 0.459]  (écart-type 0.066)
 ```
 
+Les 120 maxima mensuels vont de 7,68 à 56,32 jours (médiane 15,54). L'ajustement par maximum de vraisemblance donne $\hat\mu=13{,}741$, $\hat\sigma=4{,}772$ et $\hat\xi=0{,}324$, avec un intervalle de confiance bootstrap (300 rééchantillonnages des 120 maxima) de $\xi$ égal à [0,213 ; 0,459] (écart-type 0,066).
+
 L'estimation de $\xi$ est positive, ce qui indique une queue lourde, mais son **intervalle d'incertitude est large** : avec seulement 120 maxima, la forme de la queue est difficile à préciser. C'est la caractéristique majeure de la théorie des extrêmes : **on dispose de très peu de données par construction** (les extrêmes sont rares), et donc l'incertitude est grande.
 
 **Les niveaux de retour.** La quantité que la gérante veut vraiment est le **niveau de retour** $z_T$ : la valeur dépassée en moyenne **une fois toutes les $T$ périodes** (ici, $T$ mois). Autrement dit, la valeur telle que $P(\text{max mensuel}>z_T)=1/T$, soit $G(z_T)=1-1/T$. En résolvant l'équation avec la forme de la GEV, on trouve
 $$z_T=\mu-\frac\sigma\xi\Bigl[1-\bigl(-\ln(1-1/T)\bigr)^{-\xi}\Bigr].$$
 (*Démonstration* : $G(z)=1-1/T\iff\bigl[1+\xi\frac{z-\mu}\sigma\bigr]^{-1/\xi}=-\ln(1-1/T)$, car $\exp(-y)=1-1/T\iff y=-\ln(1-1/T)$ ; on élève à la puissance $-\xi$ et on isole $z$.) Un niveau de retour à **10 ans**, c'est $T=120$ mois ; à **100 ans**, $T=1\,200$ mois.
 
-Pour montrer le danger de la loi normale, nous comparons trois estimations : (i) la GEV ajustée ; (ii) une loi **normale** ajustée aux mêmes 120 maxima ; (iii) la **vérité** (calculable car nous connaissons le générateur : le maximum mensuel d'un nombre de colis de moyenne $\lambda_m=3\times30{,}4375$ suit exactement une GEV de paramètres $\xi=\xi_0$, $\sigma=\sigma_0\lambda_m^{\xi_0}$, $\mu=1+\sigma_0(\lambda_m^{\xi_0}-1)/\xi_0$).
+Pour montrer le danger de la loi normale, nous comparons trois estimations : (i) la GEV ajustée ; (ii) une loi **normale** ajustée aux mêmes 120 maxima ; (iii) la **vérité** (calculable car nous connaissons le générateur : le maximum mensuel d'un nombre de colis de moyenne $\lambda_m=3\times30{,}4375$ suit exactement une GEV de paramètres $\xi=\xi_0$, $\sigma=\sigma_0\lambda_m^{\xi_0}$, $\mu=1+\sigma_0(\lambda_m^{\xi_0}-1)/\xi_0$, soit $\mu=13{,}547$, $\sigma=4{,}637$, $\xi=0{,}25$). Les niveaux de retour, en jours, sont :
 
-```python
+| retour | vérité | GEV ajustée | intervalle bootstrap de la GEV | loi normale ajustée |
+|---|---:|---:|---|---:|
+| 1 an | 29,1 | 31,5 | [27 ; 37] | 31,5 |
+| 10 ans | 56,3 | 68,5 | [51 ; 101] | 41,1 |
+| 100 ans | 104,2 | 145,8 | [89 ; 289] | 48,2 |
+
+```python hide
 lam_m = COLIS_PAR_JOUR * 30.4375                                   # colis par mois, en moyenne
 sig_vrai = SIGMA0 * lam_m ** XI0
 mu_vrai = 1 + SIGMA0 * (lam_m ** XI0 - 1) / XI0
@@ -157,7 +170,7 @@ vérité : GEV(mu = 13.547, sigma = 4.637, xi = 0.25)
 
 Le tableau livre le message central. À 1 an, les deux ajustements donnent la même valeur (31,5 jours, pour une vérité de 29,1) : on est **dans** le domaine des données. Mais à 10 ans puis à 100 ans, **la loi normale s'effondre** : elle prédit 41 puis 48 jours, quand la vérité est de 56 puis 104 jours. Elle se trompe de plus de moitié à 100 ans, et dans le sens **rassurant**. La GEV, elle, se trompe plutôt par excès : 68 jours à 10 ans (vérité 56) et 146 à 100 ans (vérité 104), parce que son $\hat\xi=0{,}32$ est un peu supérieur au vrai $0{,}25$ (une petite erreur sur $\xi$ est amplifiée par l'extrapolation). Mais **son intervalle de confiance contient la vérité** ([51 ; 101] à 10 ans, [89 ; 289] à 100 ans), et il est **très large** à 100 ans : c'est honnête, car on extrapole dix fois au-delà de la durée des données. Retenons : la loi normale ne produit pas seulement des erreurs, elle produit des erreurs **rassurantes** et **sans avertissement** (elle n'a pas d'intervalle qui s'élargisse).
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -212,12 +225,12 @@ Garder un seul maximum par mois, c'est **jeter** beaucoup d'information : le deu
 > $$P(X-u>y\mid X>u)\approx\Bigl(1+\xi\,\frac y{\sigma_u}\Bigr)^{-1/\xi},\qquad y>0,$$
 > **avec le même indice $\xi$ que la GEV des maxima** (le paramètre d'échelle $\sigma_u$ dépend du seuil).
 
-Un seuil trop bas rend l'approximation GPD fausse (biais) ; un seuil trop haut laisse trop peu de points (variance). C'est le compromis habituel. Deux outils guident le choix :
+Un seuil trop bas rend l'approximation GPD fausse (biais) ; un seuil trop haut laisse trop peu de points (variance). C'est le compromis habituel. Deux outils guident le choix (on a ici fait varier le seuil du 80ᵉ au 98ᵉ centile) :
 
 - le **graphique de l'excès moyen** (*mean residual life plot*, panneau de droite ci-dessus) : pour une GPD, l'excès moyen au-dessus de $u$ vaut $\dfrac{\sigma_u}{1-\xi}$ et croît **linéairement** avec $u$. On choisit le plus petit seuil à partir duquel la courbe est à peu près une droite ;
 - la **stabilité de $\hat\xi$** : on estime $\xi$ pour plusieurs seuils ; au-delà du bon seuil, l'estimation doit se stabiliser.
 
-```python
+```python hide
 def ajuste_gpd(x, seuil):
     exces = x[x > seuil] - seuil
     xi_, loc_, sc_ = stats.genpareto.fit(exces, floc=0)             # on fixe loc = 0 : les excès sont comptés depuis le seuil
@@ -241,11 +254,28 @@ print(pd.DataFrame(lignes).to_string(index=False))
               0.98            11.16    220      0.289           4.073
 ```
 
+Pour six seuils, on obtient :
+
+| centile du seuil | seuil $u$ (jours) | nombre d'excès | $\hat\xi$ | $\hat\sigma_u$ |
+|---:|---:|---:|---:|---:|
+| 80 % | 4,02 | 2 196 | 0,273 | 2,237 |
+| 90 % | 5,69 | 1 098 | 0,252 | 2,795 |
+| 93 % | 6,76 | 769 | 0,265 | 2,990 |
+| 95 % | 7,73 | 549 | 0,239 | 3,440 |
+| 97 % | 9,62 | 330 | 0,301 | 3,550 |
+| 98 % | 11,16 | 220 | 0,289 | 4,073 |
+
 L'estimation de $\xi$ reste entre 0,24 et 0,30 pour tous les seuils raisonnables (la vraie valeur est 0,25) : le choix d'un seuil au 95ᵉ centile, qui laisse environ 550 excès, est un bon compromis. Passons maintenant à l'estimation du niveau de retour. Si $\zeta_u=P(X>u)$ est la probabilité d'un dépassement du seuil, la loi de $X$ au-dessus de $u$ s'écrit $P(X>x)=\zeta_u\bigl(1+\xi(x-u)/\sigma_u\bigr)^{-1/\xi}$. Le niveau $x_m$ dépassé **en moyenne une fois tous les $m$ colis** vérifie $P(X>x_m)=1/m$, d'où
 $$x_m=u+\frac{\sigma_u}{\xi}\Bigl[(m\,\zeta_u)^{\xi}-1\Bigr].$$
-Une période de retour de 10 ans correspond à $m=$ nombre de colis en 10 ans (environ 11 000), de 100 ans à dix fois plus.
+Une période de retour de 10 ans correspond à $m=$ nombre de colis en 10 ans (environ 11 000), de 100 ans à dix fois plus. Avec le seuil au 95ᵉ centile ($u=7{,}73$ jours, 549 excès, soit 5,0 % des colis), on obtient $\hat\xi=0{,}239$ (intervalle bootstrap [0,148 ; 0,330]) et $\hat\sigma_u=3{,}440$, d'où les niveaux de retour :
 
-```python
+| retour | vérité | POT (GPD) | intervalle bootstrap POT |
+|---|---:|---:|---|
+| 1 an | 29,5 | 30,8 | [27 ; 35] |
+| 10 ans | 56,4 | 58,3 | [45 ; 73] |
+| 100 ans | 104,2 | 105,9 | [71 ; 159] |
+
+```python hide
 u_ = np.quantile(x_all, 0.95)
 xi_p, sc_p, k_p = ajuste_gpd(x_all, u_)
 zeta = (x_all > u_).mean()
@@ -304,3 +334,5 @@ La méthode POT donne des estimations très proches de la vérité (58 jours à 
 > - **Deux approches** : maxima par blocs (GEV) ou excès au-dessus d'un seuil (**POT**, loi de Pareto généralisée). POT utilise davantage de données ; il demande de choisir un seuil.
 > - Le **niveau de retour** $z_T$ est la valeur dépassée en moyenne une fois toutes les $T$ périodes ; on l'estime par une formule explicite dans les paramètres.
 > - **L'incertitude est grande par construction** : toujours donner un intervalle (bootstrap, vraisemblance profilée, ou a posteriori bayésien).
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 6 : application 6.5, exercice 6.13.

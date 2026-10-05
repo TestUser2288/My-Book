@@ -24,15 +24,15 @@ Comment fabriquer une chaîne dont la loi stationnaire est une loi $\pi$ donnée
 
 L'équation dit : « *en régime stationnaire, le flux de $i$ vers $j$ égale le flux de $j$ vers $i$* ». Si les flux sont équilibrés pour chaque paire d'états, la population de chaque état est stable.
 
-**Exemple à la main : trois canaux.** la gérante choisit chaque semaine un canal à mettre en avant parmi 1 = Boutique, 2 = Site, 3 = Réseaux, et elle voudrait que ses choix, sur le long terme, suivent des poids $(2,5,3)$, c'est-à-dire la loi $\pi=(0{,}2;\,0{,}5;\,0{,}3)$. Elle applique la règle de Metropolis : **proposer** l'un des deux autres canaux au hasard (probabilité $\tfrac12$ chacun), puis **accepter** avec la probabilité $\alpha=\min\bigl(1,\ \pi_j/\pi_i\bigr)$, et sinon rester sur place. Construisons la matrice :
+**Exemple à la main : trois canaux.** La gérante choisit chaque semaine un canal à mettre en avant parmi 1 = Boutique, 2 = Site, 3 = Réseaux, et elle voudrait que ses choix, sur le long terme, suivent des poids $(2,5,3)$, c'est-à-dire la loi $\pi=(0{,}2;\,0{,}5;\,0{,}3)$. Elle applique la règle de Metropolis : **proposer** l'un des deux autres canaux au hasard (probabilité $\tfrac12$ chacun), puis **accepter** avec la probabilité $\alpha=\min\bigl(1,\ \pi_j/\pi_i\bigr)$, et sinon rester sur place. Construisons la matrice :
 
 - depuis 1 (poids 2) : vers 2, $\tfrac12\min(1,5/2)=\tfrac12$ ; vers 3, $\tfrac12\min(1,3/2)=\tfrac12$ ; rester : $0$ ;
 - depuis 2 (poids 5) : vers 1, $\tfrac12\cdot\tfrac25=0{,}2$ ; vers 3, $\tfrac12\cdot\tfrac35=0{,}3$ ; rester : $0{,}5$ ;
 - depuis 3 (poids 3) : vers 1, $\tfrac12\cdot\tfrac23=\tfrac13$ ; vers 2, $\tfrac12\cdot1=0{,}5$ ; rester : $\tfrac16$.
 
-Vérifions le bilan détaillé à la main : $\pi_1P_{12}=0{,}2\times0{,}5=0{,}1=\pi_2P_{21}=0{,}5\times0{,}2$ ✓ ; $\pi_1P_{13}=0{,}2\times0{,}5=0{,}1=\pi_3P_{31}=0{,}3\times\tfrac13$ ✓ ; $\pi_2P_{23}=0{,}5\times0{,}3=0{,}15=\pi_3P_{32}=0{,}3\times0{,}5$ ✓. Le code confirme, trouve la loi stationnaire par un calcul d'algèbre linéaire (volume I, section 1.1.3 : vecteur propre associé à la valeur propre 1), et simule la chaîne :
+Vérifions le bilan détaillé à la main : $\pi_1P_{12}=0{,}2\times0{,}5=0{,}1=\pi_2P_{21}=0{,}5\times0{,}2$ ✓ ; $\pi_1P_{13}=0{,}2\times0{,}5=0{,}1=\pi_3P_{31}=0{,}3\times\tfrac13$ ✓ ; $\pi_2P_{23}=0{,}5\times0{,}3=0{,}15=\pi_3P_{32}=0{,}3\times0{,}5$ ✓. Un calcul numérique confirme tout cela : l'écart maximal au bilan détaillé est nul aux arrondis près (de l'ordre de $10^{-17}$) ; la loi stationnaire, trouvée par algèbre linéaire (volume I, section 1.1.3 : vecteur propre associé à la valeur propre 1), est bien $(0{,}2;\,0{,}5;\,0{,}3)$ ; et une simulation de 100 000 pas de la chaîne, partie du canal 1, visite les canaux avec les fréquences $(0{,}2009;\,0{,}5005;\,0{,}2986)$.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -79,7 +79,7 @@ loi stationnaire (vecteur propre) : [0.2 0.5 0.3] | cible pi : [0.2 0.5 0.3]
 fréquences observées sur 100000 pas : [0.2009 0.5005 0.2986]
 ```
 
-Les trois méthodes (vecteur propre, bilan détaillé, simulation) s'accordent : la chaîne visite chaque canal en proportion de son poids. Remarquez que nous n'avons utilisé que les **rapports** de poids $\pi_j/\pi_i$ : le calcul aurait été le même avec des poids $(20,50,30)$. C'est exactement ce qui nous servira quand la constante de normalisation sera inconnue.
+Les trois vérifications (vecteur propre, bilan détaillé, simulation) s'accordent : la chaîne visite chaque canal en proportion de son poids. Remarquez que nous n'avons utilisé que les **rapports** de poids $\pi_j/\pi_i$ : le calcul aurait été le même avec des poids $(20,50,30)$. C'est exactement ce qui nous servira quand la constante de normalisation sera inconnue.
 
 ### 6.3.3 L'algorithme de Metropolis-Hastings
 
@@ -102,7 +102,7 @@ Quand la proposition est **symétrique** ($q(\theta'\mid\theta)=q(\theta\mid\the
 
 **La constante de normalisation disparaît.** Dans $\alpha$, $\pi$ n'intervient que par le rapport $\pi(\theta')/\pi(\theta)$ : on peut remplacer $\pi$ par n'importe quelle fonction proportionnelle (vraisemblance × a priori, sans la constante $p(y)$). Pour éviter les dépassements numériques, on travaille toujours avec les **logarithmes** : on accepte si $\log U<\log\pi(\theta')-\log\pi(\theta)$.
 
-**Premier test : retrouver la loi $\mathrm{Beta}(8,4)$ de 6.1.** Nous connaissons la bonne réponse (moyenne $2/3$, écart-type $0{,}1307$) : nous pouvons donc juger l'algorithme.
+**Premier test : retrouver la loi $\mathrm{Beta}(8,4)$ de 6.1.** Nous connaissons la bonne réponse (moyenne $2/3$, écart-type $0{,}1307$) : nous pouvons donc juger l'algorithme. Voici l'algorithme en dimension 1, tel qu'on l'écrit en pratique (la densité cible n'intervient que par son logarithme, non normalisé) :
 
 ```python
 from scipy import stats
@@ -120,7 +120,9 @@ def metropolis_1d(logp, x0, n, pas, rng):
             acceptes += 1
         chaine[i] = x                                     # on recompte la valeur même si on a refusé
     return chaine, acceptes / n
+```
 
+```python hide
 def log_beta84(x):                                        # log de la densité NON normalisée de Beta(8, 4)
     return 7 * np.log(x) + 3 * np.log(1 - x) if 0 < x < 1 else -np.inf
 
@@ -141,7 +143,7 @@ quantiles 5 %, 50 %, 95 % : [0.4321 0.6779 0.8656] | exacts : [0.4356 0.6762 0.8
 test de Kolmogorov-Smirnov contre la loi exacte : statistique 0.0139
 ```
 
-La chaîne reproduit la loi cible : moyenne, écart-type et quantiles coïncident à environ le centième. (Le test de Kolmogorov-Smirnov fournit une statistique faible ; sa p-valeur serait trompeuse ici, car les points d'une chaîne sont **corrélés** : le test suppose des observations indépendantes.) Regardons maintenant ce que la chaîne a fait, et, pour comprendre le rôle du **pas**, comparons trois pas.
+Lancée 20 000 pas depuis $x_0=0{,}5$ avec un pas de 0,2 (taux d'acceptation : 0,589) et après avoir jeté les 1 000 premiers points, la chaîne reproduit la loi cible : moyenne 0,6674 (exacte 0,6667), écart-type 0,1334 (exact 0,1307), quantiles à 5 %, 50 % et 95 % de 0,4321 ; 0,6779 ; 0,8656 (exacts : 0,4356 ; 0,6762 ; 0,8649). Tout coïncide à environ le centième. (Le test de Kolmogorov-Smirnov fournit une statistique faible ; sa p-valeur serait trompeuse ici, car les points d'une chaîne sont **corrélés** : le test suppose des observations indépendantes.)  Pour comprendre le rôle du **pas**, comparons-en plusieurs.
 
 ### 6.3.4 Régler l'algorithme : le pas de la marche aléatoire
 
@@ -151,9 +153,18 @@ Le seul réglage de la marche aléatoire est le **pas** (l'écart-type de la pro
 - **pas trop grand** : presque toutes les propositions tombent dans des zones de faible densité et sont rejetées ; la chaîne reste bloquée sur place ;
 - **pas intermédiaire** : un bon compromis.
 
-Pour *mesurer* la qualité de l'exploration, on utilise la **taille d'échantillon effective** (ESS), que nous reverrons en 6.4 : $n$ points **corrélés** d'une chaîne valent seulement $\mathrm{ESS}=\dfrac{n}{1+2\sum_{k\ge1}\rho_k}$ points indépendants, où $\rho_k$ est l'autocorrélation de la chaîne au décalage $k$ (volume II, chapitre 4, pour la notion d'autocorrélation). Voici deux petites fonctions pour la calculer (l'autocorrélation par transformée de Fourier rapide ; la somme s'arrête à la première autocorrélation négative) :
+Pour *mesurer* la qualité de l'exploration, on utilise la **taille d'échantillon effective** (ESS), que nous reverrons en 6.4 : $n$ points **corrélés** d'une chaîne valent seulement $\mathrm{ESS}=\dfrac{n}{1+2\sum_{k\ge1}\rho_k}$ points indépendants, où $\rho_k$ est l'autocorrélation de la chaîne au décalage $k$ (volume II, chapitre 4, pour la notion d'autocorrélation). (la somme s'arrête à la première autocorrélation négative). Sur 20 000 pas de la loi $\mathrm{Beta}(8,4)$, on obtient :
 
-```python
+| pas | taux d'acceptation | ESS | ESS / $n$ | autocorr. au décalage 1 | moyenne |
+|---:|---:|---:|---:|---:|---:|
+| 0,01 | 0,970 | 25 | 0,001 | 0,997 | 0,6900 |
+| 0,05 | 0,876 | 444 | 0,023 | 0,944 | 0,6773 |
+| **0,20** | 0,594 | **3 731** | 0,196 | 0,675 | 0,6662 |
+| **0,50** | 0,307 | **3 593** | 0,189 | 0,686 | 0,6649 |
+| 2,00 | 0,083 | 870 | 0,046 | 0,909 | 0,6612 |
+| 10,00 | 0,017 | 217 | 0,011 | 0,978 | 0,6751 |
+
+```python hide
 def autocorr(x, max_lag):
     x = np.asarray(x, dtype=float) - np.mean(x)
     n = len(x)
@@ -193,9 +204,9 @@ print(pd.DataFrame(lignes).to_string(index=False))
 10.00               0.017  217    0.011            0.978   0.6751
 ```
 
-On lit : avec un pas de 0,01, le taux d'acceptation est proche de 1 mais l'ESS est minuscule (la chaîne ne bouge presque pas) ; avec un pas de 10, le taux d'acceptation s'effondre (1,7 % des propositions seulement tombent dans une zone de densité raisonnable) et l'ESS est de 217, dix-sept fois plus faible qu'à l'optimum ; l'optimum est autour d'un pas de 0,2 à 0,5 (ESS d'environ 3 600 à 3 700, soit 19 % de $n$), avec un taux d'acceptation de 30 à 60 %. Noter que **le taux d'acceptation seul ne suffit pas à juger un réglage** : il vaut 97 % avec le pas de 0,01 (mauvais) et 59 % avec le pas de 0,2 (bon). L'ESS est le vrai juge. Voici les traces correspondantes.
+On lit : avec un pas de 0,01, le taux d'acceptation est proche de 1 mais l'ESS est minuscule (la chaîne ne bouge presque pas) ; avec un pas de 10, le taux d'acceptation s'effondre (1,7 % des propositions seulement tombent dans une zone de densité raisonnable) et l'ESS est de 217, dix-sept fois plus faible qu'à l'optimum ; l'optimum est autour d'un pas de 0,2 à 0,5 (ESS d'environ 3 600 à 3 700, soit 19 % de $n$), avec un taux d'acceptation de 30 à 60 %. Noter que **le taux d'acceptation seul ne suffit pas à juger un réglage** : il vaut 97 % avec le pas de 0,01 (mauvais) et 59 % avec le pas de 0,2 (bon). L'ESS est le vrai juge. Voici les traces correspondantes (pour les pas 0,01, 0,2 et 10).
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -225,46 +236,52 @@ plt.close()
 
 > 📐 **Règles pratiques.** En dimension 1, un taux d'acceptation d'environ 44 % est optimal ; en dimension élevée, des résultats théoriques (Roberts, Gelman et Gilks, 1997) donnent un taux optimal d'environ **23 %**, obtenu avec une proposition gaussienne de covariance $\dfrac{2{,}38^2}{d}\,\hat\Sigma$, où $d$ est la dimension et $\hat\Sigma$ une estimation de la covariance de la loi cible. Nous utiliserons cette règle pour la régression logistique.
 
-### 6.3.5 Application : la régression logistique bayésienne du rachat
+### 6.3.5 Un exemple complet : la régression logistique bayésienne du rachat
 
 Passons au problème réel. Nous modélisons le rachat dans les 12 mois par
 $$y_i\sim\mathrm{Bernoulli}\bigl(\sigma(\eta_i)\bigr),\qquad \eta_i=\beta_0+\beta_1\,\text{offre}_i+\beta_2\,\text{Réseaux}_i+\beta_3\,\text{Site}_i+\beta_4\,\text{âge}_i,$$
 où $\sigma(u)=1/(1+e^{-u})$, la Boutique est le canal de référence et l'âge est **standardisé** (centré, divisé par son écart-type : une unité = un écart-type). (La régression logistique est étudiée au chapitre 2, section 2.2 ; ici, on s'intéresse à la façon de **l'estimer** par une méthode bayésienne.) A priori : $\beta_j\sim\mathcal N(0,\,2{,}5^2)$ pour tous les coefficients, un a priori « faiblement informatif » (6.1.6) : il écarte les rapports de cotes extrêmes ($e^{\pm 5}$) sans trop contraindre.
 
-```python
+```python hide
 import statsmodels.api as sm
 
 clients = pd.read_csv("donnees/clients.csv")
 d = clients.copy()
 d["age_c"] = (d["age"] - d["age"].mean()) / d["age"].std()
 X = pd.get_dummies(d[["offre_bienvenue", "canal_acquisition", "age_c"]], columns=["canal_acquisition"], drop_first=True, dtype=float)
-X = X.rename(columns={"canal_acquisition_Instagram": "Réseaux", "canal_acquisition_Site": "Site", "offre_bienvenue": "offre"})
+X = X.rename(columns={"canal_acquisition_Réseaux": "Réseaux", "canal_acquisition_Site": "Site", "offre_bienvenue": "offre"})
 X = sm.add_constant(X)
 noms = list(X.columns)
 Xm, y = X.to_numpy(), d["rachat_12m"].to_numpy()
 print("colonnes :", noms, "| n =", len(y), "| rachat moyen :", y.mean().round(3))
+```
+<!--sortie-->
+```text
+colonnes : ['const', 'offre', 'age_c', 'Réseaux', 'Site'] | n = 2000 | rachat moyen : 0.509
+```
 
-S_PRIOR = 2.5
+```python
 def log_post(beta):
     eta = Xm @ beta
-    log_vrais = np.sum(y * eta - np.logaddexp(0, eta))              # somme de y*eta - log(1 + exp(eta))
-    log_prior = -0.5 * np.sum(beta**2) / S_PRIOR**2                 # normale centrée (constante omise)
+    log_vrais = np.sum(y * eta - np.logaddexp(0, eta))     # somme de y*eta - log(1 + exp(eta))
+    log_prior = -0.5 * np.sum(beta**2) / 2.5**2            # a priori normal centré, écart-type 2,5
     return log_vrais + log_prior
+```
 
+```python hide
 # Point de repère : l'estimation du maximum de vraisemblance (statsmodels)
 emv = sm.Logit(y, Xm).fit(disp=0)
 print("\nlog-posterior en l'EMV :", round(log_post(emv.params), 2))
 ```
 <!--sortie-->
 ```text
-colonnes : ['const', 'offre', 'age_c', 'Réseaux', 'Site'] | n = 2000 | rachat moyen : 0.509
 
 log-posterior en l'EMV : -1355.46
 ```
 
-Le **log-posterior** est écrit en quelques lignes : c'est toute la modélisation. Il reste à fabriquer la chaîne. Nous prenons une marche aléatoire à **proposition gaussienne multivariée** de covariance $\frac{2{,}38^2}{d}\hat\Sigma$, où $\hat\Sigma$ est la covariance estimée des coefficients par le maximum de vraisemblance (l'inverse de la hessienne, que statsmodels fournit) : c'est un bon « premier dessin » de la forme de l'a posteriori. Pour pouvoir diagnostiquer la convergence en 6.4, nous lançons **quatre chaînes** de points de départ dispersés.
+Le **log-posterior** tient en quelques lignes : c'est toute la modélisation. (Le tableau `X` contient une colonne de constantes, l'offre, l'âge standardisé et les indicatrices des canaux Réseaux et Site ; il y a 2 000 clients, dont 50,9 % ont racheté.) Pour situer le résultat, le point de repère est l'estimation du maximum de vraisemblance, fournie par `statsmodels`. Il reste à fabriquer la chaîne. Nous prenons une marche aléatoire à **proposition gaussienne multivariée** de covariance $\frac{2{,}38^2}{d}\hat\Sigma$, où $\hat\Sigma$ est la covariance estimée des coefficients par le maximum de vraisemblance (l'inverse de la hessienne, que statsmodels fournit) : c'est un bon « premier dessin » de la forme de l'a posteriori. Pour pouvoir diagnostiquer la convergence en 6.4, nous lançons **quatre chaînes** de points de départ dispersés.
 
-```python
+```python hide
 def metropolis_multi(logp, x0, n, cov_prop, rng):
     L = np.linalg.cholesky(cov_prop)
     dim = len(x0)
@@ -299,9 +316,17 @@ taux d'acceptation des 4 chaînes : [0.284 0.297 0.293 0.274] (cible théorique 
 forme du tableau de tirages : (4, 6000, 5)
 ```
 
-Les taux d'acceptation sont proches de la valeur théorique. Les 1 000 premières itérations de chaque chaîne (la « chauffe ») sont écartées. Voici le résumé a posteriori, à côté du maximum de vraisemblance :
+Les taux d'acceptation des quatre chaînes (0,284 ; 0,297 ; 0,293 ; 0,274) sont proches de la valeur théorique. Les 1 000 premières itérations de chaque chaîne (la « chauffe ») sont écartées, ce qui laisse $4\times5\,000=20\,000$ tirages. Voici le résumé a posteriori, à côté du maximum de vraisemblance :
 
-```python
+| coefficient | EMV | écart-type EMV | moyenne a posteriori | écart-type a posteriori | crédibilité 95 % | ESS |
+|---|---:|---:|---:|---:|---|---:|
+| constante | 0,034 | 0,100 | 0,033 | 0,098 | [−0,162 ; 0,227] | 1 281 |
+| offre | 0,493 | 0,091 | 0,493 | 0,089 | [0,316 ; 0,663] | 1 276 |
+| âge (standardisé) | −0,163 | 0,046 | −0,163 | 0,045 | [−0,256 ; −0,076] | 1 114 |
+| Réseaux | −0,463 | 0,116 | −0,459 | 0,113 | [−0,681 ; −0,232] | 1 158 |
+| Site | −0,168 | 0,120 | −0,163 | 0,118 | [−0,393 ; 0,073] | 1 205 |
+
+```python hide
 apres = chaines[:, 1000:, :]                                          # on écarte la chauffe
 tirages = apres.reshape(-1, dim)                                      # 4 x 5000 = 20 000 tirages
 resume = pd.DataFrame({
@@ -314,19 +339,19 @@ with pd.option_context("display.float_format", "{:.3f}".format, "display.width",
 ```
 <!--sortie-->
 ```text
-             EMV  écart-type EMV  moyenne a posteriori  écart-type a posteriori  crédib. 2,5 %  crédib. 97,5 %      ESS
-const      0.034           0.100                 0.033                    0.098         -0.162           0.227 1280.705
-offre      0.493           0.091                 0.493                    0.089          0.316           0.663 1276.029
-age_c     -0.163           0.046                -0.163                    0.045         -0.256          -0.076 1114.281
+           EMV  écart-type EMV  moyenne a posteriori  écart-type a posteriori  crédib. 2,5 %  crédib. 97,5 %      ESS
+const    0.034           0.100                 0.033                    0.098         -0.162           0.227 1280.705
+offre    0.493           0.091                 0.493                    0.089          0.316           0.663 1276.029
+age_c   -0.163           0.046                -0.163                    0.045         -0.256          -0.076 1114.281
 Réseaux -0.463           0.116                -0.459                    0.113         -0.681          -0.232 1158.399
-Site      -0.168           0.120                -0.163                    0.118         -0.393           0.073 1205.256
+Site    -0.168           0.120                -0.163                    0.118         -0.393           0.073 1205.256
 ```
 
 Les moyennes a posteriori sont **presque identiques** aux estimations du maximum de vraisemblance, et les écarts-types a posteriori sont presque ceux de l'EMV (c'est le théorème de Bernstein-von Mises du 6.1.6 à l'œuvre : avec 2 000 observations et un a priori large, a posteriori et vraisemblance se confondent). Les ESS sont d'environ 1 100 à 1 300 sur 20 000 tirages (l'ESS ne représente qu'environ 6 % du nombre de tirages : les points d'une marche aléatoire sont fortement corrélés). C'est suffisant : l'erreur de simulation sur une moyenne a posteriori vaut $\sigma/\sqrt{\mathrm{ESS}}\approx0{,}089/\sqrt{1\,276}\approx0{,}0025$ pour le coefficient de l'offre, soit moins de 3 % de son incertitude a posteriori. (Nous reviendrons en 6.4 sur ce qui rend un ESS « suffisant ».)
 
-Le point clé de l'approche bayésienne est que nous **possédons maintenant des tirages de la loi jointe a posteriori** des cinq coefficients : tout ce que l'on veut calculer devient une moyenne sur ces tirages, sans formule. Par exemple, le **rapport de cotes** de l'offre, et surtout l'**effet de l'offre sur la probabilité de rachat** pour un client de référence (acquis en Boutique, d'âge moyen) :
+Le point clé de l'approche bayésienne est que nous **possédons maintenant des tirages de la loi jointe a posteriori** des cinq coefficients : tout ce que l'on veut calculer devient une moyenne sur ces tirages, sans formule. Par exemple, le **rapport de cotes** de l'offre (médiane 1,639, intervalle de crédibilité à 95 % [1,372 ; 1,940]), et surtout l'**effet de l'offre sur la probabilité de rachat** pour un client de référence (acquis en Boutique, d'âge moyen) : +0,120, intervalle à 95 % [+0,078 ; +0,161], à comparer à la différence brute des fréquences de 6.1.4 (+0,122). Il suffit pour cela de transformer chaque tirage $(\beta_0,\beta_1)$ en $\sigma(\beta_0+\beta_1)-\sigma(\beta_0)$ et de résumer les 20 000 valeurs obtenues.
 
-```python
+```python hide
 b0, b1 = tirages[:, 0], tirages[:, 1]
 rc = np.exp(b1)
 print(f"rapport de cotes de l'offre : médiane {np.median(rc):.3f}, IC de crédibilité à 95 % [{np.percentile(rc, 2.5):.3f} ; {np.percentile(rc, 97.5):.3f}]")
@@ -349,9 +374,9 @@ effet de l'offre sur la probabilité de rachat d'un client Boutique d'âge moyen
 rappel : différence brute des fréquences (6.1.4) = +0.122
 ```
 
-Quatre phrases que l'on peut maintenant écrire, avec leur chiffre : le rapport de cotes de l'offre est de l'ordre de 1,6 ; la probabilité qu'il dépasse 1 est quasi certaine ; la probabilité qu'il dépasse 1,5 est d'environ 84 % ; et l'effet de l'offre sur la probabilité de rachat d'un client moyen est de l'ordre de 12 points, en cohérence avec l'estimation brute de 6.1.4 (l'offre ayant été attribuée au hasard, ajuster sur le canal et l'âge ne change presque rien, comme on l'attend). Pour finir, un graphique : pour chaque coefficient, l'intervalle de crédibilité et l'intervalle de confiance du maximum de vraisemblance.
+Quatre phrases que l'on peut maintenant écrire, avec leur chiffre : le rapport de cotes de l'offre est de l'ordre de 1,6 ; la probabilité qu'il dépasse 1 est quasi certaine ; la probabilité qu'il dépasse 1,5 est de 83,6 % ; et l'effet de l'offre sur la probabilité de rachat d'un client moyen est de l'ordre de 12 points, en cohérence avec l'estimation brute de 6.1.4 (l'offre ayant été attribuée au hasard, ajuster sur le canal et l'âge ne change presque rien, comme on l'attend). Pour finir, un graphique : pour chaque coefficient, l'intervalle de crédibilité et l'intervalle de confiance du maximum de vraisemblance.
 
-```python
+```python hide
 fig, ax = plt.subplots(figsize=(7.6, 3.9))
 y_pos = np.arange(dim)[::-1]
 bas = resume["crédib. 2,5 %"].to_numpy(); haut = resume["crédib. 97,5 %"].to_numpy()
@@ -374,9 +399,9 @@ plt.close()
 
 ![Pour chacun des cinq coefficients de la régression logistique du rachat, l'intervalle de crédibilité à 95 % obtenu par MCMC (bleu) et l'intervalle de confiance à 95 % du maximum de vraisemblance (orange). Les deux approches coïncident presque exactement.](figures/ch06-logit-bayes.png)
 
-> 🧪 **Que valent ces estimations ? Réponse de la simulation.** Les données étant simulées, nous connaissons les vrais paramètres du générateur : un effet de l'offre de **+0,55** sur le logit, un avantage de la Boutique de +0,3 par rapport aux deux autres canaux (donc −0,3 pour Réseaux et pour le Site), un effet de l'âge de −0,015 par an. Notre estimation de l'offre (0,49) est **inférieure à 0,55** mais compatible avec elle (l'intervalle de crédibilité est d'environ ±0,17). L'effet de l'âge (−0,163 par écart-type, soit $-0{,}163/10{,}5\approx-0{,}0155$ par an) retrouve le −0,015 programmé, et les intervalles des canaux contiennent les valeurs programmées ($-0{,}3$ pour Réseaux comme pour le Site). Mais il y a une raison **systématique**, et pas seulement le hasard, pour laquelle l'effet de l'offre est un peu sous-estimé : le générateur utilise deux facteurs latents (goût pour les produits, sensibilité au service) qui influencent aussi le rachat, et que notre modèle **n'observe pas**. Omettre des variables explicatives *atténue* les coefficients d'une régression logistique, même quand ces variables sont indépendantes de l'offre (c'est la « non-collapsibilité » du rapport de cotes). Vérifions-le sur un très grand échantillon simulé avec la même formule :
+> 🧪 **Que valent ces estimations ? Réponse de la simulation.** Les données étant simulées, nous connaissons les vrais paramètres du générateur : un effet de l'offre de **+0,55** sur le logit, un avantage de la Boutique de +0,3 par rapport aux deux autres canaux (donc −0,3 pour Réseaux et pour le Site), un effet de l'âge de −0,015 par an. Notre estimation de l'offre (0,49) est **inférieure à 0,55** mais compatible avec elle (l'intervalle de crédibilité est d'environ ±0,17). L'effet de l'âge (−0,163 par écart-type, soit $-0{,}163/10{,}5\approx-0{,}0155$ par an) retrouve le −0,015 programmé, et les intervalles des canaux contiennent les valeurs programmées ($-0{,}3$ pour Réseaux comme pour le Site). Mais il y a une raison **systématique**, et pas seulement le hasard, pour laquelle l'effet de l'offre est un peu sous-estimé : le générateur utilise deux facteurs latents (goût pour les produits, sensibilité au service) qui influencent aussi le rachat, et que notre modèle **n'observe pas**. Omettre des variables explicatives *atténue* les coefficients d'une régression logistique, même quand ces variables sont indépendantes de l'offre (c'est la « non-collapsibilité » du rapport de cotes). Vérifions-le sur un très grand échantillon simulé avec la même formule (400 000 observations, vrai coefficient 0,55) : sans les facteurs latents dans le modèle, le coefficient estimé de l'offre vaut 0,499 ; avec eux, 0,548.
 
-```python
+```python hide
 rng = np.random.default_rng(636)
 N = 400_000
 F1 = rng.normal(size=N)
@@ -395,7 +420,7 @@ coefficient de l'offre sans les facteurs latents : 0.499
 coefficient de l'offre avec les facteurs latents : 0.548   (vrai : 0.55)
 ```
 
-Sans les facteurs latents, le coefficient attendu est d'environ 0,50 : notre estimation de 0,49 est exactement ce que la théorie prédit. Voilà un bel exemple de modèle bien estimé mais **mal spécifié** : l'estimation est correcte pour la question posée au modèle, qui n'est pas exactement celle du générateur.
+Sans les facteurs latents, le coefficient attendu est donc d'environ 0,50 : notre estimation de 0,49 est exactement ce que la théorie prédit. Voilà un bel exemple de modèle bien estimé mais **mal spécifié** : l'estimation est correcte pour la question posée au modèle, qui n'est pas exactement celle du générateur.
 
 ### 6.3.6 L'échantillonnage de Gibbs
 
@@ -419,7 +444,9 @@ def gibbs_binormale(rho, n, rng):
         y = rng.normal(rho * x, s)                            # Y | X
         out[i] = (x, y)
     return out
+```
 
+```python hide
 rng = np.random.default_rng(634)
 lignes = []
 for rho in (0.0, 0.5, 0.9, 0.99):
@@ -438,16 +465,25 @@ print(pd.DataFrame(lignes).to_string(index=False))
      0.99                0.990            1.011                 0.980                    177
 ```
 
+Sur 20 000 itérations (1 000 écartées), les résultats sont :
+
+| $\rho$ vrai | corrélation estimée | écart-type de $X$ | autocorr. au décalage 1 | ESS de $X$ (sur 19 000) |
+|---:|---:|---:|---:|---:|
+| 0,00 | −0,003 | 0,997 | −0,006 | 19 000 |
+| 0,50 | 0,493 | 1,001 | 0,246 | 11 638 |
+| 0,90 | 0,902 | 1,003 | 0,816 | 1 966 |
+| 0,99 | 0,990 | 1,011 | 0,980 | 177 |
+
 Les corrélations estimées retrouvent les $\rho$ et les écarts-types valent 1, comme prévu. Mais regardez l'ESS : avec $\rho=0$ la chaîne est indépendante (ESS proche de $n$), tandis qu'avec $\rho=0{,}9$ elle tombe à environ 2 000 et qu'avec $\rho=0{,}99$ elle s'effondre à moins de 200 tirages efficaces sur 19 000 (1 % du total) : **la corrélation entre composantes ruine Gibbs**. C'est la raison pour laquelle on **reparamétrise** (on décorrèle les paramètres) ou on utilise des méthodes plus sophistiquées comme l'HMC (6.3.7).
 
-**Exemple 2 : une loi normale à moyenne et variance inconnues.** En 6.1.8, nous avons fait l'hypothèse (de confort) que l'écart-type $\sigma$ du logarithme du panier était *connu*. Levons-la. Les données : les logarithmes des paniers des 449 acheteurs de la boutique. Le modèle : $y_i\sim\mathcal N(\mu,\sigma^2)$, avec les a priori **indépendants** $\mu\sim\mathcal N(4{,}\,10^2)$ (très large) et la **précision** $\tau=1/\sigma^2\sim\mathrm{Gamma}(a_0=0{,}01,\ b_0=0{,}01)$ (très diffuse). Les lois conditionnelles complètes sont connues :
+**Exemple 2 : une loi normale à moyenne et variance inconnues.** En 6.1.8, nous avons fait l'hypothèse (de confort) que l'écart-type $\sigma$ du logarithme du panier était *connu*. Levons-la. Les données : les logarithmes des paniers des 449 acheteurs acquis par le canal Boutique. Le modèle : $y_i\sim\mathcal N(\mu,\sigma^2)$, avec les a priori **indépendants** $\mu\sim\mathcal N(4{,}\,10^2)$ (très large) et la **précision** $\tau=1/\sigma^2\sim\mathrm{Gamma}(a_0=0{,}01,\ b_0=0{,}01)$ (très diffuse). Les lois conditionnelles complètes sont connues :
 
 - $\mu\mid\tau,y\sim\mathcal N(\mu_n,v_n)$ avec $\dfrac1{v_n}=\dfrac1{\tau_0^2}+n\tau$ et $\mu_n=v_n\left(\dfrac{\mu_0}{\tau_0^2}+\tau\,n\bar y\right)$ (c'est la formule normale-normale de 6.1.8, avec $\sigma^2=1/\tau$) ;
 - $\tau\mid\mu,y\sim\mathrm{Gamma}\!\left(a_0+\dfrac n2,\ b_0+\dfrac12\sum_i(y_i-\mu)^2\right)$ (même calcul que gamma-Poisson : multiplier les formes en $\tau^{\cdot}e^{-\cdot\tau}$).
 
-Il n'y a **pas de formule fermée** pour la loi jointe de $(\mu,\sigma)$ avec ces a priori indépendants ; Gibbs nous en donne des tirages.
+Il n'y a **pas de formule fermée** pour la loi jointe de $(\mu,\sigma)$ avec ces a priori indépendants ; Gibbs nous en donne des tirages (on alterne le tirage de $\mu$ et celui de $\tau$ avec les deux formules ci-dessus, 11 000 fois, en partant volontairement d'un très mauvais point de départ $\mu=0$, $\tau=1$, et en écartant les 1 000 premiers points). Pour les 449 acheteurs (log-panier moyen 4,2183, écart-type empirique 0,3758), on obtient pour $\mu$ une moyenne a posteriori de 4,2182 (intervalle à 95 % [4,1838 ; 4,2529]) et pour $\sigma$ une moyenne de 0,3766 ([0,3525 ; 0,4023]).
 
-```python
+```python hide
 acheteurs = clients[(clients["canal_acquisition"] == "Boutique") & (clients["panier_moyen"] > 0)]
 ly = np.log(acheteurs["panier_moyen"].to_numpy())
 n_l, ybar = len(ly), ly.mean()
@@ -486,7 +522,7 @@ corrélation a posteriori entre mu et sigma : -0.001
 ESS de mu : 10000, ESS de sigma : 9629  (sur 10000 tirages)
 ```
 
-Les résultats concordent avec le calcul classique. Les ESS sont très proches du nombre de tirages : ici $\mu$ et $\sigma$ sont presque indépendants a posteriori (corrélation proche de 0), donc Gibbs est quasi parfait. Et on peut enfin comparer à la vérité : le générateur combine un bruit de 0,35 et l'effet du facteur latent $F_1$ (écart-type 0,12), soit un écart-type total de $\sqrt{0{,}35^2+0{,}12^2}\approx0{,}370$, et un log-panier moyen de 4,22 pour la Boutique. L'a posteriori contient les deux.
+Ces résultats concordent avec le calcul classique de Student (intervalle de $\mu$ : [4,1834 ; 4,2532]). Les ESS (10 000 pour $\mu$ et 9 629 pour $\sigma$, sur 10 000 tirages) sont très proches du nombre de tirages : ici $\mu$ et $\sigma$ sont presque indépendants a posteriori (corrélation proche de 0), donc Gibbs est quasi parfait. Et on peut enfin comparer à la vérité : le générateur combine un bruit de 0,35 et l'effet du facteur latent $F_1$ (écart-type 0,12), soit un écart-type total de $\sqrt{0{,}35^2+0{,}12^2}\approx0{,}370$, et un log-panier moyen de 4,22 pour la Boutique. L'a posteriori contient les deux.
 
 ### 6.3.7 En pratique : PyMC, Stan et l'HMC (non exécuté)
 
@@ -523,3 +559,5 @@ Comprendre ce que PyMC et Stan font à votre place, c'est comprendre ce chapitre
 > - **Gibbs** met à jour une composante à la fois selon sa loi conditionnelle (acceptation 1) ; il souffre quand les composantes sont très corrélées.
 > - Une fois les tirages obtenus, **tout** se calcule par moyenne : rapports de cotes, effets sur les probabilités, probabilités de seuils, prédictions.
 > - PyMC et Stan (HMC/NUTS) font cela mieux et plus vite, mais ne dispensent pas de **vérifier** le résultat (6.4).
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 6 : application 6.3, exercices 6.8 et 6.9.

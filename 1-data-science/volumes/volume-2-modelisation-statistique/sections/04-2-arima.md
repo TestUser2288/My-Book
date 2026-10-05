@@ -23,9 +23,9 @@ Comment reconnaître l'un ou l'autre sur des données ? Grâce à leurs **signat
 | MA($q$) | **s'annule après le décalage $q$** | décroît progressivement |
 | ARMA($p,q$) | décroît progressivement | décroît progressivement |
 
-Vérifions-le. La fonction `ArmaProcess` de `statsmodels` calcule les autocorrélations **théoriques** d'un modèle ; nous les comparons à celles d'une trajectoire simulée de 500 points (les points), pour trois modèles : AR(1) avec $\varphi=0{,}7$, AR(2) avec $\varphi_1=0{,}5$ et $\varphi_2=0{,}3$, MA(1) avec $\theta=0{,}7$.
+Voici ces signatures pour trois modèles : AR(1) avec $\varphi=0{,}7$, AR(2) avec $\varphi_1=0{,}5$ et $\varphi_2=0{,}3$, MA(1) avec $\theta=0{,}7$. Les barres sont les autocorrélations **théoriques** du modèle ; les points rouges sont celles d'une trajectoire simulée de 500 points.
 
-```python
+```python hide
 import warnings
 warnings.filterwarnings("ignore")
 import numpy as np
@@ -84,7 +84,7 @@ Les signatures du tableau apparaissent nettement : la PACF de l'AR(1) n'a qu'une
 
 > 💡 **Exemple à la main.** Avec $\varphi=0{,}5$ et $\sigma=1$ : $\gamma(0)=1/(1-0{,}25)=1{,}333$ ; $\rho(1)=0{,}5$, $\rho(2)=0{,}25$, $\rho(3)=0{,}125$. La mémoire est divisée par deux à chaque pas, et un choc d'il y a trois mois n'a plus que 12,5 % d'influence.
 
-```python
+```python hide
 ar, ma = [1, -0.5], [1]
 print("autocorrélations théoriques de l'AR(1), phi = 0,5 :", arma_acf(ar, ma, 4).round(4))
 x = ArmaProcess(ar, ma).generate_sample(200000, distrvs=np.random.default_rng(3).standard_normal)
@@ -98,9 +98,11 @@ variance : théorie 1.333 | simulation 1.328
 autocorrélations simulées (décalages 1 à 3) : [0.498 0.248 0.125]
 ```
 
-Qu'est-ce que la condition $|\varphi|<1$ devient pour un AR($p$) ? On écrit l'équation avec l'**opérateur retard** $B$ (défini par $BY_t=Y_{t-1}$) : $\varphi(B)Y_t=\varepsilon_t$ avec $\varphi(z)=1-\varphi_1z-\dots-\varphi_pz^p$. La série est stationnaire si et seulement si **toutes les racines du polynôme $\varphi(z)$ sont en dehors du cercle unité** ($|z|>1$). Pour l'AR(1), l'unique racine est $z=1/\varphi$, et $|1/\varphi|>1\iff|\varphi|<1$. On retrouve la condition. Vérifions pour deux AR(2) :
+Une simulation de 200 000 points le confirme : variance de 1,328 (théorie : 1,333) et autocorrélations de 0,498, 0,248 et 0,125 aux décalages 1 à 3.
 
-```python
+Qu'est-ce que la condition $|\varphi|<1$ devient pour un AR($p$) ? On écrit l'équation avec l'**opérateur retard** $B$ (défini par $BY_t=Y_{t-1}$) : $\varphi(B)Y_t=\varepsilon_t$ avec $\varphi(z)=1-\varphi_1z-\dots-\varphi_pz^p$. La série est stationnaire si et seulement si **toutes les racines du polynôme $\varphi(z)$ sont en dehors du cercle unité** ($|z|>1$). Pour l'AR(1), l'unique racine est $z=1/\varphi$, et $|1/\varphi|>1\iff|\varphi|<1$. On retrouve la condition. Vérifions pour deux AR(2) : pour $\varphi=(0{,}5\,;\,0{,}3)$, les racines ont pour modules 2,84 et 1,17 (toutes deux supérieures à 1 : stationnaire) ; pour $\varphi=(0{,}5\,;\,0{,}6)$, elles ont pour modules 1,77 et 0,94 (**non stationnaire**).
+
+```python hide
 for nom, (phi1, phi2) in {"phi = (0,5 ; 0,3)": (0.5, 0.3), "phi = (0,5 ; 0,6)": (0.5, 0.6)}.items():
     racines = np.roots([-phi2, -phi1, 1])                   # polynôme 1 - phi1 z - phi2 z^2
     verdict = "stationnaire" if np.all(np.abs(racines) > 1) else "NON stationnaire"
@@ -120,9 +122,9 @@ Le second modèle a une racine de module $0{,}94<1$ : sa trajectoire diverge, m�
 >
 > **Démonstration.** $\operatorname{Var}(Y_t)=\sigma^2+\theta^2\sigma^2$. Et $\operatorname{Cov}(Y_t,Y_{t-1})=\operatorname{Cov}(\varepsilon_t+\theta\varepsilon_{t-1},\varepsilon_{t-1}+\theta\varepsilon_{t-2})=\theta\sigma^2$ (seul le terme $\theta\varepsilon_{t-1}\cdot\varepsilon_{t-1}$ survit). $\blacksquare$
 
-Une subtilité qui surprend : **deux valeurs de $\theta$ donnent exactement la même autocorrélation**, car $\theta/(1+\theta^2)$ est inchangé si l'on remplace $\theta$ par $1/\theta$. Pour $\theta=0{,}5$ comme pour $\theta=2$, on a $\rho(1)=0{,}4$ :
+Une subtilité qui surprend : **deux valeurs de $\theta$ donnent exactement la même autocorrélation**, car $\theta/(1+\theta^2)$ est inchangé si l'on remplace $\theta$ par $1/\theta$. Pour $\theta=0{,}5$ comme pour $\theta=2$, on a $\rho(1)=0{,}4$ (un calcul par programme le confirme).
 
-```python
+```python hide
 for th in (0.5, 2.0):
     print(f"theta = {th} : rho(1) = {arma_acf([1], [1, th], 3)[1]:.3f}  (formule : {th / (1 + th ** 2):.3f})")
 ```
@@ -147,9 +149,9 @@ $$\varphi(B)\,\Phi(B^s)\,(1-B)^d(1-B^s)^D\,Y_t=\theta(B)\,\Theta(B^s)\,\varepsil
 
 #### Comment estime-t-on ces modèles ?
 
-Pour un AR(1), c'est une régression. Estimer $\varphi$ revient à régresser $y_t$ sur $y_{t-1}$ par moindres carrés (c'est la méthode des *moindres carrés conditionnels*), ce qui donne $\hat\varphi=\sum y_ty_{t-1}/\sum y_{t-1}^2$ pour une série centrée. Pour les modèles avec une partie MA, les chocs $\varepsilon_t$ ne sont pas observés, et l'on maximise la **vraisemblance gaussienne** : à chaque date, on calcule la prévision à un pas, et on suppose que l'erreur de prévision suit une loi normale ; la vraisemblance est le produit de ces densités. Le calcul récursif utilise le **filtre de Kalman**, que nous verrons en 4.5. Comparons les deux méthodes sur un AR(1) simulé :
+Pour un AR(1), c'est une régression. Estimer $\varphi$ revient à régresser $y_t$ sur $y_{t-1}$ par moindres carrés (c'est la méthode des *moindres carrés conditionnels*), ce qui donne $\hat\varphi=\sum y_ty_{t-1}/\sum y_{t-1}^2$ pour une série centrée. Pour les modèles avec une partie MA, les chocs $\varepsilon_t$ ne sont pas observés, et l'on maximise la **vraisemblance gaussienne** : à chaque date, on calcule la prévision à un pas, et on suppose que l'erreur de prévision suit une loi normale ; la vraisemblance est le produit de ces densités. Le calcul récursif utilise le **filtre de Kalman**, que nous verrons en 4.5. Sur un AR(1) simulé de 300 points (vrai $\varphi=0{,}7$), les moindres carrés donnent $0{,}712$ et le maximum de vraisemblance $0{,}710$.
 
-```python
+```python hide
 x = ArmaProcess([1, -0.7], [1]).generate_sample(300, distrvs=np.random.default_rng(21).standard_normal)
 phi_mco = (x[1:] * x[:-1]).sum() / (x[:-1] ** 2).sum()          # moindres carrés (série centrée en théorie)
 phi_mv = ARIMA(x, order=(1, 0, 0), trend="n").fit().params[0]    # maximum de vraisemblance
@@ -160,9 +162,9 @@ print("vraie valeur : 0.7 | moindres carrés :", round(phi_mco, 4), "| maximum d
 vraie valeur : 0.7 | moindres carrés : 0.7119 | maximum de vraisemblance : 0.7097
 ```
 
-Les deux estimations sont très proches l'une de l'autre (écart d'environ 0,002) et de la vraie valeur. Qu'en est-il de leur **précision** ? Un résultat classique (Kendall, 1954) dit que l'estimateur des moindres carrés d'un AR(1) est **biaisé vers zéro** : $\mathbb E[\hat\varphi]\approx\varphi-\dfrac{1+3\varphi}{n}$. Vérifions avec 4 000 séries de 100 points et $\varphi=0{,}6$ :
+Les deux estimations sont très proches l'une de l'autre (écart d'environ 0,002) et de la vraie valeur. Qu'en est-il de leur **précision** ? Un résultat classique (Kendall, 1954) dit que l'estimateur des moindres carrés d'un AR(1) est **biaisé vers zéro** : $\mathbb E[\hat\varphi]\approx\varphi-\dfrac{1+3\varphi}{n}$. Une simulation de 4 000 séries de 100 points avec $\varphi=0{,}6$ donne une moyenne des estimations de $0{,}571$ (la formule prédit $0{,}572$), avec un écart-type de $0{,}084$.
 
-```python
+```python hide
 rng = np.random.default_rng(11)
 estimations = []
 for _ in range(4000):
@@ -182,9 +184,9 @@ print("phi = 0,6, n = 100 : moyenne des estimations =", round(np.mean(estimation
 phi = 0,6, n = 100 : moyenne des estimations = 0.571 | formule 0,6 - (1 + 3 x 0,6)/100 = 0.572 | écart-type = 0.084
 ```
 
-Le biais est petit (environ $-0{,}03$ pour $n=100$), mais réel : avec peu de données, un AR estimé paraît **moins persistant** qu'il ne l'est. Étudions maintenant un ARMA(1,1) ($\varphi=0{,}6$, $\theta=0{,}4$) : une estimation sur 500 points, puis la distribution des estimations sur 200 séries de 200 points.
+Le biais est petit (environ $-0{,}03$ pour $n=100$), mais réel : avec peu de données, un AR estimé paraît **moins persistant** qu'il ne l'est. Étudions maintenant un ARMA(1,1) ($\varphi=0{,}6$, $\theta=0{,}4$) : sur une série de 500 points, l'estimation donne $\hat\varphi=0{,}58$ (erreur type $0{,}04$) et $\hat\theta=0{,}45$ (erreur type $0{,}05$) ; sur 200 séries de 200 points, les moyennes des estimations sont $0{,}59$ et $0{,}41$, avec un écart-type de $0{,}08$ pour chacune.
 
-```python
+```python hide
 x = ArmaProcess([1, -0.6], [1, 0.4]).generate_sample(500, distrvs=np.random.default_rng(12).standard_normal)
 ajust = ARIMA(x, order=(1, 0, 1), trend="n").fit()
 print(pd.DataFrame({"estimation": ajust.params, "erreur type": ajust.bse}, index=["phi", "theta", "sigma2"]).round(3))
@@ -207,7 +209,7 @@ sigma2       0.951        0.062
 200 séries de 200 points : moyenne des estimations (phi, theta) = [0.591 0.408] | écart-type = [0.076 0.08 ]
 ```
 
-Sur une seule série de 500 points, les estimations sont proches des vraies valeurs (0,6 et 0,4), à l'intérieur de leurs marges d'erreur. Sur 200 séries de 200 points, la moyenne est proche de la vérité, mais la **dispersion** est importante (de l'ordre de 0,08 pour chaque paramètre) : estimer les deux paramètres d'un ARMA est nettement plus incertain qu'estimer un AR seul, parce que $\varphi$ et $\theta$ jouent des rôles voisins.
+Sur la série de 500 points, les estimations sont proches des vraies valeurs (0,6 et 0,4), à l'intérieur de leurs marges d'erreur. Sur 200 séries de 200 points, la moyenne est proche de la vérité, mais la **dispersion** est importante (de l'ordre de 0,08 pour chaque paramètre) : estimer les deux paramètres d'un ARMA est nettement plus incertain qu'estimer un AR seul, parce que $\varphi$ et $\theta$ jouent des rôles voisins.
 
 > ⚠️ **Un piège classique : la redondance.** Un ARMA(1,1) avec $\varphi=\theta'$ (où le MA est « l'opposé » de l'AR) se simplifie : $(1-\varphi B)Y_t=(1-\varphi B)\varepsilon_t$ donne $Y_t=\varepsilon_t$. Quand les deux racines sont presque égales, les paramètres ne sont plus identifiables. Si votre modèle estime $\varphi\approx0{,}9$ et $\theta\approx-0{,}9$, il est probablement trop gros : **simplifiez**.
 
@@ -217,7 +219,7 @@ Box et Jenkins ont proposé un cycle en quatre temps : **(1) identifier** la str
 
 **Étape 1 : stationnariser.** D'après 4.1.6, la série a une tendance et une saison. Les deux différences ($d=1$ et $D=1$, $s=12$) font disparaître la tendance et la saison **stochastiques**. Regardons ce qui reste :
 
-```python
+```python hide
 v = pd.read_csv("donnees/ventes_mensuelles.csv", parse_dates=["mois"]).set_index("mois")
 v.index.freq = "MS"
 y = np.log(v["ca"])
@@ -262,7 +264,7 @@ PACF décalages 1 à 14 : [-0.01 -0.12  0.   -0.25 -0.19 -0.18  0.09 -0.08 -0.02
 
 **Étape 2 : estimer, avec des variables explicatives.** Nous savons qu'il y a eu un accident (COVID) et des promotions. Nous les ajoutons comme **variables explicatives** (*exogènes*) : le modèle devient une régression dont les erreurs suivent un SARIMA. (Nous détaillons cette idée en 4.2.5.) Ajustons une petite grille de modèles avec $d=1$, $D=1$, $p,q\in\{0,1,2\}$ et $Q\in\{0,1\}$, et comparons-les par **AIC** et **BIC** (chapitre 1, section 1.4 : ces critères mesurent l'ajustement en pénalisant la complexité ; plus petit = meilleur).
 
-```python
+```python hide-code
 import itertools
 
 lignes = []
@@ -291,7 +293,7 @@ les 8 meilleurs modèles par AIC (d = 1, D = 1, s = 12) :
 tous convergés : True | meilleur par BIC : (p, q, Q) = (1, 1, 1)
 ```
 
-Le modèle SARIMAX$(1,1,1)(0,1,1)_{12}$ arrive en tête à la fois par l'AIC et par le BIC. Voici ses coefficients :
+Le modèle SARIMAX$(1,1,1)(0,1,1)_{12}$ arrive en tête à la fois par l'AIC et par le BIC. Voici son ajustement (`Xtr` contient les colonnes `promo` et `covid` de la période d'apprentissage) et ses coefficients :
 
 ```python
 mod_A = SARIMAX(train, exog=Xtr, order=(1, 1, 1), seasonal_order=(0, 1, 1, 12)).fit(disp=False)
@@ -321,9 +323,9 @@ $$\log y_t=\beta_1\,\text{promo}_t+\beta_2\,\text{covid}_t+\eta_t,\qquad \eta_t\
 
 Les variables explicatives interviennent **en niveau** (pas différenciées) et l'ARIMA décrit ce qui reste. C'est la bonne façon de combiner une régression (chapitre 1) et de la mémoire temporelle : si l'on ignorait la mémoire des erreurs, les erreurs types de la régression seraient fausses (le volume I, section 2.4, suppose l'indépendance).
 
-Les coefficients se lisent comme des pourcentages, puisque la variable dépendante est un logarithme : un coefficient $\beta$ correspond à un facteur $e^\beta$, soit une variation de $100\,(e^\beta-1)\,\%$ :
+Les coefficients se lisent comme des pourcentages, puisque la variable dépendante est un logarithme : un coefficient $\beta$ correspond à un facteur $e^\beta$, soit une variation de $100\,(e^\beta-1)\,\%$. Ici, la promotion correspond à $+11{,}2\ \%$ (intervalle à 95 % : de $+6{,}6$ à $+16{,}0\ \%$) et le COVID à $-41{,}6\ \%$ (de $-45{,}7$ à $-37{,}1\ \%$).
 
-```python
+```python hide
 for nom in ("promo", "covid"):
     b = mod_A.params[nom]
     lo, hi = mod_A.conf_int().loc[nom]
@@ -335,9 +337,9 @@ promo  : coefficient = +0.106  ->  effet = +11.2 %   (IC 95 % : +6.6 % à +16.0 
 covid  : coefficient = -0.537  ->  effet = -41.6 %   (IC 95 % : -45.7 % à -37.1 %)
 ```
 
-Une promotion est associée à des ventes environ 11 % plus élevées le mois où elle a lieu, et les quatre mois de COVID à des ventes environ 42 % plus basses, toutes choses égales par ailleurs. Sans ces deux variables, le modèle aurait dû « expliquer » le COVID par du bruit, ce qui aurait dégradé tous les paramètres. Mesurons-le :
+Une promotion est associée à des ventes environ 11 % plus élevées le mois où elle a lieu, et les quatre mois de COVID à des ventes environ 42 % plus basses, toutes choses égales par ailleurs. Sans ces deux variables, le modèle aurait dû « expliquer » le COVID par du bruit, ce qui aurait dégradé tous les paramètres : l'AIC passe de $-98{,}1$ sans variables explicatives à $-176{,}7$ avec, et l'écart-type estimé des chocs de $0{,}107$ à $0{,}068$.
 
-```python
+```python hide
 sans = SARIMAX(train, order=(1, 1, 1), seasonal_order=(0, 1, 1, 12)).fit(disp=False)
 print("AIC sans variables explicatives :", round(sans.aic, 1), "| avec promo et COVID :", round(mod_A.aic, 1))
 print("écart-type estimé des chocs (sigma) : sans =", round(np.sqrt(sans.params['sigma2']), 3), "| avec =", round(np.sqrt(mod_A.params['sigma2']), 3))
@@ -354,7 +356,7 @@ AIC sans variables explicatives : -98.1 | avec promo et COVID : -176.7
 
 Un modèle n'est pas fini quand il est ajusté : il faut vérifier qu'il a **tout expliqué**, c'est-à-dire que ses résidus ressemblent à un bruit blanc gaussien. On regarde quatre choses : les résidus dans le temps (pas de structure, variance stable), l'ACF des résidus (pas de barre hors bande), la normalité (histogramme et QQ-plot) et le test de Ljung-Box. Les premiers résidus d'un SARIMA avec différences (ici 13) n'ont pas de sens (ils servent à initialiser le calcul) : on les ignore.
 
-```python
+```python hide
 res = mod_A.resid.iloc[13:]                       # on ignore les 13 premiers (initialisation des différences)
 sig = res.std()
 fig, axes = plt.subplots(2, 2, figsize=(11, 6))
@@ -392,7 +394,7 @@ plus grand résidu standardisé en valeur absolue : 2.37 le 2017-12
 
 ![Diagnostic des résidus du SARIMAX(1,1,1)(0,1,1)12 : résidus standardisés sans structure, histogramme proche de la loi normale, QQ-plot proche de la droite, ACF sans barre hors bande.](figures/ch04-diagnostics.png)
 
-Les résidus ne montrent pas de structure : l'ACF reste dans la bande, les p-valeurs de Ljung-Box sont grandes (on ne rejette pas « bruit blanc »), la normalité n'est pas rejetée. Le modèle a donc **capté l'essentiel de la dynamique linéaire** de la série d'apprentissage.
+Les résidus ne montrent pas de structure : l'ACF reste dans la bande, les p-valeurs de Ljung-Box sont grandes ($0{,}44$ et $0{,}38$ aux décalages 12 et 24 : on ne rejette pas « bruit blanc »), la normalité n'est pas rejetée (Shapiro-Wilk : $p=0{,}33$). Le modèle a donc **capté l'essentiel de la dynamique linéaire** de la série d'apprentissage.
 
 > ⚠️ **Un bon diagnostic ne prouve pas un bon modèle.** Des résidus blancs montrent qu'il ne reste pas d'**autocorrélation exploitable**, pas que le modèle **prévoira bien** : un modèle trop flexible peut avoir des résidus parfaits sur l'apprentissage et prévoir mal (surajustement). Seule la prévision hors échantillon (4.3) le dira.
 
@@ -403,7 +405,7 @@ Nous avons soupçonné plusieurs fois que la tendance et la saison sont **déter
 - **Modèle B** : SARIMAX$(1,0,0)(0,1,1)_{12}$ avec tendance linéaire (`trend="ct"`) : on garde la différence saisonnière mais on modélise la tendance par une droite.
 - **Modèle C** : régression sur **tendance linéaire + 11 indicatrices de mois + promo + COVID**, avec des **erreurs AR(1)**. Ici, la saison est un profil fixe (11 coefficients) et aucune différenciation n'est appliquée.
 
-```python
+```python hide-code
 mois = pd.get_dummies(pd.Series(v.index.month, index=v.index).astype(str).str.zfill(2), prefix="m", drop_first=True, dtype=float)
 XX = pd.concat([pd.Series(1.0, index=v.index, name="const"),
                 pd.Series(np.arange(len(v), dtype=float), index=v.index, name="t"), mois, X], axis=1)
@@ -432,7 +434,7 @@ modèle C : pente de la tendance = 0.0077 par mois, soit 9.7 % par an ; AR(1) : 
 AIC : A = -176.7 | B = -174.3 | C = -232.5
 ```
 
-Les trois modèles s'accordent sur les effets de la promotion (coefficient d'environ 0,10 à 0,11, soit +10 à +11 %) et du COVID (coefficient d'environ −0,51 à −0,54, soit −40 à −42 %). Ils diffèrent sur la **dynamique**. Le modèle C décrit une croissance régulière de l'ordre de 10 % par an, un AR(1) modéré, et il obtient l'AIC le plus bas de loin. Attention : **cette comparaison d'AIC n'a pas de sens**.
+Les trois modèles s'accordent sur les effets de la promotion (coefficient d'environ 0,10 à 0,11, soit +10 à +11 %) et du COVID (coefficient d'environ −0,51 à −0,54, soit −40 à −42 %). Ils diffèrent sur la **dynamique**. Le modèle C décrit une croissance régulière de 0,0077 par mois (9,7 % par an), un AR(1) modéré ($\varphi=0{,}54$), et il obtient l'AIC le plus bas de loin ($-232{,}5$, contre $-176{,}7$ et $-174{,}3$). Attention : **cette comparaison d'AIC n'a pas de sens**.
 
 > ⚠️ **On ne compare pas des AIC entre modèles de différenciations différentes.** L'AIC est calculé à partir de la vraisemblance des **données modélisées**. Le modèle A modélise une série différenciée deux fois, le modèle B une série différenciée une fois, le modèle C la série non différenciée : les vraisemblances portent sur des objets différents, et leurs valeurs ne sont pas comparables (même si le logiciel les affiche sans protester). L'AIC ne peut départager que des modèles de **même $d$ et même $D$** (comme dans la grille de 4.2.4). Pour comparer A, B et C, il n'y a **qu'un seul juge** légitime : leurs **prévisions** sur des données qu'ils n'ont pas vues. C'est l'objet de 4.3.
 
@@ -464,6 +466,8 @@ AIC=-181.47   AICc=-180.38   BIC=-166.88
 ```
 
 R a retenu un **ARIMA$(0,0,1)(0,1,1)_{12}$ avec une dérive** (une tendance linéaire, `drift`) : pas de différence première, une différence saisonnière, un MA(1) de coefficient d'environ 0,49 et un MA saisonnier d'environ $-0{,}88$. Les effets estimés sont voisins des nôtres (promo : $0{,}098$ ; COVID : $-0{,}54$). Ce choix automatique, fondé sur des tests de racine unitaire pour $d$ et $D$, **va dans le même sens que nos soupçons** : la tendance se modélise bien par une dérive déterministe, sans différence première. Il diffère de la grille de 4.2.4, où nous avions *imposé* $d=1$ ; `auto.arima` utilise de plus l'AICc (une version de l'AIC corrigée pour les petits échantillons). Ce n'est pas une contradiction, mais un rappel : **la sélection automatique n'est pas une vérité**, seulement un point de départ à confronter au diagnostic et à la prévision.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : exercices 4.3, 4.4 et 4.8.
 
 > ✅ **À retenir.**
 > - **AR** : la valeur d'aujourd'hui est un écho de ses propres valeurs passées ; **MA** : elle garde la trace des chocs récents. Signatures : un AR($p$) a une PACF qui s'arrête à $p$, un MA($q$) une ACF qui s'arrête à $q$.

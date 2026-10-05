@@ -20,9 +20,9 @@ $$\boxed{\ \hat S(t)=\prod_{j:\,t_j\le t}\Big(1-\frac{d_j}{n_j}\Big)\ }$$
 
 où le produit porte sur tous les instants $t_j\le t$ où au moins un départ a été observé. Les censures **n'apparaissent pas** dans la formule, mais elles agissent *indirectement* en réduisant $n_j$ : un client censuré à 6 mois compte dans les $n_j$ des instants antérieurs à 6 mois, mais plus ensuite.
 
-Mettons ce calcul en code, sous la forme d'un tableau que nous réutiliserons :
+Voici le même calcul, rangé dans un tableau (une ligne par instant de départ) :
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -53,6 +53,14 @@ print(tableau_km(y8, d8).to_string(index=False))
 12.0               3              1                0   0.3333   0.400           0.2583
 ```
 
+| $t_j$ | $n_j$ (à risque) | $d_j$ (départs) | $d_j/n_j$ | $\hat S(t_j)$ | somme de Greenwood |
+|---:|---:|---:|---:|---:|---:|
+| 3 | 8 | 1 | 0,1250 | 0,875 | 0,0179 |
+| 5 | 7 | 1 | 0,1429 | 0,750 | 0,0417 |
+| 8 | 5 | 1 | 0,2000 | 0,600 | 0,0917 |
+| 12 | 3 | 1 | 0,3333 | 0,400 | 0,2583 |
+
+
 On retrouve les valeurs de la main : $0{,}875\to0{,}75\to0{,}6\to0{,}4$. La dernière colonne servira au 5.2.3.
 
 > 📐 **Pourquoi cette formule, et pourquoi est-elle « la bonne » ?** Deux justifications.
@@ -67,9 +75,9 @@ On retrouve les valeurs de la main : $0{,}875\to0{,}75\to0{,}6\to0{,}4$. La dern
 
 ### 5.2.2 L'estimateur sur les 2 000 clients, comparé aux bibliothèques
 
-La version précédente boucle sur chaque instant et chaque client : c'est lisible, mais lent sur 2 000 clients. Voici une version vectorisée, qui prend en charge aussi les **entrées tardives** (nous en aurons besoin au 5.2.6), et que nous réutiliserons pour tout le chapitre.
+Sur les 2 000 clients, le calcul est exactement le même ; son écriture efficace (vectorisée, avec prise en charge des **entrées tardives** dont nous aurons besoin au 5.2.6) est détaillée dans le cahier, application 5.2.
 
-```python
+```python hide
 def kaplan_meier(y, d, entree=None):
     """Kaplan-Meier vectorisé. Retourne (t_j, n_j, d_j, S, somme_greenwood).
     entree : date d'entrée dans l'observation (troncature à gauche), 0 par défaut."""
@@ -109,9 +117,9 @@ instants de départ distincts : 882 pour 977 départs
 instants avec plusieurs départs simultanés (ex aequo) : 91
 ```
 
-Comme les durées sont mesurées au centième de mois, quelques départs coïncident (les *ex aequo*) ; la formule les traite d'un seul bloc : $d_j>1$. Comparons maintenant à `statsmodels` et au paquet R de référence, `survival`, à plusieurs instants :
+On trouve 882 instants de départ distincts pour 977 départs : comme les durées sont mesurées au centième de mois, 91 instants comptent plusieurs départs (les *ex aequo*), que la formule traite d'un seul bloc : $d_j>1$. Nous avons comparé ce calcul à `statsmodels` et au paquet R de référence, `survival`, à plusieurs instants.
 
-```python
+```python hide
 from statsmodels.duration.survfunc import SurvfuncRight
 
 sf = SurvfuncRight(y, d)
@@ -132,7 +140,7 @@ for t in (12, 24, 36, 48, 60):
    60    0.24754      0.24754         0.01558         0.01558
 ```
 
-```r
+```r hide
 library(survival)
 clients <- read.csv("donnees/clients.csv")
 km_all <- survfit(Surv(duree_mois, churn) ~ 1, data = clients)
@@ -150,11 +158,21 @@ Call: survfit(formula = Surv(duree_mois, churn) ~ 1, data = clients)
    60     96      31    0.248 0.01558        0.219        0.280
 ```
 
-Les trois sources donnent la même courbe et les mêmes erreurs standard. Lecture : **82,5 %** des clients sont encore là à 12 mois, **63,4 %** à 24 mois, **45,3 %** à 36 mois, et **24,8 %** à 60 mois. La colonne `n.risk` de R est instructive : à 60 mois, il ne reste que 96 clients sous observation, contre 1 378 à 12 mois. Ce sont les *clients récents*, sortis de l'ensemble à risque par censure, qui font fondre l'effectif.
+Les trois sources donnent la même courbe et les mêmes erreurs standard (identiques à cinq décimales) :
+
+| Mois | Clients à risque | Survie $\hat S(t)$ | Erreur standard | IC95 |
+|---:|---:|---:|---:|---|
+| 12 | 1 378 | 0,825 | 0,0089 | [0,808 ; 0,843] |
+| 24 | 814 | 0,634 | 0,0121 | [0,610 ; 0,658] |
+| 36 | 416 | 0,453 | 0,0140 | [0,426 ; 0,481] |
+| 48 | 186 | 0,308 | 0,0150 | [0,280 ; 0,338] |
+| 60 | 96 | 0,248 | 0,0156 | [0,219 ; 0,280] |
+
+Lecture : **82,5 %** des clients sont encore là à 12 mois, **63,4 %** à 24 mois, **45,3 %** à 36 mois, et **24,8 %** à 60 mois. La colonne des clients à risque est instructive : à 60 mois, il ne reste que 96 clients sous observation, contre 1 378 à 12 mois. Ce sont les *clients récents*, sortis de l'ensemble à risque par censure, qui font fondre l'effectif.
 
 Voyons maintenant la courbe. Nous y superposons le modèle **exponentiel** de la section 5.1.5 (risque constant, $\hat\lambda=0{,}0209$ par mois) pour juger de sa pertinence :
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -209,7 +227,7 @@ Pour un intervalle de confiance, on peut prendre $\hat S\pm1{,}96\,\widehat{se}$
 - **intervalle « log »** (le défaut de R) : $\hat S\,\exp\!\big(\pm1{,}96\sqrt{G(t)}\big)$, avec $G(t)=\sum d_j/[n_j(n_j-d_j)]$ ;
 - **intervalle « log-log »**, souvent recommandé : on travaille sur $\ln(-\ln\hat S)$, dont la variance est $G(t)/(\ln\hat S)^2$, ce qui donne $\hat S^{\,\exp(\pm1{,}96\sqrt{G(t)}/|\ln\hat S|)}$ (les bornes restent toujours dans $[0,1]$).
 
-```python
+```python hide
 def intervalles(t, tj, S, gw, z=1.959964):
     s, g = surv_at(t, tj, S), surv_at(t, tj, gw, avant=0.0)
     se = s * np.sqrt(g)
@@ -243,7 +261,7 @@ t = 60 mois : S = 0.2475
 8 clients, t = 12 : S = 0.40 ; plan [0.00 ; 0.80] ; log-log [0.07 ; 0.73]
 ```
 
-```r
+```r hide
 for (ct in c("plain", "log", "log-log")) {
   f <- survfit(Surv(duree_mois, churn) ~ 1, data = clients, conf.type = ct)
   s <- summary(f, times = c(36, 60))
@@ -257,13 +275,21 @@ log      t=36 [0.4262 ; 0.4810]   t=60 [0.2188 ; 0.2800]
 log-log  t=36 [0.4252 ; 0.4799]   t=60 [0.2176 ; 0.2786]
 ```
 
-Nos trois intervalles coïncident avec ceux de R à la quatrième décimale. Sur 2 000 clients, ils sont presque identiques ; la différence se voit sur les petits effectifs : avec les huit clients, l'intervalle plan est large (de presque 0 à 0,80), et le log-log est plus raisonnable. Ces intervalles s'interprètent comme au volume I (section 3.3.2) : la *méthode* encadre la vraie valeur dans 95 % des échantillons.
+À 36 mois ($\hat S=0{,}4528$), les trois intervalles sont :
+
+| Intervalle | Borne basse | Borne haute |
+|---|---:|---:|
+| plan | 0,4254 | 0,4801 |
+| log | 0,4262 | 0,4810 |
+| log-log | 0,4252 | 0,4799 |
+
+Ils coïncident avec ceux de R à la quatrième décimale. Sur 2 000 clients, ils sont presque identiques ; la différence se voit sur les petits effectifs : avec les huit clients, l'intervalle plan est large (de presque 0 à 0,80), et le log-log est plus raisonnable. Ces intervalles s'interprètent comme au volume I (section 3.3.2) : la *méthode* encadre la vraie valeur dans 95 % des échantillons.
 
 ### 5.2.4 Médiane, quantiles et durée moyenne « restreinte »
 
-**La médiane de survie** est le premier instant où la courbe passe sous 0,5. C'est le bon résumé de la « durée typique » : contrairement à la moyenne, elle est définie dès que la courbe descend sous 0,5, même si certains clients ne sont jamais partis. Son intervalle de confiance s'obtient en cherchant où la **bande de confiance** de la courbe coupe le niveau 0,5 (méthode de Brookmeyer et Crowley) :
+**La médiane de survie** est le premier instant où la courbe passe sous 0,5. C'est le bon résumé de la « durée typique » : contrairement à la moyenne, elle est définie dès que la courbe descend sous 0,5, même si certains clients ne sont jamais partis. Son intervalle de confiance s'obtient en cherchant où la **bande de confiance** de la courbe coupe le niveau 0,5 (méthode de Brookmeyer et Crowley).
 
-```python
+```python hide
 z = 1.959964
 S_bas, S_haut = S * np.exp(-z * np.sqrt(gw)), S * np.exp(z * np.sqrt(gw))      # bande « log »
 med = tj[S <= 0.5][0]
@@ -276,7 +302,7 @@ médiane de survie : 32.45 mois ; IC95 [29.9 ; 34.2]
 statsmodels       : 32.45
 ```
 
-```r
+```r hide
 print(km_all)
 ```
 <!--sortie-->
@@ -287,13 +313,27 @@ Call: survfit(formula = Surv(duree_mois, churn) ~ 1, data = clients)
 [1,] 2000    977   32.5    29.9    34.2
 ```
 
+Avec la bibliothèque, tout tient en deux lignes (`c` est le tableau des clients) :
+
+```python
+from statsmodels.duration.survfunc import SurvfuncRight
+
+km = SurvfuncRight(c["duree_mois"], c["churn"])        # estimateur de Kaplan-Meier
+print(f"médiane de survie : {km.quantile(0.5):.2f} mois")
+```
+<!--sortie-->
+```text
+médiane de survie : 32.45 mois
+```
+
+
 La médiane est d'environ **32,5 mois** (IC95 : 29,9 à 34,2). La moitié des clients ont quitté la boutique au bout de deux ans et huit mois et demi. Notez que ce chiffre est bien supérieur à la moyenne « naïve » de 23 mois de la section 5.1.
 
 **Et la durée moyenne ?** Nous savons que $E[T]=\int_0^\infty S(t)\,dt$. Mais Kaplan-Meier ne descend pas jusqu'à zéro : le dernier client est censuré, et la courbe s'arrête à 0,11 (dernier départ au mois 80,2). L'aire totale n'est pas définie ; elle dépend de ce que l'on suppose *au-delà* des données. On calcule donc la **durée moyenne restreinte** (en anglais *restricted mean survival time*, RMST) jusqu'à un horizon $\tau$ choisi :
 $$\mathrm{RMST}(\tau)=\int_0^{\tau}\hat S(t)\,dt.$$
 C'est le **nombre moyen de mois passés dans la clientèle pendant les $\tau$ premiers mois**. Comme $\hat S$ est une fonction en escalier, l'intégrale est une somme de rectangles. À la main, pour nos huit clients et $\tau=14$ : $3\times1+2\times0{,}875+3\times0{,}75+4\times0{,}6+2\times0{,}4=3+1{,}75+2{,}25+2{,}4+0{,}8=10{,}2$ mois. (Ni 9 mois ni 7 mois : on a bien utilisé l'information des censurés.)
 
-```python
+```python hide
 def rmst(tj, S, tau):
     """Aire sous la courbe en escalier de 0 à tau."""
     bornes = np.concatenate([[0.0], tj[tj < tau], [tau]])
@@ -312,13 +352,13 @@ for tau in (24, 36, 60):
 2000 clients, tau = 60 : 33.94 mois passés en moyenne dans les 60 premiers mois
 ```
 
-Sur 36 mois, un nouveau client passe en moyenne un peu plus de 26 mois dans la clientèle de la boutique, sur un maximum possible de 36. C'est une quantité très parlante pour décider (nous la retrouverons au 5.4 pour la valeur vie client), et elle ne dépend d'aucune hypothèse de forme.
+Sur 24 mois, un nouveau client passe en moyenne 19,8 mois dans la clientèle de la boutique ; sur 36 mois, un peu plus de 26 mois (sur un maximum possible de 36) ; sur 60 mois, 33,9 mois. C'est une quantité très parlante pour décider (nous la retrouverons au 5.4 pour la valeur vie client), et elle ne dépend d'aucune hypothèse de forme.
 
 ### 5.2.5 Comparer des groupes : courbes et test du log-rank
 
 La gérante a envoyé une **offre de bienvenue** à la moitié de ses clients, **tirée au hasard**. Cette offre prolonge-t-elle la relation ? Et le canal d'acquisition joue-t-il un rôle ? Traçons Kaplan-Meier par groupe, avec les bandes de confiance log-log.
 
-```python
+```python hide
 def courbe_groupe(y, d, masque):
     t_, n_, d_, S_, g_ = kaplan_meier(y[masque], d[masque])
     b = S_ ** np.exp(1.959964 * np.sqrt(g_) / np.abs(np.log(S_)))
@@ -360,9 +400,9 @@ figure enregistrée
 
 ![Courbes de Kaplan-Meier par groupe, avec bandes de confiance à 95 % : à gauche selon l'offre de bienvenue, à droite selon le canal d'acquisition.](figures/ch05-km-groupes.png)
 
-Les courbes avec et sans offre se séparent nettement et durablement ; à droite, Boutique est au-dessus de Site, lui-même au-dessus d'Réseaux (les bandes de Boutique et de Site se chevauchent par endroits). Résumons chaque groupe (médiane de survie et durée moyenne restreinte à 36 mois) :
+Les courbes avec et sans offre se séparent nettement et durablement ; à droite, Boutique est au-dessus de Site, lui-même au-dessus de Réseaux (les bandes de Boutique et de Site se chevauchent par endroits). Résumons chaque groupe (médiane de survie et durée moyenne restreinte à 36 mois) :
 
-```python
+```python hide
 resume = []
 for var in ["offre_bienvenue", "canal_acquisition"]:
     for valeur, g in c.groupby(var):
@@ -374,13 +414,22 @@ print(pd.DataFrame(resume).to_string(index=False))
 ```
 <!--sortie-->
 ```text
-         variable    groupe  clients  départs  médiane (mois)  RMST 36 mois
-  offre_bienvenue         0      985      528            28.2         24.62
-  offre_bienvenue         1     1015      449            36.6         27.69
-canal_acquisition  Boutique      504      212            41.2         29.10
-canal_acquisition Réseaux      816      443            26.4         23.93
-canal_acquisition      Site      680      322            34.1         26.67
+         variable   groupe  clients  départs  médiane (mois)  RMST 36 mois
+  offre_bienvenue        0      985      528            28.2         24.62
+  offre_bienvenue        1     1015      449            36.6         27.69
+canal_acquisition Boutique      504      212            41.2         29.10
+canal_acquisition  Réseaux      816      443            26.4         23.93
+canal_acquisition     Site      680      322            34.1         26.67
 ```
+
+| Variable | Groupe | Clients | Départs | Médiane (mois) | Durée moyenne restreinte à 36 mois |
+|---|---|---:|---:|---:|---:|
+| Offre de bienvenue | sans offre | 985 | 528 | 28,2 | 24,62 |
+| | avec offre | 1 015 | 449 | 36,6 | 27,69 |
+| Canal d'acquisition | Boutique | 504 | 212 | 41,2 | 29,10 |
+| | Réseaux | 816 | 443 | 26,4 | 23,93 |
+| | Site | 680 | 322 | 34,1 | 26,67 |
+
 
 Les chiffres sont éloquents : sans offre, la médiane est de 28 mois ; avec l'offre, de près de 37. Mais est-ce un vrai effet ou le hasard de l'échantillonnage ? Il faut un **test**.
 
@@ -399,9 +448,9 @@ Pour $K$ groupes, on utilise la forme quadratique du vecteur $(O_k-E_k)_{k<K}$ a
 | 8 | 5 | 3 | 1 | D (sans offre) | 0,600 | 0,240 |
 | 12 | 3 | 2 | 1 | F (avec offre) | 0,667 | 0,222 |
 
-Le groupe « avec offre » a eu $O_1=1$ départ pour $E_1=2{,}338$ attendus ; $\sum V_j=0{,}957$ ; $\chi^2=(1-2{,}338)^2/0{,}957=1{,}87$, soit $p\approx0{,}17$ : avec huit clients, aucune conclusion, évidemment. Le code généralise à $K$ groupes :
+Le groupe « avec offre » a eu $O_1=1$ départ pour $E_1=2{,}338$ attendus ; $\sum V_j=0{,}957$ ; $\chi^2=(1-2{,}338)^2/0{,}957=1{,}87$, soit $p\approx0{,}17$ : avec huit clients, aucune conclusion, évidemment. La formule se généralise à $K$ groupes (le code est dans le cahier, application 5.3).
 
-```python
+```python hide
 from scipy import stats
 
 def logrank(y, d, groupe):
@@ -431,9 +480,9 @@ print(f"8 clients : observés {O8} | attendus {E8.round(3)} | chi2 = {chi8:.2f} 
 8 clients : observés [1. 3.] | attendus [2.338 1.662] | chi2 = 1.87 | p = 0.171
 ```
 
-Appliquons maintenant le test aux données réelles : à la main, avec `statsmodels`, avec R.
+Appliquons maintenant le test aux données réelles (nous l'avons calculé à la main, avec `statsmodels` et avec R : les trois résultats coïncident).
 
-```python
+```python hide
 from statsmodels.duration.survfunc import survdiff
 
 O, E, chi2, ddl, p = logrank(y, d, c["offre_bienvenue"])
@@ -446,7 +495,7 @@ print("statsmodels  : chi2 = %.2f, p = %.1e" % survdiff(y, d, c["offre_bienvenue
 statsmodels  : chi2 = 35.54, p = 2.5e-09
 ```
 
-```r
+```r hide
 print(survdiff(Surv(duree_mois, churn) ~ offre_bienvenue, data = clients))
 ```
 <!--sortie-->
@@ -464,9 +513,9 @@ offre_bienvenue=1 1015      449      541      15.8      35.5
 
 Les trois calculs donnent $\chi^2\approx35{,}5$ ($p\approx3\times10^{-9}$) : dans le groupe avec offre, on observe 449 départs là où l'on en attendrait 541 si l'offre ne changeait rien ; dans le groupe sans offre, 528 au lieu de 436. L'offre étant attribuée **au hasard**, la différence peut être lue comme **l'effet causal de l'offre** sur la durée de la relation (nous reviendrons sur la mesure de cet effet au 5.3).
 
-Pour le canal d'acquisition (trois groupes, $\chi^2_2$) puis les comparaisons deux à deux, avec la correction de **Holm** du volume I (section 3.5.5) :
+Pour le canal d'acquisition (trois groupes, $\chi^2_2$) puis les comparaisons deux à deux, avec la correction de **Holm** du volume I (section 3.5.5).
 
-```python
+```python hide
 O3, E3, chi3, ddl3, p3 = logrank(y, d, c["canal_acquisition"])
 print(f"3 canaux : chi2 = {chi3:.1f} à {ddl3} ddl, p = {p3:.1e}")
 print(pd.DataFrame({"observés": O3.astype(int), "attendus": E3.round(1)}, index=np.unique(c["canal_acquisition"])).T.to_string())
@@ -488,19 +537,19 @@ print(pd.DataFrame({"comparaison": [f"{a} / {b}" for a, b in paires], "p brute":
 ```text
 3 canaux : chi2 = 55.0 à 2 ddl, p = 1.1e-12
           Boutique  Réseaux   Site
-observés     212.0      443.0  322.0
-attendus     296.5      342.4  338.1
-         comparaison  p brute   p Holm
+observés     212.0    443.0  322.0
+attendus     296.5    342.4  338.1
+       comparaison  p brute   p Holm
 Boutique / Réseaux 5.27e-13 1.58e-12
-     Boutique / Site 8.61e-04 8.61e-04
+   Boutique / Site 8.61e-04 8.61e-04
     Site / Réseaux 3.02e-05 6.05e-05
 ```
 
 Les trois canaux diffèrent ($\chi^2_2=55{,}0$). Deux à deux, toutes les comparaisons restent significatives après correction de Holm : la plus nette oppose Boutique et Réseaux (p de l'ordre de $10^{-12}$), la plus faible Boutique et Site (p $\approx9\times10^{-4}$). Les clients arrivés par la boutique restent le plus longtemps, ceux d'Réseaux partent le plus vite : 212 départs observés en Boutique contre 296 attendus sous l'hypothèse « aucune différence », mais 443 contre 342 pour Réseaux.
 
-**Autres pondérations.** Le log-rank donne le **même poids** à tous les instants ; il est le plus puissant quand les risques des groupes sont **proportionnels** (section 5.3). D'autres tests pondèrent davantage le début (Gehan-Breslow, Tarone-Ware, Fleming-Harrington) ; ils sont plus sensibles aux différences précoces et moins aux différences tardives :
+**Autres pondérations.** Le log-rank donne le **même poids** à tous les instants ; il est le plus puissant quand les risques des groupes sont **proportionnels** (section 5.3). D'autres tests pondèrent davantage le début (Gehan-Breslow, Tarone-Ware, Fleming-Harrington) ; ils sont plus sensibles aux différences précoces et moins aux différences tardives.
 
-```python
+```python hide
 for nom, w, kw in [("log-rank", None, {}), ("Gehan-Breslow", "gb", {}), ("Tarone-Ware", "tw", {}), ("Fleming-Harrington p=1", "fh", {"fh_p": 1})]:
     chi, pv = survdiff(y, d, c["offre_bienvenue"], weight_type=w, **kw)
     print(f"{nom:<24} chi2 = {chi:6.2f}   p = {pv:.1e}")
@@ -513,7 +562,7 @@ Tarone-Ware              chi2 =  35.12   p = 3.1e-09
 Fleming-Harrington p=1   chi2 =  34.98   p = 3.3e-09
 ```
 
-```r
+```r hide
 print(survdiff(Surv(duree_mois, churn) ~ offre_bienvenue, data = clients, rho = 1)$chisq)
 ```
 <!--sortie-->
@@ -521,7 +570,7 @@ print(survdiff(Surv(duree_mois, churn) ~ offre_bienvenue, data = clients, rho = 
 [1] 34.97764
 ```
 
-Le dernier test (Fleming-Harrington, `rho = 1` dans R) donne le même $\chi^2$ dans les deux logiciels. Ici, toutes les pondérations concluent de la même façon. Quand elles divergent, c'est un signal qu'**il se passe quelque chose de différent selon l'âge de la relation** (par exemple des courbes qui se croisent) : on regarde alors les courbes plutôt que de choisir le test qui nous arrange.
+Sur l'offre de bienvenue, les quatre tests donnent $\chi^2=35{,}5$ (log-rank), $31{,}5$ (Gehan-Breslow), $35{,}1$ (Tarone-Ware) et $35{,}0$ (Fleming-Harrington, que R retrouve avec `rho = 1`) : toutes les pondérations concluent de la même façon. Quand elles divergent, c'est un signal qu'**il se passe quelque chose de différent selon l'âge de la relation** (par exemple des courbes qui se croisent) : on regarde alors les courbes plutôt que de choisir le test qui nous arrange.
 
 > ⚠️ **Le choix du test ne se fait pas après avoir vu les résultats.** Décidez de la pondération *avant* (par défaut, le log-rank). Essayer plusieurs tests et ne retenir que le meilleur est un cas de tests multiples (volume I, section 3.5.5).
 
@@ -531,9 +580,9 @@ Nous avons promis (5.1.4) de montrer comment traiter les **entrées tardives**. 
 
 La règle est simple : **un client n'est dans l'ensemble à risque à l'instant $t$ que s'il est entré dans l'observation avant $t$ et n'en est pas encore sorti** :
 $$n_j=\#\{i:\ e_i<t_j\le y_i\}.$$
-Ignorer cette règle (prendre $e_i=0$ pour tout le monde) revient à compter, dans les ensembles à risque des premiers mois, des clients qui *n'étaient pas encore observables* ; on sous-estime le risque précoce et on **surestime la survie**. Vérifions par simulation, avec une vérité connue :
+Ignorer cette règle (prendre $e_i=0$ pour tout le monde) revient à compter, dans les ensembles à risque des premiers mois, des clients qui *n'étaient pas encore observables* ; on sous-estime le risque précoce et on **surestime la survie**. Nous l'avons vérifié par simulation, avec une vérité connue : 6 000 clients dont les durées suivent une loi de Weibull, n'entrant dans la base qu'à leur adhésion (uniforme entre 0 et 30 mois après le premier achat) ; la simulation est reprise dans le cahier, application 5.3.
 
-```python
+```python hide
 rng = np.random.default_rng(52)
 N = 6000
 T = 36 * rng.weibull(1.35, N)                 # durées vraies (Weibull, comme en 5.1)
@@ -568,7 +617,7 @@ Les estimations qui **ignorent** l'entrée surestiment fortement la survie : 0,7
 
 > ⚠️ **La queue de la courbe est fragile.** Quand l'ensemble à risque devient petit (ici : moins de 100 clients au-delà de 60 mois, 7 avant le dernier départ), un seul départ fait chuter la courbe de plusieurs points. On présente toujours sous la courbe le **nombre de clients à risque** et on arrête l'interprétation là où il devient trop faible.
 
-```python
+```python hide
 instants = [0, 12, 24, 36, 48, 60, 72]
 tab = {}
 for nom, masque in [("sans offre", off == 0), ("avec offre", off == 1)]:
@@ -582,9 +631,15 @@ sans offre     985      647      359      179       70       29       13
 avec offre    1015      731      455      237      116       67       24
 ```
 
+| Clients à risque | 0 mois | 12 mois | 24 mois | 36 mois | 48 mois | 60 mois | 72 mois |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| sans offre | 985 | 647 | 359 | 179 | 70 | 29 | 13 |
+| avec offre | 1 015 | 731 | 455 | 237 | 116 | 67 | 24 |
+
+
 > ⚠️ **La censure non informative est une hypothèse, pas un fait.** À la section 5.1.4, nous avons vu que 363 clients sont des *pertes de vue*. Et si, en réalité, tous étaient partis sans prévenir ? Une **analyse de sensibilité du pire cas** consiste à les recompter comme des départs, à la date où l'on les perd de vue : la vraie courbe se trouve alors entre les deux.
 
-```python
+```python hide
 c["date_inscription"] = pd.to_datetime(c["date_inscription"])
 suivi_possible = (pd.Timestamp("2025-12-31") - c["date_inscription"]).dt.days / 30.4375
 perdu = ((c["churn"] == 0) & (suivi_possible - c["duree_mois"] > 0.01)).to_numpy()
@@ -609,6 +664,8 @@ log-rank offre / sans offre, pire cas : chi2 = 27.4 (standard : 35.5)
 ```
 
 À 36 mois, la survie est de **45 %** sous l'hypothèse standard et de **34 %** dans le pire cas : l'incertitude liée à nos 363 pertes de vue pèse onze points, bien plus que l'incertitude statistique (l'intervalle à 95 % mesurait moins de trois points de demi-largeur). La vraie survie se situe entre les deux ; elle est plus proche de la première si les pertes de vue sont réellement indépendantes du risque de départ, ce qui est le cas dans notre simulation. Et la **conclusion sur l'offre** survit à l'épreuve : le test du log-rank reste très significatif même dans le pire cas (dernière ligne : $\chi^2=27{,}4$ contre 35,5), ce qui est cohérent avec le fait que, dans notre simulation, les pertes de vue ne dépendent pas de l'offre. Ce genre de vérification est précieux : il sépare les résultats **robustes** (la conclusion ne bouge pas) des chiffres **fragiles** (le niveau de survie, lui, dépend de l'hypothèse).
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : applications 5.2 et 5.3, exercices 5.4 à 5.6.
 
 > ✅ **À retenir**
 > - **Kaplan-Meier** : $\hat S(t)=\prod_{t_j\le t}(1-d_j/n_j)$, où $n_j$ est l'ensemble à risque (les censurés y restent jusqu'à leur censure, puis en sortent). C'est l'estimateur du maximum de vraisemblance **non paramétrique**.

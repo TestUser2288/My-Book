@@ -37,9 +37,11 @@ Pour comprendre, le plus sûr est de **construire** le modèle. Nous ajustons, s
 - une **saisonnalité de Fourier** à $K$ harmoniques : $s(t)=\sum_{k=1}^{K}[a_k\sin(2\pi k\,m/12)+b_k\cos(2\pi k\,m/12)]$, où $m$ est le numéro du mois ;
 - les variables explicatives `promo` et `covid`.
 
-C'est une régression linéaire pénalisée : les moindres carrés avec un terme $\lambda\sum\delta_j^2$. Deux réglages à choisir : le nombre $K$ d'harmoniques et la pénalité $\lambda$. Plutôt que de les fixer au hasard, on les **valide** : on apprend sur les 72 premiers mois de l'apprentissage et on évalue sur les 24 suivants (toujours dans la période d'apprentissage : le test de 2024-2025 reste intact).
+C'est une régression linéaire pénalisée : les moindres carrés avec un terme $\lambda\sum\delta_j^2$. Deux réglages à choisir : le nombre $K$ d'harmoniques et la pénalité $\lambda$. Plutôt que de les fixer au hasard, on les **valide** : on apprend sur les 72 premiers mois de l'apprentissage et on évalue sur les 24 suivants (toujours dans la période d'apprentissage : le test de 2024-2025 reste intact). La grille testée croise 6 valeurs de $K$ et 5 valeurs de $\lambda$ ; elle retient $K=6$ et $\lambda=0{,}1$, avec une erreur de validation (RMSE en logarithme) de $0{,}090$.
 
-```python
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.3 (écrire ce modèle pas à pas).
+
+```python hide
 import warnings
 warnings.filterwarnings("ignore")
 import itertools
@@ -112,9 +114,9 @@ réglage retenu : K = 6 harmoniques, lambda = 0.1  (RMSE de validation : 0.090)
 
 Lecture de la grille. Avec **peu d'harmoniques** ($K=1$ à $3$), la saison est trop lisse : une seule ondulation sinusoïdale ne peut pas reproduire le **pic étroit de décembre** et le creux de janvier, et l'erreur de validation est grande (de 0,18 à 0,39). Il en faut davantage : l'erreur chute pour $K=4$ puis atteint son minimum pour $K=6$. Or $K=6$ harmoniques sur des données mensuelles équivaut à **un effet libre pour chaque mois** (12 paramètres au total), comme les 11 indicatrices de 4.2.7 : c'est la limite du système. Sur des données quotidiennes, 10 harmoniques suffisent à décrire un profil annuel détaillé ; avec seulement 12 points par an, il ne reste rien à *lisser*.
 
-Refaisons l'ajustement sur les 96 mois et prévoyons les 24 mois de test :
+Refaisons l'ajustement sur les 96 mois et prévoyons les 24 mois de test : l'erreur (RMSE en logarithme) est de $0{,}0801$, avec un biais de $+0{,}017$, pour $0{,}0679$ d'erreur d'ajustement sur l'apprentissage.
 
-```python
+```python hide
 f_test, ajuste = ajuster_predire(train.values, temps[:96], temps[96:], num_mois[:96], num_mois[96:], Xv[:96], Xv[96:], K_opt, lam_opt)
 print("RMSE (log) sur les 24 mois de test :", round(np.sqrt(np.mean((test.values - f_test) ** 2)), 4),
       "| biais (y - prévision) :", round(float(np.mean(test.values - f_test)), 4))
@@ -145,9 +147,9 @@ Le modèle fait presque aussi bien que le meilleur des modèles de 4.3 sur la fe
 
 ### 4.6.3 Évaluation honnête : tout le monde au même concours
 
-Un nouveau venu doit passer **le même concours** que les autres, sans faveur. Nous ajoutons donc à la validation à origine glissante de 4.3.6 deux nouveaux concurrents : le **modèle de type Prophet** que nous venons de construire (avec les réglages $K$ et $\lambda$ retenus *sur l'apprentissage*), et le **modèle structurel** de 4.5.5. On reprend les objets de 4.3 (`P`, `reel`, `origines`, `H`, `y`, `X`) et on y ajoute deux séries de prévisions.
+Un nouveau venu doit passer **le même concours** que les autres, sans faveur. Nous ajoutons donc à la validation à origine glissante de 4.3.6 deux nouveaux concurrents : le **modèle de type Prophet** que nous venons de construire (avec les réglages $K$ et $\lambda$ retenus *sur l'apprentissage*), et le **modèle structurel** de 4.5.5. Même protocole que 4.3.6 (13 origines, 12 horizons) : on ajoute simplement deux séries de prévisions à celles de 4.3. Résultats, RMSE en logarithme :
 
-```python
+```python hide-code
 def prev_fourier(i):
     f, _ = ajuster_predire(y.values[:i], temps[:i], temps[i:i + H], num_mois[:i], num_mois[i:i + H], Xv[:i], Xv[i:i + H], K_opt, lam_opt)
     return f

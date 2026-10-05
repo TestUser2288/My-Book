@@ -4,7 +4,7 @@
 
 > 💡 **Intuition.** Quand un modèle a beaucoup de variables pour peu de données, les moindres carrés ont **trop de liberté** : ils utilisent chaque coefficient pour coller au bruit, d'où des coefficients énormes et instables. La **régularisation** consiste à leur mettre une **laisse** : on minimise l'erreur *plus* une pénalité qui grandit avec la taille des coefficients. On accepte un petit biais volontaire (les coefficients sont « rétrécis » vers 0) en échange d'une **forte baisse de variance**. C'est une application directe du dilemme biais-variance, et la preuve que le théorème de Gauss-Markov (1.1.5) a des limites : il ne dit rien des estimateurs **biaisés**.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
@@ -33,7 +33,7 @@ Le **paramètre de régularisation** $\lambda$ règle la sévérité de la laiss
 > $$(\mathbf X^\top\mathbf X+\lambda\mathbf I)\,\hat{\boldsymbol\beta}_{\text{ridge}}=\mathbf X^\top\mathbf y\quad\Longrightarrow\quad\hat{\boldsymbol\beta}_{\text{ridge}}=(\mathbf X^\top\mathbf X+\lambda\mathbf I)^{-1}\mathbf X^\top\mathbf y .$$
 > Pour $\lambda>0$, $\mathbf X^\top\mathbf X+\lambda\mathbf I$ est **toujours inversible** (ses valeurs propres sont $\ge\lambda>0$), même si $\mathbf X$ n'est pas de rang plein ou si $p>n$ : la régularisation résout aussi le problème de la colinéarité parfaite.
 
-Deux règles pratiques, essentielles : (1) **la constante n'est pas pénalisée** (on centre simplement $\mathbf y$ et les colonnes de $\mathbf X$) ; (2) **il faut standardiser les variables** (moyenne 0, écart-type 1) : sinon la pénalité frappe plus les variables exprimées dans de petites unités (un âge en années contre un revenu en milliers de euros) et le résultat dépend des unités choisies.
+Deux règles pratiques, essentielles : (1) **la constante n'est pas pénalisée** (on centre simplement $\mathbf y$ et les colonnes de $\mathbf X$) ; (2) **il faut standardiser les variables** (moyenne 0, écart-type 1) : sinon la pénalité frappe plus les variables exprimées dans de petites unités (un âge en années contre un revenu en milliers d'euros) et le résultat dépend des unités choisies.
 
 **Voir ce que fait la pénalité : la SVD.** Écrivons la décomposition en valeurs singulières de $\mathbf X$ centrée : $\mathbf X=\mathbf U\mathbf D\mathbf V^\top$ (volume I, section 1.1.4), où les $d_j$ sont les valeurs singulières. Alors
 
@@ -49,9 +49,9 @@ Les moindres carrés correspondent à $\lambda=0$ : tous les facteurs valent 1. 
 > $$\text{EQM}(\lambda)=\frac{\lambda^2\beta_j^2+\sigma^2}{(1+\lambda)^2}.$$
 > Sa dérivée en $\lambda=0$ vaut $-2\sigma^2<0$ : **l'EQM décroît dès qu'on s'écarte de $\lambda=0$**, quel que soit $\beta_j$. Le minimum est atteint en $\lambda^\star=\sigma^2/\beta_j^2$ : la bonne régularisation est d'autant plus forte que le bruit est grand et le signal faible. Le gain n'est pas un accident : *il existe toujours un $\lambda>0$ pour lequel Ridge bat les moindres carrés en EQM*.
 
-**Voyons-le par simulation.** Deux variables explicatives très corrélées (corrélation 0,98), $n=30$, des vrais coefficients $(1,\,1)$ et $\sigma=1$. On répète 4 000 fois l'expérience et on mesure l'EQM des estimateurs pour plusieurs $\lambda$ :
+**Voyons-le par simulation.** Deux variables explicatives très corrélées (corrélation 0,98), $n=30$, des vrais coefficients $(1,\,1)$ et $\sigma=1$. On répète 4 000 fois l'expérience et on mesure l'EQM des estimateurs pour plusieurs $\lambda$ (le code est dans le cahier, application 1.8) :
 
-```python
+```python hide-code
 rng = np.random.default_rng(4)
 n_s, rho = 30, 0.98
 cov = np.array([[1, rho], [rho, 1]])
@@ -93,9 +93,9 @@ corrélation entre les deux estimations MCO du même échantillon : -0.984
 
 Pour $\lambda=0$ (les moindres carrés), la **variance** domine : les deux estimations sont fortement corrélées négativement entre elles (si l'une surestime, l'autre sous-estime : voir la corrélation affichée), ce qui rend chacune très instable. Quand $\lambda$ augmente, le **biais²** augmente et la **variance** chute ; l'EQM totale passe par un **minimum** vers $\lambda=10$ (0,029, contre 2,09 pour les moindres carrés : soixante-dix fois moins), avant de remonter quand le biais devient excessif ($\lambda=50$ : 0,13). Le meilleur estimateur au sens de l'EQM est donc **biaisé** : ce n'est pas en contradiction avec Gauss-Markov, qui ne parlait que des estimateurs **sans biais**.
 
-**À la main contre `scikit-learn`.** Vérifions notre formule sur les données de la boutique, avec les notes de l'enquête (nous introduisons ici le jeu de variables de la section suivante) :
+**À la main contre `scikit-learn`.** Sur les données de la boutique (âge, canal, notes de l'enquête), la formule explicite et la fonction `Ridge` de `scikit-learn` donnent exactement les mêmes coefficients (à cinq décimales) ; ceux des moindres carrés ($\lambda=0$) sont un peu plus grands :
 
-```python
+```python hide
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy()
 df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
@@ -123,7 +123,7 @@ print(pd.DataFrame({"à la main": beta_main, "scikit-learn": sk.coef_, "MCO (λ 
                à la main  scikit-learn  MCO (λ = 0)
 age              0.09800       0.09800      0.10255
 Site            -0.06342      -0.06342     -0.07490
-Réseaux       -0.15797      -0.15797     -0.17241
+Réseaux         -0.15797      -0.15797     -0.17241
 score_produit    0.09827       0.09827      0.10322
 score_service    0.02016       0.02016      0.02035
 ```
@@ -140,7 +140,7 @@ $$\hat{\boldsymbol\beta}_{\text{lasso}}(\alpha)=\arg\min_{\boldsymbol\beta}\ \fr
 
 > 💡 **Pourquoi des zéros ? La géométrie.** Minimiser la somme des carrés sous la contrainte $\sum_j\beta_j^2\le r^2$ (Ridge) ou $\sum_j|\beta_j|\le r$ (Lasso) donne le même résultat que les versions pénalisées. Les courbes de niveau de la somme des carrés sont des **ellipses** centrées sur la solution des moindres carrés ; la solution contrainte est le **premier point de contact** entre une ellipse qui grandit et la région admissible. Pour Ridge, la région est un **disque** : le contact est un point lisse, quelconque, où aucun coefficient n'est nul. Pour le Lasso, la région est un **losange** dont les **sommets sont sur les axes** : une ellipse qui grandit touche très souvent un sommet, où un coefficient est exactement nul.
 
-```python
+```python hide
 def solution_contrainte(centre, A, region, r, n_pts=4000):
     """Point de la frontière de la région (norme p = 1 ou 2, rayon r) qui minimise (b-c)'A(b-c)."""
     t = np.linspace(0, 2 * np.pi, n_pts)
@@ -200,9 +200,9 @@ $$\beta_j\leftarrow S\big(\rho_j,\alpha\big),\qquad\rho_j=\frac1n\mathbf x_j^\to
 
 > 📐 **Pourquoi le seuillage doux ?** Fixons les autres coefficients : on minimise en $\beta_j$ la fonction $\tfrac12(\beta_j-\rho_j)^2+\alpha|\beta_j|$ (en développant et en utilisant $\tfrac1n\mathbf x_j^\top\mathbf x_j=1$). Pour $\beta_j>0$, la dérivée est $\beta_j-\rho_j+\alpha$, nulle en $\beta_j=\rho_j-\alpha$, valable si $\rho_j>\alpha$ ; symétriquement pour $\beta_j<0$. Si $|\rho_j|\le\alpha$, la dérivée à droite en 0 ($-\rho_j+\alpha$) est $\ge0$ et la dérivée à gauche ($-\rho_j-\alpha$) est $\le0$ : le minimum est exactement en **0**. Le Lasso **ramène à 0** toute variable dont la corrélation (partielle) avec le résidu est inférieure au seuil $\alpha$, et **rétrécit de $\alpha$** les autres.
 
-Écrivons-la à la main et comparons à `scikit-learn` :
+Écrite à la main, cette descente par coordonnées donne exactement les coefficients de `scikit-learn`. Avec $\alpha=0{,}05$, on trouve 0,053 pour l'âge, −0,075 pour Réseaux, 0,055 pour le score produit, et **exactement zéro** pour `Site` et `score_service` (les moindres carrés donnaient 0,103 ; −0,172 ; 0,103 ; −0,075 et 0,020).
 
-```python
+```python hide
 def lasso_coordonnees(Z, y, alpha, n_iter=500):
     n_, p_ = Z.shape
     beta = np.zeros(p_)
@@ -224,13 +224,13 @@ print("coefficients exactement nuls (à la main) :", list(Xp.columns[b_main == 0
                à la main  scikit-learn      MCO
 age              0.05297       0.05297  0.10255
 Site            -0.00000      -0.00000 -0.07490
-Réseaux       -0.07486      -0.07486 -0.17241
+Réseaux         -0.07486      -0.07486 -0.17241
 score_produit    0.05465       0.05465  0.10322
 score_service    0.00000       0.00000  0.02035
 coefficients exactement nuls (à la main) : ['Site', 'score_service']
 ```
 
-Les deux versions coïncident, ce qui valide notre algorithme. Mais regardez ce que fait ce seuil $\alpha=0{,}05$, choisi arbitrairement : le Lasso met à zéro `score_service`, qui (dans le vrai modèle) n'a pas d'effet direct sur le panier, mais aussi `Site`, qui **a** un vrai effet (−15 % environ, 1.2.2), et il **divise par deux** à peu près les autres coefficients. Cette pénalité est donc **trop forte** : un $\alpha$ mal choisi supprime de vraies variables et sous-estime les effets. D'où l'importance de choisir $\alpha$ par validation croisée, ce que nous faisons maintenant.
+Cette coïncidence valide l'algorithme. Mais regardez ce que fait ce seuil $\alpha=0{,}05$, choisi arbitrairement : le Lasso met à zéro `score_service`, qui (dans le vrai modèle) n'a pas d'effet direct sur le panier, mais aussi `Site`, qui **a** un vrai effet (−15 % environ, 1.2.2), et il **divise par deux** à peu près les autres coefficients. Cette pénalité est donc **trop forte** : un $\alpha$ mal choisi supprime de vraies variables et sous-estime les effets. D'où l'importance de choisir $\alpha$ par validation croisée, ce que nous faisons maintenant.
 
 ### 1.5.3 L'Elastic Net : un compromis
 
@@ -240,25 +240,25 @@ $$\frac1{2n}\|\mathbf y-\mathbf X\boldsymbol\beta\|^2+\alpha\Big(\rho\sum_j|\bet
 
 Pour $\rho=1$ c'est le Lasso, pour $\rho\to0$, Ridge. Il fournit des solutions **creuses** tout en étant **stables** en présence de variables corrélées. On choisit $\alpha$ et $\rho$ par validation croisée.
 
-### 1.5.4 Application : beaucoup de variables, peu de clients
+### 1.5.4 Beaucoup de variables, peu de clients : l'expérience
 
-Mettons les trois méthodes à l'épreuve dans un scénario réaliste d'**analyse exploratoire** : on dispose de **35 variables candidates** pour prévoir le log-panier d'un client, et de seulement **120 clients** pour apprendre le modèle. Parmi ces 35 variables : 4 portent un vrai signal (l'âge, deux indicatrices de canal, le score produit), quelques-unes sont des **variables pertinentes mais inutiles** (ville, offre de bienvenue, score service, courbure de l'âge, interactions), et **20 sont du pur bruit** que nous ajoutons (nombres tirés au hasard : des « variables » sans aucun rapport avec les clients). On teste sur les 956 autres clients de l'enquête.
+Mettons les trois méthodes à l'épreuve (code pas à pas dans le cahier, application 1.9) dans un scénario réaliste d'**analyse exploratoire** : on dispose de **35 variables candidates** pour prévoir le log-panier d'un client, et de seulement **120 clients** pour apprendre le modèle. Parmi ces 35 variables : 4 portent un vrai signal (l'âge, deux indicatrices de canal, le score produit), quelques-unes sont des **variables pertinentes mais inutiles** (ville, offre de bienvenue, score service, courbure de l'âge, interactions), et **20 sont du pur bruit** que nous ajoutons (nombres tirés au hasard : des « variables » sans aucun rapport avec les clients). On teste sur les 956 autres clients de l'enquête.
 
-```python
+```python hide
 rng = np.random.default_rng(31)
 ville = bq["id_client"].map(clients.set_index("id_client")["ville"])
 villes = pd.get_dummies(ville, prefix="ville", drop_first=True, dtype=float)       # 5 indicatrices (Autre = référence)
 F = pd.DataFrame({
     "age": bq["a"].astype(float), "age_carre": bq["a"].astype(float) ** 2, "age_cube": bq["a"].astype(float) ** 3,
-    "canal_Site": (bq["canal"] == "Site").astype(float), "canal_Instagram": (bq["canal"] == "Réseaux").astype(float),
+    "canal_Site": (bq["canal"] == "Site").astype(float), "canal_Reseaux": (bq["canal"] == "Réseaux").astype(float),
     "offre_bienvenue": bq["id_client"].map(clients.set_index("id_client")["offre_bienvenue"]).astype(float),
     "score_produit": bq["score_produit"], "score_service": bq["score_service"],
-    "age_x_Site": bq["a"] * (bq["canal"] == "Site").astype(float), "age_x_Instagram": bq["a"] * (bq["canal"] == "Réseaux").astype(float),
+    "age_x_Site": bq["a"] * (bq["canal"] == "Site").astype(float), "age_x_Reseaux": bq["a"] * (bq["canal"] == "Réseaux").astype(float),
 })
 F = pd.concat([F, villes], axis=1)
 bruit = pd.DataFrame(rng.normal(size=(len(F), 20)), columns=[f"bruit_{i+1:02d}" for i in range(20)])
 F = pd.concat([F, bruit], axis=1)
-signal = ["age", "canal_Site", "canal_Instagram", "score_produit"]               # les variables qui ont un VRAI effet dans la simulation
+signal = ["age", "canal_Site", "canal_Reseaux", "score_produit"]               # les variables qui ont un VRAI effet dans la simulation
 print("nombre de variables candidates :", F.shape[1], "| dont du pur bruit :", 20, "| clients :", len(F))
 
 ordre = rng.permutation(len(F))
@@ -276,7 +276,7 @@ entraînement : 120 clients | test : 956 clients
 
 Entraînons cinq modèles : les **moindres carrés avec les 35 variables**, un modèle de **référence** qui ne contient que les vraies variables (inaccessible en pratique, puisqu'on ne sait pas lesquelles sont vraies), puis **Ridge**, **Lasso** et **Elastic Net** avec $\lambda$ choisi par validation croisée à 10 paquets sur l'échantillon d'entraînement.
 
-```python
+```python hide-code
 def rmse(y, p):
     return float(np.sqrt(np.mean((y - p) ** 2)))
 
@@ -325,9 +325,9 @@ Lisons ce tableau, qui contient presque toute la leçon :
 - Le **Lasso** et l'**Elastic Net** font mieux encore : ils ne gardent que 15 variables, et leur erreur de test (0,361) **égale** celle de la **référence** (0,361), un modèle qui connaît à l'avance les vraies variables, ce qu'on ne sait jamais faire en pratique. (La très légère avance du Lasso sur la référence, 0,3609 contre 0,3612, est dans le bruit d'échantillonnage : il ne faut pas en tirer de conclusion.)
 - Ces méthodes ne font pas une sélection parfaite : sur les 15 variables conservées, **7 sont du bruit**. Mais elles les gardent avec des coefficients **petits**.
 
-Regardons les coefficients retenus par le Lasso, comparés à ceux des moindres carrés :
+Les coefficients retenus par le Lasso, comparés à ceux des moindres carrés, racontent la même histoire.
 
-```python
+```python hide
 coef = pd.DataFrame({"MCO": modeles["MCO, 35 variables"].coef_, "Ridge": ridge.coef_, "Lasso": lasso.coef_, "Elastic Net": enet.coef_}, index=noms)
 vus = coef[(coef["Lasso"].abs() > 1e-10) | coef.index.isin(signal)]
 print("coefficients (variables standardisées) pour les variables retenues par le Lasso ou vraiment utiles :")
@@ -340,22 +340,22 @@ print("variables de bruit : plus grand |coefficient| MCO =", round(coef.loc[coef
 <!--sortie-->
 ```text
 coefficients (variables standardisées) pour les variables retenues par le Lasso ou vraiment utiles :
-                   MCO  Ridge  Lasso  Elastic Net
-age              0.165  0.033  0.050        0.050
-age_carre        0.052  0.015  0.011        0.010
-canal_Site      -0.174 -0.033 -0.091       -0.090
-canal_Instagram -0.218 -0.056 -0.132       -0.131
-score_produit    0.106  0.053  0.096        0.095
-age_x_Instagram -0.005  0.022  0.026        0.026
-ville_Sousse    -0.067 -0.021 -0.013       -0.013
-ville_Tunis     -0.037  0.013  0.004        0.003
-bruit_01         0.073  0.024  0.025        0.024
-bruit_02         0.060  0.012  0.013        0.012
-bruit_11        -0.034 -0.016 -0.005       -0.004
-bruit_13        -0.052 -0.013 -0.004       -0.003
-bruit_14         0.020  0.020  0.021        0.021
-bruit_19         0.013  0.015  0.004        0.003
-bruit_20        -0.054 -0.021 -0.014       -0.014
+                 MCO  Ridge  Lasso  Elastic Net
+age            0.165  0.033  0.050        0.050
+age_carre      0.052  0.015  0.011        0.010
+canal_Site    -0.174 -0.033 -0.091       -0.090
+canal_Reseaux -0.218 -0.056 -0.132       -0.131
+score_produit  0.106  0.053  0.096        0.095
+age_x_Reseaux -0.005  0.022  0.026        0.026
+ville_Ville D -0.067 -0.021 -0.013       -0.013
+ville_Ville E -0.037  0.013  0.004        0.003
+bruit_01       0.073  0.024  0.025        0.024
+bruit_02       0.060  0.012  0.013        0.012
+bruit_11      -0.034 -0.016 -0.005       -0.004
+bruit_13      -0.052 -0.013 -0.004       -0.003
+bruit_14       0.020  0.020  0.021        0.021
+bruit_19       0.013  0.015  0.004        0.003
+bruit_20      -0.054 -0.021 -0.014       -0.014
 
 variables de bruit : plus grand |coefficient| MCO = 0.073 | Ridge = 0.024 | Lasso = 0.025
 ```
@@ -364,11 +364,11 @@ Le Lasso retient **les quatre vraies variables** (âge, Site, Réseaux, score pr
 
 **Les chemins de régularisation.** Pour voir la régularisation à l'œuvre, on trace comment chaque coefficient évolue quand la pénalité varie, de très forte (tous les coefficients à 0) à très faible (on retrouve les moindres carrés).
 
-```python
+```python hide
 alphas_l, coefs_l, _ = lasso_path(Ztr, ytr - ytr.mean(), alphas=80)
 alphas_r = np.logspace(-1, 4, 80)
 coefs_r = np.array([np.linalg.solve(Ztr.T @ Ztr + a * np.eye(Ztr.shape[1]), Ztr.T @ (ytr - ytr.mean())) for a in alphas_r]).T
-couleurs = {"age": VIOLET, "canal_Site": AQUA, "canal_Instagram": ORANGE, "score_produit": BLEU}
+couleurs = {"age": VIOLET, "canal_Site": AQUA, "canal_Reseaux": ORANGE, "score_produit": BLEU}
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.5, 4.4), sharey=True)
 for ax, al, cf, titre, choisi in [(ax1, alphas_r, coefs_r, "Ridge", ridge.alpha_), (ax2, alphas_l, coefs_l, "Lasso", lasso.alpha_)]:
     for i, nom in enumerate(noms):
@@ -377,7 +377,7 @@ for ax, al, cf, titre, choisi in [(ax1, alphas_r, coefs_r, "Ridge", ridge.alpha_
         ax.plot(np.log10(al), cf[i], color=GRIS, lw=0.7, alpha=0.55)
     for i, nom in enumerate(noms):
         if nom in couleurs:
-            ax.plot(np.log10(al), cf[i], color=couleurs[nom], lw=2.2, label=nom)
+            ax.plot(np.log10(al), cf[i], color=couleurs[nom], lw=2.2, label={"canal_Reseaux": "canal Réseaux"}.get(nom, nom.replace("_", " ")))
     ax.axvline(np.log10(choisi), color=ENCRE, ls="--", lw=1)
     ax.text(np.log10(choisi), ax.get_ylim()[1] * 0.92, " choisi par\n validation croisée", fontsize=8.5, va="top")
     ax.axhline(0, color=GRIS, lw=0.8)
@@ -406,6 +406,8 @@ Sur la gauche de chaque graphique, la pénalité est énorme et tous les coeffic
 - Les coefficients régularisés sont **biaisés** par construction : on ne les interprète pas comme des effets (« à toutes choses égales par ailleurs ») avec la même confiance. Il n'y a pas de p-valeurs ni d'intervalles de confiance « standard » : les formules du 1.2 ne s'appliquent plus, et la sélection par le Lasso soulève précisément le problème de l'inférence **après sélection** discuté au 1.4.5.
 - La régularisation vise la **prédiction**. Pour estimer un effet précis et le décrire à la gérante, on revient en général à un modèle plus simple et interprétable, éventuellement **choisi** avec l'aide du Lasso, mais **réajusté** sur de nouvelles données.
 - **Lien avec le bayésien (chapitre 6).** Ridge équivaut à une approche bayésienne où chaque coefficient a une loi *a priori* **normale** centrée en 0 (le coefficient est « probablement petit »), et le Lasso à une loi *a priori* de **Laplace** (plus piquée en 0, d'où les zéros). La section 6.1 reprendra cette interprétation : $\lambda$ y correspond au rapport entre la variance du bruit et celle de l'*a priori*.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : applications 1.8 et 1.9, exercice 1.11.
 
 > ✅ **À retenir (1.5).**
 > - Ridge : $\hat{\boldsymbol\beta}=(\mathbf X^\top\mathbf X+\lambda\mathbf I)^{-1}\mathbf X^\top\mathbf y$ ; il **rétrécit** les directions peu variables ($d_j^2/(d_j^2+\lambda)$), est toujours défini et réduit la variance au prix d'un **biais** : l'EQM s'améliore pour un $\lambda$ petit (et optimal en $\sigma^2/\beta^2$ dans le cas orthonormal).

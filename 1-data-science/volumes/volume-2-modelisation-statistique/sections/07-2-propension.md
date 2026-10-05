@@ -8,7 +8,7 @@ Nous poursuivons l'étude de la section 7.1.9 : le fichier `ch07-observationnel.
 
 L'idée naturelle serait de comparer **à l'identique** : pour chaque combinaison d'âge, de canal et d'engagement, comparer les clients qui ont reçu l'offre à ceux qui ne l'ont pas reçue. Voyons ce que cela donne en pratique.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
@@ -62,6 +62,10 @@ Deux hypothèses sont nécessaires, et il faut les avoir en tête à chaque éta
 Le score est une probabilité qui dépend de covariables : c'est un problème de régression logistique (chapitre 2, section 2.2). Le modèle doit inclure les variables qui ont guidé le choix de l'attribution.
 
 ```python
+modele_ps = smf.logit("offre ~ age + C(canal) + engagement", data=d).fit(disp=0)
+d["ps"] = modele_ps.predict(d)            # score de propension de chaque client
+```
+```python hide
 from sklearn.metrics import roc_auc_score
 
 modele_ps = smf.logit("offre ~ age + C(canal) + engagement", data=d).fit(disp=0)
@@ -72,11 +76,11 @@ print(d.groupby("offre")["ps"].describe().round(3).to_string())
 ```
 <!--sortie-->
 ```text
-Intercept               -2.462
+Intercept             -2.462
 C(canal)[T.Réseaux]    0.454
-C(canal)[T.Site]        -0.060
-age                     -0.032
-engagement               0.063
+C(canal)[T.Site]      -0.060
+age                   -0.032
+engagement             0.063
 
 AUC du modèle d'attribution : 0.761
         count   mean    std    min    25%    50%    75%    max
@@ -85,9 +89,9 @@ offre
 1      1850.0  0.572  0.204  0.049  0.423  0.582  0.731  0.969
 ```
 
-Un coefficient positif sur l'engagement et sur Réseaux, négatif sur l'âge : le modèle retrouve la manière dont la gérante choisissait. L'AUC (aire sous la courbe ROC : la probabilité qu'un client avec offre ait un score plus élevé qu'un client sans offre tiré au hasard) mesure à quel point on peut *prédire* l'attribution. Contrairement à un projet de prédiction, **on ne cherche pas ici un score parfait** : un modèle d'attribution qui prédit parfaitement l'offre signalerait au contraire un **manque de chevauchement**.
+Un coefficient positif sur l'engagement et sur Réseaux, négatif sur l'âge : le modèle retrouve la manière dont la gérante choisissait. L'AUC (aire sous la courbe ROC : la probabilité qu'un client avec offre ait un score plus élevé qu'un client sans offre tiré au hasard) mesure à quel point on peut *prédire* l'attribution : ici 0,76, avec un score moyen de 0,57 chez les clients avec offre contre 0,37 chez les autres. Contrairement à un projet de prédiction, **on ne cherche pas ici un score parfait** : un modèle d'attribution qui prédit parfaitement l'offre signalerait au contraire un **manque de chevauchement**.
 
-```python
+```python hide
 fig, ax = plt.subplots(figsize=(8.5, 3.6))
 bins = np.linspace(0, 1, 41)
 ax.hist(d.loc[d.offre == 0, "ps"], bins=bins, color=BLEU, alpha=0.75, label="sans offre")
@@ -120,9 +124,9 @@ Les clients avec offre ont des scores plus élevés, ce qui est normal : c'est l
 
 La première méthode est la plus intuitive : pour chaque client **avec** offre, on cherche un client **sans** offre qui lui **ressemble** (score voisin), et on compare leurs dépenses. L'effet estimé est alors la moyenne de ces différences. Comme on part des traités, on estime l'**ATT**.
 
-Voici l'algorithme, volontairement écrit à la main pour qu'il n'y ait pas de mystère : appariement au plus proche voisin sur le *logit* du score (qui s'étale mieux que le score), **avec remise** (un même témoin peut servir plusieurs fois), et avec un **calibre** : on refuse les appariements trop lointains (écart de logit supérieur à 0,2 écart-type), faute de quoi on compare des clients qui ne se ressemblent pas.
+Voici la procédure. On travaille sur le *logit* du score (qui s'étale mieux que le score). Pour chaque client avec offre, on cherche le client sans offre dont le logit est le plus proche, **avec remise** (un même témoin peut servir plusieurs fois). On impose un **calibre** : on refuse les appariements trop lointains (écart de logit supérieur à 0,2 écart-type), faute de quoi on compare des clients qui ne se ressemblent pas. L'effet estimé est la moyenne des différences de dépense entre chaque traité apparié et son témoin.
 
-```python
+```python hide
 from sklearn.neighbors import NearestNeighbors
 
 def apparier(df, calibre=0.2):
@@ -152,9 +156,9 @@ effet estimé par appariement (ATT) : 14.41 €   | ATT vrai : 16.64
 
 Presque tous les traités (1 843 sur 1 850) ont trouvé un voisin acceptable, et l'estimation (14,4 €) est du bon ordre de grandeur face à l'ATT vrai (16,6 €), sans être exacte : combien faut-il s'en méfier ? C'est la question de l'incertitude.
 
-Pour l'incertitude, la formule de la variance n'est pas simple (la procédure inclut l'estimation du score *et* l'appariement). On utilise donc le **bootstrap** (volume I, section 3.3.5) en **refaisant toute la procédure** sur chaque échantillon rééchantillonné : c'est la bonne façon de tenir compte de toutes les sources d'aléa. Nous réutiliserons cette réinitialisation de l'index (`reset_index(drop=True)`) à chaque bootstrap, pour que les lignes dupliquées par le tirage ne se mélangent pas.
+Pour l'incertitude, la formule de la variance n'est pas simple (la procédure inclut l'estimation du score *et* l'appariement). On utilise donc le **bootstrap** (volume I, section 3.3.5) en **refaisant toute la procédure** sur chaque échantillon rééchantillonné : c'est la bonne façon de tenir compte de toutes les sources d'aléa.
 
-```python
+```python hide
 def ps_et_appariement(df):
     m = smf.logit("offre ~ age + C(canal) + engagement", data=df).fit(disp=0)
     df = df.assign(ps=m.predict(df))
@@ -177,7 +181,7 @@ L'intervalle de confiance, de 6,6 à 20,2 €, contient la vérité (16,6) mais 
 
 Vérifions surtout que l'appariement a bien **rendu les groupes comparables**. On mesure la SMD de chaque covariable **avant** et **après** appariement (les témoins sont comptés autant de fois qu'ils sont utilisés).
 
-```python
+```python hide
 def smd_pondere(x, T, w):
     """Différence moyenne standardisée entre traités (T=1) et témoins (T=0), avec poids w."""
     x, T, w = np.asarray(x, float), np.asarray(T), np.asarray(w, float)
@@ -202,12 +206,12 @@ print(pd.DataFrame({"SMD avant": avant, "SMD après appariement": apres_appar}).
 ```
 <!--sortie-->
 ```text
-                   SMD avant  SMD après appariement
-âge                   -0.336                  0.003
-engagement             0.915                  0.006
-canal = Réseaux      0.306                 -0.013
-canal = Site          -0.204                  0.041
-canal = Boutique      -0.118                 -0.028
+                  SMD avant  SMD après appariement
+âge                  -0.336                  0.003
+engagement            0.915                  0.006
+canal = Réseaux       0.306                 -0.013
+canal = Site         -0.204                  0.041
+canal = Boutique     -0.118                 -0.028
 ```
 
 Avant l'appariement, l'engagement présente une SMD de 0,92 (un écart considérable : les traités sont presque un écart-type plus engagés que les témoins), et l'âge et le canal Réseaux des SMD de −0,34 et +0,31 ; après, toutes les SMD sont inférieures à 0,05 en valeur absolue. L'appariement a bien produit des groupes comparables sur ce que nous avons mesuré. Notez que ce diagnostic porte uniquement sur les covariables **observées** : il ne dit rien sur celles que nous aurions oublié de mesurer.
@@ -231,6 +235,20 @@ La comparaison brute donne $(8\times200+2\times120)/10-(2\times170+8\times90)/10
 La « population pondérée » a alors, dans chaque type, **10 traités et 10 témoins** : $8\times1{,}25=10$ et $2\times5=10$ pour les traités, et symétriquement pour les témoins. Le biais de confusion a disparu : le type ne prédit plus l'attribution.
 
 ```python
+w = np.where(d["offre"] == 1, 1 / d["ps"], 1 / (1 - d["ps"]))      # poids IPW de chaque client
+traites, temoins = d["offre"] == 1, d["offre"] == 0
+ate_ipw = (np.average(d.loc[traites, "depense"], weights=w[traites])
+           - np.average(d.loc[temoins, "depense"], weights=w[temoins]))
+print(f"ATE estimé par IPW (version normalisée) : {ate_ipw:.2f} €")
+```
+<!--sortie-->
+```text
+ATE estimé par IPW (version normalisée) : 14.36 €
+```
+On obtient 13,4 € avec l'estimateur de Horvitz-Thompson et 14,4 € avec la version normalisée pour l'ATE (vérité : 15,5 €), et 11,8 € pour l'ATT (vérité : 16,6 €).
+
+
+```python hide
 groupes = pd.DataFrame({
     "type": ["A", "A", "B", "B"], "offre": [1, 0, 1, 0],
     "n": [8, 2, 2, 8], "depense": [200, 170, 120, 90], "e": [0.8, 0.8, 0.2, 0.2]})
@@ -258,7 +276,7 @@ type  offre  n  depense   e  poids  effectif_pondere
 différence brute : 78.0   |   après pondération : 160.0 - 130.0 = 30.0
 ```
 
-La pondération retrouve exactement 30 €. Voici la justification générale.
+Les moyennes pondérées valent : pour les traités, $(8\times1{,}25\times200+2\times5\times120)/20=160$ € ; pour les témoins, $(2\times5\times170+8\times1{,}25\times90)/20=130$ €. La différence $160-130=30$ € retrouve **exactement** l'effet réel. Voici la justification générale.
 
 > 📐 **Pourquoi l'IPW est sans biais.** Si l'ignorabilité tient avec $X$, alors
 > $$\mathbb E\!\left[\frac{T\,Y}{e(X)}\right]=\mathbb E\!\left[\frac{T\,Y(1)}{e(X)}\right]=\mathbb E\!\left[\mathbb E\!\left[\frac{T}{e(X)}\,\Big|\,X,Y(1)\right]Y(1)\right]=\mathbb E\big[Y(1)\big],$$
@@ -266,7 +284,7 @@ La pondération retrouve exactement 30 €. Voici la justification générale.
 > $$\widehat{\text{ATE}}_{\text{IPW}}=\frac1n\sum_i\left(\frac{T_iY_i}{\hat e(X_i)}-\frac{(1-T_i)Y_i}{1-\hat e(X_i)}\right).$$
 > En pratique, on préfère la version **normalisée** (de Hájek) qui divise par la somme des poids dans chaque groupe : $\ \frac{\sum_i w_iT_iY_i}{\sum_i w_iT_i}-\frac{\sum_i w_i(1-T_i)Y_i}{\sum_i w_i(1-T_i)}$. Elle est moins sensible aux poids extrêmes. Pour l'ATT, les traités gardent le poids 1 et les témoins reçoivent $e/(1-e)$.
 
-```python
+```python hide
 e = d["ps"].to_numpy()
 T = d["offre"].to_numpy()
 Y = d["depense"].to_numpy()
@@ -290,7 +308,7 @@ ATT par IPW                    : 11.84   | ATT vrai : 16.64
 
 Premier diagnostic des poids : **l'effectif effectif**, $n_{\text{eff}}=(\sum w_i)^2/\sum w_i^2$. Des poids très inégaux signifient que quelques clients pèsent énormément et que l'information réelle est bien inférieure à $n$.
 
-```python
+```python hide
 def effectif_effectif(w):
     return w.sum() ** 2 / (w ** 2).sum()
 
@@ -316,7 +334,7 @@ Les poids sont inégaux (de 1 à près de 30, avec une médiane voisine de 1,6),
 
 Notez que **la troncature a fait passer l'estimation de 14,4 à 17,5 €** : l'IPW est sensible à quelques poids élevés. C'est son talon d'Achille : un estimateur sans biais, mais **plus variable** que la régression. Mesurons cette variabilité avec le bootstrap, en réestimant le score à chaque rééchantillonnage.
 
-```python
+```python hide
 def ipw_ate_att(df):
     e_b = smf.logit("offre ~ age + C(canal) + engagement", data=df).fit(disp=0).predict(df).to_numpy()
     Tb, Yb = df["offre"].to_numpy(), df["depense"].to_numpy()
@@ -342,7 +360,7 @@ Les deux intervalles contiennent la vérité. Mais regardez les erreurs-types : 
 
 Le même diagnostic d'équilibre que pour l'appariement s'applique, et se représente par un **graphique de Love** : une ligne par covariable, la SMD avant (rond gris) et après pondération (rond bleu).
 
-```python
+```python hide
 apres_ipw = {c: smd_pondere(covariables[c], T, w_ate) for c in covariables}
 fig, ax = plt.subplots(figsize=(7.5, 3.4))
 noms = list(covariables.columns)
@@ -365,6 +383,9 @@ print("figure enregistrée")
 ```text
 figure enregistrée
 ```
+On trouve **14,9 €** (erreur-type bootstrap 2,4 € ; intervalle de confiance à 95 % de 10,1 à 19,7 €), pour une vérité de 15,5 €.
+
+
 
 ![Graphique de Love : la différence moyenne standardisée de chaque covariable avant et après pondération par l'inverse du score ; la bande grise marque l'intervalle de ±0,1.](figures/ch07-love.png)
 
@@ -382,7 +403,7 @@ où $\hat\mu_t(x)$ est l'espérance estimée du résultat sous le traitement $t$
 
 Mettons cette promesse à l'épreuve avec une **expérience** : on estime l'ATE de quatre façons, en rendant volontairement mauvais l'un des deux modèles. Un « mauvais » modèle de résultat est ici un modèle qui ignore les covariables (une constante par groupe) ; un « mauvais » modèle d'attribution est un score constant (il ignore le ciblage).
 
-```python
+```python hide-code
 X = np.column_stack([np.ones(len(d)), d["age"], (d["canal"] == "Réseaux"), (d["canal"] == "Site"), d["engagement"]]).astype(float)
 
 def mu_hat(X, Y, T, bon_modele):
@@ -430,7 +451,7 @@ ATE vrai : 15.5   (différence naïve : 50.5)
 
 Lisons la table. Quand le modèle de résultat est faux, la **régression** échoue (elle donne la différence naïve) ; quand le modèle d'attribution est faux, l'**IPW** échoue ; mais l'estimateur **doublement robuste** reste proche de la vérité dès que **l'un des deux** est correct, et n'échoue que lorsque **les deux** sont faux. C'est une assurance, pas une garantie. Calculons l'estimation « principale » avec l'incertitude correspondante par bootstrap :
 
-```python
+```python hide
 def aipw_complet(df):
     Xb = np.column_stack([np.ones(len(df)), df["age"], (df["canal"] == "Réseaux"), (df["canal"] == "Site"), df["engagement"]]).astype(float)
     Tb, Yb = df["offre"].to_numpy(), df["depense"].to_numpy()
@@ -453,7 +474,7 @@ ATE vrai : 15.53
 
 Récapitulons toutes les estimations de l'**ATE** et de l'**ATT** de la section, face à la vérité :
 
-```python
+```python hide-code
 recap = pd.DataFrame({
     "méthode": ["différence naïve", "régression (7.1.9)", "IPW (ATE)", "doublement robuste (ATE)", "appariement (ATT)", "IPW (ATT)"],
     "estimation": [Y[T == 1].mean() - Y[T == 0].mean(),
@@ -481,7 +502,7 @@ Lecture de la table : toutes les méthodes qui tiennent compte de l'engagement r
 
 Terminons par l'avertissement le plus important de la section. Tous les résultats précédents reposaient sur le fait que **l'engagement était observé**. Que se passe-t-il s'il ne l'est pas ? Reprenons l'analyse en le cachant à tous les modèles, ou en ne le mesurant qu'avec du **bruit** (ce qui est le cas typique : un score d'engagement n'est qu'un reflet imparfait de l'enthousiasme réel du client).
 
-```python
+```python hide-code
 def estimation_aipw_avec_engagement(bruit_sd, graine=5):
     """AIPW quand l'engagement n'est connu qu'avec un bruit gaussien d'écart-type bruit_sd (None = engagement caché)."""
     df = d.copy()
@@ -525,5 +546,7 @@ ATE vrai : 15.5
 Reste la question honnête : dans la vraie vie, comment sait-on que l'on a mesuré tous les facteurs de confusion importants ? **On ne le sait pas.** On peut seulement (1) s'appuyer sur la connaissance du processus d'attribution (« comment la gérante a-t-elle décidé ? »), (2) faire des **analyses de sensibilité** (quelle intensité devrait avoir un facteur de confusion caché pour annuler le résultat ?), (3) chercher des situations qui contournent le problème : c'est le rôle des deux sections suivantes.
 
 > ⚠️ **Les trois erreurs classiques avec les scores de propension.** (1) **Régler le score pour qu'il prédise bien** : le but est l'équilibre des covariables, pas l'AUC. (2) **Inclure des variables post-traitement** ou des variables qui ne sont causes que du traitement (cela gonfle la variance sans corriger le biais). (3) **Oublier de vérifier l'équilibre** après ajustement. Une analyse par score sans tableau d'équilibre est incomplète.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 7 : applications 7.6 et 7.7, exercices 7.5 et 7.6.
 
 > ✅ **À retenir (7.2).** Avec ignorabilité et chevauchement, on peut estimer un effet causal sans randomisation, **à condition d'avoir mesuré les facteurs de confusion**. Cette condition est une hypothèse sur le monde, qu'aucun diagnostic ne confirme complètement.

@@ -8,7 +8,7 @@ Prenez 100 commandes tirées au hasard : vous pouvez les mélanger, l'histogramm
 
 Une règle d'hygiène avant d'aller plus loin. Nous voulons, en fin de chapitre, juger honnêtement des prévisions. Il faut donc **mettre de côté dès maintenant** les 24 derniers mois (2024 et 2025) et ne plus les regarder tant que nous n'avons pas choisi nos modèles. Tout ce que nous ferons dans les sections 4.1 et 4.2 (graphiques, tests, choix d'un modèle) utilisera **uniquement les 96 premiers mois**. Un analyste qui choisit son modèle après avoir vu l'avenir ne prévoit rien : il décrit le passé.
 
-```python
+```python hide
 import warnings
 warnings.filterwarnings("ignore")        # masque les avertissements de bibliothèques, pour des sorties lisibles
 import numpy as np
@@ -45,11 +45,18 @@ mois
 2016-06-01  1155.4            11      0      0
 ```
 
-Chaque ligne est un mois. Le chiffre d'affaires (`ca`) de janvier 2016 est de 620 €. Les colonnes `promo` et `covid` sont des variables **explicatives** que nous utiliserons en 4.2.
-
-Pour mesurer à quel point l'ordre compte, calculons la **corrélation entre un mois et le suivant** (nous la définirons proprement en 4.1.4) sur la série, puis sur 1 000 mélanges aléatoires de la même série :
+Le découpage tient en deux lignes (la série est passée en logarithme, voir 4.1.2) :
 
 ```python
+y = np.log(v["ca"])
+train, test = y[:"2023-12"], y["2024-01":]     # 96 mois pour apprendre, 24 mis de côté
+```
+
+Chaque ligne du fichier `ventes_mensuelles.csv` est un mois : par exemple, le chiffre d'affaires (`ca`) de janvier 2016 est de 620 €. Les colonnes `promo` et `covid` sont des variables **explicatives** que nous utiliserons en 4.2.
+
+Pour mesurer à quel point l'ordre compte, nous avons calculé la **corrélation entre un mois et le suivant** (nous la définirons proprement en 4.1.4) sur la série, puis sur 1 000 mélanges aléatoires de la même série.
+
+```python hide
 def acf_manuel(x, k):
     """Autocorrélation d'ordre k : corrélation entre la série et elle-même décalée de k pas."""
     d = np.asarray(x, float) - np.mean(x)
@@ -74,9 +81,9 @@ La série réelle a une corrélation de l'ordre de 0,48 entre un mois et le suiv
 
 ### 4.1.2 Première lecture : tendance, saison, bruit, et pourquoi on prend le logarithme
 
-Dessinons la série d'apprentissage, d'abord en euros, puis en logarithme :
+Voici la série d'apprentissage, d'abord en euros, puis en logarithme :
 
-```python
+```python hide
 BLEU, ORANGE, AQUA, VIOLET, ROUGE = "#2a78d6", "#eb6834", "#1baf7a", "#4a3aa7", "#e34948"
 plt.rcParams.update({"figure.dpi": 100, "savefig.dpi": 200, "axes.spines.top": False, "axes.spines.right": False,
                      "axes.grid": True, "grid.color": "#e1e0d9", "grid.linewidth": 0.6, "axes.titlesize": 11,
@@ -110,9 +117,9 @@ On lit quatre choses :
 3. Un **accident** : le trou de mars à juin 2020.
 4. Du **bruit** : des écarts irréguliers autour de la tendance et de la saison.
 
-Observez aussi le panneau de gauche : plus la série monte, plus les oscillations saisonnières s'**élargissent** (l'écart entre le mois le plus haut et le mois le plus bas de l'année est d'environ 1 160 € en 2017 et d'environ 1 970 € en 2023). C'est un schéma **multiplicatif** : la saison *multiplie* le niveau au lieu de s'y *ajouter*. Le panneau de droite montre le remède : en **logarithme**, un produit devient une somme ($\log(T\times S\times R)=\log T+\log S+\log R$), et les oscillations ont une amplitude à peu près constante. Vérifions-le chiffre en main :
+Observez aussi le panneau de gauche : plus la série monte, plus les oscillations saisonnières s'**élargissent** (l'écart entre le mois le plus haut et le mois le plus bas de l'année est d'environ 1 160 € en 2017 et d'environ 1 970 € en 2023). C'est un schéma **multiplicatif** : la saison *multiplie* le niveau au lieu de s'y *ajouter*. Le panneau de droite montre le remède : en **logarithme**, un produit devient une somme ($\log(T\times S\times R)=\log T+\log S+\log R$), et les oscillations ont une amplitude à peu près constante. Les chiffres le confirment (amplitude de l'année, en euros bruts puis en logarithme) :
 
-```python
+```python hide
 g = pd.DataFrame({"annee": ca_train.index.year, "brut": ca_train.values, "log": train.values})
 amplitude = g.groupby("annee").agg(niveau_moyen=("brut", "mean"),
                                    amplitude_brute=("brut", lambda s: s.max() - s.min()),
@@ -148,9 +155,9 @@ Pour estimer quelque chose à partir d'**une seule trajectoire** (nous n'avons q
 >
 > On appelle $\gamma(k)$ l'**autocovariance** et $\rho(k)=\gamma(k)/\gamma(0)$ l'**autocorrélation** d'ordre $k$. Une série *strictement* stationnaire a toutes ses lois jointes invariantes par translation ; avec une variance finie, elle est faiblement stationnaire. La réciproque est fausse en général (elle est vraie pour les séries gaussiennes). Nous n'utiliserons que la version faible.
 
-Quatre exemples simulés montrent à quoi cela ressemble. Chacun a 200 points, et nous comparons la moyenne et la variance de la **première moitié** à celles de la **seconde** :
+Quatre exemples simulés montrent à quoi cela ressemble. Chacun a 200 points, et nous comparons la moyenne et la variance de la **première moitié** à celles de la **seconde** (figure ci-dessous) :
 
-```python
+```python hide
 rng = np.random.default_rng(4)
 n = 200
 bruit_blanc = rng.normal(size=n)                          # Y_t = e_t
@@ -194,9 +201,9 @@ La marche aléatoire est l'exemple fondamental de non-stationnarité. Montrons r
 
 > 📐 **Démonstration : la variance d'une marche aléatoire croît linéairement.** Soit $Y_t=Y_{t-1}+\varepsilon_t$ avec $Y_0=0$ et des $\varepsilon_t$ indépendants de variance $\sigma^2$. En remplaçant récursivement, $Y_t=\varepsilon_1+\varepsilon_2+\dots+\varepsilon_t$ : une somme de $t$ chocs indépendants. Donc $\operatorname{Var}(Y_t)=t\,\sigma^2$, qui dépend de $t$ et tend vers l'infini. La série ne revient jamais « se stabiliser » : chaque choc a un effet **permanent**. $\blacksquare$
 
-Vérifions par simulation : 5 000 marches aléatoires de 200 pas, et la variance **à travers les trajectoires** à trois instants :
+Une simulation de 5 000 marches aléatoires de 200 pas le confirme : la variance **à travers les trajectoires** vaut environ 50 à l'instant 50, 96 à l'instant 100 et 194 à l'instant 200, pour des valeurs théoriques de 50, 100 et 200.
 
-```python
+```python hide
 trajectoires = np.cumsum(np.random.default_rng(5).normal(size=(5000, 200)), axis=1)
 for t in (50, 100, 200):
     print(f"t = {t:3d} : variance observée = {trajectoires[:, t - 1].var():6.1f}   (théorie : t x sigma^2 = {t})")
@@ -222,7 +229,7 @@ $$r_k=\frac{\sum_{t=k+1}^{n}(y_t-\bar y)(y_{t-k}-\bar y)}{\sum_{t=1}^{n}(y_t-\ba
 > **Décalage 1** : on multiplie chaque écart par le précédent : $(-0{,}5)(-2{,}5)=1{,}25$ ; $(-1{,}5)(-0{,}5)=0{,}75$ ; $(1{,}5)(-1{,}5)=-2{,}25$ ; $(0{,}5)(1{,}5)=0{,}75$ ; $(2{,}5)(0{,}5)=1{,}25$. La somme vaut $1{,}75$, donc $r_1=1{,}75/17{,}5=0{,}10$.
 > **Décalage 2** : $(-1{,}5)(-2{,}5)=3{,}75$ ; $(1{,}5)(-0{,}5)=-0{,}75$ ; $(0{,}5)(-1{,}5)=-0{,}75$ ; $(2{,}5)(1{,}5)=3{,}75$. La somme vaut $6$, donc $r_2=6/17{,}5\approx0{,}343$.
 
-```python
+```python hide
 x = np.array([10, 12, 11, 14, 13, 15])
 print("r1 =", round(acf_manuel(x, 1), 4), "  r2 =", round(acf_manuel(x, 2), 4))
 ```
@@ -231,9 +238,18 @@ print("r1 =", round(acf_manuel(x, 1), 4), "  r2 =", round(acf_manuel(x, 2), 4))
 r1 = 0.1   r2 = 0.3429
 ```
 
-Le code retrouve exactement les valeurs de la main. Notez que le dénominateur est toujours la somme des **$n$ termes** (même pour $k$ grand), ce qui garantit que les autocorrélations estimées forment toujours une suite « possible » (semi-définie positive). Appliquons-le à la série d'apprentissage et comparons avec la fonction de `statsmodels` :
+Un calcul par programme retrouve exactement les valeurs de la main (0,1 et 0,3429). Notez que le dénominateur est toujours la somme des **$n$ termes** (même pour $k$ grand), ce qui garantit que les autocorrélations estimées forment toujours une suite « possible » (semi-définie positive). Sur la série d'apprentissage, la fonction `acf` de `statsmodels` donne les valeurs suivantes (un calcul direct de la formule ci-dessus retrouve exactement les mêmes nombres) :
 
 ```python
+from statsmodels.tsa.stattools import acf
+print(acf(train, nlags=6).round(3))          # r_0 (toujours 1), r_1, ..., r_6
+```
+<!--sortie-->
+```text
+[1.    0.479 0.224 0.305 0.344 0.283 0.191]
+```
+
+```python hide
 r_perso = np.array([acf_manuel(train.values, k) for k in range(7)])
 r_sm = acf(train, nlags=6, fft=False)
 print("manuel   :", r_perso.round(3))
@@ -249,9 +265,9 @@ identiques : True
 
 #### L'autocorrélation partielle
 
-L'autocorrélation d'ordre 2 mélange deux effets : l'influence directe de $y_{t-2}$ sur $y_t$, et l'influence **indirecte** passant par $y_{t-1}$ (qui dépend lui-même de $y_{t-2}$). L'**autocorrélation partielle** d'ordre $k$, notée $\varphi_{kk}$, isole l'effet direct : c'est le **coefficient de $y_{t-k}$ dans la régression de $y_t$ sur $y_{t-1},\dots,y_{t-k}$**. On peut donc la calculer avec les moindres carrés du chapitre 1 :
+L'autocorrélation d'ordre 2 mélange deux effets : l'influence directe de $y_{t-2}$ sur $y_t$, et l'influence **indirecte** passant par $y_{t-1}$ (qui dépend lui-même de $y_{t-2}$). L'**autocorrélation partielle** d'ordre $k$, notée $\varphi_{kk}$, isole l'effet direct : c'est le **coefficient de $y_{t-k}$ dans la régression de $y_t$ sur $y_{t-1},\dots,y_{t-k}$**. On peut donc la calculer avec les moindres carrés du chapitre 1 : c'est ce que nous avons fait, et nous retrouvons exactement les valeurs de `statsmodels` (0,507, 0,004 et 0,281 aux décalages 1, 2 et 3).
 
-```python
+```python hide
 def pacf_manuel(x, k):
     x = np.asarray(x, float)
     n = len(x)
@@ -270,13 +286,13 @@ pacf manuelle   : [0.5074 0.0042 0.2814]
 pacf statsmodels: [0.5074 0.0042 0.2814]
 ```
 
-Les deux concordent : l'autocorrélation partielle n'est rien d'autre qu'une régression, ce qui annonce les modèles autorégressifs de la section 4.2.
+L'autocorrélation partielle n'est donc rien d'autre qu'une régression, ce qui annonce les modèles autorégressifs de la section 4.2.
 
 #### Les bandes de confiance
 
-Sur un graphique d'autocorrélation, on trace une bande autour de zéro. D'où vient-elle ? Pour un **bruit blanc** (aucune mémoire), les $r_k$ sont approximativement gaussiens, centrés, de variance $1/n$ (c'est le théorème central limite du volume I, section 2.4, appliqué à une somme de produits). D'où la bande $\pm1{,}96/\sqrt n$ à 95 %. Vérifions par simulation que le taux de fausses alertes est bien d'environ 5 % :
+Sur un graphique d'autocorrélation, on trace une bande autour de zéro. D'où vient-elle ? Pour un **bruit blanc** (aucune mémoire), les $r_k$ sont approximativement gaussiens, centrés, de variance $1/n$ (c'est le théorème central limite du volume I, section 2.4, appliqué à une somme de produits). D'où la bande $\pm1{,}96/\sqrt n$ à 95 %. Une simulation de 2 000 bruits blancs de 96 points confirme que le taux de fausses alertes est bien d'environ 5 % (4,6 % observé, pour une bande de $\pm0{,}20$).
 
-```python
+```python hide
 rng = np.random.default_rng(2)
 n = 96
 alertes = np.mean([abs(acf_manuel(rng.normal(size=n), 1)) > 1.96 / np.sqrt(n) for _ in range(2000)])
@@ -291,7 +307,7 @@ bande : 0.2 | part de bruits blancs avec |r1| hors bande : 0.046
 
 Voici l'autocorrélation et l'autocorrélation partielle de notre série d'apprentissage (en logarithme), sur 24 décalages :
 
-```python
+```python hide
 def tracer_acf(ax, valeurs, n, titre, couleur=BLEU):
     k = np.arange(len(valeurs))
     ax.vlines(k, 0, valeurs, color=couleur, lw=2)
@@ -322,9 +338,9 @@ Pour tester cela globalement (plutôt que décalage par décalage), on utilise l
 
 $$Q(h)=n(n+2)\sum_{k=1}^{h}\frac{r_k^2}{n-k}.$$
 
-Sous l'hypothèse « bruit blanc », $Q(h)$ suit approximativement une loi du khi-deux à $h$ degrés de liberté (volume I, section 3.4.6). Une grande valeur de $Q$ signifie qu'au moins une autocorrélation est trop forte pour être due au hasard. Calculons-la à la main puis avec `statsmodels`, sur un vrai bruit blanc simulé et sur notre série :
+Sous l'hypothèse « bruit blanc », $Q(h)$ suit approximativement une loi du khi-deux à $h$ degrés de liberté (volume I, section 3.4.6). Une grande valeur de $Q$ signifie qu'au moins une autocorrélation est trop forte pour être due au hasard. Appliquons-la à un vrai bruit blanc simulé et à notre série (le calcul à la main est retrouvé exactement par `statsmodels`).
 
-```python
+```python hide
 def ljung_box(x, h):
     x = np.asarray(x, float)
     n = len(x)
@@ -346,7 +362,19 @@ log(ca), apprentissage   Q(10) =   84.00   p-valeur = 8.20e-14
 statsmodels (log ca)      Q(10) = 84.0
 ```
 
-Pour le bruit blanc, la p-valeur est grande : on ne rejette pas l'hypothèse « pas de mémoire ». Pour notre série, elle est pratiquement nulle : la série a de la mémoire, ce que l'œil voyait déjà.
+Pour la série d'apprentissage, `statsmodels` donne :
+
+```python
+from statsmodels.stats.diagnostic import acorr_ljungbox
+print(acorr_ljungbox(train, lags=[10]))      # statistique Q(10) et p-valeur
+```
+<!--sortie-->
+```text
+      lb_stat     lb_pvalue
+10  84.003207  8.205675e-14
+```
+
+Pour le bruit blanc simulé ($Q(10)=9{,}52$, p-valeur $0{,}48$), la p-valeur est grande : on ne rejette pas l'hypothèse « pas de mémoire ». Pour notre série ($Q(10)=84{,}0$), elle est pratiquement nulle : la série a de la mémoire, ce que l'œil voyait déjà.
 
 > ⚠️ **Quand on teste des résidus de modèle.** Si l'on applique Ljung-Box aux résidus d'un modèle qui a estimé $m$ paramètres de type AR ou MA, il faut réduire les degrés de liberté à $h-m$. Nous le ferons en 4.2.
 
@@ -365,7 +393,7 @@ et on teste $H_0:\gamma=0$ (racine unitaire) contre $\gamma<0$ (stationnaire), a
 
 > ⚠️ **Le piège : cette statistique ne suit PAS la loi de Student.** Sous $H_0$, la série n'est pas stationnaire, et les théorèmes du volume I (sur lesquels reposent Student et la loi normale) ne s'appliquent plus. La loi de la statistique est **différente** et se simule. Faisons-le : 5 000 marches aléatoires de 100 pas, la statistique de Dickey-Fuller de chacune, et ses quantiles.
 
-```python
+```python hide
 def stat_df(s):
     """Statistique t de gamma dans : diff(Y_t) = alpha + gamma * Y_{t-1} + e_t."""
     s = np.asarray(s, float)
@@ -404,7 +432,7 @@ part des marches aléatoires « rejetées » avec le seuil normal -1,645 : 0.468
 
 ![Loi simulée de la statistique de Dickey-Fuller sous l'hypothèse de racine unitaire (histogramme bleu), décalée vers la gauche par rapport à la loi normale (orange). Le seuil à 5 % se situe vers −2,9 et non −1,64.](figures/ch04-dickey-fuller.png)
 
-Le seuil à 5 % est d'environ $-2{,}9$ (et non $-1{,}645$). Utiliser par erreur le seuil normal ferait « rejeter » la racine unitaire pour près d'une marche aléatoire sur deux : un test nul. Les logiciels utilisent les vraies tables, obtenues par simulation comme ici (Dickey et Fuller, 1979).
+Les seuils à 1 %, 5 % et 10 % valent environ $-3{,}5$, $-2{,}9$ et $-2{,}6$ (contre $-2{,}33$, $-1{,}64$ et $-1{,}28$ pour la loi normale). Le seuil à 5 % est donc d'environ $-2{,}9$ (et non $-1{,}645$). Utiliser par erreur le seuil normal ferait « rejeter » la racine unitaire pour près d'une marche aléatoire sur deux : un test nul. Les logiciels utilisent les vraies tables, obtenues par simulation comme ici (Dickey et Fuller, 1979).
 
 Le test de Dickey-Fuller **augmenté** (ADF) ajoute à la régression des différences retardées $\nabla Y_{t-1},\nabla Y_{t-2},\dots$ pour absorber l'autocorrélation. Le test **KPSS** renverse les rôles : son hypothèse nulle est que la série est **stationnaire** (autour d'un niveau ou d'une tendance). Les deux tests se complètent :
 
@@ -416,7 +444,7 @@ Le test de Dickey-Fuller **augmenté** (ADF) ajoute à la régression des diffé
 
 Appliquons les deux à notre série d'apprentissage, selon qu'on autorise ou non une tendance déterministe :
 
-```python
+```python hide-code
 def tester(s, regression, nom):
     a = adfuller(s, regression=regression, autolag="AIC")
     k = kpss(s, regression=regression, nlags="auto")
@@ -455,7 +483,7 @@ Que se passe-t-il si l'on différencie une série qui n'en avait pas besoin ? Pr
 
 > 📐 **Calcul.** $\operatorname{Var}(\nabla\varepsilon_t)=2\sigma^2$ et $\operatorname{Cov}(\nabla\varepsilon_t,\nabla\varepsilon_{t-1})=\operatorname{Cov}(\varepsilon_t-\varepsilon_{t-1},\varepsilon_{t-1}-\varepsilon_{t-2})=-\sigma^2$. Donc l'autocorrélation d'ordre 1 de la série différenciée vaut $-\sigma^2/(2\sigma^2)=-0{,}5$ : on a **fabriqué** une mémoire artificielle (un « MA(1) avec $\theta=-1$ », que nous étudierons en 4.2).
 
-```python
+```python hide
 w = np.random.default_rng(9).normal(size=2000)
 print("autocorrélation d'ordre 1 de diff(bruit blanc) :", round(acf_manuel(np.diff(w), 1), 3), "   théorie : -0,5")
 print("autocorrélations de la différence première de log(ca) (décalages 1 à 13) :")
@@ -469,7 +497,7 @@ autocorrélations de la différence première de log(ca) (décalages 1 à 13) :
  -0.19]
 ```
 
-Un signe de sur-différenciation est donc une autocorrélation d'ordre 1 **fortement négative** (autour de $-0{,}5$) et un modèle dont le coefficient MA est proche de $-1$. Gardons cela en tête.
+Une simulation de 2 000 points le confirme (autocorrélation observée de $-0{,}52$ pour une théorie de $-0{,}5$), et la différence première de $\log$(ca) présente elle aussi une autocorrélation négative aux premiers décalages ($-0{,}24$ puis $-0{,}31$). Un signe de sur-différenciation est donc une autocorrélation d'ordre 1 **fortement négative** (autour de $-0{,}5$) et un modèle dont le coefficient MA est proche de $-1$. Gardons cela en tête.
 
 ### 4.1.7 Décomposer : tendance, saison, reste
 
@@ -482,7 +510,7 @@ La méthode **classique** procède en trois temps :
 2. **Saison** $S_t$ : on retire la tendance, puis on **moyenne par mois calendaire** (tous les janviers, tous les février…), et on recentre pour que la somme sur l'année soit nulle.
 3. **Reste** $R_t=\log y_t-T_t-S_t$.
 
-```python
+```python hide
 def decomposition_manuelle(s, m=12):
     poids = np.r_[0.5, np.ones(m - 1), 0.5] / m                      # moyenne mobile 2 x 12
     tendance = pd.Series(np.convolve(s.values, poids, mode="valid"), index=s.index[m // 2: -(m // 2)])
@@ -503,9 +531,14 @@ tendance identique à statsmodels : True
 saison identique à statsmodels   : True
 ```
 
-La méthode classique a deux défauts : elle perd 6 mois à chaque extrémité (la moyenne mobile centrée n'est pas définie), et elle est **sensible aux accidents** : le COVID de 2020 contamine à la fois la tendance et, via les moyennes par mois, la saison. La méthode **STL** (*Seasonal-Trend decomposition using LOESS*) remédie aux deux : elle estime tendance et saison par régressions locales, et son option `robust=True` **réduit le poids des observations aberrantes** pour que l'accident n'abîme pas les composantes.
+(Une implémentation à la main de ces trois étapes retrouve exactement la fonction `seasonal_decompose` de `statsmodels`.) La méthode classique a deux défauts : elle perd 6 mois à chaque extrémité (la moyenne mobile centrée n'est pas définie), et elle est **sensible aux accidents** : le COVID de 2020 contamine à la fois la tendance et, via les moyennes par mois, la saison. La méthode **STL** (*Seasonal-Trend decomposition using LOESS*) remédie aux deux : elle estime tendance et saison par régressions locales, et son option `robust=True` **réduit le poids des observations aberrantes** pour que l'accident n'abîme pas les composantes.
 
 ```python
+from statsmodels.tsa.seasonal import STL
+stl = STL(train, period=12, robust=True).fit()      # composantes : stl.trend, stl.seasonal, stl.resid
+```
+
+```python hide
 stl = STL(train, period=12, robust=True).fit()
 fig, axes = plt.subplots(4, 1, figsize=(10, 7.6), sharex=True)
 for ax, (nom, comp, c) in zip(axes, [("log(ca)", train, BLEU), ("tendance", stl.trend, VIOLET),
@@ -558,6 +591,8 @@ mois
 La décomposition raconte l'histoire de la boutique : la **tendance** monte régulièrement, puis semble ralentir à partir de 2021 (STL est un lissage : sa fin de tendance est moins fiable, et nous reverrons en 4.3 si ce ralentissement est réel) ; la **saison** a un profil stable d'une année sur l'autre ; les **résidus** sont petits, sauf les quatre mois de mars à juin 2020 qui ressortent comme les quatre plus gros résidus négatifs. Les **indices saisonniers** se lisent directement : décembre est environ 60 % au-dessus du mois moyen, janvier et février environ 20 à 35 % en dessous.
 
 > 💡 **À quoi sert la décomposition ?** (1) À **comprendre** : « quelle part de la hausse est de la vraie croissance, quelle part est la saison ? ». (2) À **corriger des variations saisonnières** (CVS) : diviser par l'indice saisonnier pour comparer février à décembre. (3) À **repérer les accidents**, ici le COVID, que nous devrons traiter explicitement dans les modèles.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : exercices 4.1, 4.2, 4.5 et 4.9.
 
 > ✅ **À retenir.**
 > - Une série temporelle a des observations **dépendantes** ; l'ordre fait partie de la donnée. Mettez de côté la fin de la série **avant** de choisir un modèle.

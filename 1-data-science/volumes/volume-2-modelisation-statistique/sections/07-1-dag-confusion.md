@@ -29,13 +29,39 @@ C'est le **problème fondamental de l'inférence causale** (Holland, 1986) : pou
 
 Pour **voir** le problème, jouons à Dieu. Voici huit clients dont nous connaissons, exceptionnellement, les **deux** dépenses potentielles. (Ce tableau est inventé de toutes pièces, et calculable à la main.)
 
-```python
+**Le tableau vu par Dieu :**
+
+| Client | $Y(0)$ sans offre | $Y(1)$ avec offre | Offre reçue | Effet $Y(1)-Y(0)$ |
+|---|---:|---:|---|---:|
+| A | 100 | 120 | oui | +20 |
+| B | 150 | 165 | oui | +15 |
+| C | 180 | 190 | oui | +10 |
+| D | 130 | 145 | oui | +15 |
+| E | 50 | 60 | non | +10 |
+| F | 80 | 85 | non | +5 |
+| G | 60 | 75 | non | +15 |
+| H | 90 | 100 | non | +10 |
+
+**Le tableau vu par la gérante** (une moitié du tableau manque toujours) :
+
+| Client | Offre reçue | $Y(0)$ observé | $Y(1)$ observé |
+|---|---|---:|---:|
+| A | oui | ? | 120 |
+| B | oui | ? | 165 |
+| C | oui | ? | 190 |
+| D | oui | ? | 145 |
+| E | non | 50 | ? |
+| F | non | 80 | ? |
+| G | non | 60 | ? |
+| H | non | 90 | ? |
+
+```python hide
 import itertools
 import numpy as np
 import pandas as pd
 
 clients = pd.DataFrame({
-    "client": ["Amel", "Bilel", "Chaima", "Dorra", "Ehsan", "Farah", "Ghofrane", "Hichem"],
+    "client": list("ABCDEFGH"),
     "y0": [100, 150, 180, 130, 50, 80, 60, 90],      # dépense SANS offre (€)
     "y1": [120, 165, 190, 145, 60, 85, 75, 100],     # dépense AVEC offre (€)
     "offre": [1, 1, 1, 1, 0, 0, 0, 0],               # ce que la gérante a décidé
@@ -52,31 +78,31 @@ print(vu[["client", "offre", "y0", "y1"]].to_string(index=False))
 <!--sortie-->
 ```text
 Le tableau vu par Dieu :
-  client  y0  y1  offre  effet
-    Amel 100 120      1     20
-   Bilel 150 165      1     15
-  Chaima 180 190      1     10
-   Dorra 130 145      1     15
-   Ehsan  50  60      0     10
-   Farah  80  85      0      5
-Ghofrane  60  75      0     15
-  Hichem  90 100      0     10
+client  y0  y1  offre  effet
+     A 100 120      1     20
+     B 150 165      1     15
+     C 180 190      1     10
+     D 130 145      1     15
+     E  50  60      0     10
+     F  80  85      0      5
+     G  60  75      0     15
+     H  90 100      0     10
 
 Le tableau vu par la gérante (une moitié du tableau manque toujours) :
-  client  offre   y0    y1
-    Amel      1  NaN 120.0
-   Bilel      1  NaN 165.0
-  Chaima      1  NaN 190.0
-   Dorra      1  NaN 145.0
-   Ehsan      0 50.0   NaN
-   Farah      0 80.0   NaN
-Ghofrane      0 60.0   NaN
-  Hichem      0 90.0   NaN
+client  offre   y0    y1
+     A      1  NaN 120.0
+     B      1  NaN 165.0
+     C      1  NaN 190.0
+     D      1  NaN 145.0
+     E      0 50.0   NaN
+     F      0 80.0   NaN
+     G      0 60.0   NaN
+     H      0 90.0   NaN
 ```
 
-Calculons à la main ce que Dieu sait. Les effets individuels sont $+20,+15,+10,+15$ pour les quatre clients qui ont reçu l'offre (**ATT** $=60/4=15$ €), et $+10,+5,+15,+10$ pour les quatre autres (**ATU** $=40/4=10$ €). Sur les huit, l'**ATE** vaut $100/8=12{,}5$ €. Voyons-le au calcul, puis comparons avec ce que fait la gérante : la différence des dépenses moyennes observées.
+Calculons à la main ce que Dieu sait. Les effets individuels sont $+20,+15,+10,+15$ pour les quatre clients qui ont reçu l'offre (**ATT** $=60/4=15$ €), et $+10,+5,+15,+10$ pour les quatre autres (**ATU** $=40/4=10$ €). Sur les huit, l'**ATE** vaut $100/8=12{,}5$ €. Voyons maintenant ce que fait la gérante : elle compare les dépenses moyennes **observées**. Avec offre : $(120+165+190+145)/4=155$ € ; sans offre : $(50+80+60+90)/4=70$ €. Sa différence naïve vaut donc $155-70=85$ €.
 
-```python
+```python hide
 ate = clients["effet"].mean()
 att = clients.loc[clients["offre"] == 1, "effet"].mean()
 atu = clients.loc[clients["offre"] == 0, "effet"].mean()
@@ -110,7 +136,7 @@ La comparaison naïve donne **85 €**, alors que l'effet réel de l'offre n'est
 
 Dans notre petit exemple, les clients choisis par la gérante auraient dépensé en moyenne $(100+150+180+130)/4=140$ € *sans* offre, contre $(50+80+60+90)/4=70$ € pour les autres : biais de sélection $=70$ €. Et $15+70=85$ : la décomposition retombe sur la différence naïve.
 
-```python
+```python hide
 y0_traites = clients.loc[clients["offre"] == 1, "y0"].mean()
 y0_non_traites = clients.loc[clients["offre"] == 0, "y0"].mean()
 print("Sans offre, les traités auraient dépensé :", y0_traites, "| les non-traités dépensent :", y0_non_traites)
@@ -136,7 +162,7 @@ La différence des moyennes, bête et simple, est alors un estimateur **sans bia
 
 Sur nos huit clients, on peut **vérifier** cette affirmation exhaustivement. Il y a $\binom{8}{4}=70$ façons de choisir les quatre clients qui reçoivent l'offre ; si la gérante tire au sort l'une d'elles avec la même probabilité, la moyenne des 70 différences naïves possibles doit retomber sur l'ATE.
 
-```python
+```python hide
 estimations = []
 for groupe_offre in itertools.combinations(range(8), 4):
     T = np.zeros(8, dtype=int)
@@ -157,9 +183,9 @@ plus petite / plus grande : -60.0 / 85.0
 
 La moyenne vaut exactement l'ATE : **en moyenne sur les tirages possibles**, l'estimateur est juste. Mais une expérience particulière n'est qu'un tirage parmi les 70, et celui-ci peut tomber très loin de la vérité (les 70 tirages donnent des estimations de −60 à +85 € : avec seulement huit clients, on peut même obtenir le mauvais signe) : c'est pourquoi on accompagne toujours l'estimation d'un intervalle de confiance, comme au volume I (section 3.3).
 
-Passons à l'échelle d'une vraie clientèle. Le fichier `ch07-observationnel.csv` contient 4 000 clients dont la gérante a **ciblé** l'offre, et `ch07-observationnel-verite.csv` leurs deux dépenses potentielles (information que, dans la vraie vie, personne n'a). Rejouons l'histoire de deux façons : avec le ciblage réel de la gérante, et avec des attributions tirées au sort.
+Passons à l'échelle d'une vraie clientèle. Le fichier `ch07-observationnel.csv` contient 4 000 clients dont la gérante a **ciblé** l'offre, et `ch07-observationnel-verite.csv` leurs deux dépenses potentielles (information que, dans la vraie vie, personne n'a). Rejouons l'histoire de deux façons : avec le ciblage réel de la gérante, et avec des attributions tirées au sort (2 000 tirages, avec la même proportion de clients traités).
 
-```python
+```python hide
 obs = pd.read_csv("donnees/ch07-observationnel.csv")
 verite = pd.read_csv("donnees/ch07-observationnel-verite.csv")
 d = obs.merge(verite, on="id_client")
@@ -189,10 +215,13 @@ Différence naïve avec le ciblage de la gérante : 50.50 €
 Avec attribution aléatoire : moyenne 15.46, écart-type 2.26
   95 % des tirages entre 11.1 et 19.9
 ```
+Sur ces 4 000 clients, 46,2 % ont reçu l'offre. Les effets vrais sont **ATE = 15,53 €** et ATT = 16,64 €. Avec le ciblage de la gérante, la différence naïve vaut **50,50 €**, plus de trois fois l'ATE. Avec les 2 000 attributions tirées au sort, la différence moyenne est de 15,46 €.
+
+
 
 ![Distribution de la différence naïve quand l'attribution est tirée au sort (2 000 tirages), comparée à la valeur obtenue avec le ciblage de la gérante et à la vérité.](figures/ch07-randomisation.png)
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -236,7 +265,7 @@ $$\text{SMD}=\frac{\bar x_1-\bar x_0}{\sqrt{(s_1^2+s_0^2)/2}},$$
 
 et l'on considère en pratique qu'une valeur inférieure à 0,1 en valeur absolue est un bon équilibre.
 
-```python
+```python hide
 from scipy import stats
 
 c = pd.read_csv("donnees/clients.csv")
@@ -266,28 +295,28 @@ print("p-valeur (khi-deux) pour la ville :", round(stats.chi2_contingency(pd.cro
 <!--sortie-->
 ```text
 effectifs : offre = 1015 | pas d'offre = 985
-         variable    SMD  moy. offre  moy. témoin
-              age -0.068      35.397       36.114
-canal = Réseaux  0.020       0.413        0.403
-     canal = Site  0.029       0.347        0.333
- canal = Boutique -0.054       0.240        0.264
-    ville = Autre -0.021       0.147        0.154
-  ville = Ville A  0.016       0.106        0.102
-   ville = Ville B -0.011       0.124        0.128
-     ville = Ville C -0.012       0.139        0.143
-   ville = Ville D -0.011       0.167        0.171
-    ville = Ville E  0.032       0.317        0.303
+        variable    SMD  moy. offre  moy. témoin
+             age -0.068      35.397       36.114
+ canal = Réseaux  0.020       0.413        0.403
+    canal = Site  0.029       0.347        0.333
+canal = Boutique -0.054       0.240        0.264
+   ville = Autre -0.021       0.147        0.154
+ ville = Ville A  0.016       0.106        0.102
+ ville = Ville B -0.011       0.124        0.128
+ ville = Ville C -0.012       0.139        0.143
+ ville = Ville D -0.011       0.167        0.171
+ ville = Ville E  0.032       0.317        0.303
 
 p-valeur (Welch) pour l'âge : 0.128
 p-valeur (khi-deux) pour le canal : 0.473
 p-valeur (khi-deux) pour la ville : 0.976
 ```
 
-Toutes les SMD sont bien inférieures à 0,1 : les deux groupes se ressemblent sur tout ce que nous observons. Les tests de significativité sont ici **secondaires** : le tirage au sort a été fait, donc toute différence est par construction due au hasard, et il est inutile de « tester » l'hypothèse que le hasard est hasardeux. (Si l'on testait pourtant des dizaines de variables à 5 %, on s'attendrait à trouver quelques « différences significatives » par pur hasard : c'est le problème des comparaisons multiples du volume I, section 3.5.5.)
+Le tirage a donné 1 015 clients avec offre et 985 sans. Toutes les SMD sont bien inférieures à 0,1 en valeur absolue (la plus grande, −0,068, concerne l'âge : 35,4 ans en moyenne avec offre, 36,1 sans) : les deux groupes se ressemblent sur tout ce que nous observons. Les tests donnent des p-valeurs de 0,13 (âge, test de Welch), 0,47 (canal, khi-deux) et 0,98 (ville, khi-deux) : rien de significatif. Les tests de significativité sont ici **secondaires** : le tirage au sort a été fait, donc toute différence est par construction due au hasard, et il est inutile de « tester » l'hypothèse que le hasard est hasardeux. (Si l'on testait pourtant des dizaines de variables à 5 %, on s'attendrait à trouver quelques « différences significatives » par pur hasard : c'est le problème des comparaisons multiples du volume I, section 3.5.5.)
 
 **Étape 2 : estimer l'effet.** Pour le rachat à 12 mois (variable binaire), l'estimateur de l'effet moyen est la différence de proportions $\hat p_1-\hat p_0$, et son intervalle de confiance de Wald est celui de la section 3.4.5 du volume I : $\hat p_1-\hat p_0\pm1{,}96\sqrt{\hat p_1(1-\hat p_1)/n_1+\hat p_0(1-\hat p_0)/n_0}$.
 
-```python
+```python hide
 n1, n0 = len(traite), len(temoin)
 p1, p0 = traite["rachat_12m"].mean(), temoin["rachat_12m"].mean()
 ate_rachat = p1 - p0
@@ -304,6 +333,9 @@ effet moyen : 0.122  (IC 95 % : 0.078 ; 0.165)
 effet relatif : +27.2%   | une offre de plus = 0.122 rachat de plus en moyenne,
 soit environ 1 client de plus qui rachète pour 8.2 offres envoyées
 ```
+**Résultat.** 56,9 % des clients avec offre rachètent dans l'année, contre 44,8 % sans : l'effet moyen est de **+12,2 points** (intervalle de confiance à 95 % : de 7,8 à 16,5 points), soit +27 % en relatif, ou encore environ un rachat de plus pour 8 offres envoyées.
+
+
 
 Même question avec un modèle logistique (chapitre 2, section 2.2). Attention : le coefficient de la régression est un **rapport de cotes** (échelle logarithmique), pas une différence de probabilités. Pour retrouver une différence de probabilités, on calcule l'**effet marginal moyen** :
 
@@ -311,19 +343,25 @@ Même question avec un modèle logistique (chapitre 2, section 2.2). Attention :
 import statsmodels.formula.api as smf
 
 logit = smf.logit("rachat_12m ~ offre_bienvenue", data=c).fit(disp=0)
+marg = logit.get_margeff(dummy=True).summary_frame()     # dummy=True : vraie différence de probabilités 1 - 0
+print(marg[["dy/dx", "Conf. Int. Low", "Cont. Int. Hi."]].round(3).to_string())
+```
+<!--sortie-->
+```text
+                 dy/dx  Conf. Int. Low  Cont. Int. Hi.
+offre_bienvenue  0.122           0.078           0.165
+```
+```python hide
 print("coefficient (log-cote) :", round(logit.params["offre_bienvenue"], 3), "| rapport de cotes :", round(np.exp(logit.params["offre_bienvenue"]), 2))
-marg = logit.get_margeff(dummy=True).summary_frame().iloc[0]      # dummy=True : vraie différence de probabilités 1 - 0
-print(f"effet marginal moyen : {marg['dy/dx']:.3f}  (IC 95 % : {marg['Conf. Int. Low']:.3f} ; {marg['Cont. Int. Hi.']:.3f})")
 ```
 <!--sortie-->
 ```text
 coefficient (log-cote) : 0.49 | rapport de cotes : 1.63
-effet marginal moyen : 0.122  (IC 95 % : 0.078 ; 0.165)
 ```
 
-Les deux approches coïncident (c'est normal : avec une seule variable binaire explicative, le modèle logistique est « saturé » et reproduit exactement les deux proportions ; l'option `dummy=True` demande la vraie différence de probabilités entre $T=1$ et $T=0$, et non une dérivée). Pour la dépense annuelle, variable continue et asymétrique, on compare les moyennes avec le test de Welch du volume I (section 3.4.3) :
+Le coefficient vaut 0,49 (rapport de cotes 1,63) et l'effet marginal moyen 0,122, avec le même intervalle que ci-dessus : les deux approches coïncident (c'est normal : avec une seule variable binaire explicative, le modèle logistique est « saturé » et reproduit exactement les deux proportions ; l'option `dummy=True` demande la vraie différence de probabilités entre $T=1$ et $T=0$, et non une dérivée). Pour la dépense annuelle, variable continue et asymétrique, on compare les moyennes avec le test de Welch du volume I (section 3.4.3). Résultat : 243,5 € de dépense moyenne avec offre contre 250,5 € sans, soit un effet de −7,0 € (intervalle de confiance à 95 % : de −33,1 à +19,0 € ; p = 0,60).
 
-```python
+```python hide
 d1, d0 = traite["depense_annuelle"], temoin["depense_annuelle"]
 res = stats.ttest_ind(d1, d0, equal_var=False)
 ic = res.confidence_interval(0.95)
@@ -336,9 +374,9 @@ dépense moyenne avec offre : 243.5 €   sans offre : 250.5 €
 effet moyen : -7.0 €  (IC 95 % : -33.1 ; 19.0)   p = 0.60
 ```
 
-On peut aussi **ajuster** l'estimation sur des covariables. Dans une expérience randomisée, ce n'est pas pour corriger un biais (il n'y en a pas) mais pour gagner en **précision** : les covariables qui expliquent la dépense réduisent le bruit résiduel.
+On peut aussi **ajuster** l'estimation sur des covariables. Dans une expérience randomisée, ce n'est pas pour corriger un biais (il n'y en a pas) mais pour gagner en **précision** : les covariables qui expliquent la dépense réduisent le bruit résiduel. Ici le gain est négligeable : l'effet passe de 0,122 à 0,121 et l'erreur-type de 0,0222 à 0,0221 (l'âge, le canal et la ville expliquent très peu le rachat).
 
-```python
+```python hide
 simple = smf.ols("rachat_12m ~ offre_bienvenue", data=c).fit(cov_type="HC1")
 ajuste = smf.ols("rachat_12m ~ offre_bienvenue + age + C(canal_acquisition) + C(ville)", data=c).fit(cov_type="HC1")
 for nom, m in [("sans covariables", simple), ("avec covariables ", ajuste)]:
@@ -353,7 +391,7 @@ avec covariables  : effet = 0.121   erreur-type = 0.0221   IC 95 % = [0.077 ; 0.
 
 **Étape 3 : interpréter, et révéler la vérité.** L'offre augmente de façon nette la probabilité de rachat, de l'ordre de 12 points de pourcentage (57 % de rachat avec l'offre, contre 45 % sans), alors qu'on ne détecte **aucun effet sur la dépense annuelle** (l'intervalle de confiance contient très largement 0). Comme les données sont simulées, nous pouvons comparer à la vérité. Dans le modèle de simulation, l'offre augmente de **0,55** la log-cote du rachat et n'intervient pas du tout dans le nombre de commandes ni dans le panier. L'effet moyen en probabilité se calcule en moyennant sur la population simulée la différence $\text{expit}(\eta+0{,}55)-\text{expit}(\eta)$ :
 
-```python
+```python hide
 rng = np.random.default_rng(1)
 N = 400_000
 age = np.clip(np.round(rng.normal(36, 11, N)), 18, 75)
@@ -380,11 +418,11 @@ L'estimation expérimentale (0,122) est très proche de la vérité (0,124), et 
 
 ### 7.1.5 Quand on ne peut pas tirer au sort : les graphes causaux
 
-Beaucoup de questions causales ne se prêtent pas à une expérience : on ne peut pas choisir au hasard qui vit à Ville C, ni refaire le passé. Il faut alors **raisonner** sur la façon dont les données ont été produites. L'outil standard est le **graphe orienté acyclique** (DAG, de l'anglais *directed acyclic graph*, popularisé par Judea Pearl) : chaque variable est un **nœud**, et une **flèche** $A\to B$ signifie « $A$ a une influence causale directe sur $B$ ». Il est acyclique : aucune variable ne peut être sa propre cause en suivant les flèches.
+Beaucoup de questions causales ne se prêtent pas à une expérience : on ne peut pas choisir au hasard dans quelle ville vit un client, ni refaire le passé. Il faut alors **raisonner** sur la façon dont les données ont été produites. L'outil standard est le **graphe orienté acyclique** (DAG, de l'anglais *directed acyclic graph*, popularisé par Judea Pearl) : chaque variable est un **nœud**, et une **flèche** $A\to B$ signifie « $A$ a une influence causale directe sur $B$ ». Il est acyclique : aucune variable ne peut être sa propre cause en suivant les flèches.
 
 Un graphe est une **hypothèse sur le monde**, pas une conclusion tirée des données. Mais cette hypothèse est explicite, discutable, et elle détermine très précisément **quelles variables il faut ajuster, et lesquelles il ne faut surtout pas ajuster**. Trois structures élémentaires suffisent à comprendre tous les graphes.
 
-```python
+```python hide
 def dag(ax, positions, aretes, titre="", pointilles=(), styles=None, xlim=(-0.5, 2.5), ylim=(-0.6, 1.4)):
     """Dessine un DAG : boîtes arrondies, et flèches qui s'arrêtent exactement au bord des boîtes."""
     styles = styles or {}
@@ -442,7 +480,7 @@ Dans les deux premiers cas, « figer » une variable la rend inoffensive ; dans 
 
 ### 7.1.6 La fourche : confusion et paradoxe de Simpson
 
-Reprenons des chiffres à la main. La gérante a envoyé l'offre à 120 clients et pas à 120 autres, et observe le rachat à 12 mois. Les clients viennent de deux canaux : la **boutique** (clients très fidèles, taux de rachat élevé) et **Réseaux** (clients plus volatils). La gérante a envoyé l'offre surtout à des clients d'Réseaux, ceux qu'elle « avait envie de convaincre ».
+Reprenons des chiffres à la main. La gérante a envoyé l'offre à 120 clients et pas à 120 autres, et observe le rachat à 12 mois. Les clients viennent de deux canaux : la **boutique** (clients très fidèles, taux de rachat élevé) et **Réseaux** (clients venus des réseaux sociaux, plus volatils). La gérante a envoyé l'offre surtout à des clients venus des réseaux sociaux, ceux qu'elle « avait envie de convaincre ».
 
 | Canal | Offre envoyée | Clients | Rachats | Taux |
 |---|---|---|---|---|
@@ -453,11 +491,11 @@ Reprenons des chiffres à la main. La gérante a envoyé l'offre à 120 clients 
 | **Total** | **oui** | **120** | **58** | **48,3 %** |
 | **Total** | **non** | **120** | **86** | **71,7 %** |
 
-Lisez les deux dernières lignes : **globalement**, les clients qui ont reçu l'offre rachètent *moins* (48 % contre 72 %). Mais regardez chaque canal : en boutique, l'offre fait passer le taux de 80 % à 90 % ; sur Réseaux, de 30 % à 40 %. L'offre **améliore** le rachat de **10 points dans chaque canal**. Comment le total peut-il dire l'inverse ? Parce que l'offre a été envoyée surtout au canal où l'on rachète peu : les « traités » sont majoritairement des clients d'Réseaux, qui auraient peu racheté de toute façon. C'est le **paradoxe de Simpson**, qui n'est un paradoxe que si l'on oublie la fourche *Canal → Offre*, *Canal → Rachat*.
+Lisez les deux dernières lignes : **globalement**, les clients qui ont reçu l'offre rachètent *moins* (48 % contre 72 %). Mais regardez chaque canal : en boutique, l'offre fait passer le taux de 80 % à 90 % ; sur Réseaux, de 30 % à 40 %. L'offre **améliore** le rachat de **10 points dans chaque canal**. Comment le total peut-il dire l'inverse ? Parce que l'offre a été envoyée surtout au canal où l'on rachète peu : les « traités » sont majoritairement des clients venus des réseaux sociaux, qui auraient peu racheté de toute façon. C'est le **paradoxe de Simpson**, qui n'est un paradoxe que si l'on oublie la fourche *Canal → Offre*, *Canal → Rachat*.
 
 Quelle est alors la bonne réponse ? Celle qui **compare à canal égal**, puis fait la moyenne. L'effet moyen (ATE) se calcule par **standardisation** : on pondère l'effet dans chaque canal par la part de ce canal dans toute la population (ici 120 clients sur 240 de chaque canal, soit 50 %) : $0{,}5\times10\,\%+0{,}5\times10\,\%=10$ points. Vérifions au calcul, puis avec une régression logistique.
 
-```python
+```python hide
 simpson = pd.DataFrame({
     "canal": ["Boutique", "Boutique", "Réseaux", "Réseaux"],
     "offre": [1, 0, 1, 0],
@@ -487,10 +525,10 @@ print(f"coefficient de l'offre AVEC ajustement sur le canal : {m_ajuste.params['
 <!--sortie-->
 ```text
 global : {0: 0.717, 1: 0.483}
-offre        0    1  effet
-canal                     
-Boutique   0.8  0.9    0.1
-Réseaux  0.3  0.4    0.1
+offre       0    1  effet
+canal                    
+Boutique  0.8  0.9    0.1
+Réseaux   0.3  0.4    0.1
 poids des canaux : {'Boutique': 0.5, 'Réseaux': 0.5}
 effet standardisé : 0.1
 240 clients, taux de rachat global : 0.6
@@ -499,7 +537,7 @@ coefficient de l'offre SANS ajustement sur le canal : -0.99
 coefficient de l'offre AVEC ajustement sur le canal : +0.56
 ```
 
-Le signe change : sans ajustement, le modèle conclut que l'offre est **nuisible** ; avec le canal, qui est la cause commune, il retrouve un effet **positif**. Moralité : la bonne analyse **dépend de l'histoire causale**, pas seulement des chiffres. Les mêmes données, avec une histoire différente, pourraient exiger de ne *pas* ajuster : nous l'illustrons tout de suite.
+Le signe change : sans ajustement, le modèle logistique conclut que l'offre est **nuisible** (coefficient −0,99) ; avec le canal, qui est la cause commune, il retrouve un effet **positif** (+0,56). Moralité : la bonne analyse **dépend de l'histoire causale**, pas seulement des chiffres. Les mêmes données, avec une histoire différente, pourraient exiger de ne *pas* ajuster : nous l'illustrons tout de suite.
 
 > ⚠️ **Le paradoxe de Simpson n'est pas une bizarrerie arithmétique.** Les mêmes chiffres, lus avec deux histoires causales différentes, appellent deux conclusions opposées. Si le canal était une **conséquence** de l'offre (disons que l'offre fait venir des clients d'un autre canal), il ne faudrait *pas* ajuster dessus. C'est pourquoi aucun test statistique ne peut décider seul s'il faut ou non ajuster.
 
@@ -507,7 +545,7 @@ Le signe change : sans ajustement, le modèle conclut que l'offre est **nuisible
 
 Autre cas : l'offre agit **à travers** un médiateur. Simulons une expérience où l'offre est **randomisée**, et où elle agit de deux façons : par l'utilisation du code promotionnel (effet de 30 € quand le code est utilisé), et par un petit effet direct de « bonne image » (8 €). Les clients les plus motivés (variable `motivation`, qui influence aussi la dépense) utilisent plus souvent le code.
 
-```python
+```python hide
 rng = np.random.default_rng(71)
 n = 100_000
 motivation = rng.normal(size=n)                               # inobservée dans la vie réelle
@@ -550,7 +588,7 @@ Sans ajustement, la régression retrouve l'**effet total** (25,6 € estimés po
 
 Dernier cas, le plus surprenant. La boutique garde au catalogue les prototypes de produits qui ont une bonne **qualité** *ou* un grand **attrait** visuel (ou les deux) : un produit à la fois laid et fragile est abandonné. Imaginons que, dans la réalité, qualité et attrait sont **parfaitement indépendants** : savoir qu'un prototype est beau ne dit rien sur sa solidité.
 
-```python
+```python hide
 rng = np.random.default_rng(72)
 n = 6000
 qualite = rng.normal(size=n)
@@ -578,7 +616,7 @@ pente de la qualité sur l'attrait, tous : +0.012 | catalogue seulement : -0.494
 
 ![À gauche, tous les prototypes : aucune relation entre qualité et attrait. À droite, seuls les produits retenus au catalogue : une relation négative apparaît.](figures/ch07-collider.png)
 
-```python
+```python hide
 fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.8), sharex=True, sharey=True)
 idx = rng.choice(n, 1500, replace=False)
 axes[0].scatter(attrait[idx], qualite[idx], s=7, color=BLEU, alpha=0.5)
@@ -622,7 +660,16 @@ Un ensemble de variables $S$ **satisfait le critère de la porte dérobée** pou
 
 Appliquons cela au cas d'étude de la suite : l'offre de bienvenue **ciblée** par la gérante (fichier `ch07-observationnel.csv`). Nous supposons le graphe suivant : l'âge et le canal influencent l'engagement ; l'âge, le canal **et** l'engagement influencent à la fois la décision d'envoyer l'offre (c'est ainsi que la gérante choisit) et la dépense ; l'offre influence la dépense.
 
+
 ```python
+modele = smf.ols("depense ~ offre + age + C(canal) + engagement", d).fit()
+print(f"effet estimé de l'offre, après ajustement sur l'âge, le canal et l'engagement : {modele.params['offre']:.1f} €")
+```
+<!--sortie-->
+```text
+effet estimé de l'offre, après ajustement sur l'âge, le canal et l'engagement : 14.8 €
+```
+```python hide
 fig, ax = plt.subplots(figsize=(8, 3.6))
 fig.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 pos = {"Âge": (0, 1.0), "Canal": (0, -0.5), "Engagement": (1.5, 0.25),
@@ -642,9 +689,9 @@ figure enregistrée
 
 ![Le graphe supposé de l'étude observationnelle : l'âge, le canal et l'engagement sont des causes communes de l'offre et de la dépense.](figures/ch07-dag-etude.png)
 
-Les chemins porte dérobée de *Offre* vers *Dépense* passent tous par l'âge, le canal ou l'engagement (par exemple *Offre ← Engagement → Dépense*). L'ensemble $S=\{\text{âge},\text{canal},\text{engagement}\}$ les bloque tous, et ne contient aucun descendant de l'offre : il satisfait le critère. Un ensemble incomplet, comme $\{\text{âge},\text{canal}\}$, laisse ouvert le chemin par l'engagement. Mettons-le à l'épreuve en ajustant par régression de façon **progressive**, et en comparant avec la vérité (`ate_vrai`, calculée plus haut avec les résultats potentiels).
+Les chemins porte dérobée de *Offre* vers *Dépense* passent tous par l'âge, le canal ou l'engagement (par exemple *Offre ← Engagement → Dépense*). L'ensemble $S=\{\text{âge},\text{canal},\text{engagement}\}$ les bloque tous, et ne contient aucun descendant de l'offre : il satisfait le critère. Un ensemble incomplet, comme $\{\text{âge},\text{canal}\}$, laisse ouvert le chemin par l'engagement. Mettons-le à l'épreuve en ajustant par régression de façon **progressive**, et en comparant avec la vérité (15,5 €, calculée plus haut avec les résultats potentiels).
 
-```python
+```python hide-code
 modeles = [
     ("aucun ajustement", "depense ~ offre"),
     ("+ âge", "depense ~ offre + age"),
@@ -674,5 +721,7 @@ vérité : ATE = 15.5   ATT = 16.6
 Voilà la leçon en une table : tant que l'**engagement** manque, l'estimation reste entre 46 et 51 €, **plus de trois fois** la vérité (15,5 €), et ajouter l'âge et le canal, variables pourtant « sensées », n'y change presque rien. Dès que l'engagement est inclus, l'estimation tombe près de la vérité et son intervalle de confiance (de 11,0 à 18,7) contient la vérité (15,5). Le **bon ensemble** n'est pas « le plus grand possible » mais celui qui bloque les chemins de confusion.
 
 > ⚠️ **Deux pièges de cet exemple.** (1) Le critère suppose que l'on a **mesuré** tous les facteurs de confusion. Ici, l'engagement est observé ; s'il ne l'était pas, aucun ajustement ne pourrait corriger le biais (c'est le sujet de 7.4). (2) Dans une régression linéaire, le coefficient de l'offre est une moyenne **pondérée** des effets individuels : lorsque l'effet varie d'un client à l'autre (ici, il est plus fort sur Réseaux), elle ne coïncide pas exactement avec l'ATE. C'est une raison, parmi d'autres, d'utiliser les méthodes de la section 7.2 qui visent explicitement l'ATE ou l'ATT.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 7 : applications 7.1 à 7.5, exercices 7.1 à 7.4 et 7.11.
 
 > ✅ **À retenir (7.1).** (1) Effet causal = comparaison de deux mondes, dont un seul est observé. (2) Différence observée = effet causal + biais de sélection. (3) La **randomisation** supprime le biais de sélection. (4) Sans randomisation, on s'appuie sur un **graphe** et le critère de la porte dérobée : ajuster sur les causes communes, **pas** sur les médiateurs ni sur les effets communs. (5) Aucun ajustement ne corrige une confusion **non mesurée**.

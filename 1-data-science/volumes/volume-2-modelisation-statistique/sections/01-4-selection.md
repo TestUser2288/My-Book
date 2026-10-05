@@ -2,9 +2,9 @@
 
 > 💡 **Intuition.** Face à dix variables possibles, laquelle garder ? Tout garder semble prudent, mais chaque variable inutile ajoute du **bruit** à l'estimation (les erreurs standard grossissent) et peut conduire à des prédictions pires que celles d'un modèle plus simple. À l'inverse, oublier une variable utile introduit un **biais**. Choisir un modèle, c'est trouver le bon compromis entre **trop simple** (qui rate des effets réels) et **trop complexe** (qui s'ajuste au hasard de l'échantillon, c'est le *surajustement*). Il existe pour cela des outils objectifs : des critères d'information (AIC, BIC), la validation croisée, des tests emboîtés.
 
-Nous gardons la même préparation. Pour avoir plus de variables à départager, nous ajoutons les **notes de l'enquête de satisfaction** (volume II, `donnees/enquete_satisfaction.csv`) : 60 % des clients y ont répondu (au hasard), avec huit questions notées de 1 à 5. Les questions q1 à q4 portent sur les **produits**, q5 à q8 sur le **service et la livraison** ; nous en tirons deux scores moyens.
+Pour avoir plus de variables à départager, nous ajoutons aux données précédentes les **notes de l'enquête de satisfaction** (`donnees/enquete_satisfaction.csv`) : 60 % des clients y ont répondu (au hasard), avec huit questions notées de 1 à 5. Les questions q1 à q4 portent sur les **produits**, q5 à q8 sur le **service et la livraison** ; nous en tirons deux scores moyens.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -44,13 +44,13 @@ min            1.25           1.25 -18.00
 max            5.00           5.00  37.00
 ```
 
-Nous travaillerons sur ces **`bq`** : les clients actifs qui ont répondu à l'enquête. La question est : quelles variables (âge, canal, ville, offre de bienvenue, scores produit et service, courbure de l'âge…) méritent de figurer dans le modèle du log-panier ?
+Nous travaillerons sur ces clients (tableau **`bq`**) : les clients actifs qui ont répondu à l'enquête (1 212 répondants à l'enquête, dont 1 076 clients actifs). La question est : quelles variables (âge, canal, ville, offre de bienvenue, scores produit et service, courbure de l'âge…) méritent de figurer dans le modèle du log-panier ?
 
 ### 1.4.1 Le surajustement : mieux s'ajuster n'est pas mieux prédire
 
 Rappelons l'enjeu (volume I, chapitre 3 : biais et variance d'un estimateur). Un modèle très flexible épouse les données d'entraînement, y compris leur bruit. Pour le **voir**, faisons une expérience : on tire au hasard **40 clients** pour entraîner un modèle polynomial en l'âge de degré 0, 1, 2…, 8, et on mesure l'erreur sur les clients **non utilisés** pour l'entraînement. On répète 300 fois, et on moyenne.
 
-```python
+```python hide
 z = ((df["age"] - 36) / 10).to_numpy()                 # âge centré et réduit (évite les problèmes numériques des puissances)
 yy = df["log_panier"].to_numpy()
 rng = np.random.default_rng(21)
@@ -115,9 +115,9 @@ $$\boxed{\text{AIC}=-2\hat\ell+2k},\qquad\boxed{\text{BIC}=-2\hat\ell+k\log n}.$
 
 > 💡 **D'où viennent-ils ?** (1) L'**AIC** (Akaike) estime, à une constante près, la **qualité prédictive** attendue du modèle sur de nouvelles données : $-2\hat\ell$ est trop optimiste (c'est l'erreur d'apprentissage), et on montre (asymptotiquement) que l'optimisme moyen vaut environ $2k$, d'où la correction. Il vise la **prédiction**. (2) Le **BIC** (Schwarz) approche la probabilité *a posteriori* d'un modèle dans une approche bayésienne (chapitre 6) ; il est **consistant** : si le vrai modèle fait partie des candidats, il le retrouve avec une probabilité qui tend vers 1 quand $n$ grandit, ce que l'AIC ne garantit pas (il a tendance à garder quelques variables en trop). Les deux peuvent être en désaccord : c'est normal, ils ne visent pas la même chose.
 
-Vérifions la formule à la main sur un modèle de `bq` :
+Sur le modèle âge + canal ajusté sur `bq`, le calcul à la main donne une log-vraisemblance de −431,47, un AIC de 870,94 et un BIC de 890,87 : exactement les valeurs de `statsmodels`.
 
-```python
+```python hide
 m_ex = smf.ols("log_panier ~ a + C(canal)", data=bq).fit()
 n, p = m_ex.model.exog.shape
 scr = m_ex.ssr
@@ -147,9 +147,9 @@ Les critères d'information reposent sur des hypothèses (modèle bien spécifi�
 > 📐 **Théorème (PRESS).** L'erreur de prédiction de l'observation $i$ par le modèle ajusté **sans elle** est $y_i-\mathbf x_i^\top\hat{\boldsymbol\beta}_{(i)}=\dfrac{\hat\varepsilon_i}{1-h_{ii}}$. La somme des carrés $\text{PRESS}=\sum_i\big(\hat\varepsilon_i/(1-h_{ii})\big)^2$ s'obtient donc **avec un seul ajustement**.
 > *Démonstration.* On a vu (1.3.4) que $\hat{\boldsymbol\beta}-\hat{\boldsymbol\beta}_{(i)}=(\mathbf X^\top\mathbf X)^{-1}\mathbf x_i\,\hat\varepsilon_i/(1-h_{ii})$. Multiplions à gauche par $\mathbf x_i^\top$ : $\mathbf x_i^\top\hat{\boldsymbol\beta}-\mathbf x_i^\top\hat{\boldsymbol\beta}_{(i)}=h_{ii}\hat\varepsilon_i/(1-h_{ii})$. Donc $y_i-\mathbf x_i^\top\hat{\boldsymbol\beta}_{(i)}=\hat\varepsilon_i+h_{ii}\hat\varepsilon_i/(1-h_{ii})=\hat\varepsilon_i/(1-h_{ii})$. $\square$
 
-Un client à fort levier est mal prédit quand on le retire, d'où le diviseur $1-h_{ii}$ : l'erreur « honnête » est supérieure au résidu brut. Vérifions par une boucle explicite de $n$ ajustements :
+Un client à fort levier est mal prédit quand on le retire, d'où le diviseur $1-h_{ii}$ : l'erreur « honnête » est supérieure au résidu brut. Une boucle explicite de $n=1\,076$ ajustements (un par client écarté) donne le même résultat que la formule : PRESS = 141,52, à comparer à la somme des carrés résiduelle, plus optimiste, de 140,49.
 
-```python
+```python hide
 Xb, yb = m_ex.model.exog, m_ex.model.endog
 h = m_ex.get_influence().hat_matrix_diag
 press_formule = np.sum((m_ex.resid / (1 - h)) ** 2)
@@ -169,9 +169,9 @@ PRESS (boucle, 1076 ajustements) = 141.5167
 erreur quadratique d'apprentissage (SCR) = 140.4879  <- plus optimiste
 ```
 
-Écrivons maintenant une fonction de validation croisée $K$-fold. **Règle importante : utiliser les mêmes paquets pour tous les modèles comparés** (comparaison appariée).
+Pour la validation croisée $K$-fold, on écrit une petite fonction (10 paquets). **Règle importante : utiliser les mêmes paquets pour tous les modèles comparés** (comparaison appariée). Pour le modèle âge + canal, le RMSE de validation croisée vaut 0,3629, contre 0,3613 sur les données d'apprentissage.
 
-```python
+```python hide
 def cv_rmse(formule, data, K=10, graine=0):
     """RMSE de validation croisée K-fold (sur l'échelle du log-panier), mêmes paquets pour tous les modèles."""
     kf = KFold(n_splits=K, shuffle=True, random_state=graine)
@@ -209,7 +209,7 @@ Mettons les outils à l'épreuve. Voici huit modèles candidats, du plus simple 
 | **M6** | M3 + âge² + interaction âge × canal |
 | **M7** | tout : âge, âge², canal, ville, offre, scores, interactions |
 
-```python
+```python hide
 bq = bq.copy()
 bq["a2"] = bq["a"] ** 2
 candidats = {
@@ -258,6 +258,23 @@ meilleur modèle selon RMSE LOO (PRESS)   : M4
 meilleur modèle selon RMSE CV10          : M4
 ```
 
+```python
+print(tab[["paramètres p", "R² ajusté", "AIC", "BIC", "RMSE CV10"]].round(3))
+```
+<!--sortie-->
+```text
+        paramètres p  R² ajusté       AIC       BIC  RMSE CV10
+modèle                                                        
+M0                 1      0.000  1082.344  1087.325      0.400
+M1                 2      0.065  1010.513  1020.475      0.387
+M2                 4      0.181   870.944   890.868      0.363
+M3                 5      0.251   774.786   799.691      0.348
+M4                 6      0.253   773.161   803.047      0.347
+M5                11      0.248   785.882   840.673      0.350
+M6                 8      0.250   779.784   819.632      0.349
+M7                15      0.248   788.987   863.702      0.351
+```
+
 Lisons ce tableau avec méthode.
 
 - Le **$R^2$ et le RMSE d'apprentissage** s'améliorent (ou restent égaux) à chaque ajout de variables : ils recommandent toujours le modèle le plus gros (M7). Pas un critère de sélection.
@@ -266,7 +283,7 @@ Lisons ce tableau avec méthode.
 
 **Les tests emboîtés** (1.2.3) répondent à des questions précises sur des modèles qui se contiennent :
 
-```python
+```python hide
 print("M2 -> M3 (ajout du score produit) :")
 print(sm.stats.anova_lm(fits["M2"], fits["M3"]).round(4).iloc[:, [0, 2, 4, 5]].to_string())
 print("\nM3 -> M4 (ajout du score service) :")
@@ -299,7 +316,7 @@ M3 -> M6 (âge² et interactions, 3 paramètres) :
 1    1068.0      3.0  0.3316  0.8025
 ```
 
-Le score produit est hautement significatif ; le score service est **à la limite** (p-valeur autour de 0,05) ; la ville, l'offre de bienvenue, la courbure de l'âge et les interactions n'ont **aucun** effet décelable. C'est cohérent avec les critères d'information : *deux méthodes différentes, la même conclusion*. Le cas du score service illustre bien la tension entre AIC et BIC : sa $t$-statistique, voisine de 1,9, dépasse le seuil $\sqrt2\approx1{,}41$ que l'AIC applique implicitement (un paramètre en plus est conservé si $t^2>2$) mais pas le seuil $\sqrt{\log n}\approx2{,}6$ du BIC pour $n\approx1000$.
+Le score produit est hautement significatif ($F\approx102$) ; le score service est **à la limite** ($F\approx3{,}6$, p-valeur de 0,058) ; la ville et l'offre de bienvenue (p-valeur de 0,99), la courbure de l'âge et les interactions (0,80) n'ont **aucun** effet décelable. C'est cohérent avec les critères d'information : *deux méthodes différentes, la même conclusion*. Le cas du score service illustre bien la tension entre AIC et BIC : sa $t$-statistique, voisine de 1,9, dépasse le seuil $\sqrt2\approx1{,}41$ que l'AIC applique implicitement (un paramètre en plus est conservé si $t^2>2$) mais pas le seuil $\sqrt{\log n}\approx2{,}6$ du BIC pour $n\approx1000$.
 
 ### 1.4.5 La sélection automatique, et pourquoi il faut s'en méfier
 
@@ -307,7 +324,7 @@ Avec beaucoup de variables, comparer à la main devient impossible, d'où la ten
 
 Une simulation le montre. On génère $n=100$ observations d'une variable réponse $y$ qui **n'a aucun lien** avec 20 variables explicatives (toutes du pur bruit). On applique la sélection ascendante par p-valeur (on ajoute la variable la plus significative tant que sa p-valeur est inférieure à 0,05). Combien de « découvertes » la méthode va-t-elle faire ? On répète 500 fois.
 
-```python
+```python hide
 def selection_ascendante(X, y, alpha=0.05):
     """Sélection ascendante par p-valeur. X : matrice n x q sans constante. Retourne la liste des colonnes retenues."""
     n, q = X.shape
@@ -375,7 +392,7 @@ Dans près des deux tiers des jeux de données, la procédure « découvre » au
 
 > ⚠️ **Les défauts de la sélection automatique.** (1) Les **p-valeurs et intervalles** du modèle final sont **trop optimistes** (biais de sélection). (2) Les coefficients retenus sont **gonflés** en valeur absolue (on garde ceux qui, par chance, sont grands). (3) Le résultat est **instable** : un autre échantillon donne un autre modèle. (4) Les procédures ne connaissent pas **le sens** des variables : on risque de retirer une variable de confusion essentielle. (5) Plus on essaie de modèles, plus on a de chances d'en trouver un « bon » par hasard (c'est le problème des tests multiples du volume I, section 3.5.5).
 
-> 🛠️ **Bonnes pratiques.** (1) **Commencez par la connaissance du domaine** : quelles variables ont un sens ? (2) Fixez les modèles candidats **à l'avance**, en petit nombre, et comparez-les par AIC/BIC et validation croisée. (3) Si vous devez explorer beaucoup de variables, **mettez de côté un échantillon de test** *avant* de commencer, et ne l'utilisez qu'**une fois**, à la fin. (4) Pour la prédiction avec beaucoup de variables, préférez la **régularisation** (section 1.5), qui fait une sélection plus stable. (5) Décrivez honnêtement tout ce qui a été essayé.
+> 💡 **Bonnes pratiques.** (1) **Commencez par la connaissance du domaine** : quelles variables ont un sens ? (2) Fixez les modèles candidats **à l'avance**, en petit nombre, et comparez-les par AIC/BIC et validation croisée. (3) Si vous devez explorer beaucoup de variables, **mettez de côté un échantillon de test** *avant* de commencer, et ne l'utilisez qu'**une fois**, à la fin. (4) Pour la prédiction avec beaucoup de variables, préférez la **régularisation** (section 1.5), qui fait une sélection plus stable. (5) Décrivez honnêtement tout ce qui a été essayé.
 
 ### 1.4.6 Verdict : retrouver la vérité
 
@@ -385,48 +402,50 @@ $$\log(\text{panier})=4{,}00+0{,}008\,(\text{âge}-36)+\delta_{\text{canal}}+0{,
 
 avec $\delta=+0{,}22$ pour la Boutique, $+0{,}05$ pour le Site, $-0{,}12$ pour Réseaux. Ici $F_1$ est un **« goût pour les produits »** non observé (de moyenne 0 et d'écart-type 1) ; ni la ville, ni l'offre de bienvenue, ni le score de service **n'interviennent** dans le panier. Comparons au modèle M3 retenu par le BIC :
 
-```python
+```python hide-code
 m3 = fits["M3"]
 ic = m3.conf_int()
-vrai_site, vrai_insta = 0.05 - 0.22, -0.12 - 0.22              # effets du Site et d'Réseaux RELATIVEMENT à la Boutique
-vrai = {"Intercept": np.nan, "C(canal)[T.Site]": vrai_site, "C(canal)[T.Réseaux]": vrai_insta, "a": 0.008}
+vrai_site, vrai_reseaux = 0.05 - 0.22, -0.12 - 0.22          # effets du Site et de Réseaux RELATIVEMENT à la Boutique
+vrai = {"Intercept": np.nan, "C(canal)[T.Site]": vrai_site, "C(canal)[T.Réseaux]": vrai_reseaux, "a": 0.008}
 comp = pd.DataFrame({"estimation (M3)": m3.params, "IC95 bas": ic[0], "IC95 haut": ic[1]})
 comp["vérité"] = pd.Series(vrai)
 comp["IC contient la vérité ?"] = [("oui" if (lo <= v <= hi) else "non") if not np.isnan(v) else "—" for lo, hi, v in zip(comp["IC95 bas"], comp["IC95 haut"], comp["vérité"])]
 print(comp.round(4).to_string())
-print()
-print("Variables retenues dans M3 : âge, canal, score produit. Écartées par les critères : ville, offre, score service, âge², interactions.")
+```
+<!--sortie-->
+```text
+                     estimation (M3)  IC95 bas  IC95 haut  vérité IC contient la vérité ?
+Intercept                     3.6543    3.5385     3.7701     NaN                       —
+C(canal)[T.Site]             -0.1573   -0.2114    -0.1032  -0.170                     oui
+C(canal)[T.Réseaux]          -0.3519   -0.4045    -0.2993  -0.340                     oui
+a                             0.0097    0.0078     0.0117   0.008                     oui
+score_produit                 0.1557    0.1255     0.1859     NaN                       —
+```
+
+```python hide
 print("Dans M7 (le modèle « tout »), p-valeurs des variables sans effet réel :")
 print(fits["M7"].pvalues[["C(ville)[T.Ville A]", "C(ville)[T.Ville B]", "C(ville)[T.Ville C]", "C(ville)[T.Ville D]", "C(ville)[T.Ville E]", "offre_bienvenue", "a2", "score_service"]].round(3).to_string())
 ```
 <!--sortie-->
 ```text
-                       estimation (M3)  IC95 bas  IC95 haut  vérité IC contient la vérité ?
-Intercept                       3.6543    3.5385     3.7701     NaN                       —
-C(canal)[T.Site]               -0.1573   -0.2114    -0.1032  -0.170                     oui
-C(canal)[T.Réseaux]          -0.3519   -0.4045    -0.2993  -0.340                     oui
-a                               0.0097    0.0078     0.0117   0.008                     oui
-score_produit                   0.1557    0.1255     0.1859     NaN                       —
-
-Variables retenues dans M3 : âge, canal, score produit. Écartées par les critères : ville, offre, score service, âge², interactions.
 Dans M7 (le modèle « tout »), p-valeurs des variables sans effet réel :
 C(ville)[T.Ville A]    0.901
-C(ville)[T.Ville B]     0.934
-C(ville)[T.Ville C]       0.526
-C(ville)[T.Ville D]     0.808
-C(ville)[T.Ville E]      0.883
+C(ville)[T.Ville B]    0.934
+C(ville)[T.Ville C]    0.526
+C(ville)[T.Ville D]    0.808
+C(ville)[T.Ville E]    0.883
 offre_bienvenue        0.788
 a2                     0.300
 score_service          0.051
 ```
 
-Les effets du **canal** et de l'**âge** sont retrouvés : les intervalles à 95 % contiennent les vraies valeurs (−0,17 pour le Site, −0,34 pour Réseaux, +0,008 par année d'âge). La méthode a bien écarté les variables **sans effet réel** (ville, offre, courbure, interactions). L'intercept ne se compare pas directement, car dans M3 il correspond à un score produit de 0 (une valeur impossible sur une échelle de 1 à 5) : un bon exemple de la nécessité de **centrer** les variables pour interpréter la constante.
+Les effets du **canal** et de l'**âge** sont retrouvés : les intervalles à 95 % contiennent les vraies valeurs (−0,17 pour le Site, −0,34 pour Réseaux, +0,008 par année d'âge). La méthode a bien écarté les variables **sans effet réel** (ville, offre, courbure, interactions : dans le modèle « tout » M7, leurs p-valeurs vont de 0,30 à 0,93). L'intercept ne se compare pas directement, car dans M3 il correspond à un score produit de 0 (une valeur impossible sur une échelle de 1 à 5) : un bon exemple de la nécessité de **centrer** les variables pour interpréter la constante.
 
 Reste le cas du **score service** : il n'a aucun effet direct dans le vrai modèle du panier, et pourtant l'AIC et la validation croisée le **gardent**, de justesse, avec une $t$-statistique voisine de 1,9. C'est la **conséquence mécanique** de la corrélation entre les facteurs « produit » et « service » dans la population (corrélation de 0,3 entre $F_1$ et $F_2$) : le score de service est un peu informatif sur $F_1$, donc sur le panier. Et c'est un rappel qu'**une association n'est pas un effet**.
 
-**Un dernier point, sur le score produit.** Le vrai effet est de **0,12 par écart-type de $F_1$**. Or le coefficient estimé (0,15 environ) est un effet **par point de note**, ce qui est autre chose : la note moyenne est un reflet **imparfait** de $F_1$ (chaque question est bruitée). Un calcul direct à partir de la façon dont les notes ont été simulées (volume II, `donnees2.py` : $q_j\approx3{,}6+0{,}95\,(\lambda_jF_1+\sqrt{1-\lambda_j^2}\,\eta_j)$, avec des poids $\lambda_j=0{,}8;\,0{,}7;\,0{,}75;\,0{,}6$) permet de prédire le coefficient attendu **par point de note** :
+**Un dernier point, sur le score produit.** Le vrai effet est de **0,12 par écart-type de $F_1$**. Or le coefficient estimé (0,15 environ) est un effet **par point de note**, ce qui est autre chose : la note moyenne est un reflet **imparfait** de $F_1$ (chaque question est bruitée). Un calcul direct à partir de la façon dont les notes ont été simulées (générateur `build/donnees2.py` : $q_j\approx3{,}6+0{,}95\,(\lambda_jF_1+\sqrt{1-\lambda_j^2}\,\eta_j)$, avec des poids $\lambda_j=0{,}8;\,0{,}7;\,0{,}75;\,0{,}6$) permet de prédire le coefficient attendu **par point de note** :
 
-```python
+```python hide
 lam = np.array([0.80, 0.70, 0.75, 0.60])
 var_bruit = np.mean(1 - lam**2) / 4                       # variance du bruit de la moyenne de 4 questions (en unités de F1)
 charge = lam.mean()                                        # poids moyen de F1 dans la moyenne des questions
@@ -446,6 +465,8 @@ effet attendu par point de note : 0,12 x 1.192 = 0.143   | estimé dans M3 : 0.1
 La valeur attendue tombe **à l'intérieur** de l'intervalle de confiance. La **fiabilité** (la part de la variance de la note qui provient du vrai facteur, environ 0,8) est une notion générale : quand une variable explicative est mesurée avec du bruit, son coefficient est **atténué** par rapport à l'effet de la grandeur « vraie » (*erreur de mesure*) ; ici, la conversion d'échelle (par point de note plutôt que par écart-type de $F_1$) cache cet effet, mais il est bien là.
 
 > 🧪 **Une dernière subtilité (hors programme, mais honnête).** Nous n'observons le panier que pour les clients **actifs** (ayant commandé), et l'activité dépend elle-même de $F_1$ dans la simulation (le goût pour les produits augmente le nombre de commandes). En ne gardant que les clients actifs, nous opérons une **sélection** qui peut biaiser légèrement la relation entre les notes et le panier. Le biais est ici faible et invisible dans les intervalles ; mais en pratique, restreindre un échantillon sur une variable liée à la réponse est une source classique de biais, que la section 2.6 (modèles à zéros excédentaires) permettra de traiter proprement.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : applications 1.6 et 1.7, exercice 1.7.
 
 > ✅ **À retenir (1.4).**
 > - Un modèle plus complexe s'ajuste toujours mieux aux données d'**entraînement** ($R^2$ croissant) mais pas forcément aux **nouvelles** données : c'est le **surajustement**.

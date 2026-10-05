@@ -12,7 +12,7 @@ $$\text{note}_{ij}=12+1{,}2\,\text{urbain}_j+u_{0j}+(-0{,}7+u_{1j})(\text{délai
 
 où $i$ numérote les commandes du relais $j$, $u_{0j}\sim\mathcal N(0,1{,}6^2)$ est le **niveau de base propre au relais** (« certains relais notent plus généreusement »), $u_{1j}\sim\mathcal N(0,0{,}3^2)$ la **sensibilité propre au retard** de ce relais, et $\varepsilon_{ij}\sim\mathcal N(0,1{,}8^2)$ le bruit.
 
-```python
+```python hide
 import warnings
 import numpy as np
 import pandas as pd
@@ -73,9 +73,9 @@ Pour estimer le niveau de base de chaque relais, trois stratégies s'offrent à 
 2. **Pas de mise en commun** (*no pooling*) : on estime chaque relais **séparément** (une indicatrice par relais). On suppose qu'ils n'ont rien en commun.
 3. **Mise en commun partielle** (*partial pooling*) : le **modèle mixte**. Chaque relais a son propre niveau, mais ces niveaux sont supposés tirés d'une même loi : l'information d'un relais **aide** à estimer les autres.
 
-Commençons par les deux premières, et regardons les conséquences sur les erreurs standard :
+Commençons par les deux premières, et regardons les conséquences sur les erreurs standard. La régression ordinaire (groupes ignorés) donne un coefficient du délai de −0,721 (erreur standard 0,039) et un effet « urbain » de 0,482, avec une erreur standard de 0,224 (intervalle de 0,04 à 0,92). Avec une indicatrice par relais, le coefficient du délai vaut −0,703 (erreur standard 0,034), mais l'effet « urbain » n'est plus estimable (il est confondu avec les indicatrices de relais).
 
-```python
+```python hide
 m_commun = smf.ols("note ~ dc + urbain", data=rel).fit()                           # ignore les groupes
 m_separe = smf.ols("note ~ dc + C(relais)", data=rel).fit()                         # une indicatrice par relais (urbain y est absorbé)
 print("Mise en commun totale (MCO, groupes ignorés) :")
@@ -116,7 +116,7 @@ les $u_j$ et les $\varepsilon_{ij}$ étant indépendants. Les $\boldsymbol\beta$
 
 **L'ICC répond à la question « les groupes comptent-ils ? ».** Comparons deux situations. D'abord un cas où la réponse est **non** : les clients de la boutique sont répartis en six **villes**. Le panier dépend-il de la ville, au-delà de l'âge et du canal ?
 
-```python
+```python hide
 clients = pd.read_csv("donnees/clients.csv")
 cl = clients[clients["nb_commandes_an"] > 0].copy().reset_index(drop=True)
 cl["canal"] = pd.Categorical(cl["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
@@ -137,14 +137,11 @@ ICC = tau²/(tau² + sigma²) = 0.0000
 
 L'ICC est estimé à **0** (la variance entre villes est estimée au bord de l'espace des paramètres : exactement 0) : une fois l'âge et le canal pris en compte, la ville n'explique rien du panier. Le modèle mixte aurait ici été superflu, et nos analyses des sections précédentes (sans effet de ville) étaient légitimes. Retenons que **regrouper n'implique pas toujours une dépendance** : le modèle mixte est un outil à utiliser quand l'ICC est notable.
 
-Pour les points relais, la situation est tout autre :
+Pour les points relais, la situation est tout autre. Un modèle mixte à intercept aléatoire s'ajuste en une ligne avec `statsmodels` (`groups` désigne la variable de regroupement) :
 
 ```python
 m_ri = smf.mixedlm("note ~ dc + urbain", rel, groups=rel["relais"]).fit(reml=True)
-tau2, sigma2 = m_ri.cov_re.iloc[0, 0], m_ri.scale
 print(m_ri.summary().tables[1])
-print(f"\nvariance entre relais tau² = {tau2:.3f} (écart-type {np.sqrt(tau2):.2f}) | variance résiduelle sigma² = {sigma2:.3f} (écart-type {np.sqrt(sigma2):.2f})")
-print(f"ICC = {tau2 / (tau2 + sigma2):.3f} : environ {100 * tau2 / (tau2 + sigma2):.0f} % de la variance des notes (après effet du délai et du type de relais) est due au relais")
 ```
 <!--sortie-->
 ```text
@@ -153,12 +150,20 @@ Intercept  12.489    0.364   34.284  0.000  11.775  13.202
 dc         -0.710    0.034  -21.047  0.000  -0.776  -0.644
 urbain      0.377    0.534    0.705  0.481  -0.671   1.424
 Group Var   1.711    0.280                                
+```
 
+```python hide
+tau2, sigma2 = m_ri.cov_re.iloc[0, 0], m_ri.scale
+print(f"variance entre relais tau² = {tau2:.3f} (écart-type {np.sqrt(tau2):.2f}) | variance résiduelle sigma² = {sigma2:.3f} (écart-type {np.sqrt(sigma2):.2f})")
+print(f"ICC = {tau2 / (tau2 + sigma2):.3f} : environ {100 * tau2 / (tau2 + sigma2):.0f} % de la variance des notes (après effet du délai et du type de relais) est due au relais")
+```
+<!--sortie-->
+```text
 variance entre relais tau² = 1.711 (écart-type 1.31) | variance résiduelle sigma² = 4.350 (écart-type 2.09)
 ICC = 0.282 : environ 28 % de la variance des notes (après effet du délai et du type de relais) est due au relais
 ```
 
-Plus du quart (28 %) de la variance résiduelle des notes est **entre relais** : deux commandes du même relais sont corrélées (corrélation ≈ 0,28). Avec 16 commandes par relais en moyenne, l'**effet de plan** est considérable : $1+(m-1)\rho\approx1+15\times0{,}28\approx5{,}2$ : pour une variable qui ne varie qu'entre relais, les 484 commandes **valent environ 484/5 ≈ 93 observations indépendantes**. Remarquez le résultat sur `urbain` : sa erreur standard est de 0,534 avec le modèle mixte, contre 0,224 pour la régression ordinaire du 1.7.2, soit **2,4 fois plus**. L'intervalle de confiance ordinaire (de 0,04 à 0,92) **exclut** zéro et laisse croire à un effet « significatif » ; l'intervalle mixte (de −0,67 à 1,42) **ne l'exclut pas**. C'est l'effet de plan en action : les 484 commandes n'apportent, sur le type de relais, que l'information de 30 relais.
+La dernière ligne de la sortie (cachée) donne l'ICC : 0,282. Plus du quart (28 %) de la variance résiduelle des notes est **entre relais** : deux commandes du même relais sont corrélées (corrélation ≈ 0,28). Avec 16 commandes par relais en moyenne, l'**effet de plan** est considérable : $1+(m-1)\rho\approx1+15\times0{,}28\approx5{,}2$ : pour une variable qui ne varie qu'entre relais, les 484 commandes **valent environ 484/5 ≈ 93 observations indépendantes**. Remarquez le résultat sur `urbain` : sa erreur standard est de 0,534 avec le modèle mixte, contre 0,224 pour la régression ordinaire du 1.7.2, soit **2,4 fois plus**. L'intervalle de confiance ordinaire (de 0,04 à 0,92) **exclut** zéro et laisse croire à un effet « significatif » ; l'intervalle mixte (de −0,67 à 1,42) **ne l'exclut pas**. C'est l'effet de plan en action : les 484 commandes n'apportent, sur le type de relais, que l'information de 30 relais.
 
 **Comment estime-t-on ce modèle ? La méthode REML.** La variance de $\hat{\boldsymbol\beta}$ dépend de $\mathbf V=\operatorname{diag}(\mathbf V_j)$, qui dépend de $\tau^2$ et $\sigma^2$, inconnus. Étant donné $\mathbf V$, l'estimateur des effets fixes est celui des **moindres carrés généralisés** (qui pondère selon la fiabilité de chaque observation)
 
@@ -176,9 +181,9 @@ Le grand intérêt du modèle mixte est ce qu'il fait des **niveaux des groupes*
 >
 > Le facteur $B_j$ est la **fiabilité** de la moyenne du groupe. Pour un **grand** groupe ($n_j\to\infty$), $B_j\to1$ : on fait confiance à sa moyenne. Pour un **petit** groupe, $B_j$ est petit : sa moyenne est bruitée, on la **rapproche de la moyenne générale** (0). C'est un compromis entre « ce relais est unique » ($B_j=1$, pas de mise en commun) et « tous les relais sont pareils » ($B_j=0$, mise en commun totale).
 
-Vérifions la formule, puis comparons les deux estimations à la **vérité**, que nous connaissons ici (les vrais $u_{0j}$) :
+La formule reproduit exactement les prédictions de `statsmodels`. Comparons maintenant les deux estimations à la **vérité**, que nous connaissons ici (les vrais $u_{0j}$) : l'erreur quadratique moyenne vaut 0,900 sans mise en commun et 0,765 avec mise en commun partielle ; pour les dix relais de 8 commandes ou moins, 1,273 contre 1,031.
 
-```python
+```python hide
 beta_ri = m_ri.fe_params
 rel["r"] = rel["note"] - (beta_ri["Intercept"] + beta_ri["dc"] * rel["dc"] + beta_ri["urbain"] * rel["urbain"])      # résidus « fixes »
 groupes = rel.groupby("relais")["r"].agg(["mean", "size"]).rename(columns={"mean": "r_bar", "size": "n_j"})
@@ -211,9 +216,9 @@ erreur quadratique moyenne par rapport aux vrais niveaux u0 :  sans mise en comm
   pour les 10 petits relais (8 commandes ou moins) :   sans = 1.273 | partielle = 1.031
 ```
 
-La formule reproduit exactement les prédictions de `statsmodels`. Surtout, l'erreur par rapport aux **vrais** niveaux est plus faible avec la mise en commun partielle, et le gain est **le plus net pour les petits relais**, dont l'estimation individuelle était la plus bruitée. Voyons le mécanisme sur un graphique : pour chaque relais (classés par taille), on relie son estimation « sans mise en commun » à son estimation rétrécie.
+L'erreur par rapport aux **vrais** niveaux est donc plus faible avec la mise en commun partielle, et le gain est **le plus net pour les petits relais**, dont l'estimation individuelle était la plus bruitée. Voyons le mécanisme sur un graphique : pour chaque relais (classés par taille), on relie son estimation « sans mise en commun » à son estimation rétrécie.
 
-```python
+```python hide
 ordre = groupes.sort_values("n_j").reset_index()
 fig, ax = plt.subplots(figsize=(8.8, 4.8))
 x = np.arange(len(ordre))
@@ -244,7 +249,7 @@ Le dessin raconte l'idée centrale. À gauche, les **petits** relais (4 à 8 com
 
 Jusqu'ici, tous les relais partagent la même pente (−0,7 point par jour de retard, en moyenne). Mais les vraies données ont été produites avec une **pente propre à chaque relais** ($u_{1j}$). On l'inclut par une **pente aléatoire** : $y_{ij}=\beta_0+\beta_1x_{ij}+\dots+u_{0j}+u_{1j}x_{ij}+\varepsilon_{ij}$, où le couple $(u_{0j},u_{1j})$ est tiré d'une loi normale bidimensionnelle de matrice de covariance $\mathbf G$.
 
-```python
+```python hide
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     m_rs = smf.mixedlm("note ~ dc + urbain", rel, groups=rel["relais"], re_formula="~dc").fit(reml=True, method="lbfgs")
@@ -273,7 +278,7 @@ Les composantes de variance sont raisonnablement proches des vraies valeurs, com
 
 **Comparer les deux modèles par un test du rapport de vraisemblance.** Les modèles à intercept aléatoire seul et à intercept + pente aléatoire sont emboîtés. On compare leurs vraisemblances. Comme les deux modèles ont les **mêmes effets fixes**, la REML conviendrait aussi ; l'usage prudent, que nous suivons, est de comparer les modèles ajustés par **maximum de vraisemblance** (ML), car la vraisemblance REML ne se compare pas entre modèles d'effets fixes différents.
 
-```python
+```python hide
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     ml_ri = smf.mixedlm("note ~ dc + urbain", rel, groups=rel["relais"]).fit(reml=False)      # optimiseur par défaut (voir la remarque ci-dessous)
@@ -292,13 +297,15 @@ LR = 41.15 | p-valeur (mélange de chi²) = 6.50e-10
 AIC : 2146.0 (intercept aléatoire, 5 paramètres) contre 2108.8 (intercept + pente, 7 paramètres)
 ```
 
+On trouve des log-vraisemblances de −1 067,99 (intercept aléatoire) et −1 047,41 (intercept et pente aléatoires), donc $\text{LR}=41{,}15$ et une p-valeur de $6{,}5\times10^{-10}$ (mélange de $\chi^2$) : la pente aléatoire est très nettement justifiée ; l'AIC (2 108,8 contre 2 146,0) conclut de même.
+
 > ⚠️ **Un piège de l'optimisation.** En préparant ce bloc, la même ligne ajustée avec `method="lbfgs"` (l'optimiseur que nous avions utilisé pour la pente aléatoire) a renvoyé une log-vraisemblance **infinie** pour le modèle à intercept aléatoire, sans la moindre erreur : l'optimiseur avait convergé vers une solution dégénérée (variance entre groupes égale à 0). Avec l'optimiseur par défaut, ou avec `bfgs`, on obtient −1067,99, la valeur que donne aussi `lme4`. **Un optimiseur peut échouer en silence.** Vérifiez toujours qu'un ajustement est plausible (log-vraisemblance finie, variances raisonnables) et, dans le doute, comparez deux optimiseurs ou le résultat de `lme4`.
 
 > ⚠️ **Un piège du test.** Tester qu'une **variance** est nulle ($H_0:\tau_1^2=0$) place l'hypothèse nulle **au bord** de l'espace des paramètres (une variance est $\ge0$) : la loi du rapport de vraisemblance n'est pas un simple $\chi^2$ mais un **mélange** de $\chi^2$ (ici 50/50 entre $\chi^2_1$ et $\chi^2_2$). Utiliser un $\chi^2_2$ naïf est **conservateur** (p-valeur trop grande).
 
-Visualisons maintenant le résultat : les droites de **chaque relais** (prédites avec leurs effets aléatoires), autour de la droite moyenne :
+Visualisons maintenant le résultat : les droites de **chaque relais** (prédites avec leurs effets aléatoires), autour de la droite moyenne.
 
-```python
+```python hide
 fig, ax = plt.subplots(figsize=(8.0, 4.8))
 dd = np.arange(-4, 5.01, 1.0)
 for j, g in enumerate(sorted(rel["relais"].unique())):
@@ -322,9 +329,9 @@ figure enregistrée
 
 ![Droites de régression propres à chaque relais (orange : urbains, vert : non urbains) autour de l'effet moyen (noir). Les relais diffèrent par leur niveau de base (décalage vertical) et par leur sensibilité au retard (pente).](figures/ch01-droites-par-relais.png)
 
-**Les mêmes résultats en R avec `lme4`.** Le paquet `lme4` est la référence pour ces modèles. Les nombres doivent coïncider avec ceux de `statsmodels` (le fichier `donnees/ch01-relais.csv` vient d'être écrit par notre bloc Python) :
+**Les mêmes résultats en R avec `lme4`.** Le paquet `lme4` est la référence pour ces modèles. Un bloc R (visible dans les sources du chapitre) relit le fichier `donnees/ch01-relais.csv` et ajuste le même modèle ; il donne exactement les mêmes nombres que `statsmodels` : effets fixes 12,596 ; −0,760 ; 0,277, écarts-types 1,195 (niveau de base) et 0,281 (pente), corrélation 0,21 et écart-type résiduel 1,930.
 
-```r
+```r hide
 suppressMessages(library(lme4))
 d <- read.csv("donnees/ch01-relais.csv")
 d$dc <- d$delai - 5
@@ -348,7 +355,7 @@ log-vraisemblance REML : -1049.555
 
 Terminons par la démonstration promise : l'effet d'ignorer la structure de groupes sur la fiabilité des tests. Prenons les **mêmes** tailles de relais et la même variance entre relais, mais supposons que le type de relais (urbain ou non) n'a **aucun effet** réel. Un bon test doit alors rejeter l'hypothèse « aucun effet » dans **5 %** des cas. Combien rejettent-ils réellement ? On répète 300 fois.
 
-```python
+```python hide
 rng2 = np.random.default_rng(2024)
 R = 300
 rej_mco, rej_mixte, z_mixte, tau2_est = 0, 0, [], []
@@ -396,6 +403,8 @@ La dernière ligne de la sortie confirme l'avertissement du 1.7.5 : avec l'optim
 > - **Effets fixes ou aléatoires ?** Traiter les groupes comme **aléatoires** est pertinent si l'on veut généraliser à d'autres groupes de la même population (les 30 relais sont un échantillon des relais possibles) et si les groupes sont nombreux. Si les groupes sont **tous** ceux qui existent (les 6 villes) et peu nombreux, des effets fixes suffisent.
 > - **Convergence** : l'optimisation de ces modèles est parfois délicate (variances proches de 0, corrélations proches de ±1). Essayez un autre optimiseur (`method="bfgs"`, `"powell"`…), simplifiez la structure aléatoire, ou comparez à `lme4`.
 > - **Interprétation** : les effets fixes sont des effets **moyens** dans la population de groupes ; les effets aléatoires sont des **écarts** propres à chaque groupe.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.12, exercice 1.12.
 
 > ✅ **À retenir (1.7).**
 > - Des observations **groupées** (clients d'une même ville, commandes d'un même relais) ne sont pas indépendantes ; l'ignorer rend les **erreurs standard trop petites**, surtout pour les variables de niveau groupe.

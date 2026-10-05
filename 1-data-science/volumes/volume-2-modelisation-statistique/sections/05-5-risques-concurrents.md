@@ -48,9 +48,9 @@ où $n_j$ est l'ensemble à risque en $t_j$, $d_{kj}$ le nombre de sorties par l
 | 9 | 3 | 1 | 0 | 0,467 | $0{,}467/3=0{,}156$ | 0,472 | 0 | 0,217 | 0,311 |
 | 10 | 2 | 0 | 1 | 0,311 | 0 | 0,472 | $0{,}311/2=0{,}156$ | 0,372 | 0,156 |
 
-(Les censures des mois 5, 8 et 12 réduisent $n_j$ sans produire de ligne.) À la fin, $0{,}156+0{,}472+0{,}372=1$ : la propriété $S+F_1+F_2=1$ est respectée. Comparons avec « 1 − KM » obtenu en traitant les fermetures comme des censures :
+(Les censures des mois 5, 8 et 12 réduisent $n_j$ sans produire de ligne.) À la fin, $0{,}156+0{,}472+0{,}372=1$ : la propriété $S+F_1+F_2=1$ est respectée. Comparons avec « 1 − KM » obtenu en traitant les fermetures comme des censures.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -101,20 +101,20 @@ Pour voir tout cela à l'échelle, simulons 6 000 clients avec deux causes. Nous
 - **cause 2 (fermeture forcée)** : risque **constant** de 0,6 % par mois, multiplié par 2,2 pour les clients arrivés par Réseaux, et **sans effet de l'offre** ;
 - une censure uniforme entre 12 et 72 mois.
 
-```python
+```python hide
 rng = np.random.default_rng(55)
 n = 6000
 offre = rng.integers(0, 2, n)
-insta = (rng.random(n) < 0.45).astype(int)
+reseaux = (rng.random(n) < 0.45).astype(int)
 k1 = 1.3
 echelle1 = 40 * np.exp(0.40 * offre)                       # l'offre allonge de 49 % le départ volontaire (exp(0.40))
 T1 = echelle1 * rng.weibull(k1, n)                         # durée potentielle de départ volontaire
-taux2 = 0.006 * np.exp(0.8 * insta)                        # fermeture forcée : taux constant, x 2.2 pour Réseaux
+taux2 = 0.006 * np.exp(0.8 * reseaux)                        # fermeture forcée : taux constant, x 2.2 pour Réseaux
 T2 = rng.exponential(1 / taux2)
 C = rng.uniform(12, 72, n)
 t_obs = np.minimum.reduce([T1, T2, C])
 cause = np.where(C <= np.minimum(T1, T2), 0, np.where(T1 <= T2, 1, 2))
-rc = pd.DataFrame({"duree": t_obs, "cause": cause, "offre": offre, "instagram": insta})
+rc = pd.DataFrame({"duree": t_obs, "cause": cause, "offre": offre, "reseaux": reseaux})
 rc.to_csv("donnees/ch05-risques-concurrents.csv", index=False)          # fichier relu par R plus bas
 print("effectifs par issue (0 = censuré) :", rc["cause"].value_counts().sort_index().to_dict())
 
@@ -138,9 +138,19 @@ effectifs par issue (0 = censuré) : {0: 2079, 1: 2655, 2: 1266}
 48 mois              0.251                   0.514                  0.235                  0.627
 ```
 
-Comparons à **R** (`cmprsk::cuminc`) et à `lifelines`. Nous avons déposé la table dans un fichier précisément pour que R puisse la relire :
+Effectifs par issue : 2 079 clients censurés, 2 655 départs volontaires, 1 266 fermetures forcées.
 
-```r
+| Horizon | $\hat S$ (encore client) | $\hat F_1$ (départ volontaire) | $\hat F_2$ (fermeture forcée) | « 1 − KM » naïf (cause 1) |
+|---|---:|---:|---:|---:|
+| 12 mois | 0,762 | 0,143 | 0,095 | 0,151 |
+| 24 mois | 0,538 | 0,299 | 0,163 | 0,335 |
+| 36 mois | 0,367 | 0,422 | 0,211 | 0,494 |
+| 48 mois | 0,251 | 0,514 | 0,235 | 0,627 |
+
+
+Ces estimations coïncident avec celles de **R** (`cmprsk::cuminc`, qui relit le fichier `donnees/ch05-risques-concurrents.csv` déposé par la simulation) et de `lifelines`, dont voici l'appel :
+
+```r hide
 library(cmprsk)
 rc <- read.csv("donnees/ch05-risques-concurrents.csv")
 ci <- cuminc(rc$duree, rc$cause)
@@ -153,7 +163,7 @@ print(round(timepoints(ci, c(12, 24, 36, 48))$est, 4))
 1 2 0.0948 0.1629 0.2109 0.2350
 ```
 
-```python
+```python hide
 from lifelines import AalenJohansenFitter
 
 aj1 = AalenJohansenFitter(calculate_variance=False, seed=1).fit(rc["duree"], rc["cause"], event_of_interest=1)
@@ -166,9 +176,21 @@ lifelines, F1 aux horizons : [0.1428, 0.2993, 0.4217, 0.5141]
 à la main,  F1 aux horizons : [0.1428, 0.2993, 0.4217, 0.5141]
 ```
 
-Les trois méthodes donnent les mêmes incidences. Remarquez la dernière colonne du premier tableau : le « 1 − KM » naïf **surestime** systématiquement la probabilité de départ volontaire (par exemple 0,49 contre 0,42 à 36 mois, et 0,63 contre 0,51 à 48 mois). La simulation nous permet même de comparer à la **vérité** : pour un groupe donné, $F_k(t)=\int_0^th_k(u)S(u)\,du$ s'évalue par une intégrale numérique, en mélangeant les clients d'Réseaux (45 %) et des autres canaux.
-
 ```python
+from lifelines import AalenJohansenFitter
+
+aj = AalenJohansenFitter(calculate_variance=False, seed=1).fit(rc["duree"], rc["cause"], event_of_interest=1)
+print(round(float(aj.cumulative_density_.loc[:36].iloc[-1, 0]), 4))      # incidence du départ volontaire à 36 mois
+```
+<!--sortie-->
+```text
+0.4217
+```
+
+
+Les trois méthodes donnent les mêmes incidences (0,4217 à 36 mois, par exemple). Remarquez la dernière colonne du tableau : le « 1 − KM » naïf **surestime** systématiquement la probabilité de départ volontaire (par exemple 0,49 contre 0,42 à 36 mois, et 0,63 contre 0,51 à 48 mois). La simulation nous permet même de comparer à la **vérité** : pour un groupe donné, $F_k(t)=\int_0^th_k(u)S(u)\,du$ s'évalue par une intégrale numérique, en mélangeant les clients de Réseaux (45 %) et des autres canaux.
+
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -178,7 +200,7 @@ u = np.linspace(0, 100, 20001)
 du = u[1] - u[0]
 
 def vraies_cif(off):
-    """CIF vraies des deux causes pour le groupe 'off', en moyennant sur la part d'Réseaux (45 %)."""
+    """CIF vraies des deux causes pour le groupe 'off', en moyennant sur la part de Réseaux (45 %)."""
     echelle = 40 * np.exp(0.40 * off)
     h1 = (k1 / echelle) * (u / echelle) ** (k1 - 1)
     H1 = (u / echelle) ** k1
@@ -226,32 +248,32 @@ On peut régresser sur chaque cause de deux façons, qui répondent à **deux qu
 
 **Le modèle de Fine et Gray.** Il modélise directement le **risque de sous-distribution** : le taux de sortie par la cause $k$ parmi ceux qui *n'ont pas encore connu la cause $k$* (ceux qui ont eu l'autre cause restent dans l'ensemble à risque, avec un poids qui décroît). Le coefficient décrit alors l'effet de la variable **sur la CIF** elle-même. C'est la bonne question pour **prédire des probabilités** (quelle part de nos clients quittera volontairement d'ici trois ans ?).
 
-```python
+```python hide
 from statsmodels.duration.hazard_regression import PHReg
 
-covariables = rc[["offre", "instagram"]]
+covariables = rc[["offre", "reseaux"]]
 for k in (1, 2):
     m = PHReg(rc["duree"], covariables, status=(rc["cause"] == k).astype(int), ties="efron").fit()
     tab = pd.DataFrame({"HR propre à la cause": np.exp(m.params), "IC95 bas": np.exp(m.params - 1.96 * m.bse),
-                        "IC95 haut": np.exp(m.params + 1.96 * m.bse), "p": m.pvalues}, index=["offre", "instagram"])
+                        "IC95 haut": np.exp(m.params + 1.96 * m.bse), "p": m.pvalues}, index=["offre", "reseaux"])
     print(f"Modèle de Cox par cause : cause {k}")
     print(tab.round(3).to_string(), "\n")
 ```
 <!--sortie-->
 ```text
 Modèle de Cox par cause : cause 1
-           HR propre à la cause  IC95 bas  IC95 haut      p
-offre                     0.584     0.540      0.631  0.000
-instagram                 0.974     0.901      1.053  0.504 
+         HR propre à la cause  IC95 bas  IC95 haut      p
+offre                   0.584     0.540      0.631  0.000
+reseaux                 0.974     0.901      1.053  0.504 
 
 Modèle de Cox par cause : cause 2
-           HR propre à la cause  IC95 bas  IC95 haut      p
-offre                     1.033     0.925      1.154  0.565
-instagram                 2.316     2.066      2.595  0.000 
+         HR propre à la cause  IC95 bas  IC95 haut      p
+offre                   1.033     0.925      1.154  0.565
+reseaux                 2.316     2.066      2.595  0.000 
 ```
 
-```r
-cov <- cbind(offre = rc$offre, instagram = rc$instagram)
+```r hide
+cov <- cbind(offre = rc$offre, reseaux = rc$reseaux)
 for (k in 1:2) {
   f <- crr(rc$duree, rc$cause, cov, failcode = k, cencode = 0)
   cat("Fine-Gray, cause", k, "\n")
@@ -263,14 +285,14 @@ print(cuminc(rc$duree, rc$cause, group = rc$offre)$Tests)
 <!--sortie-->
 ```text
 Fine-Gray, cause 1 
-          exp(coef)  2.5% 97.5%
-offre         0.604 0.560 0.652
-instagram     0.792 0.733 0.855
+        exp(coef)  2.5% 97.5%
+offre       0.604 0.560 0.652
+reseaux     0.792 0.733 0.855
 
 Fine-Gray, cause 2 
-          exp(coef)  2.5% 97.5%
-offre         1.219 1.091 1.361
-instagram     2.280 2.036 2.554
+        exp(coef)  2.5% 97.5%
+offre       1.219 1.091 1.361
+reseaux     2.280 2.036 2.554
 
       stat           pv df
 1 170.5141 0.0000000000  1
@@ -281,7 +303,7 @@ Lisons ces deux familles de résultats ensemble.
 
 - **Cause 1 (départ volontaire).** L'offre réduit le risque propre à la cause 1 : $\widehat{\mathrm{HR}}\approx0{,}58$ (IC95 : 0,54 à 0,63), ce qui retrouve l'effet programmé ($e^{-0{,}40\times1{,}3}\approx0{,}59$ ; voir la conversion AFT ↔ risques proportionnels au 5.4.2). Le modèle de Fine et Gray donne un rapport de sous-distribution du même ordre (environ 0,60) : la réduction du risque se traduit en réduction de l'incidence.
 - **Cause 2 (fermeture forcée).** Les clients d'**Réseaux** ont un risque propre multiplié par **2,3** environ (IC95 : 2,07 à 2,60 ; la valeur programmée est $e^{0{,}8}\approx2{,}2$). Et l'**offre** n'a **aucun effet sur le risque** de fermeture : HR $=1{,}03$ (IC95 : 0,93 à 1,15). Mais, dans le modèle de Fine et Gray, l'offre **augmente significativement l'incidence** de la cause 2 : rapport de sous-distribution d'environ **1,22** (IC95 : 1,09 à 1,36). C'est exactement l'effet de compétition que montrait la figure : l'offre ne change pas le risque de fermeture, mais, en retenant plus longtemps les clients, elle les expose plus longtemps à ce risque.
-- **Réseaux et la cause 1 : le piège.** Dans le modèle par cause, Réseaux n'a **aucun effet** sur le départ volontaire : HR $=0{,}97$ (IC95 : 0,90 à 1,05), et c'est la vérité. Mais dans le modèle de Fine et Gray, son rapport de sous-distribution est de **0,79** (IC95 : 0,73 à 0,86), **significativement inférieur à 1** : les clients d'Réseaux ont une *incidence cumulée de départ volontaire plus faible*. Ce n'est pas qu'ils soient plus fidèles : ils sont **plus souvent éliminés avant** par la fermeture forcée, qui les empêche de partir volontairement. Le coefficient de Fine et Gray mélange l'effet direct sur la cause et l'effet de la compétition.
+- **Réseaux et la cause 1 : le piège.** Dans le modèle par cause, Réseaux n'a **aucun effet** sur le départ volontaire : HR $=0{,}97$ (IC95 : 0,90 à 1,05), et c'est la vérité. Mais dans le modèle de Fine et Gray, son rapport de sous-distribution est de **0,79** (IC95 : 0,73 à 0,86), **significativement inférieur à 1** : les clients de Réseaux ont une *incidence cumulée de départ volontaire plus faible*. Ce n'est pas qu'ils soient plus fidèles : ils sont **plus souvent éliminés avant** par la fermeture forcée, qui les empêche de partir volontairement. Le coefficient de Fine et Gray mélange l'effet direct sur la cause et l'effet de la compétition.
 
 > 💡 **Quelle question posez-vous ?**
 > - *« Pourquoi les clients partent-ils ? »* (étiologie, mécanisme) : **modèles par cause**. On y lit l'effet de chaque variable sur chaque cause, toutes choses égales.
@@ -295,6 +317,8 @@ Lisons ces deux familles de résultats ensemble.
 > ⚠️ **Ne déclarez pas la cause 2 « censure » pour calculer une probabilité.** C'est valable pour estimer un *risque*, jamais pour estimer une *probabilité cumulée*. Si l'on veut une probabilité, on utilise l'incidence cumulée.
 
 > ⚠️ **Événement composite.** Une autre option est de regrouper les causes (« tout départ, volontaire ou forcé ») et d'appliquer les méthodes des sections 5.1 à 5.4 : c'est licite si la question porte sur « rester client » et non sur le mécanisme. Il est alors plus sûr de **le dire**.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : application 5.6, exercice 5.12.
 
 > ✅ **À retenir**
 > - Avec plusieurs causes de sortie **concurrentes**, on observe la première seulement. Les risques propres $h_k$ s'additionnent ; $S=e^{-H_1-H_2}$ ; la **CIF** de la cause $k$ est $F_k(t)=\int_0^th_k(u)S(u)\,du$ et $S+F_1+F_2=1$.

@@ -17,9 +17,9 @@ où $d(y,\mu)$ est la **déviance unitaire** de l'observation (dépend de la fam
 
 **Un calcul à la main.** Quatre clients ont passé $y=(2,5,3,8)$ commandes ; le modèle sans variable (Poisson) estime $\hat\mu=\bar y=4{,}5$ pour tous. La déviance est $D=2\sum_i\big[y_i\log\frac{y_i}{\hat\mu}-(y_i-\hat\mu)\big]$ ; comme $\sum(y_i-\hat\mu)=0$, il reste $D=2\sum y_i\log\frac{y_i}{4{,}5}$. Terme par terme : $2\log\frac{2}{4{,}5}=-1{,}622$ ; $5\log\frac{5}{4{,}5}=0{,}527$ ; $3\log\frac{3}{4{,}5}=-1{,}216$ ; $8\log\frac{8}{4{,}5}=4{,}603$. Leur somme vaut $2{,}2915$, d'où $D=4{,}583$. La statistique de Pearson, elle, vaut $\sum\frac{(y_i-\hat\mu)^2}{\hat\mu}=\frac{6{,}25+0{,}25+2{,}25+12{,}25}{4{,}5}=4{,}667$ : proche de la déviance, comme c'est généralement le cas.
 
-Vérifions cela avec le code, puis avec les modèles des sections précédentes.
+Un programme confirme ce calcul et l'étend aux modèles des sections précédentes (cahier, application 2.6).
 
-```python
+```python hide-code
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -91,7 +91,22 @@ Deux modèles sont **emboîtés** si le plus petit s'obtient en fixant certains 
 $$D_{\text{réduit}}-D_{\text{complet}}=2\big[\ell_{\text{complet}}-\ell_{\text{réduit}}\big]\ \approx\ \chi^2_q.$$
 Pour retirer une variable à $q$ niveaux (le canal en a trois : $q=2$), cette différence permet de tester **globalement** son utilité, ce que les tests de Wald coefficient par coefficient ne font pas.
 
+
+Pour une variable, le test tient en trois lignes : on ajuste le modèle sans elle et l'on regarde de combien la déviance augmente. Pour l'offre :
+
 ```python
+complet = smf.glm("rachat_12m ~ offre_bienvenue + age + canal", clients, family=sm.families.Binomial()).fit()
+sans_offre = smf.glm("rachat_12m ~ age + canal", clients, family=sm.families.Binomial()).fit()
+delta = sans_offre.deviance - complet.deviance      # hausse de la déviance quand on retire l'offre
+print(f"hausse de la déviance : {delta:.2f}  (p = {stats.chi2.sf(delta, 1):.1e})")
+```
+<!--sortie-->
+```text
+hausse de la déviance : 29.64  (p = 5.2e-08)
+```
+
+
+```python hide-code
 def test_rv(complet, reduit, ddl):
     delta = reduit.deviance - complet.deviance
     return delta, ddl, stats.chi2.sf(delta, ddl)
@@ -129,7 +144,7 @@ Retirer le canal (2 coefficients) augmente la déviance de 17,74 ($p=0{,}0001$) 
 $$F=\frac{(D_{\text{réduit}}-D_{\text{complet}})/q}{\hat\phi_{\text{complet}}}\ \sim\ F_{q,\;n-p}.$$
 Appliquons-le à la régression Gamma de 2.3 : le canal (2 ddl) et l'offre (1 ddl) ont-ils un effet sur la dépense des acheteurs ?
 
-```python
+```python hide
 f_gamma = "depense_annuelle ~ age + canal + offre_bienvenue"
 g_complet = smf.glm(f_gamma, acheteurs, family=sm.families.Gamma(sm.families.links.Log())).fit(scale="X2")
 phi_g = g_complet.scale
@@ -153,7 +168,7 @@ Dans la régression linéaire, le résidu est $y_i-\hat y_i$, et son graphique c
 - **Résidu de Pearson** : $r_i^P=\dfrac{y_i-\hat\mu_i}{\sqrt{\phi\,V(\hat\mu_i)}}$ (on divise par l'écart-type attendu). La somme de leurs carrés est la statistique de Pearson $X^2$.
 - **Résidu de déviance** : $r_i^D=\mathrm{signe}(y_i-\hat\mu_i)\sqrt{d(y_i,\hat\mu_i)}$. La somme de leurs carrés est la déviance $D$. Leur loi est souvent plus proche de la normale que celle des résidus de Pearson.
 
-```python
+```python hide
 r_p = poi.resid_pearson.to_numpy()
 r_d = poi.resid_deviance.to_numpy()
 print("Poisson : somme des carrés des résidus de Pearson   =", round(float((r_p ** 2).sum()), 1), "| X² =", round(poi.pearson_chi2, 1))
@@ -177,7 +192,7 @@ Les deux sommes de carrés reproduisent exactement $X^2=6\,774{,}2$ et $D=6\,293
 
 Appliquons-les à nos quatre modèles : la logistique, la régression de Poisson, la binomiale négative, la régression Gamma. Si le modèle est bon, le graphique « quantiles théoriques contre quantiles observés » (QQ-plot) suit la diagonale.
 
-```python
+```python hide
 rng = np.random.default_rng(44)
 
 def residus_quantiles(u_bas, u_haut):
@@ -239,7 +254,7 @@ figure enregistrée
 
 ![QQ-plots des résidus quantiles aléatoires pour quatre modèles. Si le modèle est correct, les points suivent la diagonale. Le modèle de Poisson (orange) s'en écarte nettement ; le modèle Gamma s'écarte aussi, dans la queue inférieure.](figures/ch02-residus-quantiles.png)
 
-Lisons le tableau et les QQ-plots.
+Lisons les statistiques résumées et les QQ-plots.
 
 - **Poisson** : écart-type des résidus de 1,68, 22,8 % de résidus au-delà de $\pm2$ (pour 4,6 % attendus), p-valeur de Kolmogorov-Smirnov nulle. La courbe est nettement plus raide que la diagonale : les résidus sont trop dispersés, le modèle sous-estime la variabilité.
 - **Binomiale négative** : moyenne 0,004, écart-type 0,991, 4,5 % au-delà de $\pm2$, $p=0{,}85$ : les résidus sont **indiscernables d'une loi normale**. La famille est adaptée.
@@ -250,7 +265,7 @@ Lisons le tableau et les QQ-plots.
 
 **Surdispersion.** Pour un modèle de comptage, on a déjà un indicateur : Pearson $X^2/\text{ddl}$ doit être proche de 1. Pour la binomiale négative, la variance est $\mu+\alpha\mu^2$ ; on calcule donc $X^2$ avec cette variance.
 
-```python
+```python hide
 x2_nb = np.sum((y_c - mu_nb) ** 2 / (mu_nb + a_nb * mu_nb ** 2))
 ddl_nb = len(y_c) - len(nbm.params) + 1          # on retire le paramètre alpha du compte des coefficients
 print("Poisson            : X²/ddl =", round(poi.pearson_chi2 / poi.df_resid, 3))
@@ -268,7 +283,7 @@ Le rapport vaut **3,40** pour Poisson (nettement supérieur à 1 : surdispersion
 $$HL=\sum_{k=1}^{g}\frac{(O_k-E_k)^2}{E_k\,(1-\bar p_k)}\ \approx\ \chi^2_{g-2}$$
 (où $\bar p_k=E_k/n_k$ est la probabilité moyenne de la classe) est grande si le modèle est mal calibré. C'est la version formelle de la courbe de calibration de la section 2.2.8.
 
-```python
+```python hide-code
 def hosmer_lemeshow(y, p, g=10):
     classes = pd.qcut(p, g, labels=False, duplicates="drop")
     d = pd.DataFrame({"y": y, "p": p, "k": classes}).groupby("k").agg(O=("y", "sum"), E=("p", "sum"), n=("y", "size"))
@@ -299,7 +314,7 @@ Pour le modèle de rachat, $HL=6{,}15$ sur 8 degrés de liberté ($p=0{,}63$) : 
 
 **Le graphique de résidus par classes.** Pour **voir** ce que le test détecte, on regroupe les sessions par tranches de durée et l'on compare, pour chaque tranche, la fréquence d'achat observée à celle prédite par le modèle linéaire.
 
-```python
+```python hide
 tranches = pd.cut(sessions["duree_min"], bins=[0, 3, 5, 7, 9, 11, 13, 15, 18, 22, 40])
 g = sessions.assign(p_lin=lineaire.fittedvalues, p_bosse=bosse.fittedvalues, tranche=tranches).groupby("tranche", observed=True).agg(
     duree=("duree_min", "mean"), observe=("achat", "mean"), p_lineaire=("p_lin", "mean"), p_bosse=("p_bosse", "mean"), n=("achat", "size"))
@@ -343,7 +358,7 @@ Le test du rapport de vraisemblance ne vaut que pour des modèles emboîtés. Po
 $$\mathrm{AIC}=-2\ell+2k,\qquad \mathrm{BIC}=-2\ell+k\log n.$$
 Plus la valeur est **petite**, mieux c'est. Le BIC pénalise plus lourdement la complexité dès que $n>7$, et conduit à des modèles plus parcimonieux. Ils ne mesurent que la qualité *relative* des modèles comparés : le meilleur d'une liste de mauvais modèles reste un mauvais modèle (d'où l'importance des résidus).
 
-```python
+```python hide-code
 formules = {
     "aucune variable": "rachat_12m ~ 1",
     "+ offre": "rachat_12m ~ offre_bienvenue",
@@ -376,13 +391,13 @@ print(f"\ntest du rapport de vraisemblance pour les 2 interactions : différence
 test du rapport de vraisemblance pour les 2 interactions : différence de déviance = 8.77, p = 0.012
 ```
 
-L'AIC diminue à chaque variable ajoutée (de $\Delta=57{,}8$ pour le modèle sans variable jusqu'à 0 pour le modèle avec interactions) et **retient donc le modèle le plus complexe**. Le BIC, plus sévère, est minimal pour le modèle **sans interactions** (celui avec les interactions a $\Delta\mathrm{BIC}=6{,}4$). Le test du rapport de vraisemblance donne $p=0{,}012$ pour les deux interactions. C'est ici un cas limite où les critères divergent. Que faire ? Une interaction que l'on n'avait **pas prévue** et qui n'est « significative » qu'à $p=0{,}012$ est typiquement un résultat à regarder avec méfiance (volume I, section 3.5.5 : quand on teste beaucoup d'effets, quelques-uns paraissent significatifs par hasard) ; on garde de préférence le modèle plus simple, plus facile à expliquer, sauf raison métier d'attendre une interaction. Nous verrons en 2.7 ce qu'il en était réellement.
+L'AIC diminue à chaque variable ajoutée (de $\Delta=57{,}8$ pour le modèle sans variable jusqu'à 0 pour le modèle avec interactions) et **retient donc le modèle le plus complexe**. Le BIC, plus sévère, est minimal pour le modèle **sans interactions** (celui avec les interactions a $\Delta\mathrm{BIC}=6{,}4$). Le test du rapport de vraisemblance donne $p=0{,}012$ pour les deux interactions. C'est ici un cas limite où les critères divergent. Que faire ? Une interaction que l'on n'avait **pas prévue** et qui n'est « significative » qu'à $p=0{,}012$ est typiquement un résultat à regarder avec méfiance (volume I, section 3.5.5 : quand on teste beaucoup d'effets, quelques-uns paraissent significatifs par hasard) ; on garde de préférence le modèle plus simple, plus facile à expliquer, sauf raison métier d'attendre une interaction. Nous verrons, dans la « vérité dévoilée » du bilan, ce qu'il en était réellement.
 
 ### 2.4.6 Observations influentes
 
 Une observation peut peser démesurément sur l'ajustement : par son **levier** (ses variables explicatives sont extrêmes) et par son **résidu** (le modèle la prédit mal). La **distance de Cook** combine les deux et mesure de combien les coefficients bougeraient si on retirait cette observation.
 
-```python
+```python hide
 infl = logi.get_influence()
 levier = infl.hat_matrix_diag
 cook = infl.cooks_distance[0]
@@ -404,11 +419,13 @@ Le levier moyen vaut exactement $p/n=5/2\,000=0{,}0025$ (c'est toujours le cas),
 
 ### 2.4.7 Une démarche en quatre temps
 
-> 🛠️ **La checklist de vérification d'un GLM.**
+> 🧭 **La checklist de vérification d'un GLM.**
 > 1. **La famille et le lien conviennent-ils ?** Résidus quantiles aléatoires (QQ-plot) ; $X^2/\text{ddl}$ pour la surdispersion ; histogramme des observations.
 > 2. **La forme de chaque effet est-elle bonne ?** Résidus (ou fréquences observées) contre chaque variable explicative, par classes ; Hosmer-Lemeshow pour la calibration ; ajouter un terme quadratique ou un GAM (2.5) en cas de courbure.
 > 3. **Y a-t-il des observations influentes ?** Levier, distance de Cook ; refaire l'ajustement sans les observations suspectes pour voir si les conclusions changent.
 > 4. **Le modèle est-il utile ?** Pseudo-$R^2$, AUC ou erreur de prévision, **sur des données de test** ; comparaison avec un modèle de référence simple.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : application 2.6, exercices 2.5, 2.9 et 2.10.
 
 > ✅ **À retenir**
 > - La **déviance** $D=2(\ell_{\text{sat}}-\ell)$ est l'équivalent GLM de la somme des carrés des résidus. Le **rapport de vraisemblance** (différence de déviances entre modèles emboîtés) est le test de référence ; avec une dispersion estimée, on utilise un test $F$.

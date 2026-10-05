@@ -8,7 +8,7 @@
 
 Prenons les clientes ayant déjà commandé (1 740 sur 2 000) et croisons leur **canal d'acquisition** avec la **tranche de leur panier moyen**, définie par les quartiles : « très petit » pour le quart le plus bas, jusqu'à « très grand » pour le quart le plus haut.
 
-```python
+```python hide-code
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -29,22 +29,22 @@ print((100 * N.div(N.sum(axis=1), axis=0)).round(1).to_string())
 tranche_panier     T1 très petit  T2 petit  T3 grand  T4 très grand
 canal_acquisition                                                  
 Boutique                      46        93       126            184
-Réseaux                    258       184       158             87
+Réseaux                      258       184       158             87
 Site                         132       157       152            163
 
 profils-lignes (en %) : répartition des paniers dans chaque canal
 tranche_panier     T1 très petit  T2 petit  T3 grand  T4 très grand
 canal_acquisition                                                  
 Boutique                    10.2      20.7      28.1           41.0
-Réseaux                   37.6      26.8      23.0           12.7
+Réseaux                     37.6      26.8      23.0           12.7
 Site                        21.9      26.0      25.2           27.0
 ```
 
 Les **profils-lignes** (la répartition des tranches de panier dans chaque canal) sont très différents d'un canal à l'autre : la boutique compte 69 % de paniers « grands » ou « très grands » (T3 et T4) contre 36 % pour Réseaux, dont 64 % des paniers sont « petits » ou « très petits » (T1 et T2). Si le canal et le panier étaient **indépendants**, les trois lignes auraient le même profil, égal au profil des totaux. L'analyse des correspondances décrit **comment et dans quelle direction** les profils s'écartent de cette indépendance.
 
-Mesurons d'abord l'écart global avec le test du khi-deux (volume I, section 3.4.6) :
+Mesurons d'abord l'écart global avec le test du khi-deux (volume I, section 3.4.6) : on trouve $\chi^2=180{,}7$ pour $6$ degrés de liberté, soit une p-valeur de l'ordre de $10^{-36}$ : l'indépendance est massivement rejetée. Rapporté à l'effectif ($n=1\,740$), cela donne $\chi^2/n=0{,}1038$.
 
-```python
+```python hide
 chi2, p, ddl, attendus = stats.chi2_contingency(N, correction=False)
 n = N.values.sum()
 print(f"khi-deux = {chi2:.1f}, ddl = {ddl}, p = {p:.2g}")
@@ -89,9 +89,9 @@ $$S=\frac{P-0{,}25}{\sqrt{0{,}25}}=\frac{1}{0{,}5}\begin{pmatrix}0{,}125&-0{,}12
 
 Cette matrice est de rang 1 : $S=0{,}5\times\begin{pmatrix}1/\sqrt2\\-1/\sqrt2\end{pmatrix}\begin{pmatrix}1/\sqrt2&-1/\sqrt2\end{pmatrix}$, donc $\sigma_1=0{,}5$ et $\sigma_1^2=0{,}25$. Vérification avec le khi-deux : les effectifs attendus valent $20$ partout, d'où $\chi^2=4\times\frac{(\pm10)^2}{20}=20$ et $\chi^2/n=20/80=0{,}25$. ✓ Les coordonnées des lignes sont $\pm\frac{1}{\sqrt{0{,}5}}\cdot\frac{1}{\sqrt2}\cdot0{,}5=\pm0{,}5$ : Réseaux à $-0{,}5$ d'un côté, Boutique à $+0{,}5$ de l'autre. Un tableau $2\times2$ n'a qu'**un seul axe**, sur lequel les deux modalités s'opposent. Plus généralement, un tableau $I\times J$ a au plus $\min(I,J)-1$ axes non triviaux.
 
-Écrivons la méthode et vérifions-la sur cet exemple, puis sur notre tableau :
+Une implémentation de ces formules (une quinzaine de lignes de NumPy, qui sont l'objet de l'application 3.4 du cahier) donne, sur l'exemple $2\times2$, une inertie de $0{,}25$ sur le seul axe et des coordonnées de $\pm0{,}5$, comme à la main. Sur notre tableau canal $\times$ panier, les inerties des trois axes valent $0{,}1031$, $0{,}0007$ et presque $0$ ; leur somme, $0{,}1038$, est bien égale à $\chi^2/n$, et le premier axe en porte $99{,}3\ \%$.
 
-```python
+```python hide
 def analyse_correspondances(N):
     """AC par SVD des résidus standardisés. Renvoie l'inertie par axe et les coordonnées principales."""
     N = np.asarray(N, dtype=float)
@@ -121,40 +121,34 @@ part de l'axe 1 : 99.3 %
 
 ### 3.4.3 Lire la carte
 
-```python
+Les coordonnées des trois canaux (lignes) puis des quatre tranches de panier (colonnes) sur les deux premiers axes sont :
+
+```python hide-code
 lignes = pd.DataFrame(ac["F"][:, :2], index=N.index, columns=["axe 1", "axe 2"])
 colonnes = pd.DataFrame(ac["G"][:, :2], index=N.columns, columns=["axe 1", "axe 2"])
-print("canaux :")
-print(lignes.round(3).to_string())
-print("tranches de panier :")
-print(colonnes.round(3).to_string())
+print(pd.concat([lignes, colonnes]).round(3).to_string())
 ```
 <!--sortie-->
 ```text
-canaux :
-                   axe 1  axe 2
-canal_acquisition              
-Boutique           0.448 -0.026
-Réseaux         -0.354 -0.015
-Site               0.070  0.036
-tranches de panier :
-                axe 1  axe 2
-tranche_panier              
-T1 très petit  -0.440 -0.024
-T2 petit       -0.090  0.046
-T3 grand        0.079 -0.010
-T4 très grand   0.452 -0.012
+               axe 1  axe 2
+Boutique       0.448 -0.026
+Réseaux       -0.354 -0.015
+Site           0.070  0.036
+T1 très petit -0.440 -0.024
+T2 petit      -0.090  0.046
+T3 grand       0.079 -0.010
+T4 très grand  0.452 -0.012
 ```
 
 ![Analyse des correspondances du tableau canal x tranche de panier (à gauche) et, en comparaison, du tableau canal x ville (à droite). Attention aux échelles : à gauche les points sont répartis sur près de ±0,45, à droite sur ±0,1 seulement.](figures/ch03-ca-carte.png)
 
-Sur la carte de gauche, **tout se passe sur le premier axe** (il porte presque toute l'inertie). Les trois canaux s'y rangent dans l'ordre Réseaux, Site, Boutique ; et les quatre tranches de panier dans l'ordre T1, T2, T3, T4, **du même côté que** les canaux auxquels elles sont associées : les très grands paniers (T4) sont du côté de la boutique, les très petits (T1) du côté d'Réseaux. L'axe 1 est donc un axe **« petits paniers / gros paniers »** commun aux deux variables. Le fait que les tranches de panier s'ordonnent exactement comme leur numérotation est typique : pour une variable ordinale, l'AC retrouve l'ordre sans qu'on le lui ait dit.
+Sur la carte de gauche, **tout se passe sur le premier axe** (il porte presque toute l'inertie). Les trois canaux s'y rangent dans l'ordre Réseaux, Site, Boutique ; et les quatre tranches de panier dans l'ordre T1, T2, T3, T4, **du même côté que** les canaux auxquels elles sont associées : les très grands paniers (T4) sont du côté de la boutique, les très petits (T1) du côté du canal Réseaux. L'axe 1 est donc un axe **« petits paniers / gros paniers »** commun aux deux variables. Le fait que les tranches de panier s'ordonnent exactement comme leur numérotation est typique : pour une variable ordinale, l'AC retrouve l'ordre sans qu'on le lui ait dit.
 
 > 🧪 **Révélation.** C'est ce qui avait été programmé : le canal d'acquisition agit sur le panier (en échelle logarithmique : $+0{,}22$ pour la boutique, $+0{,}05$ pour le site, $-0{,}12$ pour Réseaux). L'AC a retrouvé cette association sans qu'on lui désigne de variable « à expliquer », et a même restitué l'ordre des canaux.
 
 > ⚠️ **Piège numéro un : une carte a toujours l'air de dire quelque chose.** Faites maintenant l'expérience inverse, avec deux variables qui n'ont **aucun lien** dans la simulation : le canal d'acquisition et la ville.
 
-```python
+```python hide
 N2 = pd.crosstab(a["canal_acquisition"], a["ville"])
 chi2_b, p_b, ddl_b, _ = stats.chi2_contingency(N2, correction=False)
 ac2 = analyse_correspondances(N2.values)
@@ -177,7 +171,7 @@ Pour étudier **plusieurs** variables qualitatives à la fois (disons $Q$), on r
 
 Appliquons-la à six variables : canal, ville, tranche d'âge, tranche de panier, offre de bienvenue et rachat dans les 12 mois.
 
-```python
+```python hide
 cols = ["canal_acquisition", "ville", "tranche_age", "tranche_panier", "offre_bienvenue", "rachat_12m"]
 D = pd.get_dummies(a[cols].astype(str), dtype=float)             # tableau disjonctif complet
 Q_, J = len(cols), D.shape[1]
@@ -203,7 +197,7 @@ $$\lambda_k^{\text{corr}}=\Bigl(\frac{Q}{Q-1}\Bigr)^2\Bigl(\lambda_k-\frac1Q\Big
 
 ce qui donne des pourcentages plus réalistes (six valeurs propres dépassent $1/Q=0{,}1667$) :
 
-```python
+```python hide
 seuil = 1 / Q_
 gardees = lam[lam > seuil]
 corrigees = (Q_ / (Q_ - 1)) ** 2 * (gardees - seuil) ** 2
@@ -218,7 +212,7 @@ parts corrigées (Benzécri) des deux premiers axes : [77.7 15.1] %
 
 Pour savoir **quelle variable construit quel axe**, on calcule les **contributions** : celle de la modalité $j$ à l'axe $k$ vaut $c_j\,G_{jk}^2/\sigma_k^2$ (somme égale à 1 sur les modalités d'un même axe). En additionnant par variable, on voit quelles variables « fabriquent » chaque axe.
 
-```python
+```python hide-code
 c_mod = D.values.sum(axis=0) / D.values.sum()                    # poids des modalités
 ctr = (c_mod[:, None] * acm["G"][:, :3] ** 2) / acm["inertie"][:3]
 ctr = pd.DataFrame(ctr, index=D.columns, columns=["axe 1", "axe 2", "axe 3"])
@@ -236,7 +230,7 @@ offre_bienvenue      0.0   28.0    2.0
 rachat_12m           5.0   37.0    0.0
 ```
 
-![Analyse des correspondances multiples : plan des deux premiers axes. Les modalités des quatre variables d'intérêt sont étiquetées (couleur par variable) ; les six villes sont les points gris.](figures/ch03-acm-carte.png)
+![Analyse des correspondances multiples : plan des deux premiers axes. Les modalités des quatre variables d'intérêt sont étiquetées (couleur par variable) ; les six modalités de ville sont les points gris.](figures/ch03-acm-carte.png)
 
 Avec la correction de Benzécri, le premier axe porte à lui seul près de $78\ \%$ de l'« inertie utile » et le deuxième $15\ \%$ : l'essentiel de la structure est dans le plan de la carte. Le tableau des contributions et la carte se lisent ensemble :
 
@@ -246,7 +240,7 @@ Avec la correction de Benzécri, le premier axe porte à lui seul près de $78\ 
 
 > 🧪 **Révélation.** Tout cela correspond à la simulation : le canal détermine le panier ; l'offre de bienvenue augmente la probabilité de rachat ; l'âge agit à la fois sur le panier (les plus âgées dépensent un peu plus) et sur le rachat (les plus jeunes rachètent davantage) ; la ville n'a aucun effet. L'ACM n'a reçu aucune variable « à expliquer » : elle a simplement dessiné les associations qui existent dans le tableau.
 
-> 🛠️ **Application.** L'ACM est la porte d'entrée classique pour explorer **un questionnaire avec des modalités qualitatives** (profils de clientes, réponses à choix multiples). Elle est aussi utilisée pour construire des **typologies** : on calcule les coordonnées des individus sur les premiers axes, puis on les classe par k-means ou classification hiérarchique (section 3.3). Mais prudence : l'ACM décrit **les associations observées**, elle n'établit pas de causalité.
+> 💡 **À quoi sert l'ACM ?** L'ACM est la porte d'entrée classique pour explorer **un questionnaire avec des modalités qualitatives** (profils de clientes, réponses à choix multiples). Elle est aussi utilisée pour construire des **typologies** : on calcule les coordonnées des individus sur les premiers axes, puis on les classe par k-means ou classification hiérarchique (section 3.3). Mais prudence : l'ACM décrit **les associations observées**, elle n'établit pas de causalité.
 
 > ⚠️ **Autres pièges.** (1) Les **modalités rares** (quelques individus) ont des coordonnées extrêmes et peuvent dominer un axe : regroupez-les ou mettez-les en éléments supplémentaires. (2) L'AC est **descriptive** : testez d'abord l'association (khi-deux), puis décrivez-la. (3) Dans l'ACM, **chaque variable pèse son nombre de modalités** : une variable à 15 modalités dominera une variable à 2.
 
@@ -255,3 +249,5 @@ Avec la correction de Benzécri, le premier axe porte à lui seul près de $78\ 
 > - Mathématiquement, c'est la **SVD des résidus standardisés** $S_{ij}=(p_{ij}-r_ic_j)/\sqrt{r_ic_j}$ ; l'**inertie totale** vaut $\chi^2/n$ et se répartit sur les axes.
 > - Avant d'interpréter une carte, **testez l'association** : une carte d'indépendance a l'air tout aussi sérieuse.
 > - L'**ACM** est l'AC du tableau disjonctif complet ; son inertie totale vaut $(J-Q)/Q$ ; les pourcentages d'inertie sont faibles par construction (corrigez avec Benzécri) ; les **contributions** disent quelle variable construit quel axe.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.4, exercice 3.14.

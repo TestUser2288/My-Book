@@ -7,7 +7,7 @@
 
 Le volume I vous a donné les gestes de base : **calculer** (mathématiques), **raisonner sous incertitude** (probabilités), **tirer des conclusions honnêtes d'un échantillon** (statistique), **coder** (Python, R), **interroger des données** (SQL) et **travailler proprement** (Git, notebooks, projet reproductible).
 
-À la fin de ce volume, vous saviez répondre à des questions du type : « Les paniers Réseaux sont-ils plus petits que ceux de la boutique ? » (un test de Welch), ou « Chaque jour de retard fait-il baisser la satisfaction, et de combien ? » (une pente, avec son intervalle de confiance). Ce sont des questions à **une ou deux variables**.
+À la fin de ce volume, vous saviez répondre à des questions du type : « Les paniers des clients venus des réseaux sociaux sont-ils plus petits que ceux du magasin ? » (un test de Welch), ou « Chaque jour de retard fait-il baisser la satisfaction, et de combien ? » (une pente, avec son intervalle de confiance). Ce sont des questions à **une ou deux variables**.
 
 La vraie vie en pose d'autres :
 
@@ -39,7 +39,7 @@ Aux lecteurs qui ont lu le volume I, ou qui ont un bagage équivalent : algèbre
 
 ## La carte du volume
 
-Le volume contient six chapitres principaux, qui forment trois blocs, et trois chapitres complémentaires.
+Le volume contient six chapitres principaux, qui forment trois blocs, et trois chapitres complémentaires facultatifs. Chaque chapitre a son pendant dans le **cahier d'exercices et d'applications** du volume (voir plus bas).
 
 ```text
  BLOC A : relier des variables                  BLOC B : structures des données        BLOC C : incertitude
@@ -55,7 +55,7 @@ Le volume contient six chapitres principaux, qui forment trois blocs, et trois c
 
  ➕ Chapitre 7 : Inférence causale   ➕ Chapitre 8 : Plans d'expériences   ➕ Chapitre 9 : Statistique spatiale
 
-                        Projet du volume : une étude de modélisation complète pour la boutique
+                        Cahier : projet du volume (une étude de modélisation complète) et auto-évaluation
 ```
 
 | Chapitre | Question centrale | Vous saurez… |
@@ -66,7 +66,7 @@ Le volume contient six chapitres principaux, qui forment trois blocs, et trois c
 | **4. Séries temporelles** | Comment modéliser et prévoir ce qui évolue dans le temps ? | décomposer, ajuster un ARIMA saisonnier et évaluer des prévisions |
 | **5. Analyse de survie** | Comment traiter des durées dont certaines ne sont pas terminées ? | estimer des courbes de survie et mesurer l'effet de variables sur le risque |
 | **6. Statistique bayésienne** | Comment exprimer l'incertitude sur un paramètre par une loi de probabilité ? | raisonner à la Bayes et écrire un MCMC |
-| **Projet** | Peut-on tout assembler ? | mener une étude complète : GLM, séries temporelles, survie |
+| **Cahier : projet** | Peut-on tout assembler ? | mener une étude complète : GLM, séries temporelles, survie |
 
 ## Cinq idées qui reviennent dans tout le volume
 
@@ -80,18 +80,39 @@ Avant de commencer, voici cinq idées qui traversent chaque chapitre. Elles vale
 
 ## Comment travailler avec ce volume
 
-Le rythme est celui du volume I : pour chaque notion, une **intuition**, un **exemple minuscule calculé à la main**, la **démonstration** quand elle éclaire, puis l'**application en code** sur des données, suivie de sa sortie réelle. Les encadrés gardent les mêmes pictogrammes :
+### Un livre, et son cahier
+
+Ce volume est composé de **deux ouvrages complémentaires** :
+
+- **le livre** (celui que vous lisez) explique les idées : intuition, exemple calculé à la main, démonstration quand elle éclaire, pièges, résumé ;
+- **le cahier d'exercices et d'applications** contient tout ce qui se pratique : exercices corrigés, applications guidées sur données, et le projet de fin de volume avec son auto-évaluation.
+
+Le livre renvoie au cahier par une ligne qui termine les sections concernées :
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.1, exercices 1.1 à 1.4.
+
+Lisez d'abord la section dans le livre, puis, si vous voulez fixer l'idée, passez au cahier. On peut aussi lire le livre seul : rien d'indispensable à la compréhension n'a été déplacé.
+
+### Le rythme d'une section
+
+Pour chaque notion : une **intuition**, un **exemple minuscule calculé à la main**, la **démonstration** quand elle éclaire, les **pièges**, puis un **résumé**. Les encadrés ont des pictogrammes fixes :
 
 | Encadré | Rôle |
 |---|---|
 | 💡 **Intuition** | l'idée en langage courant |
 | 📐 **Démonstration** | le raisonnement rigoureux (on peut le sauter à la première lecture) |
-| 🛠️ **Application** | une petite étude réelle avec du code |
 | ⚠️ **Piège** | l'erreur classique et comment l'éviter |
 | 🧪 **Expérience / remarque** | une simulation ou un commentaire |
 | ✅ **À retenir** | le résumé de la section |
 | 🧭 **Repère** | un guide de lecture, ou une section optionnelle |
+| 📒 **Pour s'entraîner** | le renvoi vers les exercices et applications du cahier |
+
+### Le code dans ce livre
+
+Ce n'est pas un livre de programmation : le code n'y apparaît que lorsqu'il aide à comprendre, par exemple un appel court qui montre comment demander un modèle à une bibliothèque. Les formules, les démonstrations et les algorithmes sont expliqués en mathématiques et en français. Les figures, les simulations et les vérifications numériques sont bien produites par du code, mais ce code est **caché** dans les sources : il est exécuté à chaque construction du livre, de sorte que **chaque nombre cité est reproductible**. Les versions complètes se trouvent dans le cahier et dans le dépôt du livre.
+
+### Des données simulées
 
 Une particularité importante de ce volume : **les données sont simulées**. C'est un choix délibéré. Quand on simule, on connaît la **vérité** (les vrais coefficients, la vraie forme de la saisonnalité…), ce qui permet de vérifier que la méthode la retrouve, ou de comprendre pourquoi elle la retrouve mal. À la fin de chaque étude importante, nous dévoilons ce qui avait été programmé. Dans la vie réelle, on n'a jamais cette chance : c'est précisément pourquoi il faut s'entraîner ici. Quand nous utilisons des données réelles (certains jeux embarqués dans les bibliothèques), nous le disons.
 
-> ⚠️ **Simulé ne veut pas dire facile.** Un jeu simulé est plus *propre* que la réalité : pas de valeurs saisies de travers, pas de variables oubliées par le service de collecte. Lorsque vous appliquerez ces méthodes à de vrais jeux, comptez sur une part de travail supplémentaire pour le nettoyage et la vérification (volume I, projet de clôture, étape 1).
+> ⚠️ **Simulé ne veut pas dire facile.** Un jeu simulé est plus *propre* que la réalité : pas de valeurs saisies de travers, pas de variables oubliées par le service de collecte. Lorsque vous appliquerez ces méthodes à de vrais jeux, comptez sur une part de travail supplémentaire pour le nettoyage et la vérification (volume I, cahier, projet du volume, étape 1).

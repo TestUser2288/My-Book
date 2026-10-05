@@ -10,7 +10,7 @@ C'est le cas $b(\theta)=e^\theta$ du tableau de 2.1.3, avec son lien canonique, 
 
 Commençons par le cas le plus simple : une seule variable catégorielle, le canal d'acquisition.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -38,7 +38,7 @@ exp(coefficients) Poisson : {'Intercept': 4.1369, 'canal[T.Réseaux]': 0.8375, '
 exp(Intercept) = moyenne de la boutique : 4.1369
 ```
 
-Les exponentielles des coefficients de Poisson sont **exactement** les rapports des moyennes observées : $3{,}4645/4{,}1369=0{,}8375$ pour Réseaux contre la boutique, $4{,}1971/4{,}1369=1{,}0145$ pour le site, et $e^{\text{Intercept}}=4{,}1369$ est la moyenne de la boutique. C'est le même phénomène qu'en 2.2.3 : avec une variable catégorielle seule, le modèle est saturé et, le log étant le lien canonique de Poisson, l'équation du score $\sum_i(y_i-\hat\mu_i)x_{ij}=0$ impose que la moyenne prédite de chaque groupe soit sa moyenne observée.
+Les exponentielles des coefficients de Poisson sont **exactement** les rapports des moyennes observées : $3{,}4645/4{,}1369=0{,}8375$ pour le canal Réseaux contre la boutique, $4{,}1971/4{,}1369=1{,}0145$ pour le site, et $e^{\text{Intercept}}=4{,}1369$ est la moyenne de la boutique. C'est le même phénomène qu'en 2.2.3 : avec une variable catégorielle seule, le modèle est saturé et, le log étant le lien canonique de Poisson, l'équation du score $\sum_i(y_i-\hat\mu_i)x_{ij}=0$ impose que la moyenne prédite de chaque groupe soit sa moyenne observée.
 
 Ajoutons maintenant l'âge et l'offre de bienvenue.
 
@@ -51,15 +51,15 @@ print(rr.round(4).to_string())
 ```
 <!--sortie-->
 ```text
-                      coef      RR  IC95 bas  IC95 haut       p
-Intercept           1.4637  4.3218    3.9509     4.7275  0.0000
+                    coef      RR  IC95 bas  IC95 haut       p
+Intercept         1.4637  4.3218    3.9509     4.7275  0.0000
 canal[T.Réseaux] -0.1762  0.8385    0.7923     0.8873  0.0000
-canal[T.Site]       0.0151  1.0152    0.9594     1.0742  0.6008
-age                -0.0010  0.9990    0.9969     1.0011  0.3675
-offre_bienvenue    -0.0189  0.9813    0.9385     1.0259  0.4051
+canal[T.Site]     0.0151  1.0152    0.9594     1.0742  0.6008
+age              -0.0010  0.9990    0.9969     1.0011  0.3675
+offre_bienvenue  -0.0189  0.9813    0.9385     1.0259  0.4051
 ```
 
-À offre et âge fixés, un client acquis par **Réseaux** passe en moyenne **16 % de commandes en moins** qu'un client de la boutique (RR $=0{,}84$, intervalle de 0,79 à 0,89). Le site ne se distingue pas de la boutique (RR $=1{,}015$, $p=0{,}60$). L'**âge** n'a pas d'effet détectable sur le nombre de commandes (RR $=0{,}999$ par an, $p=0{,}37$), pas plus que l'**offre de bienvenue** (RR $=0{,}98$, $p=0{,}41$) : l'offre augmente la *probabilité* de racheter (section 2.2), mais pas le *nombre* de commandes. « Pas d'effet détectable » n'est pas « effet nul » : les intervalles de confiance disent quelle taille d'effet reste plausible (pour l'offre, de $-6\,\%$ à $+3\,\%$).
+À offre et âge fixés, un client acquis par les **réseaux sociaux** passe en moyenne **16 % de commandes en moins** qu'un client de la boutique (RR $=0{,}84$, intervalle de 0,79 à 0,89). Le site ne se distingue pas de la boutique (RR $=1{,}015$, $p=0{,}60$). L'**âge** n'a pas d'effet détectable sur le nombre de commandes (RR $=0{,}999$ par an, $p=0{,}37$), pas plus que l'**offre de bienvenue** (RR $=0{,}98$, $p=0{,}41$) : l'offre augmente la *probabilité* de racheter (section 2.2), mais pas le *nombre* de commandes. « Pas d'effet détectable » n'est pas « effet nul » : les intervalles de confiance disent quelle taille d'effet reste plausible (pour l'offre, de $-6\,\%$ à $+3\,\%$).
 
 > ⚠️ **Ces p-valeurs sont à prendre avec beaucoup de précaution.** Elles supposent que la variance est égale à la moyenne, comme l'impose la loi de Poisson. Nous allons voir que cette hypothèse est ici très fausse (2.3.3), ce qui rend les erreurs-types trop petites et les p-valeurs trop optimistes.
 
@@ -69,7 +69,7 @@ Jusqu'ici, tous les clients ont été observés pendant **12 mois**. Que faire s
 $$\log\mu_i=\log t_i+x_i^\top\beta.$$
 Le terme $\log t_i$ est un **décalage** (*offset*) : une variable dont le coefficient est imposé égal à 1. Voyons ce qu'il se passe si on l'oublie. Nous simulons (graine 23) 1 500 nouveaux clients observés 3, 6, 9 ou 12 mois ; une partie des clients (38 %) est abonnée à la newsletter, mais les clients anciens (longue observation) sont **plus souvent abonnés**. Le **vrai** effet de la newsletter est de multiplier le taux de commandes par 1,2.
 
-```python
+```python hide
 rng = np.random.default_rng(23)
 n = 1500
 mois_obs = rng.choice([3, 6, 9, 12], size=n)
@@ -120,7 +120,7 @@ La loi de Poisson impose $\mathrm{Var}(Y)=\mu$ ($\phi=1$). Mais en 2.1.1 nous av
 
 **Deux statistiques simples.** Si le modèle est correct, la statistique de Pearson $X^2=\sum_i\dfrac{(y_i-\hat\mu_i)^2}{\hat\mu_i}$ et la déviance valent à peu près leurs degrés de liberté ($n-p$) ; leurs rapports aux degrés de liberté doivent être proches de 1. On en déduit une estimation de la dispersion, $\hat\phi=X^2/(n-p)$.
 
-```python
+```python hide
 y = clients["nb_commandes_an"].to_numpy()
 mu = poisson.fittedvalues.to_numpy()
 print("Pearson X² =", round(poisson.pearson_chi2, 1), "| degrés de liberté =", int(poisson.df_resid), "| phi estimé =", round(poisson.pearson_chi2 / poisson.df_resid, 3))
@@ -152,9 +152,9 @@ La statistique de Pearson vaut 6 774,2 pour 1 995 degrés de liberté : $\hat\ph
 >
 > *Démonstration.* Par la loi de l'espérance totale, $E[Y]=E\big[E[Y\mid\lambda]\big]=E[\lambda]=\mu$. Par la loi de la variance totale, $\mathrm{Var}(Y)=E\big[\mathrm{Var}(Y\mid\lambda)\big]+\mathrm{Var}\big(E[Y\mid\lambda]\big)=E[\lambda]+\mathrm{Var}(\lambda)=\mu+\alpha\mu^2$. $\square$
 
-Le paramètre $\alpha\ge0$ mesure l'hétérogénéité entre clients ; $\alpha=0$ redonne Poisson. La variance est une **fonction quadratique** de la moyenne, ce qui convient à beaucoup de comptages réels. Vérifions la proposition par simulation, puis ajustons les quatre modèles.
+Le paramètre $\alpha\ge0$ mesure l'hétérogénéité entre clients ; $\alpha=0$ redonne Poisson. La variance est une **fonction quadratique** de la moyenne, ce qui convient à beaucoup de comptages réels. Une simulation (cahier, application 2.4) confirme la proposition ; on peut alors ajuster les quatre modèles : Poisson, quasi-Poisson, Poisson à erreurs-types robustes et binomiale négative.
 
-```python
+```python hide
 rng = np.random.default_rng(3)
 mu0, alpha0, N = 4.0, 0.6, 400_000
 lam = rng.gamma(shape=1 / alpha0, scale=mu0 * alpha0, size=N)       # Gamma de moyenne mu0 et de variance alpha0 * mu0²
@@ -185,19 +185,19 @@ print(f"AIC Poisson = {poisson.aic:.1f} | AIC binomiale négative = {nb.aic:.1f}
 simulation : moyenne = 4.004 | variance = 13.640
 formule    : moyenne = 4.000 | variance = 13.600
 
-                    coef Poisson  coef NB  se Poisson  se quasi-Poisson  se robuste   se NB
-Intercept                 1.4637   1.4681      0.0458            0.0844      0.0837  0.0840
+                  coef Poisson  coef NB  se Poisson  se quasi-Poisson  se robuste   se NB
+Intercept               1.4637   1.4681      0.0458            0.0844      0.0837  0.0840
 canal[T.Réseaux]       -0.1762  -0.1765      0.0289            0.0532      0.0529  0.0520
-canal[T.Site]             0.0151   0.0148      0.0288            0.0531      0.0529  0.0534
-age                      -0.0010  -0.0011      0.0011            0.0020      0.0019  0.0020
-offre_bienvenue          -0.0189  -0.0156      0.0227            0.0419      0.0419  0.0411
+canal[T.Site]           0.0151   0.0148      0.0288            0.0531      0.0529  0.0534
+age                    -0.0010  -0.0011      0.0011            0.0020      0.0019  0.0020
+offre_bienvenue        -0.0189  -0.0156      0.0227            0.0419      0.0419  0.0411
 
 ratio se quasi-Poisson / se Poisson : 1.843 | racine de phi = 1.843
 alpha (binomiale négative) = 0.584 | IC95 : [0.528, 0.639]
 AIC Poisson = 11715.5 | AIC binomiale négative = 9768.7 | RV : 2(l_NB - l_Poisson) = 1948.8, log10(p) = -425
 ```
 
-Trois constats. (1) La simulation confirme la proposition : variance simulée 13,64 contre 13,60 par la formule $\mu+\alpha\mu^2$ avec $\mu=4$ et $\alpha=0{,}6$. (2) Les **coefficients** de Poisson et de la binomiale négative sont presque identiques (par exemple $-0{,}176$ pour Réseaux dans les deux cas) : la surdispersion ne biaise pas la moyenne estimée, à condition qu'elle soit bien modélisée par ailleurs. (3) Les **erreurs-types** de Poisson sont trop petites : 0,0289 pour Réseaux, contre 0,0532 (quasi-Poisson), 0,0529 (robuste) et 0,0520 (binomiale négative). Les trois corrections s'accordent, et le ratio quasi-Poisson/Poisson vaut exactement $\sqrt{\hat\phi}=1{,}843$ comme annoncé. Ici les conclusions ne changent pas (l'effet d'Réseaux reste significatif : $z=-0{,}176/0{,}053\approx-3{,}3$), mais dans un cas limite, l'erreur-type trop petite de Poisson aurait transformé un effet douteux en effet « significatif ».
+Trois constats. (1) La simulation confirme la proposition : variance simulée 13,64 contre 13,60 par la formule $\mu+\alpha\mu^2$ avec $\mu=4$ et $\alpha=0{,}6$. (2) Les **coefficients** de Poisson et de la binomiale négative sont presque identiques (par exemple $-0{,}176$ pour le canal Réseaux dans les deux cas) : la surdispersion ne biaise pas la moyenne estimée, à condition qu'elle soit bien modélisée par ailleurs. (3) Les **erreurs-types** de Poisson sont trop petites : 0,0289 pour le canal Réseaux, contre 0,0532 (quasi-Poisson), 0,0529 (robuste) et 0,0520 (binomiale négative). Les trois corrections s'accordent, et le ratio quasi-Poisson/Poisson vaut exactement $\sqrt{\hat\phi}=1{,}843$ comme annoncé. Ici les conclusions ne changent pas (l'effet du canal Réseaux reste significatif : $z=-0{,}176/0{,}053\approx-3{,}3$), mais dans un cas limite, l'erreur-type trop petite de Poisson aurait transformé un effet douteux en effet « significatif ».
 
 La binomiale négative estime $\hat\alpha=0{,}584$ (intervalle de 0,528 à 0,639), cohérent avec l'estimation de Cameron-Trivedi, et fait chuter l'AIC de 11 715,5 à 9 768,7 : un gain de près de 1 950 points. Le rapport de vraisemblance vaut 1 948,8, soit une p-valeur d'environ $10^{-425}$ : la surdispersion est incontestable.
 
@@ -205,7 +205,7 @@ La binomiale négative estime $\hat\alpha=0{,}584$ (intervalle de 0,528 à 0,639
 
 Pour juger si la binomiale négative décrit **mieux la distribution entière** des comptages, comparons les fréquences observées aux fréquences que chaque modèle prédit (moyenne, sur tous les clients, des probabilités prédites de chaque valeur).
 
-```python
+```python hide
 valeurs = np.arange(0, 16)
 obs = np.array([(y == k).mean() for k in valeurs])
 mu_p = poisson.fittedvalues.to_numpy()
@@ -254,7 +254,7 @@ Les dépenses sont **positives**, **asymétriques**, et la dispersion croît ave
 $$Y_i\sim\text{Gamma}(\text{moyenne }\mu_i,\ \mathrm{Var}=\phi\mu_i^2),\qquad \log\mu_i=x_i^\top\beta.$$
 Un coefficient $\beta_j$ multiplie encore la moyenne par $e^{\beta_j}$. On ne peut pas inclure les clients à zéro (la loi Gamma est strictement positive) : nous nous limitons donc aux **acheteurs**, et les effets seront à lire « *parmi les clients qui ont acheté* ». La section 2.6 montrera comment traiter les zéros.
 
-```python
+```python hide
 acheteurs = clients[clients["depense_annuelle"] > 0].copy()
 print("acheteurs :", len(acheteurs), "sur", len(clients), "| dépense moyenne =", round(acheteurs["depense_annuelle"].mean(), 1), "€ | médiane =", round(acheteurs["depense_annuelle"].median(), 1), "€")
 
@@ -270,31 +270,31 @@ print("dispersion phi estimée =", round(phi, 3), "| coefficient de variation im
 ```text
 acheteurs : 1740 sur 2000 | dépense moyenne = 283.9 € | médiane = 193.4 €
 
-======================================================================================
-                         coef    std err          z      P>|z|      [0.025      0.975]
---------------------------------------------------------------------------------------
-Intercept              5.6086      0.098     57.234      0.000       5.417       5.801
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+Intercept            5.6086      0.098     57.234      0.000       5.417       5.801
 canal[T.Réseaux]    -0.4988      0.061     -8.181      0.000      -0.618      -0.379
-canal[T.Site]         -0.1518      0.063     -2.425      0.015      -0.275      -0.029
-age                    0.0075      0.002      3.295      0.001       0.003       0.012
-offre_bienvenue       -0.0098      0.048     -0.203      0.839      -0.104       0.085
-======================================================================================
+canal[T.Site]       -0.1518      0.063     -2.425      0.015      -0.275      -0.029
+age                  0.0075      0.002      3.295      0.001       0.003       0.012
+offre_bienvenue     -0.0098      0.048     -0.203      0.839      -0.104       0.085
+====================================================================================
 
 dispersion phi estimée = 1.009 | coefficient de variation implicite = 1.004
 ```
 
 Parmi les 1 740 acheteurs (87 % des clients), la dépense moyenne est de 283,9 €, la médiane de 193,4 €. Les effets se lisent en pourcentage de la dépense moyenne, **parmi les acheteurs** :
 
-- **Réseaux** : $e^{-0{,}499}=0{,}61$ : les acheteurs acquis par Réseaux dépensent environ **39 % de moins** que ceux de la boutique ($p<0{,}001$).
+- **Réseaux** : $e^{-0{,}499}=0{,}61$ : les acheteurs acquis par les réseaux sociaux dépensent environ **39 % de moins** que ceux de la boutique ($p<0{,}001$).
 - **Site** : $e^{-0{,}152}=0{,}86$ : environ 14 % de moins que la boutique ($p=0{,}015$).
 - **Âge** : $+0{,}0075$ par an, soit $+0{,}75\,\%$ par an et $e^{0{,}075}\approx+7{,}8\,\%$ pour dix ans ($p=0{,}001$) : les clients plus âgés dépensent un peu plus.
 - **Offre** : aucun effet détectable ($p=0{,}84$).
 
 La dispersion estimée vaut $\hat\phi=1{,}009$, donc un **coefficient de variation d'environ 1** : l'écart-type de la dépense est à peu près égal à sa moyenne (comme pour une loi exponentielle, cas particulier de la Gamma de forme 1). C'est une forte dispersion, qui s'explique ici par le fait qu'une dépense annuelle cumule un nombre de commandes (très variable) et un panier moyen (variable lui aussi).
 
-**L'estimation à la main.** Notre fonction `irls` (2.1.5) gère aussi la loi Gamma avec lien log. Pour la loi Gamma, la dispersion $\phi$ est inconnue ; on l'estime par $\hat\phi=X^2/(n-p)$ et l'on multiplie la matrice de covariance par $\hat\phi$.
+**L'estimation à la main.** Notre programme IRLS (2.1.5 ; cahier, application 2.5) gère aussi la loi Gamma avec lien log. Pour la loi Gamma, la dispersion $\phi$ est inconnue ; on l'estime par $\hat\phi=X^2/(n-p)$ et l'on multiplie la matrice de covariance par $\hat\phi$.
 
-```python
+```python hide
 from patsy import dmatrices
 
 Yd, Xd = dmatrices(formule_d, acheteurs, return_type="dataframe")
@@ -308,12 +308,12 @@ print("phi (main) =", round(float(phi_main), 4), "| phi (statsmodels) =", round(
 ```
 <!--sortie-->
 ```text
-                    coef main  coef statsmodels  se main  se statsmodels
-Intercept             5.60858           5.60858  0.09799         0.09799
+                  coef main  coef statsmodels  se main  se statsmodels
+Intercept           5.60858           5.60858  0.09799         0.09799
 canal[T.Réseaux]   -0.49879          -0.49879  0.06097         0.06097
-canal[T.Site]        -0.15181          -0.15181  0.06260         0.06260
-age                   0.00754           0.00754  0.00229         0.00229
-offre_bienvenue      -0.00980          -0.00980  0.04819         0.04819
+canal[T.Site]      -0.15181          -0.15181  0.06260         0.06260
+age                 0.00754           0.00754  0.00229         0.00229
+offre_bienvenue    -0.00980          -0.00980  0.04819         0.04819
 phi (main) = 1.0088 | phi (statsmodels) = 1.0088 | itérations : 11
 ```
 
@@ -326,7 +326,7 @@ Notre IRLS et `statsmodels` donnent les mêmes coefficients, les mêmes erreurs-
 
 Les deux coïncident presque pour les rapports de moyennes si la dispersion est constante, mais pas pour les **prédictions en €** (et donc pas pour un chiffre d'affaires total).
 
-```python
+```python hide
 ols_log = smf.ols("np.log(depense_annuelle) ~ age + canal + offre_bienvenue", acheteurs).fit()
 print(pd.DataFrame({"effet (Gamma, log)": gamma.params, "effet (OLS sur log y)": ols_log.params}).round(4).to_string())
 print()
@@ -345,23 +345,23 @@ print(par_canal.round(1).to_string())
 ```
 <!--sortie-->
 ```text
-                    effet (Gamma, log)  effet (OLS sur log y)
-Intercept                       5.6086                 5.1977
+                  effet (Gamma, log)  effet (OLS sur log y)
+Intercept                     5.6086                 5.1977
 canal[T.Réseaux]             -0.4988                -0.4608
-canal[T.Site]                  -0.1518                -0.1381
-age                             0.0075                 0.0075
-offre_bienvenue                -0.0098                -0.0238
+canal[T.Site]                -0.1518                -0.1381
+age                           0.0075                 0.0075
+offre_bienvenue              -0.0098                -0.0238
 
 dépense moyenne observée                                  : 283.9 €
 moyenne des prédictions Gamma (lien log)                  : 284.0 €
 moyenne des prédictions exp(OLS sur log y), sans correction : 189.9 €
 idem avec la correction de Duan                           : 283.1 €
 
-           observée  Gamma  exp(OLS log)
-canal                                   
-Boutique      355.0  356.6         234.6
-Réseaux     216.8  217.0         148.2
-Site          307.2  306.1         204.1
+          observée  Gamma  exp(OLS log)
+canal                                  
+Boutique     355.0  356.6         234.6
+Réseaux      216.8  217.0         148.2
+Site         307.2  306.1         204.1
 ```
 
 Les effets sont du même ordre pour les deux méthodes (Réseaux : $-0{,}499$ pour Gamma, $-0{,}461$ pour la régression sur $\log y$ ; âge : $0{,}0075$ dans les deux cas), mais les **prédictions en €** n'ont rien à voir. La moyenne des prédictions de la loi Gamma (284,0 €) coïncide avec la dépense moyenne observée (283,9 €), et suit de près la moyenne observée de chaque canal (356,6 contre 355,0 pour la boutique, 217,0 contre 216,8 pour Réseaux). En revanche $e^{\text{ajusté}}$ de la régression sur $\log y$ prédit en moyenne **189,9 €**, soit un tiers de moins : c'est la médiane conditionnelle, pas la moyenne. L'écart est visible dans l'ordonnée à l'origine (5,609 contre 5,198, soit un facteur $e^{0{,}41}\approx1{,}5$) ; il peut être corrigé par le facteur de lissage de Duan (le résultat remonte à 283,1 €), mais la régression Gamma n'a pas besoin de correction.
@@ -380,6 +380,8 @@ Les effets sont du même ordre pour les deux méthodes (Réseaux : $-0{,}499$ po
 | un montant $\ge0$ avec des zéros | Tweedie (2.6) | log | $\mu^p,\ 1<p<2$ | dépense de tous les clients |
 
 > 🧪 **Un fil conducteur : la puissance de la variance.** Dans ce tableau, la variance prend la forme $\mu^p$ avec $p=0$ (normale), $p=1$ (Poisson), $p=2$ (Gamma). La loi de Tweedie (section 2.6) est la famille qui comble les valeurs de $p$ entre 1 et 2 et couvre ainsi le cas des montants avec des zéros.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : applications 2.4 et 2.5, exercices 2.3, 2.6, 2.7 et 2.8.
 
 > ✅ **À retenir**
 > - Poisson : $\log\mu=x^\top\beta$ ; $e^{\beta_j}$ est un **rapport de taux**. Pour des durées d'observation différentes, ajoutez un **décalage** $\log t_i$ : l'oublier peut produire un effet très faux.

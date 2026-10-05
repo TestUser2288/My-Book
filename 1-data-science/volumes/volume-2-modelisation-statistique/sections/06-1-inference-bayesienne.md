@@ -25,13 +25,29 @@ La gérante envoie une offre de bienvenue à **10 nouveaux clients**. Sept d'ent
 **Vraisemblance.** Si les clients sont indépendants, le nombre $y$ de rachats suit une loi binomiale $\mathrm{Bin}(10,\theta)$ (volume I, section 2.2) :
 $$p(y=7\mid\theta)=\binom{10}{7}\theta^{7}(1-\theta)^{3}.$$
 
-**A priori.** la gérante n'a aucune idée précise : elle juge que toutes les valeurs de $\theta$ entre 0 et 1 sont également plausibles ($p(\theta)=1$ sur $[0,1]$).
+**A priori.** La gérante n'a aucune idée précise : elle juge que toutes les valeurs de $\theta$ entre 0 et 1 sont également plausibles ($p(\theta)=1$ sur $[0,1]$).
 
 Pour calculer à la main sans intégrale, regardons seulement **onze valeurs** possibles : $\theta\in\{0;\,0{,}1;\,0{,}2;\dots;1\}$, chacune avec la probabilité *a priori* $1/11$. C'est l'**approximation sur grille**. Il suffit de multiplier, puis de diviser par la somme.
 
-Par exemple pour $\theta=0{,}7$ : $\theta^{7}(1-\theta)^{3}=0{,}7^{7}\times0{,}3^{3}=0{,}0823543\times0{,}027=0{,}0022236$. (On peut ignorer le coefficient binomial $\binom{10}{7}$, qui est le même pour toutes les valeurs de $\theta$ et disparaît à la normalisation.) Le code fait les onze calculs :
+Par exemple pour $\theta=0{,}7$ : $\theta^{7}(1-\theta)^{3}=0{,}7^{7}\times0{,}3^{3}=0{,}0823543\times0{,}027=0{,}0022236$. (On peut ignorer le coefficient binomial $\binom{10}{7}$, qui est le même pour toutes les valeurs de $\theta$ et disparaît à la normalisation.) Un tableur (ou quelques lignes de code) fait les onze calculs. Voici le résultat :
 
-```python
+| $\theta$ | a priori | vraisemblance (sans le coefficient binomial) | a posteriori |
+|---:|---:|---:|---:|
+| 0,0 | 0,091 | 0 | 0,000 |
+| 0,1 | 0,091 | 0,00000 | 0,000 |
+| 0,2 | 0,091 | 0,00001 | 0,001 |
+| 0,3 | 0,091 | 0,00008 | 0,010 |
+| 0,4 | 0,091 | 0,00035 | 0,047 |
+| 0,5 | 0,091 | 0,00098 | 0,129 |
+| 0,6 | 0,091 | 0,00179 | 0,236 |
+| **0,7** | 0,091 | **0,00222** | **0,293** |
+| 0,8 | 0,091 | 0,00168 | 0,221 |
+| 0,9 | 0,091 | 0,00048 | 0,063 |
+| 1,0 | 0,091 | 0 | 0,000 |
+
+Les probabilités a posteriori somment bien à 1 (c'est le rôle de la normalisation), la valeur la plus probable est $\theta=0{,}7$ et l'espérance a posteriori vaut $0{,}667$.
+
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -95,9 +111,9 @@ On peut donc voir $a$ et $b$ comme des **pseudo-observations** : $\mathrm{Beta}(
 > $$\mathbb E[\theta\mid y]=\frac{a+y}{a+b+n}=\underbrace{\frac{a+b}{a+b+n}}_{w}\cdot\underbrace{\frac{a}{a+b}}_{\text{moyenne a priori}}+\underbrace{\frac{n}{a+b+n}}_{1-w}\cdot\underbrace{\frac{y}{n}}_{\hat\theta_{\text{EMV}}}.$$
 > C'est un **compromis** entre ce que l'on croyait (moyenne a priori) et ce que disent les données (la fréquence observée), et le poids de l'a priori, $w=\frac{a+b}{a+b+n}$, **diminue** quand $n$ augmente. Avec 10 observations et un a priori uniforme ($a+b=2$), $w=2/12\approx0{,}17$ : 17 % de l'a priori, 83 % des données. C'est la raison pour laquelle $0{,}667<0{,}7$ : l'a priori uniforme tire un peu l'estimation vers 0,5. Avec 1 000 observations, $w\approx0{,}002$ : l'a priori a disparu.
 
-Vérifions que la formule exacte et la grille donnent la même chose, et traçons les trois lois (a priori, vraisemblance normalisée, a posteriori) :
+Traçons les trois lois (a priori, vraisemblance normalisée, a posteriori), et vérifions au passage que la formule exacte et la grille de onze points donnent les mêmes probabilités :
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -146,15 +162,15 @@ moyenne exacte          : 0.6667 =  8/12 = 0.6667
 
 ![Avec 7 rachats sur 10 : l'a priori plat (tirets gris), la vraisemblance normalisée (orange épais) et l'a posteriori Beta(8, 4) (bleu) sont superposés ; avec un a priori informatif Beta(5, 5), l'a posteriori Beta(12, 8) (violet, tirets-points) est tiré vers 0,5.](figures/ch06-bayes-10-clients.png)
 
-L'écart maximal est de l'ordre de la précision d'arrondi : la grille de onze points n'était pas si mauvaise. Remarquez, sur le dessin, que l'*a posteriori* et la vraisemblance normalisée sont **exactement superposés** : avec un a priori plat, **les données parlent seules** (c'est évident dans la formule : multiplier par une constante ne change pas la forme). Avec un a priori informatif $\mathrm{Beta}(5,5)$ (celui d'une personne qui croit déjà à un taux proche de 50 %), l'a posteriori $\mathrm{Beta}(12,8)$ a pour moyenne $12/20=0{,}60$ : il est **tiré vers 0,5**, c'est le compromis de la formule ci-dessus.
+L'écart maximal entre la grille et la loi exacte est nul à trois décimales près (et la moyenne exacte vaut bien $8/12=0{,}6667$) : la grille de onze points n'était pas si mauvaise. Remarquez, sur le dessin, que l'*a posteriori* et la vraisemblance normalisée sont **exactement superposés** : avec un a priori plat, **les données parlent seules** (c'est évident dans la formule : multiplier par une constante ne change pas la forme). Avec un a priori informatif $\mathrm{Beta}(5,5)$ (celui d'une personne qui croit déjà à un taux proche de 50 %), l'a posteriori $\mathrm{Beta}(12,8)$ a pour moyenne $12/20=0{,}60$ : il est **tiré vers 0,5**, c'est le compromis de la formule ci-dessus.
 
 > ✅ **À retenir (6.1.1 à 6.1.3).** A posteriori $\propto$ vraisemblance $\times$ a priori. Avec un a priori bêta et des données binomiales, l'a posteriori est une bêta dont les paramètres s'obtiennent en **ajoutant les succès et les échecs observés**. La moyenne a posteriori est un compromis entre a priori et données, où l'a priori pèse de moins en moins quand les données s'accumulent.
 
-### 6.1.4 Application : l'offre de bienvenue fonctionne-t-elle ?
+### 6.1.4 Comparer deux groupes : la loi de la différence
 
-Passons aux 2 000 clients. L'offre de bienvenue a été attribuée **au hasard** à une moitié d'entre eux : la comparaison des deux groupes est donc une vraie expérience (nous y reviendrons dans le chapitre ➕ 7). Les effectifs :
+Passons aux 2 000 clients. L'offre de bienvenue a été attribuée **au hasard** à une moitié d'entre eux : la comparaison des deux groupes est donc une vraie expérience (nous y reviendrons dans le chapitre ➕ 7). Sans offre, 441 des 985 clients ont racheté (44,77 %) ; avec offre, 578 des 1 015 (56,95 %).
 
-```python
+```python hide
 clients = pd.read_csv("donnees/clients.csv")
 bilan = clients.groupby("offre_bienvenue")["rachat_12m"].agg(clients="size", rachats="sum")
 bilan["frequence"] = (bilan["rachats"] / bilan["clients"]).round(4)
@@ -168,9 +184,15 @@ offre_bienvenue
 1                   1015      578     0.5695
 ```
 
-Avec un a priori $\mathrm{Beta}(1,1)$ pour chaque groupe, les deux lois a posteriori sont $\mathrm{Beta}(1+y,\,1+n-y)$ :
+Avec un a priori $\mathrm{Beta}(1,1)$ pour chaque groupe, les deux lois a posteriori sont $\mathrm{Beta}(1+y,\,1+n-y)$, soit :
 
-```python
+| Groupe | A posteriori | Moyenne | Intervalle de crédibilité à 95 % |
+|---|---|---:|---|
+| sans offre | $\mathrm{Beta}(442,\,545)$ | 0,4478 | [0,4169 ; 0,4789] |
+| avec offre | $\mathrm{Beta}(579,\,438)$ | 0,5693 | [0,5388 ; 0,5996] |
+
+
+```python hide
 post = {}
 for groupe, ligne in bilan.iterrows():
     a_post = 1 + ligne["rachats"]
@@ -189,10 +211,13 @@ offre = 1 : a posteriori Beta(579, 438) | moyenne 0.5693 | intervalle de crédib
 Pour répondre à *la* question (« l'offre augmente-t-elle le taux de rachat ? »), il faut la loi de la **différence** $\delta=\theta_1-\theta_0$. Elle n'est pas une bêta, mais on peut la **simuler** : on tire de nombreuses valeurs de $\theta_1$ et de $\theta_0$ dans leurs lois a posteriori, et on calcule leur différence. C'est la première apparition du Monte-Carlo, que nous étudions à fond en 6.2.
 
 ```python
+import numpy as np
+from scipy import stats
+
 rng = np.random.default_rng(61)
 S = 200_000
-theta1 = post[1].rvs(S, random_state=rng)
-theta0 = post[0].rvs(S, random_state=rng)
+theta1 = stats.beta(579, 438).rvs(S, random_state=rng)   # avec offre
+theta0 = stats.beta(442, 545).rvs(S, random_state=rng)   # sans offre
 delta = theta1 - theta0
 
 print(f"moyenne de la différence       : {delta.mean():.4f}")
@@ -210,9 +235,9 @@ P(l'effet dépasse 5 points)    : 0.9993
 P(l'effet dépasse 10 points)   : 0.8346
 ```
 
-On peut maintenant prononcer des phrases que le volume I interdisait : « *sachant les données, l'offre augmente le rachat avec une probabilité quasi certaine* » (aucun de nos 200 000 tirages ne donne une différence négative ; l'approximation normale de la différence donne une probabilité d'erreur de l'ordre de $2\times10^{-8}$), « *la probabilité que l'effet dépasse 5 points de pourcentage est de 99,9 %, et qu'il dépasse 10 points de 83 %* ». Pour comparer avec l'approche fréquentiste, calculons l'intervalle de confiance de Wald de la différence de proportions (volume I, section 3.4.5) :
+On peut maintenant prononcer des phrases que le volume I interdisait : « *sachant les données, l'offre augmente le rachat avec une probabilité quasi certaine* » (aucun de nos 200 000 tirages ne donne une différence négative ; l'approximation normale de la différence donne une probabilité d'erreur de l'ordre de $2\times10^{-8}$), « *la probabilité que l'effet dépasse 5 points de pourcentage est de 99,9 %, et qu'il dépasse 10 points de 83 %* ». Pour comparer avec l'approche fréquentiste, l'intervalle de confiance de Wald de la différence de proportions (volume I, section 3.4.5) est [0,0782 ; 0,1652], pour une différence observée de 0,1217.
 
-```python
+```python hide
 n1, y1 = bilan.loc[1, "clients"], bilan.loc[1, "rachats"]
 n0, y0 = bilan.loc[0, "clients"], bilan.loc[0, "rachats"]
 p1, p0 = y1 / n1, y0 / n0
@@ -226,7 +251,7 @@ différence observée       : 0.1217
 IC de confiance à 95 %    : [0.0782 ; 0.1652]
 ```
 
-Les deux intervalles sont **presque identiques** (à la troisième décimale). C'est normal : avec 1 000 observations par groupe, l'a priori uniforme ne pèse presque rien. Mais l'**interprétation** diffère profondément :
+Les deux intervalles ([0,0778 ; 0,1647] pour la crédibilité, [0,0782 ; 0,1652] pour la confiance) sont **presque identiques** (à la troisième décimale). C'est normal : avec 1 000 observations par groupe, l'a priori uniforme ne pèse presque rien. Mais l'**interprétation** diffère profondément :
 
 | | Intervalle de confiance (fréquentiste) | Intervalle de crédibilité (bayésien) |
 |---|---|---|
@@ -244,9 +269,9 @@ Il existe plusieurs façons de fabriquer un intervalle contenant 95 % de la prob
 - l'intervalle **à queues égales** : il laisse 2,5 % de probabilité de chaque côté (c'est ce que fait `ppf([0.025, 0.975])`) ;
 - l'intervalle de **plus haute densité** (HPD, *highest posterior density*) : le **plus court** intervalle de probabilité 95 %. Tous ses points ont une densité supérieure à ceux qui sont en dehors.
 
-Pour une loi symétrique, ils coïncident. Pour une loi asymétrique (proche de 0 ou de 1, par exemple), ils diffèrent :
+Pour une loi symétrique, ils coïncident. Pour une loi asymétrique (proche de 0 ou de 1, par exemple), ils diffèrent. Prenons un nouveau canal testé auprès de 20 clients, dont un seul a racheté : l'a posteriori est $\mathrm{Beta}(2,20)$, de moyenne 0,0909. L'intervalle à queues égales est [0,0117 ; 0,2382] (largeur 0,2264) ; le HPD, qu'on obtient en faisant glisser une fenêtre de probabilité 95 % le long de la loi et en gardant la plus étroite, est [0,0026 ; 0,2080] (largeur 0,2054).
 
-```python
+```python hide
 def hpd(loi, masse=0.95, pas=2000):
     """Plus court intervalle de probabilité `masse` : on fait glisser une fenêtre de quantiles."""
     bas = np.linspace(0, 1 - masse, pas)
@@ -268,7 +293,7 @@ Beta(2, 20)  moyenne : 0.0909
 HPD             : [0.0026 ; 0.2080]  largeur 0.2054
 ```
 
-Le HPD est plus court et plus proche de zéro, ce qui correspond mieux à l'idée intuitive d'un intervalle qui « suit » la densité. Pour les lois à peu près symétriques de ce chapitre, la différence est mineure ; l'intervalle à queues égales est le plus répandu.
+Le HPD est donc plus court et plus proche de zéro, ce qui correspond mieux à l'idée intuitive d'un intervalle qui « suit » la densité. Pour les lois à peu près symétriques de ce chapitre, la différence est mineure ; l'intervalle à queues égales est le plus répandu.
 
 ### 6.1.6 Le choix de l'a priori : liberté, responsabilité, et sensibilité
 
@@ -283,9 +308,17 @@ C'est la grande critique adressée à la méthode : « *l'a priori est subjectif
 | Informatif réaliste | $\mathrm{Beta}(20,20)$ | « d'après mon expérience, autour de 50 %, à quelques points près » | 40 |
 | Informatif **faux** | $\mathrm{Beta}(2,18)$ | « je suis sûre que très peu de clients rachètent » (≈ 10 %) | 20 |
 
-Comparons les lois a posteriori pour des données de plus en plus abondantes : les **10** premiers clients avec offre, puis les **100** premiers, puis les **1 015**.
+Comparons les lois a posteriori pour des données de plus en plus abondantes : les **10** premiers clients avec offre (3 rachats), puis les **100** premiers (55 rachats), puis les **1 015** (578 rachats). Voici la moyenne a posteriori et l'intervalle de crédibilité à 95 % :
 
-```python
+| $n$ | Uniforme Beta(1,1) | Jeffreys Beta(½,½) | Informatif Beta(20,20) | Informatif faux Beta(2,18) |
+|---:|---|---|---|---|
+| 10 | 0,333 [0,109 ; 0,610] | 0,318 [0,093 ; 0,606] | 0,460 [0,325 ; 0,598] | **0,167** [0,058 ; 0,317] |
+| 100 | 0,549 [0,452 ; 0,644] | 0,550 [0,452 ; 0,645] | 0,536 [0,453 ; 0,617] | 0,475 [0,387 ; 0,564] |
+| 1 015 | 0,569 [0,539 ; 0,600] | 0,569 [0,539 ; 0,600] | 0,567 [0,537 ; 0,597] | 0,560 [0,530 ; 0,590] |
+
+Les fréquences observées sont respectivement 0,30, 0,55 et 0,569.
+
+```python hide
 avec_offre = clients.loc[clients["offre_bienvenue"] == 1, "rachat_12m"].to_numpy()
 priors = {"Uniforme Beta(1,1)": (1, 1), "Jeffreys Beta(.5,.5)": (0.5, 0.5),
           "Informatif Beta(20,20)": (20, 20), "Informatif faux Beta(2,18)": (2, 18)}
@@ -340,9 +373,16 @@ Lisons ce tableau par bloc :
 
 ### 6.1.7 Intervalle de crédibilité contre intervalle de confiance : une expérience
 
-Un intervalle de crédibilité à 95 % est-il « bon » au sens fréquentiste ? Faisons l'expérience : fixons une vraie valeur $\theta$, simulons 20 000 échantillons de taille $n=30$, et comptons dans combien de cas chaque intervalle contient $\theta$ (la **couverture**). Nous comparons l'intervalle de Wald (volume I, section 3.3.4), l'intervalle de Wilson et l'intervalle de crédibilité $\mathrm{Beta}(1,1)$ à queues égales.
+Un intervalle de crédibilité à 95 % est-il « bon » au sens fréquentiste ? Faisons l'expérience : fixons une vraie valeur $\theta$, simulons 20 000 échantillons de taille $n=30$, et comptons dans combien de cas chaque intervalle contient $\theta$ (la **couverture**). Nous comparons l'intervalle de Wald (volume I, section 3.3.4), l'intervalle de Wilson et l'intervalle de crédibilité $\mathrm{Beta}(1,1)$ à queues égales. Voici la couverture obtenue (la valeur visée est 0,95) :
 
-```python
+| vrai $\theta$ | Wald | Wilson | crédibilité |
+|---:|---:|---:|---:|
+| 0,05 | 0,781 | 0,940 | 0,940 |
+| 0,10 | 0,806 | 0,974 | 0,974 |
+| 0,30 | 0,954 | 0,930 | 0,930 |
+| 0,50 | 0,958 | 0,958 | 0,958 |
+
+```python hide
 from statsmodels.stats.proportion import proportion_confint
 
 def couverture(theta_vrai, n=30, reps=20_000, graine=62):
@@ -387,9 +427,9 @@ L'idée de conjugaison dépasse le cas bêta-binomial. Voici deux autres couples
 
 *Exemple à la main.* Cinq semaines, 3, 5, 4, 6, 2 commandes sur le site. A priori $\mathrm{Gamma}(a=2,\ b=0{,}5)$ (moyenne $a/b=4$ commandes par semaine, très vague). $\sum y_i=20$, $n=5$ : a posteriori $\mathrm{Gamma}(22,\ 5{,}5)$, de moyenne $22/5{,}5=4$. (Coïncidence : l'a priori et les données étaient d'accord sur 4.)
 
-Appliquons cela aux **clients de la boutique** : nombre de commandes par an `nb_commandes_an`, modélisé par $\mathrm{Poisson}(\lambda)$ avec le même $\lambda$ pour tous.
+Appliquons cela aux **clients acquis par le canal Boutique** : nombre de commandes par an (`nb_commandes_an`), modélisé par $\mathrm{Poisson}(\lambda)$ avec le même $\lambda$ pour tous. Ils sont 504, pour 2 085 commandes au total (moyenne 4,137). Avec l'a priori $\mathrm{Gamma}(2;\,0{,}5)$ (moyenne 4, très vague), l'a posteriori est $\mathrm{Gamma}(2\,087;\ 504{,}5)$, de moyenne 4,137 et d'intervalle de crédibilité à 95 % [3,961 ; 4,316].
 
-```python
+```python hide
 boutique = clients.loc[clients["canal_acquisition"] == "Boutique", "nb_commandes_an"].to_numpy()
 n_b, s_b = len(boutique), boutique.sum()
 a0, b0 = 2.0, 0.5                                   # a priori Gamma(2, taux 0,5) : moyenne 4, très vague
@@ -406,7 +446,7 @@ a posteriori Gamma(2087, taux 504.5) : moyenne 4.137, IC95 [3.961 ; 4.316]
 variance observée / moyenne observée = 3.32   (vaudrait 1 pour une vraie loi de Poisson)
 ```
 
-L'intervalle est étroit : on est « sûr » de $\lambda$ à 0,18 près environ. Mais regardez la dernière ligne : pour une vraie loi de Poisson, variance et moyenne sont égales (volume I, section 2.2) ; ici la variance est **plusieurs fois supérieure** à la moyenne. Les clients sont *hétérogènes* (certains commandent beaucoup, d'autres peu), et le modèle de Poisson, qui suppose le même $\lambda$ pour tous, est **faux**. L'intervalle est donc trop étroit, **et le calcul bayésien ne nous l'a pas dit**. Il ne le dit jamais tout seul : un a posteriori est toujours *conditionnel à la validité du modèle*. Nous verrons en 6.4.2 comment vérifier un modèle et en réparer un (c'est aussi le sujet de la section 2.6 pour les modèles surdispersés).
+L'intervalle est étroit : on est « sûr » de $\lambda$ à 0,18 près environ. Mais regardons la dispersion : pour une vraie loi de Poisson, variance et moyenne sont égales (volume I, section 2.2) ; ici le rapport variance/moyenne vaut 3,32, soit **plus de trois fois** la valeur attendue. Les clients sont *hétérogènes* (certains commandent beaucoup, d'autres peu), et le modèle de Poisson, qui suppose le même $\lambda$ pour tous, est **faux**. L'intervalle est donc trop étroit, **et le calcul bayésien ne nous l'a pas dit**. Il ne le dit jamais tout seul : un a posteriori est toujours *conditionnel à la validité du modèle*. Nous verrons en 6.4.2 comment vérifier un modèle et en réparer un (c'est aussi le sujet de la section 2.6 pour les modèles surdispersés).
 
 > ⚠️ **Le piège le plus fréquent de la modélisation bayésienne.** Un a posteriori très étroit ne prouve **pas** qu'on est sûr de soi : il prouve qu'on est sûr *si le modèle est juste*. Un modèle faux produit des intervalles étroits et faux, avec la même élégance.
 
@@ -418,9 +458,11 @@ On additionne des **précisions** (l'inverse des variances) et on fait une moyen
 > $$-\tfrac12\left[\mu^2\left(\tfrac1{\tau_0^2}+\tfrac n{\sigma^2}\right)-2\mu\left(\tfrac{\mu_0}{\tau_0^2}+\tfrac{n\bar y}{\sigma^2}\right)\right]+\text{cte}.$$
 > Un polynôme du second degré en $\mu$ dans l'exponentielle est une densité normale ; en « complétant le carré », on lit sa précision $\frac1{\tau_n^2}$ (le coefficient de $\mu^2$) et sa moyenne $\mu_n$ (le rapport entre le coefficient de $\mu$ et celui de $\mu^2$). $\square$
 
-*Exemple à la main.* On s'intéresse à $\mu$ = logarithme du panier moyen d'un client de la boutique. Supposons $\sigma=0{,}35$ connu (hypothèse de confort, qu'on lèvera en 6.3), un a priori $\mathcal N(4{,}0;\ 0{,}5^2)$, et $n=5$ clients de moyenne $\bar y=4{,}4$. Les précisions valent $1/0{,}5^2=4$ pour l'a priori et $5/0{,}35^2=40{,}82$ pour les données. Précision totale : $44{,}82$, donc $\tau_n=1/\sqrt{44{,}82}=0{,}149$. Moyenne : $\mu_n=\dfrac{4\times4{,}0+40{,}82\times4{,}4}{44{,}82}=\dfrac{16+179{,}6}{44{,}82}=4{,}364$. Les données (91 % du poids) l'emportent largement.
+*Exemple à la main.* On s'intéresse à $\mu$ = logarithme du panier moyen d'un client. Supposons $\sigma=0{,}35$ connu (hypothèse de confort, qu'on lèvera en 6.3), un a priori $\mathcal N(4{,}0;\ 0{,}5^2)$, et $n=5$ clients de moyenne $\bar y=4{,}4$. Les précisions valent $1/0{,}5^2=4$ pour l'a priori et $5/0{,}35^2=40{,}82$ pour les données. Précision totale : $44{,}82$, donc $\tau_n=1/\sqrt{44{,}82}=0{,}149$. Moyenne : $\mu_n=\dfrac{4\times4{,}0+40{,}82\times4{,}4}{44{,}82}=\dfrac{16+179{,}6}{44{,}82}=4{,}364$. Les données (91 % du poids) l'emportent largement.
 
-```python
+Sur les 449 acheteurs du canal Boutique, la moyenne du log-panier est 4,2183 ; avec les mêmes hypothèses, l'a posteriori de $\mu$ est $\mathcal N(4{,}2181;\ 0{,}0165^2)$, d'intervalle à 95 % [4,1857 ; 4,2504].
+
+```python hide
 # Vérification du calcul à la main, puis application aux 504 clients de la boutique
 def normal_normal(mu0, tau0, sigma, ybar, n):
     prec = 1 / tau0**2 + n / sigma**2
@@ -444,7 +486,7 @@ a posteriori de mu : N(4.2181, 0.0165²) | IC95 [4.1857 ; 4.2504]
 soit un panier « typique » (médiane) de 67.9 €, IC95 [65.7 ; 70.1] €
 ```
 
-Le panier « typique » (médiane, puisque $\mu$ est le logarithme) d'un acheteur de la boutique est d'environ 68 €, avec une incertitude d'environ $\pm2$ €. Les données étant simulées, nous connaissons la vérité : le générateur a programmé un log-panier moyen de $4{,}00+0{,}22=4{,}22$ pour la boutique, soit $e^{4{,}22}\approx68{,}0$ €. L'intervalle de crédibilité contient bien cette valeur.
+Le panier « typique » (médiane, puisque $\mu$ est le logarithme) d'un acheteur du canal Boutique est d'environ 67,9 €, intervalle à 95 % [65,7 ; 70,1] €. Les données étant simulées, nous connaissons la vérité : le générateur a programmé un log-panier moyen de $4{,}00+0{,}22=4{,}22$ pour la boutique, soit $e^{4{,}22}\approx68{,}0$ €. L'intervalle de crédibilité contient bien cette valeur.
 
 ### 6.1.9 La loi prédictive : prédire du nouveau
 
@@ -453,9 +495,15 @@ Un estimateur de $\theta$ n'est pas un but en soi. La gérante veut des **prédi
 - **Plug-in** : on remplace $\theta$ par son estimation $\hat\theta=0{,}5695$ et on prend $\mathrm{Bin}(100,\hat\theta)$. Cela **ignore** l'incertitude sur $\theta$.
 - **Prédictive a posteriori** : on **moyenne** la loi binomiale sur toutes les valeurs plausibles de $\theta$, pondérées par leur probabilité a posteriori :
 $$p(\tilde y\mid y)=\int p(\tilde y\mid\theta)\,p(\theta\mid y)\,d\theta.$$
-Pour un a posteriori bêta, cette intégrale est connue : c'est la loi **bêta-binomiale**.
+Pour un a posteriori bêta, cette intégrale est connue : c'est la loi **bêta-binomiale**. Pour 100 nouveaux clients avec offre, on obtient :
 
-```python
+| Méthode | Moyenne | Écart-type | Intervalle à 95 % |
+|---|---:|---:|---|
+| plug-in $\mathrm{Bin}(100,\hat\theta)$ | 56,95 | 4,95 | [47 ; 67] |
+| prédictive bêta-binomiale | 56,93 | 5,19 | [47 ; 67] |
+| simulation ($\theta$ puis $y$) | 56,94 | 5,20 | [47 ; 67] |
+
+```python hide
 post1 = post[1]
 n_nouv = 100
 plug = stats.binom(n_nouv, avec_offre.mean())
@@ -489,3 +537,5 @@ La loi prédictive est **un peu plus large** que le plug-in (écart-type 5,19 co
 > - Un a posteriori étroit n'est valable que si le **modèle** est juste (le cas du modèle de Poisson ci-dessus).
 > - La loi **prédictive** incorpore l'incertitude sur les paramètres.
 > - Quand l'a posteriori n'est pas une loi connue (régression logistique, modèles hiérarchiques…), il faut **simuler** : c'est l'objet des sections 6.2 et 6.3.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 6 : application 6.1, exercices 6.1 à 6.4.

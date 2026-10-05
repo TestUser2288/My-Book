@@ -18,7 +18,7 @@ $$\ell_1^2=\frac{r_{12}\,r_{13}}{r_{23}}=\frac{0{,}72\times0{,}63}{0{,}56}=0{,}8
 
 La **communalité** $h_i^2=\ell_i^2$ est la part de la variance de la variable expliquée par le facteur commun : $0{,}81$, $0{,}64$, $0{,}49$. Les **unicités** sont les compléments à 1 : $\psi=(0{,}19;\ 0{,}36;\ 0{,}51)$. La première question est donc un excellent thermomètre du facteur (81 % de sa variance en vient), la troisième un thermomètre médiocre (49 %).
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
@@ -55,9 +55,18 @@ Tout est là : le modèle dit que les **covariances** (les termes hors diagonale
 
 > 📐 **L'indétermination des rotations.** Soit $T$ une matrice orthogonale $k\times k$ ($TT^\top=I$). Remplaçons $\Lambda$ par $\Lambda^*=\Lambda T$. Alors $\Lambda^*\Lambda^{*\top}=\Lambda TT^\top\Lambda^\top=\Lambda\Lambda^\top$ : **la même matrice $\Sigma$**, donc exactement le même ajustement aux données. Les saturations ne sont donc définies qu'**à une rotation près** ; les communalités $h_i^2=\sum_j\ell_{ij}^2$, elles, ne changent pas (la norme de chaque ligne est conservée par une rotation). Cette liberté n'est pas un défaut mais une chance : parmi toutes les solutions équivalentes, on choisira celle qui est **la plus facile à interpréter** (section 3.2.5).
 
-Vérifions-le numériquement sur une rotation quelconque :
+Un exemple chiffré. Prenons un modèle à deux facteurs pour quatre questions et tournons les axes de $0{,}7$ radian :
 
-```python
+| Question | Saturations avant $(F_1\,;\,F_2)$ | Saturations après $(F_1\,;\,F_2)$ | Communalité (avant **et** après) |
+|---|---|---|---|
+| $q_1$ | $(0{,}80\,;\,0{,}10)$ | $(0{,}68\,;\,-0{,}44)$ | $0{,}65$ |
+| $q_2$ | $(0{,}70\,;\,0{,}20)$ | $(0{,}66\,;\,-0{,}30)$ | $0{,}53$ |
+| $q_3$ | $(0{,}10\,;\,0{,}90)$ | $(0{,}66\,;\,0{,}62)$ | $0{,}82$ |
+| $q_4$ | $(0{,}20\,;\,0{,}70)$ | $(0{,}60\,;\,0{,}41)$ | $0{,}53$ |
+
+Les saturations ont changé de façon spectaculaire, mais la matrice $\Sigma=\Lambda\Lambda^\top+\Psi$ reconstruite est **exactement** la même (un contrôle numérique le confirme à la précision machine) et les communalités n'ont pas bougé.
+
+```python hide
 rng = np.random.default_rng(0)
 Lam = np.array([[0.8, 0.1], [0.7, 0.2], [0.1, 0.9], [0.2, 0.7]])      # saturations d'un modèle à 2 facteurs
 Psi = np.diag(1 - (Lam**2).sum(axis=1))
@@ -106,9 +115,9 @@ Deux grandes familles de méthodes.
 2. remplacer la diagonale de $R$ par ces communalités, extraire les $k$ premières valeurs propres/vecteurs propres : $\Lambda=V_k\sqrt{D_k}$ ;
 3. recalculer les communalités $h_i^2=\sum_j\ell_{ij}^2$ ; recommencer jusqu'à stabilisation.
 
-C'est **l'ACP appliquée à une matrice dont la diagonale a été corrigée** pour ne garder que la variance commune. Écrivons-la :
+C'est **l'ACP appliquée à une matrice dont la diagonale a été corrigée** pour ne garder que la variance commune. L'algorithme tient en une quinzaine de lignes de NumPy (non reproduites ici) ; sur le questionnaire, avec $k=2$ facteurs, il converge en quelques itérations.
 
-```python
+```python hide
 q = pd.read_csv("donnees/enquete_satisfaction.csv")
 items = [f"q{j}" for j in range(1, 9)]
 Q = q[items]
@@ -139,9 +148,9 @@ print("communalités (axes principaux) :", h2_paf.round(3))
 communalités (axes principaux) : [0.57  0.413 0.447 0.277 0.571 0.418 0.522 0.408]
 ```
 
-**2. Le maximum de vraisemblance.** On suppose $\mathbf x\sim\mathcal N(0,\Sigma)$ avec $\Sigma=\Lambda\Lambda^\top+\Psi$ et on maximise la vraisemblance (volume I, section 3.2.5) par rapport à $\Lambda$ et $\Psi$. Pas de formule fermée : on utilise un algorithme itératif. Avantage décisif : on dispose d'un **test d'ajustement** (section 3.2.4). Nous utilisons l'implémentation de `scikit-learn`, et nous comparons les deux méthodes :
+**2. Le maximum de vraisemblance.** On suppose $\mathbf x\sim\mathcal N(0,\Sigma)$ avec $\Sigma=\Lambda\Lambda^\top+\Psi$ et on maximise la vraisemblance (volume I, section 3.2.5) par rapport à $\Lambda$ et $\Psi$. Pas de formule fermée : on utilise un algorithme itératif. Avantage décisif : on dispose d'un **test d'ajustement** (section 3.2.4). Nous utilisons l'implémentation de `scikit-learn` et nous comparons les deux méthodes, question par question :
 
-```python
+```python hide-code
 from sklearn.decomposition import FactorAnalysis
 
 fa_ml = FactorAnalysis(n_components=2, rotation=None, random_state=0).fit(Zq)
@@ -187,7 +196,7 @@ et elle suit approximativement une loi du $\chi^2$ à $\mathrm{ddl}=\frac{(p-k)^
 
 Calculons tout cela pour $k=1,2,3$ :
 
-```python
+```python hide-code
 from scipy import stats
 
 def test_ajustement(R, k, n):
@@ -227,7 +236,7 @@ Les trois outils (éboulis/analyse parallèle, test d'ajustement, BIC) convergen
 
 Regardons les saturations « brutes » du modèle à deux facteurs :
 
-```python
+```python hide-code
 brut = pd.DataFrame(L_ml, index=items, columns=["F1", "F2"])
 print(brut.round(2).to_string())
 ```
@@ -246,9 +255,9 @@ q8  0.56 -0.30
 
 Les saturations brutes se ressemblent beaucoup à celles de l'ACP : un premier axe « général » (toutes les questions du même côté) et un second axe qui **oppose** produits et service. Ce n'est pas un hasard : l'algorithme choisit la solution où le premier facteur capte le maximum de variance commune, ce qui produit un facteur général. Mais, comme nous l'avons montré en 3.2.2, **toute rotation de ces axes explique les données aussi bien**. On peut donc faire tourner les axes jusqu'à ce que chaque question soit proche d'**un seul** facteur : c'est ce qu'on appelle la **structure simple** (Thurstone).
 
-La **rotation varimax** (Kaiser, 1958) cherche la rotation orthogonale qui **maximise la variance des carrés des saturations** dans chaque colonne. Intuition : la variance des carrés est grande quand certaines saturations sont proches de 1 et les autres proches de 0, c'est-à-dire quand les saturations sont « tranchées ». Voici l'algorithme, qui s'écrit en dix lignes grâce à la SVD :
+La **rotation varimax** (Kaiser, 1958) cherche la rotation orthogonale qui **maximise la variance des carrés des saturations** dans chaque colonne. Intuition : la variance des carrés est grande quand certaines saturations sont proches de 1 et les autres proches de 0, c'est-à-dire quand les saturations sont « tranchées ». Un algorithme itératif (celui de Kaiser, qui s'écrit en dix lignes grâce à la SVD) trouve cette rotation. Après varimax, les saturations deviennent presque un tableau de $0$ et de $1$ :
 
-```python
+```python hide
 def varimax(L, gamma=1.0, iterations=100, tol=1e-9):
     """Rotation varimax orthogonale (algorithme de Kaiser, version SVD). Renvoie L tournée et la rotation."""
     p, k = L.shape
@@ -271,12 +280,15 @@ def aligner(M):
     return M * np.sign(M[np.abs(M).argmax(axis=0), [0, 1]])
 
 tourne = pd.DataFrame(aligner(L_vm), index=items, columns=["F1 (produits)", "F2 (service)"])
-print(tourne.round(2).to_string())
-print("communalités inchangées :", np.allclose((L_vm**2).sum(axis=1), h2_ml))
+assert np.allclose((L_vm**2).sum(axis=1), h2_ml)          # les communalités sont inchangées
 
 # comparaison avec la rotation varimax de scikit-learn
 L_sk = FactorAnalysis(n_components=2, rotation="varimax", random_state=0).fit(Zq).components_.T
-print("écart maximal avec la solution de scikit-learn :", np.abs(aligner(L_vm) - aligner(L_sk)).max().round(4))
+assert np.abs(aligner(L_vm) - aligner(L_sk)).max() < 0.01   # même solution que scikit-learn
+```
+
+```python hide-code
+print(tourne.round(2).to_string())
 ```
 <!--sortie-->
 ```text
@@ -289,9 +301,29 @@ q5           0.09          0.75
 q6           0.11          0.63
 q7           0.05          0.72
 q8           0.07          0.63
-communalités inchangées : True
-écart maximal avec la solution de scikit-learn : 0.001
 ```
+
+Les bibliothèques font tout cela en une ligne :
+
+```python
+from sklearn.decomposition import FactorAnalysis
+
+fa = FactorAnalysis(n_components=2, rotation="varimax").fit(Zq)      # Zq : les notes standardisées
+print(fa.components_.T.round(2))
+```
+<!--sortie-->
+```text
+[[-0.07 -0.75]
+ [-0.07 -0.64]
+ [-0.12 -0.66]
+ [-0.08 -0.52]
+ [-0.75 -0.09]
+ [-0.63 -0.11]
+ [-0.72 -0.05]
+ [-0.63 -0.07]]
+```
+
+La bibliothèque donne la même solution que le tableau ci-dessus, à l'ordre et au signe des colonnes près : ici, le facteur « service » vient en premier et les saturations sont de signe opposé. Cet ordre et ce signe sont arbitraires d'une bibliothèque à l'autre, comme pour les axes d'une ACP. Un contrôle numérique confirme que notre propre implémentation de varimax coïncide avec celle-ci à $0{,}01$ près et que les communalités n'ont pas bougé.
 
 ![Les huit questions dans le plan des deux facteurs : avant rotation (à gauche) et après rotation varimax (à droite). La rotation fait tourner les axes sans modifier la position relative des points ; après rotation, chaque question est proche d'un seul axe.](figures/ch03-af-rotation.png)
 
@@ -315,7 +347,7 @@ Les deux méthodes donnent souvent des résultats voisins, mais elles ne répond
 
 Comparons, sur nos données, la façon dont chacune des deux méthodes « voit » la qualité de la représentation de chaque question :
 
-```python
+```python hide-code
 w, V = np.linalg.eigh(R)
 o = np.argsort(w)[::-1]
 w, V = w[o], V[:, o]
@@ -323,30 +355,30 @@ Lacp = V[:, :2] * np.sqrt(w[:2])
 h2_acp = (Lacp**2).sum(axis=1)
 
 tab = pd.DataFrame({"part de variance (ACP, 2 comp.)": h2_acp, "communalité (AF, 2 facteurs)": h2_ml}, index=items)
+tab.loc["moyenne"] = tab.mean()
 print(tab.round(2).to_string())
-print("moyennes :", tab.mean().round(3).to_dict())
 ```
 <!--sortie-->
 ```text
-    part de variance (ACP, 2 comp.)  communalité (AF, 2 facteurs)
-q1                             0.66                          0.56
-q2                             0.57                          0.41
-q3                             0.59                          0.45
-q4                             0.45                          0.28
-q5                             0.66                          0.57
-q6                             0.57                          0.41
-q7                             0.64                          0.53
-q8                             0.56                          0.41
-moyennes : {'part de variance (ACP, 2 comp.)': 0.586, 'communalité (AF, 2 facteurs)': 0.453}
+         part de variance (ACP, 2 comp.)  communalité (AF, 2 facteurs)
+q1                                  0.66                          0.56
+q2                                  0.57                          0.41
+q3                                  0.59                          0.45
+q4                                  0.45                          0.28
+q5                                  0.66                          0.57
+q6                                  0.57                          0.41
+q7                                  0.64                          0.53
+q8                                  0.56                          0.41
+moyenne                             0.59                          0.45
 ```
 
-L'ACP attribue toujours aux composantes **plus** de variance que l'analyse factorielle n'en attribue aux facteurs : l'ACP considère que toute la variance d'une question est « à expliquer », alors que l'analyse factorielle admet qu'une partie est du bruit propre à la question (l'unicité). Quand les variables sont très corrélées, l'écart est petit ; quand elles le sont peu, comme ici (les corrélations intra-groupe sont autour de 0,4), il est notable.
+Sur les huit questions, la part de variance restituée vaut en moyenne $0{,}59$ pour l'ACP à deux composantes et $0{,}45$ pour l'analyse factorielle à deux facteurs : l'ACP attribue toujours aux composantes **plus** de variance que l'analyse factorielle n'en attribue aux facteurs : l'ACP considère que toute la variance d'une question est « à expliquer », alors que l'analyse factorielle admet qu'une partie est du bruit propre à la question (l'unicité). Quand les variables sont très corrélées, l'écart est petit ; quand elles le sont peu, comme ici (les corrélations intra-groupe sont autour de 0,4), il est notable.
 
 ### 3.2.7 La révélation : qu'avait-on programmé ?
 
 Les données sont simulées. Voici la vérité : deux facteurs latents (la qualité des produits, la qualité du service) avec une corrélation de **0,30**, et des saturations vraies de $(0{,}80;\ 0{,}70;\ 0{,}75;\ 0{,}60)$ pour `q1` à `q4` sur le premier facteur et $(0{,}80;\ 0{,}70;\ 0{,}75;\ 0{,}65)$ pour `q5` à `q8` sur le second. Chaque note a ensuite été **arrondie et bornée** entre 1 et 5, comme dans un vrai questionnaire. Comparons à ce que la méthode a estimé :
 
-```python
+```python hide-code
 vrai = np.array([0.80, 0.70, 0.75, 0.60, 0.80, 0.70, 0.75, 0.65])
 principale = pd.concat([tourne.iloc[:4, 0], tourne.iloc[4:, 1]])      # saturation sur le « bon » facteur
 croisee = pd.concat([tourne.iloc[:4, 1], tourne.iloc[4:, 0]]).abs()    # saturation sur l'autre facteur
@@ -370,7 +402,7 @@ erreur absolue moyenne sur les saturations principales : 0.055
 
 > ⚠️ **Pourquoi l'estimation n'est pas exacte.** Trois raisons. (1) L'**échantillon** est fini (1 212 répondantes) : toute estimation fluctue. (2) Les notes ont été **arrondies** à des entiers de 1 à 5, ce qui atténue les corrélations et donc les saturations (l'arrondi est une forme de bruit de mesure). (3) Les facteurs vrais sont **corrélés** (0,30) alors que varimax les impose orthogonaux : il compense en attribuant de petites **saturations croisées** aux questions de l'autre groupe, ce qui explique les valeurs non nulles de la dernière colonne.
 
-### 3.2.8 Application : construire deux échelles de mesure
+### 3.2.8 Construire deux échelles de mesure
 
 Le but pratique d'une analyse factorielle de questionnaire est de **construire des échelles** : un score « produits » et un score « service », moyennes des questions de chaque groupe. Il faut alors vérifier que les questions d'un groupe forment bien un ensemble **cohérent**. L'indicateur classique est l'**alpha de Cronbach** :
 
@@ -378,7 +410,7 @@ $$\alpha=\frac{k}{k-1}\Bigl(1-\frac{\sum_{i=1}^k\operatorname{Var}(x_i)}{\operat
 
 Il vaut 0 si les questions ne sont pas corrélées et tend vers 1 si elles le sont toutes parfaitement ; au-dessus de 0,7 on parle de cohérence acceptable (convention usuelle, sans valeur de loi universelle).
 
-```python
+```python hide
 def alpha_cronbach(D):
     D = np.asarray(D, dtype=float)
     k = D.shape[1]
@@ -403,9 +435,14 @@ corrélation entre les deux échelles : 0.19
 
 Les deux échelles sont **cohérentes** ($\alpha=0{,}74$ et $0{,}78$, au-dessus du repère de 0,7). Leur corrélation, de $0{,}19$, est plus faible que la corrélation **vraie** de $0{,}30$ entre les facteurs : c'est l'effet classique d'**atténuation par l'erreur de mesure** (chaque score contient du bruit propre aux questions, qui dilue la corrélation entre les facteurs sous-jacents). Remarquez que l'alpha des huit questions réunies reste honorable ($0{,}73$), mais qu'il serait trompeur de conclure à « une seule dimension » : un alpha élevé est compatible avec **plusieurs** dimensions corrélées. C'est l'analyse factorielle, pas l'alpha, qui répond à la question « combien de dimensions ? ».
 
-Reste la question de fond : ces deux scores sont-ils liés au comportement des clientes ? Joignons-les au fichier des clientes.
+Reste la question de fond : ces deux scores sont-ils liés au comportement des clientes ? On les joint au fichier des clientes (l'application 3.2 du cahier détaille la démarche) et l'on regarde, parmi les clientes ayant commandé, leurs corrélations avec quelques comportements d'achat :
 
-```python
+| | panier moyen | durée de la relation | nombre de commandes | âge |
+|---|---:|---:|---:|---:|
+| score « produits » | 0,24 | 0,04 | 0,20 | 0,03 |
+| score « service » | 0,09 | 0,16 | 0,16 | −0,00 |
+
+```python hide
 c = pd.read_csv("donnees/clients.csv")
 f = scores.merge(c[["id_client", "rachat_12m", "panier_moyen", "duree_mois", "nb_commandes_an", "age"]], on="id_client")
 f = f[f["panier_moyen"] > 0]                     # clientes ayant commandé
@@ -426,11 +463,11 @@ rachat_12m
 1                     3.80           3.68
 ```
 
-Les deux échelles ne sont **pas redondantes**, elles sont associées à des comportements différents. Le score « produits » est le mieux corrélé au **panier moyen** ($0{,}24$ contre $0{,}09$ pour le score « service »), tandis que le score « service » est le mieux corrélé à la **durée de la relation** ($0{,}16$ contre $0{,}04$). Les deux sont liés au nombre de commandes ($0{,}20$ et $0{,}16$), et les clientes qui rachètent sont plus satisfaites sur les deux plans. Cela confirme l'indice entrevu en 3.1.7 : les deux dimensions ont des rôles distincts.
+Les deux échelles ne sont **pas redondantes**, elles sont associées à des comportements différents. (Parmi les clientes qui ont racheté dans les douze mois, le score moyen « produits » est de $3{,}80$ contre $3{,}46$ pour les autres, et le score « service » de $3{,}68$ contre $3{,}41$.) Le score « produits » est le mieux corrélé au **panier moyen** ($0{,}24$ contre $0{,}09$ pour le score « service »), tandis que le score « service » est le mieux corrélé à la **durée de la relation** ($0{,}16$ contre $0{,}04$). Les deux sont liés au nombre de commandes ($0{,}20$ et $0{,}16$), et les clientes qui rachètent sont plus satisfaites sur les deux plans.
 
 > 🧪 **Révélation.** C'est exactement ce qui avait été programmé : le facteur « produits » influence le panier (et le nombre de commandes), le facteur « service » influence la durée de la relation (et le rachat). Notez que l'analyse factorielle ne **savait rien** de ces liens : elle a simplement séparé deux dimensions, et c'est en les confrontant ensuite à des comportements que leur sens apparaît.
 
-> 🛠️ **Ce que l'on peut dire, et ne pas dire.** Ces corrélations sont **modestes** (entre 0,1 et 0,25) et elles ne prouvent aucune causalité : une cliente satisfaite rachète peut-être pour des raisons qui jouent aussi sur ses réponses. Mais la gérante dispose désormais de deux indicateurs fiables, chacun résumant quatre questions, à suivre dans le temps, et d'une hypothèse de travail claire : le **produit** fait le panier, le **service** fait la fidélité. Pour vérifier la part de chacun une fois les autres facteurs contrôlés, il faudra un modèle de régression (chapitres 1 et 2) ou, pour la durée de la relation, un modèle de survie (chapitre 5).
+> ⚠️ **Ce que l'on peut dire, et ne pas dire.** Ces corrélations sont **modestes** (entre 0,1 et 0,25) et elles ne prouvent aucune causalité : une cliente satisfaite rachète peut-être pour des raisons qui jouent aussi sur ses réponses. Mais la gérante dispose désormais de deux indicateurs fiables, chacun résumant quatre questions, à suivre dans le temps, et d'une hypothèse de travail claire : le **produit** fait le panier, le **service** fait la fidélité. Pour vérifier la part de chacun une fois les autres facteurs contrôlés, il faudra un modèle de régression (chapitres 1 et 2) ou, pour la durée de la relation, un modèle de survie (chapitre 5).
 
 > ✅ **À retenir**
 > - Le modèle factoriel écrit $\Sigma=\Lambda\Lambda^\top+\Psi$ : les covariances viennent de **facteurs communs**, le reste est de l'**unicité**. La **communalité** d'une variable est la part de sa variance expliquée par les facteurs.
@@ -438,3 +475,5 @@ Les deux échelles ne sont **pas redondantes**, elles sont associées à des com
 > - On estime par **axes principaux** ou **maximum de vraisemblance** ; ce dernier fournit un **test d'ajustement** et permet de comparer des modèles à $k$ différents.
 > - **ACP** = résumer ; **analyse factorielle** = modéliser des causes cachées. Elles diffèrent par la variance expliquée (totale contre commune) et par le statut des axes.
 > - Pour un questionnaire : construire des **échelles**, mesurer leur cohérence (**alpha de Cronbach**), et ne pas confondre alpha élevé et unidimensionnalité.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.2, exercices 3.6 à 3.8.

@@ -1,12 +1,12 @@
 ## 2.2 Régression logistique
 
-> 💡 **Intuition.** la gérante envoie un bon de bienvenue à la moitié de ses nouveaux clients, tirés au sort. Douze mois plus tard, elle observe pour chaque client un seul bit d'information : a-t-il **racheté** (1) ou non (0) ? Elle veut savoir de combien l'offre augmente les chances de rachat, et comment les autres caractéristiques (âge, canal d'acquisition, satisfaction) y contribuent. La régression logistique modélise la **probabilité** de racheter, mais pas directement : elle modélise une transformation de cette probabilité, la **cote**, qui vit sur toute la droite réelle et qui se prête à un modèle linéaire.
+> 💡 **Intuition.** La gérante envoie un bon de bienvenue à la moitié de ses nouveaux clients, tirés au sort. Douze mois plus tard, elle observe pour chaque client un seul bit d'information : a-t-il **racheté** (1) ou non (0) ? Elle veut savoir de combien l'offre augmente les chances de rachat, et comment les autres caractéristiques (âge, canal d'acquisition, satisfaction) y contribuent. La régression logistique modélise la **probabilité** de racheter, mais pas directement : elle modélise une transformation de cette probabilité, la **cote**, qui vit sur toute la droite réelle et qui se prête à un modèle linéaire.
 
 ### 2.2.1 De la probabilité à la cote
 
 Si un événement a la probabilité $p$, sa **cote** (*odds*) est $\dfrac{p}{1-p}$ : le rapport entre les chances que l'événement arrive et les chances qu'il n'arrive pas. Une probabilité de $0{,}75$ donne une cote de $3$ (« trois contre un »). Le **logit** est le logarithme de la cote : $\operatorname{logit}(p)=\log\dfrac{p}{1-p}$.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -19,7 +19,9 @@ from scipy.special import expit
 
 clients = pd.read_csv("donnees/clients.csv")
 clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])  # référence : Boutique
+```
 
+```python hide-code
 p = np.array([0.05, 0.10, 0.25, 0.50, 0.60, 0.75, 0.90, 0.95])
 tab = pd.DataFrame({"probabilité p": p, "cote p/(1-p)": p / (1 - p), "logit = log(cote)": np.log(p / (1 - p))})
 print(tab.round(3).to_string(index=False))
@@ -51,7 +53,7 @@ soit, de façon équivalente, $p_i=\dfrac{1}{1+e^{-x_i^\top\beta}}$.
 
 **Comment lire un coefficient ?** Si la variable $x_j$ augmente d'une unité, toutes choses égales par ailleurs, le logit augmente de $\beta_j$, c'est-à-dire que la **cote est multipliée par $e^{\beta_j}$** : $e^{\beta_j}$ est un **rapport de cotes** (*odds ratio*, OR). Un OR de 1 signifie « pas d'effet » ; supérieur à 1, l'effet favorise l'événement ; inférieur à 1, il le défavorise. Mais sur l'échelle de la **probabilité**, l'effet n'est pas constant :
 
-```python
+```python hide-code
 beta = 0.5                     # un effet de +0,5 sur le logit : OR = exp(0,5) ≈ 1,65
 p0 = np.array([0.02, 0.10, 0.30, 0.50, 0.70, 0.90, 0.98])
 p1 = expit(np.log(p0 / (1 - p0)) + beta)
@@ -77,7 +79,7 @@ Un même effet de $+0{,}5$ sur le logit (un OR de 1,649) produit un gain de **12
 
 Commençons par le modèle le plus simple, une seule variable binaire : `offre_bienvenue`. Avant de l'ajuster, calculons tout à la main à partir du tableau croisé.
 
-```python
+```python hide
 croise = pd.crosstab(clients["offre_bienvenue"], clients["rachat_12m"])
 print(croise)
 sans, avec = croise.loc[0], croise.loc[1]
@@ -124,37 +126,41 @@ Ajoutons l'âge et le canal d'acquisition. Avec `statsmodels`, une formule à la
 ```python
 modele = smf.glm("rachat_12m ~ offre_bienvenue + age + canal", clients, family=sm.families.Binomial()).fit()
 print(modele.summary().tables[1])
-print()
+```
+<!--sortie-->
+```text
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+Intercept            0.5885      0.185      3.175      0.001       0.225       0.952
+canal[T.Réseaux]    -0.4630      0.116     -4.008      0.000      -0.689      -0.237
+canal[T.Site]       -0.1677      0.120     -1.402      0.161      -0.402       0.067
+offre_bienvenue      0.4933      0.091      5.423      0.000       0.315       0.672
+age                 -0.0155      0.004     -3.562      0.000      -0.024      -0.007
+====================================================================================
+```
+
+```python hide
 print("log-vraisemblance :", round(modele.llf, 2), "| déviance :", round(modele.deviance, 2), "| AIC :", round(modele.aic, 2), "| n =", int(modele.nobs))
 ```
 <!--sortie-->
 ```text
-======================================================================================
-                         coef    std err          z      P>|z|      [0.025      0.975]
---------------------------------------------------------------------------------------
-Intercept              0.5885      0.185      3.175      0.001       0.225       0.952
-canal[T.Réseaux]    -0.4630      0.116     -4.008      0.000      -0.689      -0.237
-canal[T.Site]         -0.1677      0.120     -1.402      0.161      -0.402       0.067
-offre_bienvenue        0.4933      0.091      5.423      0.000       0.315       0.672
-age                   -0.0155      0.004     -3.562      0.000      -0.024      -0.007
-======================================================================================
-
 log-vraisemblance : -1355.42 | déviance : 2710.83 | AIC : 2720.83 | n = 2000
 ```
 
 Lecture ligne à ligne (les coefficients sont des log-cotes) :
 
 - `offre_bienvenue` : $+0{,}493$ (erreur-type 0,091, $z=5{,}42$) : l'offre augmente nettement la cote de rachat.
-- `canal[T.Réseaux]` : $-0{,}463$ ($z=-4{,}01$) : à âge et offre fixés, les clients acquis par Réseaux rachètent moins que ceux de la boutique.
+- `canal[T.Réseaux]` : $-0{,}463$ ($z=-4{,}01$) : à âge et offre fixés, les clients acquis par les réseaux sociaux rachètent moins que ceux de la boutique.
 - `canal[T.Site]` : $-0{,}168$ ($p=0{,}161$) : on ne peut pas distinguer le site de la boutique.
 - `age` : $-0{,}0155$ par année ($z=-3{,}56$) : les clients plus âgés rachètent un peu moins.
 - `Intercept` : $0{,}5885$ est le logit d'un client de la boutique, sans offre, **d'âge 0** : une extrapolation sans signification (on gagnerait à *centrer* l'âge, par exemple en soustrayant 36).
 
-Sous le tableau, trois nombres : la log-vraisemblance $-1\,355{,}42$, la déviance $2\,710{,}83$ et l'AIC $2\,720{,}83$. Remarquez que, pour des données binaires, la déviance est exactement $-2\ell=2\times1\,355{,}42$ (la vraisemblance du modèle saturé vaut 0), et que l'AIC est $-2\ell+2k=2\,710{,}83+2\times5=2\,720{,}83$ avec $k=5$ paramètres. Nous reviendrons sur la déviance à la section 2.4.
+Trois nombres résument l'ajustement global : la log-vraisemblance $-1\,355{,}42$, la déviance $2\,710{,}83$ et l'AIC $2\,720{,}83$. Remarquez que, pour des données binaires, la déviance est exactement $-2\ell=2\times1\,355{,}42$ (la vraisemblance du modèle saturé vaut 0), et que l'AIC est $-2\ell+2k=2\,710{,}83+2\times5=2\,720{,}83$ avec $k=5$ paramètres. Nous reviendrons sur la déviance à la section 2.4.
 
 Les coefficients sont des **log-cotes**, peu parlants. On les convertit en rapports de cotes, avec leur intervalle de confiance à 95 % (on prend l'exponentielle des bornes de l'intervalle du coefficient).
 
-```python
+```python hide-code
 ic = modele.conf_int()
 rapports = pd.DataFrame({"OR": np.exp(modele.params), "IC95 bas": np.exp(ic[0]), "IC95 haut": np.exp(ic[1]), "p-valeur": modele.pvalues})
 print(rapports.round(3).to_string())
@@ -163,12 +169,12 @@ print("OR pour +10 ans d'âge :", round(float(np.exp(10 * modele.params["age"]))
 ```
 <!--sortie-->
 ```text
-                       OR  IC95 bas  IC95 haut  p-valeur
-Intercept           1.801     1.253      2.590     0.001
+                     OR  IC95 bas  IC95 haut  p-valeur
+Intercept         1.801     1.253      2.590     0.001
 canal[T.Réseaux]  0.629     0.502      0.789     0.000
-canal[T.Site]       0.846     0.669      1.069     0.161
-offre_bienvenue     1.638     1.370      1.957     0.000
-age                 0.985     0.976      0.993     0.000
+canal[T.Site]     0.846     0.669      1.069     0.161
+offre_bienvenue   1.638     1.370      1.957     0.000
+age               0.985     0.976      0.993     0.000
 
 OR pour +10 ans d'âge : 0.856
 ```
@@ -184,9 +190,9 @@ L'intervalle d'un OR n'est pas symétrique autour de l'OR : c'est l'exponentiell
 
 ### 2.2.5 L'estimation à la main : IRLS contre `statsmodels`
 
-Reprenons la fonction `irls` écrite à la section 2.1.5, et appliquons-la à ce modèle. Il suffit de construire la matrice $X$ (une colonne de 1, puis les variables ; `patsy` fait ce travail comme `statsmodels`).
+Reprenons l'algorithme IRLS de la section 2.1.5 (programmé dans le cahier, application 2.1) et appliquons-le à ce modèle, en construisant la matrice $X$ (une colonne de 1, puis les variables) comme le fait `statsmodels`.
 
-```python
+```python hide
 from patsy import dmatrices
 
 Y, X = dmatrices("rachat_12m ~ offre_bienvenue + age + canal", clients, return_type="dataframe")
@@ -202,22 +208,22 @@ print("écart maximal sur les erreurs-types :", f"{np.max(np.abs(np.sqrt(np.diag
 ```
 <!--sortie-->
 ```text
-                    coef (IRLS main)  coef (statsmodels)  se (IRLS main)  se (statsmodels)
-Intercept                   0.588499            0.588499        0.185372          0.185372
+                  coef (IRLS main)  coef (statsmodels)  se (IRLS main)  se (statsmodels)
+Intercept                 0.588499            0.588499        0.185372          0.185372
 canal[T.Réseaux]         -0.462955           -0.462955        0.115509          0.115509
-canal[T.Site]              -0.167719           -0.167719        0.119619          0.119619
-offre_bienvenue             0.493258            0.493258        0.090953          0.090953
-age                        -0.015498           -0.015498        0.004351          0.004351
+canal[T.Site]            -0.167719           -0.167719        0.119619          0.119619
+offre_bienvenue           0.493258            0.493258        0.090953          0.090953
+age                      -0.015498           -0.015498        0.004351          0.004351
 
 itérations de notre IRLS : 5 | écart maximal sur les coefficients : 3.13e-14
 écart maximal sur les erreurs-types : 4.44e-09
 ```
 
-Les deux méthodes donnent les **mêmes coefficients** (écart maximal de l'ordre de $10^{-14}$) et les **mêmes erreurs-types** (écart maximal de l'ordre de $10^{-9}$), après 5 itérations seulement. Notre petite fonction, écrite à partir de la théorie de la section 2.1, reproduit donc fidèlement ce que fait le logiciel : il n'y a pas de magie derrière `.fit()`. Les erreurs-types viennent de la matrice $(X^\top WX)^{-1}$ calculée au point final.
+Les deux méthodes donnent les **mêmes coefficients** (écart maximal de l'ordre de $10^{-14}$) et les **mêmes erreurs-types** (écart maximal de l'ordre de $10^{-9}$), après 5 itérations seulement. Notre petit programme, écrit à partir de la théorie de la section 2.1, reproduit donc fidèlement ce que fait le logiciel : il n'y a pas de magie derrière `.fit()`. Les erreurs-types viennent de la matrice $(X^\top WX)^{-1}$ calculée au point final.
 
 > 📐 **Une propriété du lien canonique.** Pour la régression logistique, l'équation du score (2.1.5) se simplifie : comme $\frac{\partial\mu_i}{\partial\eta_i}=p_i(1-p_i)=V(p_i)$, on obtient $\sum_i(y_i-\hat p_i)\,x_{ij}=0$ pour chaque colonne $x_j$, y compris la colonne de 1. Deux conséquences : (1) la somme des probabilités prédites est égale au nombre de « oui » observés ; (2) les résidus $y_i-\hat p_i$ sont **orthogonaux** à chaque variable explicative. Vérifions-le.
 
-```python
+```python hide
 residus = clients["rachat_12m"] - modele.fittedvalues
 print("somme des résidus (y - p̂)                :", round(float(residus.sum()), 8))
 print("somme des p̂ =", round(float(modele.fittedvalues.sum()), 3), "| nombre de 1 observés =", int(clients["rachat_12m"].sum()))
@@ -238,9 +244,9 @@ Les sommes de résidus sont nulles (à la précision de l'arrondi) et la somme d
 
 Un rapport de cotes dit « de combien la cote est multipliée » ; mais la gérante veut savoir *de combien de points de pourcentage* l'offre augmente la probabilité de rachat. Deux façons de répondre.
 
-**Pour un profil donné.** Prenons un client de 36 ans acquis par Réseaux, avec ou sans l'offre.
+**Pour un profil donné.** Prenons un client de 36 ans acquis par les réseaux sociaux, avec ou sans l'offre.
 
-```python
+```python hide
 profil = pd.DataFrame({"offre_bienvenue": [0, 1], "age": [36, 36],
                        "canal": pd.Categorical(["Réseaux", "Réseaux"], categories=["Boutique", "Réseaux", "Site"])})
 p_profil = modele.predict(profil)
@@ -257,7 +263,7 @@ gain en points de pourcentage pour ce profil   : 12.17
 
 **En moyenne sur tous les clients** (effet marginal moyen). On calcule, pour *chaque* client, sa probabilité prédite en lui attribuant l'offre, puis sans l'offre, et l'on moyenne la différence. Comme l'offre a été **attribuée au hasard**, cette quantité estime directement l'effet causal moyen de l'offre sur la probabilité de rachat.
 
-```python
+```python hide
 avec_offre = clients.assign(offre_bienvenue=1)
 sans_offre = clients.assign(offre_bienvenue=0)
 effet_moyen = (modele.predict(avec_offre) - modele.predict(sans_offre)).mean()
@@ -279,14 +285,14 @@ effet marginal moyen de l'offre (modèle) : 12.07 points
 différence brute des taux de rachat      : 12.17 points
 effet marginal moyen d'un an de plus     : -0.376 point  (soit -3.76 points pour 10 ans)
 
-                     dy/dx  Std. Err.       z  Pr(>|z|)  Conf. Int. Low  Cont. Int. Hi.
+                   dy/dx  Std. Err.       z  Pr(>|z|)  Conf. Int. Low  Cont. Int. Hi.
 canal[T.Réseaux] -0.1126     0.0277 -4.0625    0.0000         -0.1669         -0.0583
-canal[T.Site]      -0.0405     0.0287 -1.4108    0.1583         -0.0967          0.0158
-offre_bienvenue     0.1207     0.0220  5.4768    0.0000          0.0775          0.1640
-age                -0.0038     0.0010 -3.6063    0.0003         -0.0058         -0.0017
+canal[T.Site]    -0.0405     0.0287 -1.4108    0.1583         -0.0967          0.0158
+offre_bienvenue   0.1207     0.0220  5.4768    0.0000          0.0775          0.1640
+age              -0.0038     0.0010 -3.6063    0.0003         -0.0058         -0.0017
 ```
 
-Pour ce profil (Réseaux, 36 ans), l'offre fait passer la probabilité de rachat de 39,4 % à 51,5 %, soit un gain de **12,2 points** (le calcul à la main coïncide avec `predict`). En moyenne sur les 2 000 clients, l'effet marginal de l'offre est de **12,07 points**, très proche de la différence brute des taux (12,17 points) : c'est normal puisque l'offre a été tirée au sort. La fonction `get_margeff` de `statsmodels` donne le même chiffre (0,1207) avec un intervalle de confiance de **7,8 à 16,4 points**. Pour l'âge, un an de plus réduit la probabilité de rachat d'environ **0,38 point** en moyenne (0,0038 dans le tableau de `statsmodels`), soit environ 3,8 points pour dix ans. Notez que ces effets, exprimés en points, sont **moyens** : ils varient d'un client à l'autre (2.2.2).
+Pour ce profil (réseaux sociaux, 36 ans), l'offre fait passer la probabilité de rachat de 39,4 % à 51,5 %, soit un gain de **12,2 points** (le calcul à la main coïncide avec `predict`). En moyenne sur les 2 000 clients, l'effet marginal de l'offre est de **12,07 points**, très proche de la différence brute des taux (12,17 points) : c'est normal puisque l'offre a été tirée au sort. La fonction `get_margeff` de `statsmodels` donne le même chiffre (0,1207) avec un intervalle de confiance de **7,8 à 16,4 points**. Pour l'âge, un an de plus réduit la probabilité de rachat d'environ **0,38 point** en moyenne (0,0038 dans le tableau de `statsmodels`), soit environ 3,8 points pour dix ans. Notez que ces effets, exprimés en points, sont **moyens** : ils varient d'un client à l'autre (2.2.2).
 
 > 💡 **Pourquoi la différence brute et l'effet du modèle sont proches.** Quand le traitement est attribué au hasard, il est (en moyenne) indépendant de l'âge et du canal : ajuster pour ces variables précise l'estimation, mais ne la déplace pas beaucoup. Dans une étude **observationnelle** (où les clients choisissent), les deux chiffres pourraient être très différents ; c'est le sujet du chapitre 7 (inférence causale).
 
@@ -294,7 +300,7 @@ Pour ce profil (Réseaux, 36 ans), l'offre fait passer la probabilité de rachat
 
 Nous avons, pour environ 60 % des clients, deux notes issues du questionnaire de satisfaction : `note_produits` (moyenne des questions 1 à 4) et `note_service` (questions 5 à 8). Ajoutons-les au modèle, **sur les répondants seulement** (les clients qui n'ont pas répondu n'ont pas de notes).
 
-```python
+```python hide
 enquete = pd.read_csv("donnees/enquete_satisfaction.csv")
 enquete["note_produits"] = enquete[["q1", "q2", "q3", "q4"]].mean(axis=1)
 enquete["note_service"] = enquete[["q5", "q6", "q7", "q8"]].mean(axis=1)
@@ -313,14 +319,14 @@ print("OR de l'offre, sur ces mêmes répondants : sans les notes =", round(floa
 ```
 <!--sortie-->
 ```text
-                     coef     OR  IC95 bas  IC95 haut      p
-Intercept          -3.626  0.027     0.010      0.069  0.000
+                   coef     OR  IC95 bas  IC95 haut      p
+Intercept        -3.626  0.027     0.010      0.069  0.000
 canal[T.Réseaux] -0.474  0.622     0.458      0.845  0.002
-canal[T.Site]      -0.244  0.783     0.570      1.075  0.131
-offre_bienvenue     0.607  1.834     1.442      2.334  0.000
-age                -0.018  0.983     0.971      0.994  0.003
-note_produits       0.764  2.148     1.781      2.589  0.000
-note_service        0.420  1.522     1.285      1.803  0.000
+canal[T.Site]    -0.244  0.783     0.570      1.075  0.131
+offre_bienvenue   0.607  1.834     1.442      2.334  0.000
+age              -0.018  0.983     0.971      0.994  0.003
+note_produits     0.764  2.148     1.781      2.589  0.000
+note_service      0.420  1.522     1.285      1.803  0.000
 
 répondants : 1212 | AIC modèle de base : 1652.3 | AIC modèle avec notes : 1545.2
 écart-types des notes : {'note_produits': 0.69, 'note_service': 0.73}
@@ -337,7 +343,7 @@ Un modèle logistique rend une **probabilité**. On peut s'en servir de deux fa�
 
 **Matrice de confusion.** À un seuil donné, on compare la prédiction (0/1) au résultat réel.
 
-```python
+```python hide
 y = repondants["rachat_12m"].to_numpy()
 score = m_riche.fittedvalues.to_numpy()
 
@@ -363,7 +369,7 @@ Parmi les 1 212 répondants, 612 ont racheté (50,5 %) : un modèle qui répondr
 
 **Courbe ROC et AUC.** Plutôt que de choisir un seuil, on regarde **tous** les seuils à la fois : la courbe ROC trace la sensibilité (taux de vrais positifs) en fonction de $1-{}$spécificité (taux de faux positifs). L'**AUC** (*area under the curve*) est l'aire sous cette courbe. Elle a une interprétation très parlante : c'est la **probabilité qu'un client pris au hasard parmi ceux qui ont racheté ait un score plus élevé qu'un client pris au hasard parmi ceux qui n'ont pas racheté** (avec une demi-part pour les ex æquo). Vérifions-le en calculant l'AUC de trois façons.
 
-```python
+```python hide
 from sklearn.metrics import roc_auc_score
 
 def auc_paires(y, s):
@@ -394,7 +400,7 @@ Les trois calculs donnent la **même valeur**, 0,6975 : l'aire sous la courbe RO
 
 **Calibration.** Un bon classement ne suffit pas toujours : si l'on veut utiliser $\hat p$ comme une **vraie probabilité** (par exemple pour calculer un gain espéré), il faut qu'elle soit *calibrée* : parmi les clients à qui le modèle donne 70 %, environ 70 % doivent avoir racheté. On le vérifie en regroupant les clients par dixièmes de score.
 
-```python
+```python hide
 dec = pd.qcut(score, 10, labels=False)
 calib = pd.DataFrame({"p prédite": score, "observé": y, "dixième": dec}).groupby("dixième").agg(
     p_predite=("p prédite", "mean"), observe=("observé", "mean"), n=("observé", "size"))
@@ -440,9 +446,9 @@ figure enregistrée
 
 À gauche, la courbe bleue (avec les notes) est partout au-dessus de la courbe orange (sans les notes) : à taux de fausses alertes égal, elle repère davantage de rachats. À droite, les points suivent globalement la diagonale : le modèle est **assez bien calibré**. Quelques écarts sont visibles (deuxième dixième : 30,8 % prédits, 20,7 % observés), mais avec environ 121 clients par dixième, l'erreur-type d'une proportion observée est d'au plus $\sqrt{0{,}25/121}\approx4{,}5$ points : un écart de 10 points (environ deux erreurs-types) sur dix classes n'a rien d'alarmant. Nous verrons au 2.4.4 un test formel (Hosmer-Lemeshow).
 
-> ⚠️ **Évaluer sur les données qui ont servi à ajuster est optimiste.** Le modèle a vu les réponses qu'on lui demande de « prédire ». Pour une estimation honnête, on sépare les données : on ajuste sur une partie (apprentissage) et l'on évalue sur l'autre (test). C'est le sujet central du volume III ; voici un avant-goût.
+> ⚠️ **Évaluer sur les données qui ont servi à ajuster est optimiste.** Le modèle a vu les réponses qu'on lui demande de « prédire ». Pour une estimation honnête, on sépare les données : on ajuste sur une partie (apprentissage) et l'on évalue sur l'autre (test). C'est le sujet central du volume III ; en voici un avant-goût (cahier, application 2.3).
 
-```python
+```python hide
 rng = np.random.default_rng(5)
 idx = rng.permutation(len(repondants))
 n_app = int(0.7 * len(repondants))
@@ -463,7 +469,7 @@ L'AUC en test (0,719) est *supérieure* à celle d'apprentissage (0,684) : ce n'
 
 **La séparation parfaite.** Si une combinaison des variables sépare **parfaitement** les 0 des 1, la vraisemblance n'a pas de maximum : elle augmente sans fin quand les coefficients grossissent. Un exemple minuscule : six clients, trois qui n'ont pas racheté avec 1, 2 et 3 achats préalables, trois qui ont racheté avec 4, 5 et 6.
 
-```python
+```python hide
 import warnings
 x_sep = np.array([1.0, 2, 3, 4, 5, 6])
 y_sep = np.array([0, 0, 0, 1, 1, 1])
@@ -488,6 +494,8 @@ AVERTISSEMENT : Perfect separation or prediction detected, parameter may not be 
 `statsmodels` n'a pas planté, mais il a **averti** : les probabilités prédites sont arrondies à 0,0 et 1,0 (le modèle classe parfaitement), et la pente estimée (41,2) n'a pas de sens : son erreur-type est de plusieurs dizaines de milliers. L'algorithme ne s'est pas arrêté parce qu'il a trouvé un maximum, mais parce que la vraisemblance est devenue quasi plate : la « vraie » solution est infinie, et les valeurs affichées dépendent des détails de l'algorithme. **Ne faites jamais confiance à un coefficient accompagné de cet avertissement.** Les remèdes classiques sont de regrouper ou retirer la variable en cause, d'ajouter une pénalité (régularisation, section 1.5) ou d'utiliser la régression logistique de Firth (par exemple le paquet R `logistf`).
 
 **Autres pièges.** (1) **Choisir le seuil à 0,5 par réflexe** : le bon seuil dépend des coûts relatifs d'un faux positif et d'un faux négatif (envoyer une relance inutile coûte peu, rater un client précieux coûte beaucoup). (2) **Les événements rares** : avec 1 % de « oui », une exactitude de 99 % est obtenue en répondant toujours « non » ; il faut regarder la sensibilité, la précision, l'AUC. (3) **Interpréter un OR comme un risque relatif** (2.2.3). (4) **Oublier la forme fonctionnelle** : le modèle suppose que l'effet de chaque variable est **linéaire sur le logit** ; si l'effet est en cloche (section 2.5), la logistique « simple » passe à côté.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : applications 2.2 et 2.3, exercices 2.1, 2.2, 2.10 et 2.11.
 
 > ✅ **À retenir**
 > - Le modèle logistique pose $\operatorname{logit}(p)=x^\top\beta$ : les coefficients sont des **log-cotes**, $e^{\beta_j}$ est un **rapport de cotes**.

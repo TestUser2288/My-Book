@@ -30,9 +30,9 @@ Le déterminant de $\mathbf X^\top\mathbf X$ vaut $4\times30-10\times10=20$, don
 $$(\mathbf X^\top\mathbf X)^{-1}=\frac1{20}\begin{pmatrix}30&-10\\-10&4\end{pmatrix},\qquad
 \hat{\boldsymbol\beta}=\frac1{20}\begin{pmatrix}30\cdot208-10\cdot618\\-10\cdot208+4\cdot618\end{pmatrix}=\frac1{20}\begin{pmatrix}60\\392\end{pmatrix}=\begin{pmatrix}3\\19{,}6\end{pmatrix}.$$
 
-La meilleure droite est donc $\hat y=3+19{,}6\,x$ : un coût fixe de 3 € et 19,60 € par article. Les valeurs ajustées sont $22{,}6;\ 42{,}2;\ 61{,}8;\ 81{,}4$, et les **résidus** (écarts entre le réel et l'ajusté) valent $-0{,}6;\ -1{,}2;\ +4{,}2;\ -2{,}4$. Leur somme est nulle, et la somme de leurs carrés vaut $0{,}36+1{,}44+17{,}64+5{,}76=25{,}2$. Vérifions tout cela par le code.
+La meilleure droite est donc $\hat y=3+19{,}6\,x$ : un coût fixe de 3 € et 19,60 € par article. Les valeurs ajustées sont $22{,}6;\ 42{,}2;\ 61{,}8;\ 81{,}4$, et les **résidus** (écarts entre le réel et l'ajusté) valent $-0{,}6;\ -1{,}2;\ +4{,}2;\ -2{,}4$. Leur somme est nulle, et la somme de leurs carrés vaut $0{,}36+1{,}44+17{,}64+5{,}76=25{,}2$. Un calcul sur ordinateur confirme ces valeurs.
 
-```python
+```python hide
 import numpy as np
 
 x = np.array([1, 2, 3, 4])
@@ -67,9 +67,9 @@ somme des résidus        : 0.0
 somme des carrés (SCR)   : 25.2
 ```
 
-Nous avons utilisé `np.linalg.solve(XtX, Xty)` plutôt que d'inverser explicitement la matrice : résoudre un système est plus rapide et surtout **plus précis** que calculer un inverse (c'est la leçon de la section 1.5.4 du volume I sur le conditionnement). Voyons le résultat en image.
+En pratique, un logiciel ne calcule pas l'inverse de $\mathbf X^\top\mathbf X$ : il **résout** le système $\mathbf X^\top\mathbf X\,\boldsymbol\beta=\mathbf X^\top\mathbf y$, ce qui est plus rapide et surtout **plus précis** (c'est la leçon de la section 1.5.4 du volume I sur le conditionnement). Voyons le résultat en image.
 
-```python
+```python hide
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -106,7 +106,7 @@ figure enregistrée
 
 > 🧪 **Deux propriétés à remarquer.** (1) La somme des résidus est nulle (aux erreurs d'arrondi près). (2) Le produit $\mathbf X^\top\mathbf e$ est nul : les résidus sont *orthogonaux* à chaque colonne de $\mathbf X$. Nous les démontrons en 1.1.3 et 1.1.4, et elles joueront un rôle central.
 
-```python
+```python hide
 print("X' e =", (X.T @ residus).round(10))
 ```
 <!--sortie-->
@@ -156,34 +156,16 @@ $$\mathbf X^\top\hat{\boldsymbol\varepsilon}=\mathbf 0 :$$
 
 **les résidus sont orthogonaux à chaque colonne de $\mathbf X$**. En particulier, comme la première colonne est faite de 1, $\sum_i\hat\varepsilon_i=0$ : *tant que le modèle contient une constante*, les résidus sont de somme nulle. Nous avions constaté ces deux faits au 1.1.1.
 
-> 🛠️ **Une autre route vers la même solution : la descente de gradient.** Au volume I (section 1.3.3), nous avons appris à descendre une pente pas à pas. La fonction à minimiser ici est $S$, de gradient $-2\mathbf X^\top(\mathbf y-\mathbf X\boldsymbol\beta)$. Pour que la descente converge vite, on **centre** la variable $x$ (on lui soustrait sa moyenne), ce qui rend les deux directions de $\mathbf X^\top\mathbf X$ orthogonales entre elles. Vérifions que l'on retrouve $(3\,;\,19{,}6)$ (après recentrage : constante $52$ et pente $19{,}6$).
+**Une autre route vers la même solution : la descente de gradient.** Au volume I (section 1.3.3), nous avons appris à descendre une pente pas à pas. La fonction à minimiser ici est $S$, de gradient $-2\mathbf X^\top(\mathbf y-\mathbf X\boldsymbol\beta)$ : en la descendant (après avoir **centré** $x$, ce qui accélère la convergence), on retrouve la même solution, $(3\,;\,19{,}6)$ pour nos quatre commandes, en quelques dizaines de pas (cahier, application 1.1).
 
-```python
-xc = x - x.mean()                                  # x centré : -1,5 ; -0,5 ; 0,5 ; 1,5
-Xc = np.column_stack([np.ones(4), xc])
-b = np.zeros(2)
-pas = 0.1                                          # taux d'apprentissage
-for it in range(200):
-    gradient = -2 / len(y) * Xc.T @ (y - Xc @ b)   # gradient de la moyenne des carrés
-    b = b - pas * gradient
-print("descente de gradient (x centré) :", b.round(4))
-print("solution exacte                 :", np.linalg.solve(Xc.T @ Xc, Xc.T @ y).round(4))
-print("retour à l'échelle d'origine    : constante =", round(b[0] - b[1] * x.mean(), 3), "| pente =", round(b[1], 3))
-```
-<!--sortie-->
-```text
-descente de gradient (x centré) : [52.  19.6]
-solution exacte                 : [52.  19.6]
-retour à l'échelle d'origine    : constante = 3.0 | pente = 19.6
-```
 
-La descente de gradient retrouve la solution exacte (à la précision près) : il s'agit bien du même problème, résolu autrement. En pratique, les logiciels n'utilisent ni l'inverse ni la descente de gradient pour la régression linéaire classique, mais une **factorisation QR** de $\mathbf X$ (ou une SVD, volume I section 1.1.4), numériquement bien plus stable. La descente de gradient reprend tout son intérêt avec les très grands jeux de données et avec les modèles qui n'ont pas de formule fermée : la régression logistique du chapitre 2, par exemple, s'ajuste par un algorithme itératif de la même famille.
+En pratique, les logiciels n'utilisent ni l'inverse ni la descente de gradient pour la régression linéaire classique, mais une **factorisation QR** de $\mathbf X$ (ou une SVD, volume I section 1.1.4), numériquement bien plus stable. La descente de gradient reprend tout son intérêt avec les très grands jeux de données et avec les modèles qui n'ont pas de formule fermée : la régression logistique du chapitre 2, par exemple, s'ajuste par un algorithme itératif de la même famille.
 
 ### 1.1.4 La géométrie des moindres carrés : une projection
 
 Les équations normales cachent une image géométrique très puissante. Voyons les $n$ observations $\mathbf y$ comme **un seul point** (un vecteur) de l'espace $\mathbb R^n$. Les colonnes de $\mathbf X$ engendrent un sous-espace de dimension $p$ (ici, un plan si $p=2$). Les valeurs $\mathbf X\boldsymbol\beta$ que le modèle peut produire sont exactement les points de ce sous-espace. Chercher $\boldsymbol\beta$ qui minimise $\|\mathbf y-\mathbf X\boldsymbol\beta\|$, c'est **chercher le point du sous-espace le plus proche de $\mathbf y$**, et la géométrie nous dit que c'est le **projeté orthogonal** de $\mathbf y$ sur ce sous-espace.
 
-```python
+```python hide
 fig, ax = plt.subplots(figsize=(6.4, 4.2))
 ax.set_xlim(-0.3, 6.6); ax.set_ylim(-0.9, 3.9); ax.set_aspect("equal"); ax.axis("off")
 ax.plot([0, 6.2], [0, 1.24], color=GRIS, lw=4, alpha=0.45, solid_capstyle="round")
@@ -220,9 +202,13 @@ figure enregistrée
 > (En effet $\operatorname{tr}(\mathbf X(\mathbf X^\top\mathbf X)^{-1}\mathbf X^\top)=\operatorname{tr}((\mathbf X^\top\mathbf X)^{-1}\mathbf X^\top\mathbf X)=\operatorname{tr}(\mathbf I_p)=p$, car la trace est invariante par permutation circulaire.)
 > **Pythagore** s'applique alors : $\|\mathbf y\|^2=\|\hat{\mathbf y}\|^2+\|\hat{\boldsymbol\varepsilon}\|^2$.
 
-Vérifions ces propriétés sur nos quatre commandes :
+Sur nos quatre commandes, un calcul sur ordinateur donne la matrice
 
-```python
+$$\mathbf H\approx\begin{pmatrix}0{,}7&0{,}4&0{,}1&-0{,}2\\0{,}4&0{,}3&0{,}2&0{,}1\\0{,}1&0{,}2&0{,}3&0{,}4\\-0{,}2&0{,}1&0{,}4&0{,}7\end{pmatrix},$$
+
+qui est bien symétrique, idempotente, de trace $2=p$, et qui vérifie $\mathbf H\mathbf y=\hat{\mathbf y}$ ainsi que Pythagore : $\|\mathbf y\|^2=12\,762=\|\hat{\mathbf y}\|^2+\|\hat{\boldsymbol\varepsilon}\|^2$.
+
+```python hide
 H = X @ np.linalg.inv(X.T @ X) @ X.T
 print("H (arrondie) =\n", H.round(2))
 print("symétrique :", np.allclose(H, H.T), "| idempotente :", np.allclose(H @ H, H))
@@ -270,9 +256,9 @@ $$s^2=\frac{\text{SCR}}{n-p}=\frac{\sum_i\hat\varepsilon_i^2}{n-p}.$$
 > $$\mathbb E[\text{SCR}]=\mathbb E\big[\operatorname{tr}\big(\boldsymbol\varepsilon^\top(\mathbf I-\mathbf H)\boldsymbol\varepsilon\big)\big]=\operatorname{tr}\big((\mathbf I-\mathbf H)\,\mathbb E[\boldsymbol\varepsilon\boldsymbol\varepsilon^\top]\big)=\sigma^2\operatorname{tr}(\mathbf I-\mathbf H)=\sigma^2(n-p).$$
 > Intuitivement : les résidus sont plus petits que les vraies erreurs, parce que le modèle a *utilisé* $p$ degrés de liberté pour s'ajuster aux données. Diviser par $n-p$ compense exactement ce « trop bon ajustement ».
 
-**Voyons-le en simulation.** Nous connaissons la vérité dans une simulation : prenons les quatre valeurs de $x$ ci-dessus, $\boldsymbol\beta=(3,\,20)$ et $\sigma=3$, fabriquons 20 000 échantillons de quatre montants, et ajustons la droite à chacun. On comparera les moyennes et la variance **observées** des estimateurs aux formules du théorème.
+**Voyons-le en simulation.** Nous connaissons la vérité dans une simulation : prenons les quatre valeurs de $x$ ci-dessus, $\boldsymbol\beta=(3,\,20)$ et $\sigma=3$, fabriquons 20 000 échantillons de quatre montants, et ajustons la droite à chacun. On compare les moyennes et la variance **observées** des estimateurs aux formules du théorème :
 
-```python
+```python hide
 rng = np.random.default_rng(1)
 beta_vrai, sigma = np.array([3.0, 20.0]), 3.0
 R = 20000
@@ -302,7 +288,7 @@ moyenne de SCR/(n-p)     : 9.07   <- sans biais
 moyenne de SCR/n         : 4.535   <- sous-estime, facteur (n-p)/n = 0,5
 ```
 
-Les moyennes des $\hat\beta_j$ sont proches des vraies valeurs (absence de biais), les variances et covariances observées sont très proches de celles de $\sigma^2(\mathbf X^\top\mathbf X)^{-1}$, et la division par $n-p$ donne une estimation centrée de $\sigma^2$ alors que la division par $n$ la sous-estime d'un facteur $(n-p)/n=1/2$. La théorie est confirmée par l'expérience.
+Les moyennes des $\hat\beta_j$ (2,978 et 20,003) sont proches des vraies valeurs (3 et 20 : absence de biais) ; les variances observées (13,18 et 1,77) et la covariance (−4,41) sont très proches de celles de $\sigma^2(\mathbf X^\top\mathbf X)^{-1}$ (13,5 ; 1,8 et −4,5) ; et la division par $n-p$ donne une estimation centrée de $\sigma^2$ (9,07 en moyenne, pour une vraie valeur de 9) alors que la division par $n$ la sous-estime d'un facteur $(n-p)/n=1/2$ (4,54). La théorie est confirmée par l'expérience.
 
 ### 1.1.6 Décomposition de la variance et coefficient de détermination $R^2$
 
@@ -318,7 +304,7 @@ $$R^2=\frac{\text{SCE}}{\text{SCT}}=1-\frac{\text{SCR}}{\text{SCT}}\in[0,1].$$
 
 On peut montrer que $R^2$ est le **carré de la corrélation** entre $\mathbf y$ et $\hat{\mathbf y}$ : en régression simple, c'est donc le carré du coefficient de corrélation de Pearson entre $x$ et $y$ (volume I, section 3.1.7). Pour nos quatre commandes : $\text{SCT}=900+121+196+729=1946$ (les écarts de $y$ à la moyenne 52 sont $-30,-11,14,27$) et $\text{SCR}=25{,}2$, donc $R^2=1-25{,}2/1946\approx0{,}987$.
 
-```python
+```python hide
 SCT = ((y - y.mean())**2).sum()
 SCR_ = (residus**2).sum()
 SCE = ((ajuste - y.mean())**2).sum()
@@ -341,7 +327,7 @@ R² = corr(x, y)² (simple): 0.9871
 
 Passons aux données de la boutique (simulées, rappelons-le) : 2 000 clients. La gérante s'intéresse au **panier moyen** (en €) des clients qui ont commandé au moins une fois dans l'année.
 
-```python
+```python hide
 import pandas as pd
 import statsmodels.formula.api as smf
 
@@ -356,17 +342,17 @@ print("clients sans aucune commande :", int((clients["nb_commandes_an"] == 0).su
 ```text
 (2000, 12)
  id_client  age   ville canal_acquisition date_inscription  offre_bienvenue  nb_commandes_an  panier_moyen  depense_annuelle  rachat_12m  duree_mois  churn
-         1   19   Autre         Réseaux       2020-03-11                0                4         40.95            116.50           0       15.89      1
-         2   43   Ville E              Site       2019-01-10                1                2         78.34            148.92           1       33.68      0
+         1   19   Autre           Réseaux       2020-03-11                0                4         40.95            116.50           0       15.89      1
+         2   43 Ville E              Site       2019-01-10                1                2         78.34            148.92           1       33.68      0
          3   35 Ville A          Boutique       2020-07-02                1                6         73.73            509.05           0       23.22      0
-         4   42  Ville D         Réseaux       2024-08-01                0                0          0.00              0.00           0        0.96      0
+         4   42 Ville D           Réseaux       2024-08-01                0                0          0.00              0.00           0        0.96      0
 
 clients sans aucune commande : 260 sur 2000 ( 13.0 %)
 ```
 
-Les clients sans commande ont un panier moyen égal à 0 par convention : ce 0 ne signifie pas « panier nul » mais « pas de panier ». Nous les **écartons** de cette étude (c'est une décision de périmètre, comme celle du projet du volume I) ; la section 2.6 du chapitre suivant apprendra à traiter ensemble les clients actifs et les autres.
+Sur les 2 000 clients, 260 (13 %) n'ont passé aucune commande. Leur panier moyen est égal à 0 par convention : ce 0 ne signifie pas « panier nul » mais « pas de panier ». Nous les **écartons** de cette étude (c'est une décision de périmètre, comme celle du projet du volume I) ; la section 2.6 du chapitre suivant apprendra à traiter ensemble les clients actifs et les autres.
 
-```python
+```python hide
 df = clients[clients["nb_commandes_an"] > 0].copy()
 df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36                       # âge centré sur 36 ans (l'âge moyen de la clientèle)
@@ -389,9 +375,9 @@ max       245.1
 asymétrie du panier : 1.44 | du log du panier : 0.11
 ```
 
-Le panier est nettement **asymétrique** (queue vers les gros paniers), alors que son logarithme est presque symétrique. Comme au volume I (section 3.1.5), c'est le signe qu'il vaut mieux travailler sur le logarithme : les effets seront alors **multiplicatifs** (un client « 10 % plus dépensier » dépense 10 % de plus, quel que soit son niveau de départ), ce qui est bien plus naturel pour des montants.
+Il reste 1 740 clients actifs. Le panier est nettement **asymétrique** (queue vers les gros paniers ; coefficient d'asymétrie de 1,44), alors que son logarithme est presque symétrique (0,11). Comme au volume I (section 3.1.5), c'est le signe qu'il vaut mieux travailler sur le logarithme : les effets seront alors **multiplicatifs** (un client « 10 % plus dépensier » dépense 10 % de plus, quel que soit son niveau de départ), ce qui est bien plus naturel pour des montants.
 
-```python
+```python hide
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 3.6))
 ax1.hist(df["panier_moyen"], bins=40, color=BLEU, alpha=0.85)
 ax1.set_xlabel("panier moyen (€)"); ax1.set_ylabel("nombre de clients"); ax1.set_title("Panier : asymétrique")
@@ -410,7 +396,7 @@ figure enregistrée
 
 **Régression simple.** Commençons par une seule variable : l'âge (centré, pour que la constante ait un sens : elle sera le log-panier d'un client de 36 ans).
 
-```python
+```python hide
 m1 = smf.ols("log_panier ~ a", data=df).fit()
 print(m1.summary().tables[1])
 print("R² =", round(m1.rsquared, 4), "| écart-type résiduel s =", round(np.sqrt(m1.scale), 4))
@@ -426,7 +412,7 @@ a              0.0090      0.001     10.050      0.000       0.007       0.011
 R² = 0.0549 | écart-type résiduel s = 0.3941
 ```
 
-La formule `log_panier ~ a` se lit « log-panier expliqué par `a` » ; `statsmodels` ajoute la constante tout seul. Le tableau donne, pour chaque coefficient, l'estimation (`coef`), son erreur standard (`std err`), une statistique $t$, une p-valeur et un intervalle de confiance à 95 % : nous en comprendrons chaque colonne au 1.2. Retenons pour l'instant l'**interprétation** :
+Avec `statsmodels`, le modèle s'écrit en une ligne : la formule `log_panier ~ a` se lit « log-panier expliqué par `a` », et la constante est ajoutée automatiquement. Le tableau de résultats donne, pour chaque coefficient, l'estimation, son erreur standard, une statistique $t$, une p-valeur et un intervalle de confiance à 95 % : nous en comprendrons chaque colonne au 1.2. Retenons pour l'instant l'**interprétation** :
 
 - La **constante** vaut environ 4,03 : un client de 36 ans a un log-panier de 4,03, soit un panier typique de $e^{4{,}03}\approx56$ €.
 - Le coefficient de **`a`** vaut environ 0,009 : chaque année d'âge supplémentaire est associée à une hausse de **0,9 %** du panier ($\log$ y augmente de 0,009, donc $y$ est multiplié par $e^{0{,}009}\approx1{,}009$).
@@ -442,28 +428,40 @@ La formule `log_panier ~ a` se lit « log-panier expliqué par `a` » ; `statsmo
 
 > ⚠️ **Pourquoi pas une colonne par modalité ?** Parce que les trois colonnes s'additionnent exactement à la colonne de 1 de la constante : $\mathbf X$ ne serait plus de rang plein, et $(\mathbf X^\top\mathbf X)^{-1}$ n'existerait pas (violation de H2 : c'est le « piège de la variable indicatrice »). Retirer une colonne règle le problème.
 
-Ajustons maintenant le modèle à l'âge **et** au canal :
+Ajustons maintenant le modèle à l'âge **et** au canal. En code, une seule ligne suffit ; l'écriture `C(canal)` demande à `statsmodels` de traiter `canal` comme qualitative et de fabriquer les indicatrices :
 
 ```python
-m2 = smf.ols("log_panier ~ a + C(canal)", data=df).fit()
+import statsmodels.formula.api as smf
+
+m2 = smf.ols("log_panier ~ a + C(canal)", data=df).fit()     # df : clients actifs ; a : âge centré
+print(m2.params.round(3))
+```
+<!--sortie-->
+```text
+Intercept              4.221
+C(canal)[T.Site]      -0.157
+C(canal)[T.Réseaux]   -0.337
+a                      0.009
+dtype: float64
+```
+
+```python hide
 print(m2.summary().tables[1])
 print("R² =", round(m2.rsquared, 4), "| R² ajusté =", round(m2.rsquared_adj, 4), "| s =", round(np.sqrt(m2.scale), 4))
-print()
 print("Début de la matrice X (les 6 premières lignes) :")
 print(m2.model.exog[:6].round(0).astype(int), "  <- colonnes :", m2.model.exog_names)
 ```
 <!--sortie-->
 ```text
-=========================================================================================
-                            coef    std err          t      P>|t|      [0.025      0.975]
------------------------------------------------------------------------------------------
-Intercept                 4.2206      0.017    241.369      0.000       4.186       4.255
-C(canal)[T.Site]         -0.1571      0.023     -6.807      0.000      -0.202      -0.112
+=======================================================================================
+                          coef    std err          t      P>|t|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+Intercept               4.2206      0.017    241.369      0.000       4.186       4.255
+C(canal)[T.Site]       -0.1571      0.023     -6.807      0.000      -0.202      -0.112
 C(canal)[T.Réseaux]    -0.3368      0.022    -14.977      0.000      -0.381      -0.293
-a                         0.0092      0.001     10.862      0.000       0.008       0.011
-=========================================================================================
+a                       0.0092      0.001     10.862      0.000       0.008       0.011
+=======================================================================================
 R² = 0.1657 | R² ajusté = 0.1643 | s = 0.3705
-
 Début de la matrice X (les 6 premières lignes) :
 [[  1   0   1 -17]
  [  1   1   0   7]
@@ -473,7 +471,7 @@ Début de la matrice X (les 6 premières lignes) :
  [  1   0   1 -10]]   <- colonnes : ['Intercept', 'C(canal)[T.Site]', 'C(canal)[T.Réseaux]', 'a']
 ```
 
-L'écriture `C(canal)` demande à `statsmodels` de traiter `canal` comme qualitative. Voici comment lire chaque ligne :
+Voici comment lire chaque coefficient (le tableau complet donne en plus erreurs standard et intervalles ; le $R^2$ est de 16,6 %) :
 
 - **Constante** (≈ 4,22) : le log-panier d'un client de **36 ans acquis en boutique** (modalité de référence, âge à 0 après centrage), soit $e^{4{,}22}\approx68$ €.
 - **`C(canal)[T.Site]`** (≈ −0,16) : à âge égal, un client acquis par le site a un log-panier inférieur de 0,16 à celui d'un client de la boutique. En pourcentage : $e^{-0{,}157}\approx0{,}855$, soit un panier **environ 14,5 % plus petit**.
@@ -490,7 +488,7 @@ Et le $R^2$ a presque triplé par rapport au modèle précédent (de 5,5 % à 16
 2. régresser l'âge sur le **canal** seul et garder les résidus (la partie de l'âge *indépendante du canal*) ;
 3. régresser les premiers résidus sur les seconds : la pente obtenue est **exactement** le coefficient de l'âge dans le modèle complet.
 
-```python
+```python hide
 res_y = smf.ols("log_panier ~ C(canal)", data=df).fit().resid        # log-panier, une fois le canal « retiré »
 res_a = smf.ols("a ~ C(canal)", data=df).fit().resid                  # âge, une fois le canal « retiré »
 pente_fwl = (res_a @ res_y) / (res_a @ res_a)
@@ -507,7 +505,7 @@ pente obtenue par Frisch-Waugh-Lovell        : 0.00917
 
 **Calculer à la main ce que fait `statsmodels`.** Pour boucler la boucle avec les sections précédentes, reconstruisons les coefficients de `m2` par les équations normales à partir de la matrice $\mathbf X$ construite par `statsmodels` :
 
-```python
+```python hide
 Xd = m2.model.exog                      # la matrice de plan d'expérience (n x p)
 yd = m2.model.endog
 beta_main = np.linalg.solve(Xd.T @ Xd, Xd.T @ yd)
@@ -517,11 +515,11 @@ print("nombre de conditionnement de X'X :", round(np.linalg.cond(Xd.T @ Xd), 1))
 ```
 <!--sortie-->
 ```text
-                       à la main  statsmodels
-Intercept               4.220621     4.220621
-C(canal)[T.Site]       -0.157139    -0.157139
+                     à la main  statsmodels
+Intercept             4.220621     4.220621
+C(canal)[T.Site]     -0.157139    -0.157139
 C(canal)[T.Réseaux]  -0.336759    -0.336759
-a                       0.009170     0.009170
+a                     0.009170     0.009170
 n = 1740 | p = 4
 nombre de conditionnement de X'X : 1501.8
 ```
@@ -540,7 +538,7 @@ Le choix d'une transformation modifie l'**interprétation** des coefficients. Vo
 
 > ⚠️ **« ≈ 100 β % » n'est vrai que pour les petits coefficients.** Pour $\beta=-0{,}34$ (Réseaux), l'approximation donne −34 %, alors que la variation exacte est $100(e^{-0{,}34}-1)\approx-28{,}8$ %. Au-delà de $|\beta|\approx0{,}1$, utilisez toujours $e^\beta-1$.
 
-```python
+```python hide
 for nom, coef in m2.params.items():
     if nom == "Intercept":
         continue
@@ -549,7 +547,7 @@ for nom, coef in m2.params.items():
 <!--sortie-->
 ```text
 C(canal)[T.Site]       coefficient = -0.157 | approximation 100*beta = -15.7 % | exact 100*(exp(beta)-1) = -14.5 %
-C(canal)[T.Réseaux]  coefficient = -0.337 | approximation 100*beta = -33.7 % | exact 100*(exp(beta)-1) = -28.6 %
+C(canal)[T.Réseaux]    coefficient = -0.337 | approximation 100*beta = -33.7 % | exact 100*(exp(beta)-1) = -28.6 %
 a                      coefficient = +0.009 | approximation 100*beta = +0.9 % | exact 100*(exp(beta)-1) = +0.9 %
 ```
 
@@ -557,7 +555,7 @@ a                      coefficient = +0.009 | approximation 100*beta = +0.9 % | 
 
 > 📐 **Rétro-transformation.** Si $\log y\sim\mathcal N(\mu,\sigma^2)$, alors $\mathbb E[y]=e^{\mu+\sigma^2/2}$ (c'est la fonction génératrice des moments de la loi normale : $\mathbb E[e^{Z}]=e^{\mu+\sigma^2/2}$ pour $Z\sim\mathcal N(\mu,\sigma^2)$), alors que la médiane est $e^\mu$. Pour prédire la **moyenne** d'un panier, il faut donc multiplier $e^{\hat\mu}$ par un facteur correctif $e^{s^2/2}$ (ou, sans supposer la normalité, par le facteur « de Duan » $\frac1n\sum_ie^{\hat\varepsilon_i}$).
 
-```python
+```python hide
 cible = df[(df["canal"] == "Boutique") & (df["age"].between(33, 39))]            # clients de la boutique, 33-39 ans
 mu_hat = m2.predict(pd.DataFrame({"a": [0], "canal": pd.Categorical(["Boutique"], categories=["Boutique", "Site", "Réseaux"])})).iloc[0]
 s2 = m2.scale
@@ -581,25 +579,27 @@ La moyenne observée est nettement plus proche des prédictions **corrigées** q
 
 Dans `m2`, l'effet de l'âge est supposé **le même** pour les trois canaux. Mais peut-être que l'âge compte plus chez les clients Réseaux que chez ceux de la boutique ? On le teste en ajoutant une **interaction** : le produit de l'âge par les indicatrices du canal.
 
-```python
+```python hide-code
 m3 = smf.ols("log_panier ~ a * C(canal)", data=df).fit()       # a + C(canal) + a:C(canal)
 print(m3.summary().tables[1])
 ```
 <!--sortie-->
 ```text
-===========================================================================================
-                              coef    std err          t      P>|t|      [0.025      0.975]
--------------------------------------------------------------------------------------------
-Intercept                   4.2205      0.017    241.183      0.000       4.186       4.255
-C(canal)[T.Site]           -0.1568      0.023     -6.788      0.000      -0.202      -0.112
+=========================================================================================
+                            coef    std err          t      P>|t|      [0.025      0.975]
+-----------------------------------------------------------------------------------------
+Intercept                 4.2205      0.017    241.183      0.000       4.186       4.255
+C(canal)[T.Site]         -0.1568      0.023     -6.788      0.000      -0.202      -0.112
 C(canal)[T.Réseaux]      -0.3366      0.022    -14.961      0.000      -0.381      -0.292
-a                           0.0086      0.002      5.115      0.000       0.005       0.012
-a:C(canal)[T.Site]          0.0010      0.002      0.463      0.643      -0.003       0.005
+a                         0.0086      0.002      5.115      0.000       0.005       0.012
+a:C(canal)[T.Site]        0.0010      0.002      0.463      0.643      -0.003       0.005
 a:C(canal)[T.Réseaux]     0.0005      0.002      0.235      0.814      -0.004       0.005
-===========================================================================================
+=========================================================================================
 ```
 
 L'écriture `a * C(canal)` signifie `a + C(canal) + a:C(canal)`. Les deux lignes `a:C(canal)[T.…]` mesurent la **différence de pente** de l'âge entre le canal considéré et la boutique. Si ces coefficients sont proches de zéro (et statistiquement indiscernables de zéro, ce que nous formaliserons par un test $F$ au 1.2.4), le modèle sans interaction suffit. Nous verrons au 1.4 comment choisir objectivement entre `m2` et `m3`.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : applications 1.1 et 1.2, exercices 1.1 à 1.3 et 1.9.
 
 > ✅ **À retenir (1.1).**
 > - Le modèle linéaire s'écrit $\mathbf y=\mathbf X\boldsymbol\beta+\boldsymbol\varepsilon$ ; il est linéaire **dans les paramètres**. Les hypothèses H1 à H5 servent chacune à quelque chose de précis.

@@ -19,7 +19,7 @@ $$P(Y=0)=\pi+(1-\pi)e^{-\mu},\qquad P(Y=k)=(1-\pi)\,\frac{e^{-\mu}\mu^k}{k!}\qua
 
 Vérifions d'abord la formule du ZIP par simulation.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -51,7 +51,7 @@ La simulation confirme les formules : 24,07 % de zéros (théorie : 23,98 %), mo
 
 En 2.3.3 nous avions constaté que la binomiale négative reproduit déjà les 13 % de zéros. Un modèle à inflation de zéros apporte-t-il quelque chose de plus ? Comparons quatre modèles sur `nb_commandes_an` : Poisson, ZIP, binomiale négative, ZINB (binomiale négative avec inflation de zéros). Pour la partie « inflation », nous prenons une probabilité $\pi$ constante.
 
-```python
+```python hide-code
 clients = pd.read_csv("donnees/clients.csv")
 clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])
 X = sm.add_constant(pd.get_dummies(clients[["age", "canal"]], drop_first=True, dtype=float))
@@ -90,7 +90,7 @@ Lisons le tableau. Le ZIP améliore beaucoup l'AIC de Poisson (11 082,3 contre 1
 
 Voyons un cas où l'inflation est **réelle**. Nous simulons (graine 27) 1 500 comptes dont **25 % sont dormants** (toujours zéro commande) ; les autres commandent selon une loi de Poisson dont la moyenne augmente avec un score d'engagement $x$.
 
-```python
+```python hide
 rng = np.random.default_rng(27)
 n = 1500
 x = rng.normal(size=n)
@@ -140,7 +140,7 @@ C'est une **somme aléatoire**, ou *loi de Poisson composée*. Si $N$ suit une l
 
 Vérifions ces formules par simulation (graine 28), pour deux valeurs de la moyenne, avec $p=1{,}5$ et $\phi=20$. Pour générer $Y$, on tire $N$, puis, sachant $N=n>0$, la somme de $n$ lois Gamma(α, θ) est une loi Gamma($n\alpha$, θ).
 
-```python
+```python hide
 rng = np.random.default_rng(28)
 p_tw, phi_tw, N = 1.5, 20.0, 400_000
 lignes = []
@@ -172,7 +172,7 @@ Pour $\mu=50$ : $\lambda=0{,}707$ commande en moyenne, $\alpha=1$ (les montants 
 
 **Estimer la puissance $p$.** Le paramètre $p$ n'est pas connu : on le choisit par maximum de vraisemblance (on calcule la log-vraisemblance pour plusieurs valeurs de $p$ et l'on garde la meilleure). La densité de Tweedie est une série infinie, mais le paquet R `mgcv` la calcule précisément et l'estime : nous l'utilisons ici. (La fonction `Tweedie` de `statsmodels` ajuste très bien les coefficients à $p$ fixé ; mais sa log-vraisemblance est approchée, ce qui la rend peu fiable pour comparer des valeurs de $p$.)
 
-```r
+```r hide
 suppressPackageStartupMessages(library(mgcv))
 clients <- read.csv("donnees/clients.csv")
 clients$canal <- factor(clients$canal_acquisition, levels = c("Boutique", "Réseaux", "Site"))
@@ -206,7 +206,7 @@ puissance p estimée : 1.447 | dispersion phi : 19.78
                 Estimate Std. Error  t value Pr(>|t|)
 (Intercept)       5.4730     0.0877  62.4383   0.0000
 age               0.0081     0.0021   3.9372   0.0001
-canalInstagram   -0.5553     0.0547 -10.1570   0.0000
+canalRéseaux     -0.5553     0.0547 -10.1570   0.0000
 canalSite        -0.1509     0.0542  -2.7858   0.0054
 offre_bienvenue  -0.0142     0.0435  -0.3260   0.7444
 part de zéros prédite par le modèle de Tweedie : 0.153 | observée : 0.13 
@@ -220,7 +220,7 @@ Le contrôle de la dernière ligne est instructif : le modèle de Tweedie prédi
 
 Au lieu d'une seule loi, on peut décomposer $E[Y\mid x]=P(Y>0\mid x)\times E[Y\mid Y>0,x]$ et modéliser chaque facteur à part : une régression **logistique** pour savoir si le client achète, puis une régression **Gamma** (lien log) pour le montant des acheteurs. C'est le modèle de barrière appliqué à une variable continue. Comparons-le à Tweedie sur ce qui importe : la dépense moyenne prédite, par canal et par classe de risque.
 
-```python
+```python hide
 f_rhs = "age + canal + offre_bienvenue"
 clients["achete"] = (clients["depense_annuelle"] > 0).astype(int)
 partie1 = smf.glm("achete ~ " + f_rhs, clients, family=sm.families.Binomial()).fit()
@@ -256,7 +256,7 @@ coefficients de Tweedie (p = 1,45) : {'Intercept': 5.4729, 'canal[T.Réseaux]': 
                   observée  Tweedie  deux parties
 canal                                            
 Boutique             316.3    316.7         317.2
-Réseaux            182.5    182.8         183.0
+Réseaux              182.5    182.8         183.0
 Site                 272.9    272.3         271.7
 tous les clients     247.0    247.0         247.0
 
@@ -277,6 +277,23 @@ dixième
 part de zéros prédite par le modèle à deux parties : 0.13
 ```
 
+Le modèle de Tweedie se programme avec `statsmodels`, à la puissance $p=1{,}45$ fixée ; ses coefficients sont ceux d'une régression à lien log sur la dépense moyenne de tous les clients :
+
+```python
+tw = smf.glm("depense_annuelle ~ age + canal + offre_bienvenue", clients,
+             family=sm.families.Tweedie(var_power=1.45, link=sm.families.links.Log())).fit(scale="X2")
+print(tw.params.round(4))
+```
+<!--sortie-->
+```text
+Intercept           5.4729
+canal[T.Réseaux]   -0.5553
+canal[T.Site]      -0.1510
+age                 0.0081
+offre_bienvenue    -0.0142
+dtype: float64
+```
+
 Les coefficients de `statsmodels` à $p=1{,}45$ (5,4729 ; $-0{,}5553$ ; $-0{,}151$ ; 0,0081 ; $-0{,}0142$) coïncident avec ceux de `mgcv` à trois ou quatre décimales : deux logiciels, un même modèle. Quant à la **comparaison** : les moyennes prédites par canal sont presque identiques pour les deux approches, et très proches de l'observé (boutique : 316,7 pour Tweedie, 317,2 pour deux parties, 316,3 observé ; Réseaux 182,8, 183,0 et 182,5 ; site 272,3, 271,7 et 272,9), et les deux reproduisent exactement la moyenne globale (247,0 €). Par dixième de dépense prédite, l'écart absolu moyen à l'observé est de 16,3 € (Tweedie) et 16,5 € (deux parties) : indiscernables. Les écarts dixième par dixième (par exemple 205 observé contre 244 prédits dans le cinquième dixième) sont de l'ordre de l'erreur d'échantillonnage d'une moyenne sur 200 clients (environ $297/\sqrt{200}\approx21$ €). **La seule différence nette** est la part de zéros prédite : le modèle à deux parties retrouve exactement les 13,0 % (c'est garanti par construction : la logistique avec constante reproduit la proportion observée), alors que Tweedie en prédit 15,3 %. Le choix se fait donc sur des critères autres que l'ajustement de la moyenne : Tweedie est plus parcimonieux (un seul modèle) ; le modèle à deux parties permet de séparer ce qui joue sur la décision d'acheter de ce qui joue sur le montant.
 
 ### 2.6.5 Comment choisir ?
@@ -290,6 +307,8 @@ Les coefficients de `statsmodels` à $p=1{,}45$ (5,4729 ; $-0{,}5553$ ; $-0{,}15
 | montant $\ge0$ avec une grosse part de zéros et un mécanisme distinct | **deux parties** (logistique + Gamma) | flexibilité : chaque partie a ses propres variables |
 
 > ⚠️ **Les pièges.** (1) Les effets d'un modèle **à deux parties** se lisent en deux temps (probabilité d'acheter, puis montant) ; ceux de Tweedie portent sur la **moyenne globale** : ce ne sont pas les mêmes questions. (2) Dans un ZIP, les variables de la partie « inflation » et celles de la partie « comptage » peuvent différer, mais leurs effets sont difficiles à séparer : prudence avec les données peu nombreuses. (3) Vérifiez toujours la **part de zéros prédite** par le modèle contre la part observée : c'est un contrôle simple et très révélateur. (4) La loi de Tweedie suppose un mécanisme « somme aléatoire » avec une forme constante : si le comptage lui-même est surdispersé, elle n'est qu'une approximation.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : application 2.8, exercices 2.13 et 2.14.
 
 > ✅ **À retenir**
 > - Un excès de zéros par rapport à Poisson est le signe habituel de la **surdispersion** : essayez la **binomiale négative** avant un modèle à inflation de zéros. Un ZIP se justifie par un mécanisme (groupe dormant) *et* un gain d'AIC.

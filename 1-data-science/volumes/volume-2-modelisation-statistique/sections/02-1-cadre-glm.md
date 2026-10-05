@@ -6,7 +6,7 @@
 
 Regardons d'abord nos trois variables à expliquer, sans rien modéliser.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -28,11 +28,11 @@ print("depense_annuelle : moyenne", round(d.mean(), 1), "| médiane", round(d.me
 <!--sortie-->
 ```text
    age canal_acquisition  offre_bienvenue  rachat_12m  nb_commandes_an  depense_annuelle
-0   19         Réseaux                0           0                4            116.50
+0   19           Réseaux                0           0                4            116.50
 1   43              Site                1           1                2            148.92
 2   35          Boutique                1           0                6            509.05
-3   42         Réseaux                0           0                0              0.00
-4   21         Réseaux                0           0                7            321.77
+3   42           Réseaux                0           0                0              0.00
+4   21           Réseaux                0           0                7            321.77
 5   30              Site                0           1               13           1141.53
 
 rachat_12m       : valeurs [0, 1] | proportion de 1 : 0.509
@@ -42,19 +42,27 @@ depense_annuelle : moyenne 247.0 | médiane 156.5 | écart-type 297.2 | part de 
 
 Trois variables, trois natures. `rachat_12m` ne prend que les valeurs 0 et 1 (51 % de clients ont racheté). `nb_commandes_an` est un comptage : en moyenne 3,88 commandes, mais avec une variance de 13,27, soit **3,4 fois la moyenne** (nous y reviendrons), et 13 % de clients à zéro. `depense_annuelle` est un montant : moyenne de 247 € mais médiane de 156,5 € et écart-type de 297 € (supérieur à la moyenne) : la signature d'une forte asymétrie à droite, avec elle aussi 13 % de zéros (ce sont les mêmes clients : pas de commande, pas de dépense).
 
-**Premier problème : les probabilités sortent de $[0,1]$.** Pour expliquer `rachat_12m` (0 ou 1) par une droite, on ajuste ce qu'on appelle un **modèle de probabilité linéaire** : $P(Y=1)=\beta_0+\beta_1x_1+\dots$, estimé par moindres carrés ordinaires. Utilisons les clients qui ont répondu à l'enquête de satisfaction (section 2.2) : on dispose pour eux de deux notes moyennes, `note_produits` (questions 1 à 4) et `note_service` (questions 5 à 8).
+**Premier problème : les probabilités sortent de $[0,1]$.** Pour expliquer `rachat_12m` (0 ou 1) par une droite, on ajuste ce qu'on appelle un **modèle de probabilité linéaire** : $P(Y=1)=\beta_0+\beta_1x_1+\dots$, estimé par moindres carrés ordinaires. Utilisons les clients qui ont répondu à l'enquête de satisfaction (section 2.2) : on dispose pour eux de deux notes moyennes, `note_produits` (questions 1 à 4) et `note_service` (questions 5 à 8). On ajuste le même modèle de deux façons : par moindres carrés (le **modèle de probabilité linéaire**) et par un GLM de loi de Bernoulli et de lien logit.
 
-```python
+```python hide
 enquete = pd.read_csv("donnees/enquete_satisfaction.csv")
 enquete["note_produits"] = enquete[["q1", "q2", "q3", "q4"]].mean(axis=1)
 enquete["note_service"] = enquete[["q5", "q6", "q7", "q8"]].mean(axis=1)
 repondants = clients.merge(enquete[["id_client", "note_produits", "note_service"]], on="id_client")
 print("répondants :", len(repondants))
+```
+<!--sortie-->
+```text
+répondants : 1212
+```
 
+```python
 formule = "rachat_12m ~ note_produits + note_service + offre_bienvenue + age"
 lineaire = smf.ols(formule, repondants).fit()
 logistique = smf.glm(formule, repondants, family=sm.families.Binomial()).fit()
+```
 
+```python hide
 p_lin = lineaire.fittedvalues
 print("probabilités « prédites » par la droite : min", round(p_lin.min(), 3), "| max", round(p_lin.max(), 3))
 print("nombre de clients avec une probabilité < 0 :", int((p_lin < 0).sum()), "| > 1 :", int((p_lin > 1).sum()))
@@ -68,18 +76,17 @@ print("client de cauchemar : droite =", round(float(lineaire.predict(cauchemar).
 ```
 <!--sortie-->
 ```text
-répondants : 1212
 probabilités « prédites » par la droite : min -0.071 | max 0.95
 nombre de clients avec une probabilité < 0 : 3 | > 1 : 0
 client de rêve : droite = 1.005 | régression logistique = 0.905
 client de cauchemar : droite = -0.355 | régression logistique = 0.021
 ```
 
-Soyons précis sur ce que montre ce résultat. Sur nos 1 212 répondants, la droite prédit des probabilités comprises entre $-0{,}071$ et $0{,}95$ : seuls **3 clients** reçoivent une « probabilité » négative, aucun ne dépasse 1. L'inconvénient reste donc modeste *tant que l'on reste au milieu des données* (c'est pourquoi certains praticiens, notamment en économie, utilisent parfois cette approche). Mais dès que l'on s'approche des extrêmes, le défaut de principe apparaît : pour le client « de rêve » (notes parfaites, offre reçue, 20 ans), la droite annonce **1,005**, une probabilité supérieure à 1 ; pour le client « de cauchemar », elle annonce **$-0{,}355$**, une probabilité négative. La régression logistique, elle, répond 0,905 et 0,021 : des valeurs plausibles, et jamais hors de $[0,1]$. Il y a un second défaut, plus discret : la variance d'un 0/1 vaut $p(1-p)$, elle **dépend de la moyenne**, donc les erreurs-types de la droite sont incorrectes.
+Soyons précis sur ce que montrent ces deux ajustements. Sur nos 1 212 répondants, la droite prédit des probabilités comprises entre $-0{,}071$ et $0{,}95$ : seuls **3 clients** reçoivent une « probabilité » négative, aucun ne dépasse 1. L'inconvénient reste donc modeste *tant que l'on reste au milieu des données* (c'est pourquoi certains praticiens, notamment en économie, utilisent parfois cette approche). Mais dès que l'on s'approche des extrêmes, le défaut de principe apparaît : pour le client « de rêve » (notes parfaites, offre reçue, 20 ans), la droite annonce **1,005**, une probabilité supérieure à 1 ; pour le client « de cauchemar », elle annonce **$-0{,}355$**, une probabilité négative. La régression logistique, elle, répond 0,905 et 0,021 : des valeurs plausibles, et jamais hors de $[0,1]$. Il y a un second défaut, plus discret : la variance d'un 0/1 vaut $p(1-p)$, elle **dépend de la moyenne**, donc les erreurs-types de la droite sont incorrectes.
 
 **Deuxième problème : la dispersion n'est pas constante.** Pour un comptage, plus la moyenne est grande, plus les valeurs s'étalent (pensez à un client qui commande en moyenne 1 fois par an : il commande 0, 1 ou 2 fois ; un client qui commande en moyenne 20 fois : entre 10 et 30). La régression linéaire suppose une variance **constante** (homoscédasticité). Pour un oui/non, la variance est $p(1-p)$ : elle dépend de la moyenne $p$, elle aussi. Regardons les comptages de commandes, par canal.
 
-```python
+```python hide
 par_canal = clients.groupby("canal_acquisition")["nb_commandes_an"].agg(moyenne="mean", variance="var", clients="count")
 par_canal["variance / moyenne"] = par_canal["variance"] / par_canal["moyenne"]
 print(par_canal.round(2).to_string())
@@ -100,7 +107,7 @@ print(tab.round(3).to_string())
                    moyenne  variance  clients  variance / moyenne
 canal_acquisition                                                
 Boutique              4.14     13.75      504                3.32
-Réseaux             3.46     11.84      816                3.42
+Réseaux               3.46     11.84      816                3.42
 Site                  4.20     14.32      680                3.41
 
          observé  Poisson(3.88)
@@ -118,11 +125,11 @@ Site                  4.20     14.32      680                3.41
 11 et +    0.060          0.002
 ```
 
-La variance des comptages est **3,3 à 3,4 fois leur moyenne dans chacun des trois canaux**. Or une loi de Poisson impose variance $=$ moyenne. Le second tableau le montre sans ambiguïté : une loi de Poisson de moyenne 3,88 prévoirait 2,1 % de clients à zéro commande, alors qu'on en observe 13,0 % ; elle prévoirait 0,2 % de clients à 11 commandes ou plus, alors qu'on en observe 6,0 %. La distribution observée est plus **aplatie** que Poisson, avec trop de valeurs à *chaque* extrémité : c'est la **surdispersion**. Nous la traiterons à la section 2.3.
+La variance des comptages est **3,3 à 3,4 fois leur moyenne dans chacun des trois canaux**. Or une loi de Poisson impose variance $=$ moyenne. La comparaison des fréquences observées à celles d'une loi de Poisson de même moyenne le montre sans ambiguïté : une loi de Poisson de moyenne 3,88 prévoirait 2,1 % de clients à zéro commande, alors qu'on en observe 13,0 % ; elle prévoirait 0,2 % de clients à 11 commandes ou plus, alors qu'on en observe 6,0 %. La distribution observée est plus **aplatie** que Poisson, avec trop de valeurs à *chaque* extrémité : c'est la **surdispersion**. Nous la traiterons à la section 2.3.
 
 **Troisième problème : des montants positifs, asymétriques, avec des zéros.** Une dépense annuelle ne peut pas être négative, sa dispersion augmente avec le niveau (les gros clients varient en € bien plus que les petits) et il y a un paquet de clients à zéro. Une loi normale n'est pas du tout adaptée. Résumons tout cela en une figure.
 
-```python
+```python hide
 fig, axes = plt.subplots(1, 3, figsize=(13, 3.9))
 BLEU, ORANGE, AQUA, ROUGE = "#2a78d6", "#eb6834", "#1baf7a", "#e34948"
 
@@ -203,9 +210,9 @@ La famille choisie impose donc **comment la variance dépend de la moyenne**. Vo
 
 Prenons la loi de Poisson à la main : $f(y;\lambda)=e^{-\lambda}\lambda^y/y!=\exp\{y\log\lambda-\lambda-\log y!\}$. On lit $\theta=\log\lambda$, $b(\theta)=e^\theta$ (puisque $\lambda=e^\theta$), $\phi=1$ et $c(y)=-\log y!$. Alors $b'(\theta)=e^\theta=\lambda$ et $b''(\theta)=e^\theta=\lambda$ : la moyenne **et** la variance valent $\lambda$, comme nous le savons depuis le volume I.
 
-Vérifions numériquement les quatre lignes du tableau : on dérive $b$ numériquement, et l'on compare à la moyenne et à la variance d'un grand échantillon simulé.
+Une vérification numérique (cahier, application 2.1) confirme les quatre lignes du tableau : on dérive $b$ numériquement, et l'on compare $b'(\theta)$ et $\phi\,b''(\theta)$ à la moyenne et à la variance d'un échantillon de 400 000 tirages simulés.
 
-```python
+```python hide-code
 rng = np.random.default_rng(21)
 
 def d1(f, x):
@@ -256,7 +263,7 @@ Le **lien** transforme la moyenne en prédicteur linéaire, $g(\mu)=\eta$. Il a 
 
 Le **lien canonique** d'une famille est celui qui rend $\theta=\eta$, c'est-à-dire $g=(b')^{-1}$ : logit pour Bernoulli, log pour Poisson, inverse pour Gamma, identité pour la normale. Il a de belles propriétés mathématiques (l'équation du score se simplifie, l'estimation converge très bien), mais ce n'est **pas une obligation** : le choix du lien est un choix de modélisation, à faire selon l'interprétation voulue. On utilise très souvent le lien **log pour la loi Gamma** (effets multiplicatifs sur des montants), bien que son lien canonique soit l'inverse.
 
-> 💡 **Exemple chiffré : le lien log.** Supposons qu'un client Réseaux passe en moyenne 3 commandes par an, et qu'un client de la boutique en passe 3,6. Avec un lien log, $\log\mu_{\text{boutique}}-\log\mu_{\text{Réseaux}}=\beta$ donne $\beta=\log(3{,}6/3)=\log1{,}2\approx0{,}182$. On lit : « la boutique passe **20 % de commandes en plus** », un effet **multiplicatif** : si Réseaux passait 10 commandes, la boutique en passerait 12. Avec un lien identité, on aurait dit « 0,6 commande de plus », un effet **additif** : or il est peu plausible que l'écart reste de 0,6 pour des clients bien plus actifs.
+> 💡 **Exemple chiffré : le lien log.** Supposons qu'un client venu des réseaux sociaux passe en moyenne 3 commandes par an, et qu'un client de la boutique en passe 3,6. Avec un lien log, $\log\mu_{\text{boutique}}-\log\mu_{\text{Réseaux}}=\beta$ donne $\beta=\log(3{,}6/3)=\log1{,}2\approx0{,}182$. On lit : « la boutique passe **20 % de commandes en plus** », un effet **multiplicatif** : si un client des réseaux sociaux passait 10 commandes, un client de la boutique en passerait 12. Avec un lien identité, on aurait dit « 0,6 commande de plus », un effet **additif** : or il est peu plausible que l'écart reste de 0,6 pour des clients bien plus actifs.
 
 ### 2.1.5 L'estimation : maximum de vraisemblance et IRLS
 
@@ -281,9 +288,9 @@ c'est-à-dire **exactement la solution des moindres carrés pondérés** de la r
 - **Départ** $\beta^{(0)}=0$ : $\mu=0{,}5$, $W=0{,}25$. Les réponses de travail valent $z=0+\frac{1-0{,}5}{0{,}25}=2$ pour un $y=1$ et $-2$ pour le $y=0$. Régression pondérée sans variable = moyenne pondérée : $\beta^{(1)}=\dfrac{0{,}25\,(2-2+2+2)}{4\times0{,}25}=1{,}000$.
 - **Itération 2** : $\mu=\frac1{1+e^{-1}}\approx0{,}7311$, $W\approx0{,}1966$, $z\approx2{,}368$ (pour $y=1$) et $\approx-2{,}718$ (pour $y=0$), d'où $\beta^{(2)}=\dfrac{3\times2{,}368-2{,}718}{4}\approx1{,}0963$.
 
-On s'approche de $1{,}0986$ très vite. Voici le même calcul en code.
+On s'approche de $1{,}0986$ très vite.
 
-```python
+```python hide
 y = np.array([1, 0, 1, 1])
 beta = 0.0
 for it in range(1, 6):
@@ -305,11 +312,11 @@ itération 5 : mu = 0.7500   W = 0.1875   beta = 1.098612
 valeur exacte   : log(3) = 1.098612
 ```
 
-Quatre itérations suffisent pour obtenir six décimales exactes : $1{,}000000$, puis $1{,}096339$, puis $1{,}098611$, puis $1{,}098612$. Les deux premières valeurs sont exactement celles de notre calcul à la main (1,000 puis 1,0963). Remarquez la **vitesse de convergence** : le nombre de décimales exactes double presque à chaque pas, signature de la méthode de Newton. Comparez avec la descente de gradient du volume I, dont l'erreur ne diminue que d'un facteur constant à chaque pas.
+Un programme qui poursuit ces itérations (cahier, application 2.1) le confirme : quatre itérations suffisent pour obtenir six décimales exactes : $1{,}000000$, puis $1{,}096339$, puis $1{,}098611$, puis $1{,}098612$. Les deux premières valeurs sont exactement celles de notre calcul à la main (1,000 puis 1,0963). Remarquez la **vitesse de convergence** : le nombre de décimales exactes double presque à chaque pas, signature de la méthode de Newton. Comparez avec la descente de gradient du volume I, dont l'erreur ne diminue que d'un facteur constant à chaque pas.
 
-Écrivons maintenant l'algorithme **en général** : une fonction `irls` qui prend une matrice $X$, un vecteur $y$ et une « famille » (le lien, sa dérivée, la fonction de variance). Nous la réutiliserons aux sections 2.2 et 2.3.
+**L'algorithme en général.** Pour une matrice $X$, un vecteur $y$ et une « famille » (le lien, la dérivée du lien inverse, la fonction de variance), IRLS tient en cinq temps : (1) initialiser $\mu$ près de $y$ et poser $\eta=g(\mu)$ ; (2) calculer les poids $W_i$ et la réponse de travail $z_i$ ; (3) résoudre la régression pondérée de $z$ sur $X$, ce qui donne le nouveau $\beta$ ; (4) recalculer $\eta=X\beta$ et $\mu=g^{-1}(\eta)$ ; (5) recommencer jusqu'à ce que $\eta$ ne bouge plus. Nous l'avons programmé (cahier, application 2.1) et nous nous en servons en coulisses aux sections 2.2 et 2.3.
 
-```python
+```python hide
 from scipy.special import expit
 
 FAMILLES = {
@@ -360,13 +367,13 @@ Poisson, 2000 clients : beta = [1.356608] | log(moyenne) = 1.356608 | itération
 
 Dans les deux cas, IRLS retrouve la solution connue à l'avance, en 5 et 6 itérations. Pour Poisson sans variable, la solution doit être $\hat\beta=\log\bar y$ (on vérifie : $\log 3{,}88\approx1{,}3566$), ce qui confirme que notre fonction fait bien ce qu'on attend d'un logiciel.
 
-> 🛠️ **Ce que fait vraiment `statsmodels`.** La fonction `sm.GLM(...).fit()` utilise exactement cet algorithme (IRLS par défaut). Les seules différences sont des détails d'ingénierie : valeurs initiales, critère d'arrêt, calcul numérique plus soigné. À la section 2.2.5, nous comparerons notre fonction à la sienne sur un vrai modèle.
+> 💡 **Ce que fait vraiment `statsmodels`.** La fonction `sm.GLM(...).fit()` utilise exactement cet algorithme (IRLS par défaut). Les seules différences sont des détails d'ingénierie : valeurs initiales, critère d'arrêt, calcul numérique plus soigné. À la section 2.2.5, nous comparerons notre fonction à la sienne sur un vrai modèle.
 
 ### 2.1.6 Les trois tests
 
 Une fois $\hat\beta$ obtenu, la théorie du maximum de vraisemblance (volume I, section 3.2) donne la précision et les tests, pour des échantillons assez grands :
 
-- **Précision.** $\widehat{\mathrm{Var}}(\hat\beta)\approx\phi\,(X^\top WX)^{-1}$ : c'est exactement la matrice que `irls` renvoie (pour $\phi=1$), évaluée en $\hat\beta$. Les **erreurs-types** sont les racines de sa diagonale.
+- **Précision.** $\widehat{\mathrm{Var}}(\hat\beta)\approx\phi\,(X^\top WX)^{-1}$ : c'est exactement la matrice que calcule notre programme IRLS (pour $\phi=1$), évaluée en $\hat\beta$. Les **erreurs-types** sont les racines de sa diagonale.
 - **Test de Wald** pour un coefficient : $z_j=\hat\beta_j/\mathrm{se}(\hat\beta_j)$, comparé à une loi normale. C'est le test affiché dans toutes les sorties de logiciel. Il est simple, mais peut être trompeur quand l'effet est grand ou l'échantillon petit.
 - **Test du rapport de vraisemblance** (RV) pour comparer deux modèles emboîtés : $2(\ell_1-\ell_0)\approx\chi^2_q$, où $q$ est le nombre de paramètres en plus. Il est en général plus fiable que Wald ; nous l'étudions au 2.4 via la **déviance**.
 - **Test du score**, qui ne demande d'ajuster que le modèle réduit : peu utilisé directement, il est à l'origine de nombreux tests classiques (par exemple le khi-deux de Pearson).
@@ -374,6 +381,8 @@ Une fois $\hat\beta$ obtenu, la théorie du maximum de vraisemblance (volume I, 
 Lorsque $\phi$ est inconnu (Gamma, normale), on l'estime ; lorsque $\phi=1$ est imposé (Bernoulli, Poisson), il faut **vérifier** que cette hypothèse est raisonnable : c'est le problème de la **surdispersion**, que nous rencontrerons dès la section 2.3.
 
 > ⚠️ **Les pièges du cadre GLM.** (1) **L'indépendance des observations** est supposée : des mesures répétées sur un même client ne la respectent pas (voir les modèles mixtes, section 1.7). (2) Le choix de la famille impose la relation **variance-moyenne** : une mauvaise famille donne des erreurs-types fausses, même si les coefficients sont corrects. (3) Les coefficients ne se lisent **jamais sur l'échelle de $\mu$** mais sur celle du prédicteur : $\log$-cote pour la logistique, $\log$-taux pour Poisson.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : application 2.1, exercices 2.4 et 2.14.
 
 > ✅ **À retenir**
 > - Un GLM = **loi** de la famille exponentielle + **prédicteur linéaire** $x^\top\beta$ + **lien** $g(\mu)=x^\top\beta$.

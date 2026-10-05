@@ -1,6 +1,6 @@
 ## 9.4 Processus ponctuels
 
-> 💡 **Intuition.** Jusqu'ici, les lieux étaient donnés (les 144 délégations, les adresses de livraison choisies par les clients) et c'était la **valeur** qui était aléatoire. Maintenant, ce sont les **positions** elles-mêmes qui sont le phénomène : où habitent les clients de la boutique de la médina ? Sont-ils éparpillés au hasard, **regroupés** en quartiers (une publicité, un bouche-à-oreille) ou étonnamment **bien espacés** (chacun choisit une adresse à distance des autres) ? Pour répondre, on compare ce que l'on observe à ce que produirait le **hasard complet**.
+> 💡 **Intuition.** Jusqu'ici, les lieux étaient donnés (les 144 zones, les adresses de livraison choisies par les clients) et c'était la **valeur** qui était aléatoire. Maintenant, ce sont les **positions** elles-mêmes qui sont le phénomène : où habitent les clients de la boutique ? Sont-ils éparpillés au hasard, **regroupés** en quartiers (une publicité, un bouche-à-oreille) ou étonnamment **bien espacés** (chacun choisit une adresse à distance des autres) ? Pour répondre, on compare ce que l'on observe à ce que produirait le **hasard complet**.
 
 ### 9.4.1 Le hasard complet : le processus de Poisson spatial
 
@@ -18,7 +18,7 @@ Fabriquons trois semis de la même fenêtre de $10\times10$ km (100 km²) autour
 - un semis **agrégé**, par un processus de **Thomas** : des « centres » (des quartiers, des abonnés d'un même influenceur) tombent au hasard, puis chaque centre engendre un nombre de clients de loi de Poisson, répartis autour de lui selon une loi normale ;
 - un semis **régulier**, par **inhibition séquentielle** : on tire des points uniformes l'un après l'autre en refusant ceux qui tomberaient à moins de $0{,}7$ km d'un point déjà accepté.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -37,15 +37,6 @@ def semis_poisson(n, rng):
     """CSR conditionnel à n : n points indépendants et uniformes."""
     return rng.uniform(0, COTE, size=(n, 2))
 
-def semis_thomas(kappa, mu, sigma, rng):
-    """Agrégat de Thomas : centres de Poisson (densité kappa), mu descendants en moyenne, étalement sigma."""
-    marge = 3 * sigma                                            # on génère aussi des centres hors fenêtre
-    n_centres = rng.poisson(kappa * (COTE + 2 * marge) ** 2)
-    centres = rng.uniform(-marge, COTE + marge, size=(n_centres, 2))
-    nb = rng.poisson(mu, size=n_centres)
-    pts = np.repeat(centres, nb, axis=0) + rng.normal(0, sigma, size=(nb.sum(), 2))
-    return pts[((pts >= 0) & (pts <= COTE)).all(axis=1)]         # on ne garde que ce qui tombe dans la fenêtre
-
 def semis_inhibition(n, rmin, rng):
     """Inhibition séquentielle simple : points uniformes refusés s'ils sont à moins de rmin d'un point accepté."""
     pts = []
@@ -54,7 +45,24 @@ def semis_inhibition(n, rmin, rng):
         if not pts or (np.hypot(*(np.array(pts) - p).T) >= rmin).all():
             pts.append(p)
     return np.array(pts)
+```
 
+Le générateur du processus de Thomas montre bien le mécanisme d'agrégation ; les deux autres, plus simples, sont reconstruits dans le cahier (application 9.6).
+
+```python
+def semis_thomas(kappa, mu, sigma, rng):
+    """Agrégat de Thomas : centres de Poisson (densité kappa), mu descendants en moyenne, étalement sigma."""
+    marge = 3 * sigma                                            # on génère aussi des centres hors fenêtre
+    n_centres = rng.poisson(kappa * (COTE + 2 * marge) ** 2)
+    centres = rng.uniform(-marge, COTE + marge, size=(n_centres, 2))
+    nb = rng.poisson(mu, size=n_centres)
+    pts = np.repeat(centres, nb, axis=0) + rng.normal(0, sigma, size=(nb.sum(), 2))
+    return pts[((pts >= 0) & (pts <= COTE)).all(axis=1)]         # on ne garde que ce qui tombe dans la fenêtre
+```
+
+On tire alors les trois semis (graine fixe) et on les dessine :
+
+```python hide-code
 rng = np.random.default_rng(2025)
 semis = {
     "aléatoire (CSR)": semis_poisson(100, rng),
@@ -98,7 +106,7 @@ $$\chi^2=\sum_{k=1}^m\frac{(c_k-\bar c)^2}{\bar c},\qquad\text{approximativement
 
 > 💡 **Un exemple à la main.** Quatre cases contenant 1, 1, 1 et 9 points : $\bar c=3$, donc $\chi^2=\frac{(-2)^2+(-2)^2+(-2)^2+6^2}{3}=\frac{12+36}{3}=16$ avec 3 degrés de liberté : bien au-delà de ce que le hasard produit (la valeur critique à 5 % est 7,81). Quatre cases à 3 points chacune : $\chi^2=0$, une régularité parfaite. La statistique mesure donc l'inégalité des comptages.
 
-```python
+```python hide-code
 def comptages(pts, m=4):
     """Comptages par case d'un quadrillage m x m de la fenêtre."""
     bornes = np.linspace(0, COTE, m + 1)
@@ -153,7 +161,7 @@ avec $R=1$ pour le hasard, $R<1$ pour de l'agrégation (les voisins sont plus pr
 
 > ⚠️ **L'effet de bord.** Cette formule suppose un plan infini. Dans une **fenêtre finie**, un point près du bord a moins de voisins possibles (il n'y a rien au-delà), donc son plus proche voisin est en moyenne plus loin : $\bar d$ est **surestimé** et $R$ est biaisé vers le haut, ce qui peut faire conclure à tort à une régularité. Donnelly (1978) a proposé une correction pour une fenêtre de périmètre $P$ : $\mathbb E[\bar d]=0{,}5\sqrt{A/n}+(0{,}0514+0{,}041/\sqrt n)\,P/n$ et $\operatorname{Var}(\bar d)=0{,}070\,A/n^2+0{,}037\,P\sqrt{A/n^5}$. Au lieu de la croire sur parole, **vérifions-la par simulation** : nous simulons 4 000 semis CSR de 100 points dans notre fenêtre et nous comparons la moyenne et l'écart-type de $\bar d$ aux deux formules.
 
-```python
+```python hide-code
 def plus_proches(pts):
     D = distances(pts)
     np.fill_diagonal(D, np.inf)
@@ -182,7 +190,7 @@ formule de Donnelly                 0.5222            0.0291
 
 La formule naïve sous-estime la moyenne (0,500 contre 0,523 simulé : près de 5 % d'écart) et l'écart-type ; celle de Donnelly colle à la simulation. Appliquons l'indice de Clark-Evans aux trois semis avec les deux versions, et ajoutons une troisième voie, qui évite toute formule : une **p-valeur de Monte-Carlo**. On simule $B=999$ semis CSR de même taille dans la **même fenêtre** et l'on regarde où tombe notre $\bar d$ : l'effet de bord est automatiquement pris en compte, puisque les semis simulés le subissent aussi.
 
-```python
+```python hide-code
 def clark_evans(pts, B=999, seed=7):
     n = len(pts)
     d = plus_proches(pts).mean()
@@ -212,7 +220,7 @@ Les trois voies s'accordent pour le semis agrégé (R très inférieur à 1) et 
 
 **La fonction $G$ entière.** L'indice de Clark-Evans résume toutes les distances par leur moyenne. On peut regarder la **fonction de répartition empirique** de $d_i$, $\hat G(r)=\frac1n\#\{i:d_i\le r\}$, et la comparer à la courbe théorique $1-e^{-\lambda\pi r^2}$, avec une **enveloppe de Monte-Carlo** : un bandeau qui contient 95 % des courbes obtenues sur des semis CSR simulés. Si notre courbe sort du bandeau, le hasard complet est mis en défaut. Une courbe $\hat G$ qui **monte plus vite** que le hasard indique des voisins plus proches que prévu (agrégat) ; une courbe qui monte **plus lentement** indique de la répulsion.
 
-```python
+```python hide-code
 def G_emp(pts, rs):
     d = plus_proches(pts)
     return np.array([(d <= r).mean() for r in rs])
@@ -268,7 +276,7 @@ Pour un agrégat, un point typique a **plus** de voisins que prévu à toutes le
 > $$\hat K(r)=\frac{A}{(n-1)\,n_r}\sum_{i:\,b_i\ge r}\#\{j\ne i:\ d_{ij}\le r\},$$
 > où $b_i$ est la distance de $i$ au bord. Elle est sans biais, au prix d'une perte de données quand $r$ grandit : on limite donc $r$ au quart du côté de la fenêtre environ.
 
-```python
+```python hide-code
 def ripley_K(pts, rs, bord=True):
     """Estimateur de K, avec ou sans correction de bord (méthode du bord)."""
     n = len(pts)
@@ -307,7 +315,7 @@ K(0,2) de l'exemple à la main : 0.3333 | pi r^2 = 0.1257
 
 Sans correction, l'estimateur sous-estime nettement $K$ à 2 km : 10,4 en moyenne au lieu de $\pi r^2=12{,}6$, soit 17 % de trop peu. Avec la méthode du bord, on obtient 12,3 : un écart de 2 %, très inférieur. Passons à l'application : on compare la courbe $\hat L(r)-r$ de chaque semis à une enveloppe obtenue sur 499 semis CSR de même taille. Pour un **test global** (et non « point par point »), on utilise la statistique $T=\max_r|\hat L(r)-r|$, comparée à sa distribution sous CSR.
 
-```python
+```python hide-code
 def L_centre(pts, rs):
     return np.sqrt(ripley_K(pts, rs) / np.pi) - rs
 
@@ -353,7 +361,7 @@ La lecture est la suivante. Le semis **aléatoire** reste dans le bandeau à tou
 
 Tout ce qui précède suppose que l'**intensité est homogène**. C'est le piège principal des processus ponctuels. Imaginez que les clients habitent plutôt près de la boutique, au centre de la fenêtre, parce que la densité d'habitation y est plus forte. Même si chacun a choisi son adresse **sans tenir compte des autres** (aucune interaction), le semis paraîtra agrégé : beaucoup de points au centre, peu en périphérie. La fonction $K$ ne distingue pas un **agrégat** (les points s'attirent) d'une **intensité qui varie** (les points s'accumulent là où la densité est forte).
 
-```python
+```python hide-code
 def semis_inhomogene(n, rng, etalement=2.5):
     """100 points indépendants, mais avec une densité qui décroît du centre vers les bords."""
     pts = []
@@ -385,7 +393,6 @@ ax2.set_xlabel("distance r (km)"); ax2.set_ylabel("L(r) - r"); ax2.set_title("La
 ax2.legend(frameon=False, fontsize=8, loc="upper left")
 plt.tight_layout()
 plt.savefig("figures/ch09-inhomogene.png", dpi=200, bbox_inches="tight")
-print("figure enregistrée")
 ```
 <!--sortie-->
 ```text
@@ -395,14 +402,13 @@ comptages par case (4 x 4) :
  [ 4 13 15  7]
  [ 5 10 11  6]
  [ 1  8  5  1]]
-figure enregistrée
 ```
 
 ![À gauche : 100 adresses indépendantes les unes des autres, mais avec une densité qui décroît du centre vers les bords. À droite : la fonction L(r) − r sort de l'enveloppe du hasard complet, alors qu'il n'y a aucune interaction entre les points.](figures/ch09-inhomogene.png)
 
 Le test rejette le hasard complet alors qu'**aucun point n'attire les autres**. L'agrégat apparent est entièrement dû à la variation de la densité. Le remède est de comparer non pas à un CSR homogène mais à un **processus de Poisson inhomogène** d'intensité estimée $\hat\lambda(s)$ (par un lissage à noyau, par exemple), et d'utiliser la fonction **$K$ inhomogène** de Baddeley, Møller et Waagepetersen. Elle ne figure pas dans ce chapitre (nous ne l'avons pas implémentée) ; retenez le principe : **on ne peut parler d'agrégation entre les points qu'après avoir tenu compte de la densité qui varie**. Cette distinction entre *effet du premier ordre* (l'intensité) et *effet du second ordre* (l'interaction) est le cœur de la modélisation des semis de points.
 
-> 🛠️ **Retour à la question de la gérante.** Pour savoir si ses clients de la médina sont **vraiment** regroupés autour de la boutique, elle ne peut pas se contenter d'un test de $K$ : elle doit d'abord se demander si la densité de population varie, c'est-à-dire si les habitants eux-mêmes sont plus nombreux près de la boutique. Un semis de clients qui reproduit simplement la répartition de la **population** ne dit rien sur son comportement. La comparaison utile est avec les habitants **non clients** (un semis de « contrôle ») ou avec une carte de densité de population.
+> 💡 **Retour à la question de la gérante.** Pour savoir si ses clients du quartier sont **vraiment** regroupés autour de la boutique, elle ne peut pas se contenter d'un test de $K$ : elle doit d'abord se demander si la densité de population varie, c'est-à-dire si les habitants eux-mêmes sont plus nombreux près de la boutique. Un semis de clients qui reproduit simplement la répartition de la **population** ne dit rien sur son comportement. La comparaison utile est avec les habitants **non clients** (un semis de « contrôle ») ou avec une carte de densité de population.
 
 > ✅ **À retenir.**
 > - Un **semis de points** est un phénomène dont les **positions** sont aléatoires. La référence est le **hasard spatial complet** : un processus de Poisson homogène (comptages de Poisson, indépendance entre régions disjointes, points uniformes conditionnellement à leur nombre).
@@ -410,3 +416,5 @@ Le test rejette le hasard complet alors qu'**aucun point n'attire les autres**. 
 > - **Plus proche voisin** : $G(r)=1-e^{-\lambda\pi r^2}$ sous le CSR, $\mathbb E[d]=1/(2\sqrt\lambda)$ ; indice de Clark-Evans $R<1$ pour un agrégat, $R>1$ pour de la régularité. Une fenêtre finie biaise $R$ (**effet de bord**) : corrigez (Donnelly) ou, mieux, utilisez une **p-valeur de Monte-Carlo** dans la même fenêtre.
 > - **Fonction $K$ de Ripley** : $K_{\text{CSR}}(r)=\pi r^2$ ; $L(r)-r$ au-dessus de 0 pour l'agrégat, en dessous pour la régularité ; **correction de bord** indispensable ; utilisez un test **global** et non un bandeau point par point.
 > - **Une intensité variable imite un agrégat** : avant de conclure à une interaction, tenez compte de la densité.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 9 : applications 9.6 et 9.7, exercices 9.10 et 9.12.
