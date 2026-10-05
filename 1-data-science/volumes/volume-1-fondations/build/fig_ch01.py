@@ -110,12 +110,12 @@ def benefice_tangentes():
     q2 = np.linspace(14, 27, 10)
     ax.plot(q2, P(20) + 0 * (q2 - 20), color=ORANGE, lw=1.6)
     ax.scatter([10, 20], [P(10), P(20)], color=ORANGE, zorder=5, s=36)
-    ax.annotate("tangente en q = 10\npente = +40 DT par pièce", xy=(10, 300), xytext=(15.5, 110), color=ENCRE2,
+    ax.annotate("tangente en q = 10\npente = +40 € par pièce", xy=(10, 300), xytext=(15.5, 110), color=ENCRE2,
                 fontsize=9, va="center", arrowprops=dict(arrowstyle="-", color=MUET, lw=0.8))
     ax.text(21.5, 523, "sommet en q = 20 : pente = 0", color=ENCRE2, fontsize=9, va="bottom")
     ax.axhline(0, color=AXE, lw=0.8)
     ax.set_xlabel("pièces vendues par semaine, q")
-    ax.set_ylabel("bénéfice P(q) en DT")
+    ax.set_ylabel("bénéfice P(q) en €")
     ax.set_ylim(-320, 640)
     save(fig, "ch01-benefice-tangentes.png")
 
@@ -237,19 +237,19 @@ def demande_recettes():
     pp = np.linspace(22, 49, 100)
     ax.plot(pp, alpha + beta * pp, color=BLEU, lw=2)
     ax.scatter(prix, ventes, color=ORANGE, s=34, zorder=5)
-    ax.set_xlabel("prix p (DT)")
+    ax.set_xlabel("prix p (€)")
     ax.set_ylabel("ventes hebdomadaires q")
     ax.text(31.5, 91, "q ≈ 143,9 − 2,11 p", color=ENCRE2, fontsize=9.5)
     ax = axes[1]
     ax.plot(pp, R(pp), color=BLEU, lw=2)
     ax.scatter([p_opt], [R(p_opt)], color=ORANGE, s=40, zorder=5)
     ax.scatter([40], [R(40)], color=MUET, s=40, zorder=5)
-    ax.annotate(f"optimum : p* ≈ {p_opt:.1f} DT\n{R(p_opt):,.0f} DT".replace(",", " "), xy=(p_opt, R(p_opt)), xytext=(23, 2560),
+    ax.annotate(f"optimum : p* ≈ {p_opt:.1f} €\n{R(p_opt):,.0f} €".replace(",", " "), xy=(p_opt, R(p_opt)), xytext=(23, 2560),
                 fontsize=9, color=ENCRE2, arrowprops=dict(arrowstyle="-", color=MUET, lw=0.8))
-    ax.annotate(f"prix actuel : 40 DT\n{R(40):,.0f} DT".replace(",", " "), xy=(40, R(40)), xytext=(41.5, 2480),
+    ax.annotate(f"prix actuel : 40 €\n{R(40):,.0f} €".replace(",", " "), xy=(40, R(40)), xytext=(41.5, 2480),
                 fontsize=9, color=ENCRE2, arrowprops=dict(arrowstyle="-", color=MUET, lw=0.8))
-    ax.set_xlabel("prix p (DT)")
-    ax.set_ylabel("recettes hebdomadaires R(p) (DT)")
+    ax.set_xlabel("prix p (€)")
+    ax.set_ylabel("recettes hebdomadaires R(p) (€)")
     ax.set_ylim(1800, 2750)
     save(fig, "ch01-demande-recettes.png")
 

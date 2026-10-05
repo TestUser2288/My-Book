@@ -3,11 +3,46 @@
  "nom": "Fondations",
  "ligneA": "Mathématiques\\,\\textperiodcentered\\ Probabilités\\,\\textperiodcentered\\ Statistique",
  "ligneB": "Programmation\\,\\textperiodcentered\\ Bases de données\\,\\textperiodcentered\\ Outils",
- "pied": "Un livre pour apprendre le métier pas à pas,\\\\ avec une boutique d'artisanat tunisienne pour fil rouge.",
+ "pied": "Un livre pour apprendre le métier pas à pas,\\\\ avec une boutique pour fil rouge.",
  "title": "DATA SCIENCE",
- "subtitle": "Volume I : Fondations — Mathématiques, probabilités, statistique, programmation, bases de données et outils",
  "author": "Série 1 : Data Science",
- "source": "livre/volume-1-fondations-complet.md",
- "out": "livre/volume-1-fondations.pdf",
- "start_heading": "# Avant-propos"
+ "subtitle": "Volume I : Fondations — Mathématiques, probabilités, statistique, programmation, bases de données et outils",
+ "livre": {
+  "dossier": "sections",
+  "source": "livre/volume-1-fondations-complet.md",
+  "out": "livre/volume-1-fondations.pdf",
+  "start_heading": "# Avant-propos",
+  "titres": {
+   "00": "00-avant-propos",
+   "01": "chapitre-1-mathematiques",
+   "02": "chapitre-2-probabilites",
+   "03": "chapitre-3-statistique",
+   "04": "chapitre-4-programmation",
+   "05": "chapitre-5-sql",
+   "06": "chapitre-6-outils",
+   "07": "cloture-points-cles"
+  }
+ },
+ "cahier": {
+  "dossier": "cahier",
+  "source": "livre/cahier-volume-1-complet.md",
+  "out": "livre/cahier-volume-1.pdf",
+  "start_heading": "# Mode d'emploi",
+  "serie": "Série 1 — Volume I",
+  "nom": "Cahier d'exercices et d'applications",
+  "ligneA": "Exercices corrigés\\,\\textperiodcentered\\ Applications guidées\\,\\textperiodcentered\\ Projet",
+  "ligneB": "Compagnon du volume I : Fondations",
+  "pied": "À utiliser avec le livre : chaque chapitre renvoie ici\\\\ pour s'entraîner.",
+  "subtitle": "Cahier d'exercices et d'applications du volume I : Fondations",
+  "titres": {
+   "00": "cahier-00-mode-emploi",
+   "01": "cahier-chapitre-1",
+   "02": "cahier-chapitre-2",
+   "03": "cahier-chapitre-3",
+   "04": "cahier-chapitre-4",
+   "05": "cahier-chapitre-5",
+   "06": "cahier-chapitre-6",
+   "07": "cahier-projet-et-autoevaluation"
+  }
+ }
 }

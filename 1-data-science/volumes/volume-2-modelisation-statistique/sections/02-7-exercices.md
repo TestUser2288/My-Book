@@ -16,7 +16,7 @@
 
 **Exercice 6 ⭐⭐ (décalage).** Trois transporteurs ont livré des colis et enregistré des retards : A a livré 200 milliers de colis pour 30 retards ; B, 50 milliers pour 12 retards ; C, 400 milliers pour 40 retards. (a) Calculez les taux de retard par millier de colis et les rapports de taux B/A et C/A. (b) Ajustez une régression de Poisson avec et sans décalage (*offset*) : que concluriez-vous dans chaque cas ?
 
-**Exercice 7 ⭐⭐ (surdispersion).** Une régression de Poisson, sur $n=305$ clients avec 5 paramètres, donne une statistique de Pearson $X^2=540$. Le coefficient de la variable « Instagram » est $0{,}30$ avec une erreur-type de $0{,}12$. (a) Estimez la dispersion $\hat\phi$. (b) Corrigez l'erreur-type et la statistique $z$. La conclusion change-t-elle au seuil de 5 % ?
+**Exercice 7 ⭐⭐ (surdispersion).** Une régression de Poisson, sur $n=305$ clients avec 5 paramètres, donne une statistique de Pearson $X^2=540$. Le coefficient de la variable « Réseaux » est $0{,}30$ avec une erreur-type de $0{,}12$. (a) Estimez la dispersion $\hat\phi$. (b) Corrigez l'erreur-type et la statistique $z$. La conclusion change-t-elle au seuil de 5 % ?
 
 **Exercice 8 ⭐⭐ (régression sur $\log y$).** On régresse le logarithme des dépenses sur des variables explicatives ; pour un client donné, le modèle prédit $\log\hat y=5{,}0$ et l'écart-type résiduel est $\hat\sigma=0{,}9$. (a) Que vaut $e^{5{,}0}$ ? Est-ce la dépense moyenne prévue ? (b) Si les résidus sont normaux, quelle est la dépense moyenne prévue ? Vérifiez par simulation.
 
@@ -176,7 +176,7 @@ phi = 1.80 | erreur-type corrigée = 0.1610
 z non corrigé = 2.50 (p = 0.0124) | z corrigé = 1.86 (p = 0.0624)
 ```
 
-**Corrigé 8.** (a) $e^{5{,}0}=148{,}4$ DT : c'est la **médiane** prévue (si les résidus de $\log y$ sont symétriques), pas la moyenne. (b) Pour $\log Y\sim\mathcal N(5;\,0{,}9^2)$, $E[Y]=e^{5+\sigma^2/2}=e^{5+0{,}405}=148{,}4\times1{,}499=222{,}5$ DT : la moyenne est **50 % plus grande** que $e^{5}$. Ne pas retransformer sans correction revient à sous-estimer systématiquement la dépense moyenne (2.3.4).
+**Corrigé 8.** (a) $e^{5{,}0}=148{,}4$ € : c'est la **médiane** prévue (si les résidus de $\log y$ sont symétriques), pas la moyenne. (b) Pour $\log Y\sim\mathcal N(5;\,0{,}9^2)$, $E[Y]=e^{5+\sigma^2/2}=e^{5+0{,}405}=148{,}4\times1{,}499=222{,}5$ € : la moyenne est **50 % plus grande** que $e^{5}$. Ne pas retransformer sans correction revient à sous-estimer systématiquement la dépense moyenne (2.3.4).
 
 ```python
 rng = np.random.default_rng(8)
@@ -208,7 +208,7 @@ canal : ΔD =  17.74 sur 2 ddl | p = 1.41e-04 | ΔAIC =  13.74 | ΔBIC =   2.54
 
 ```python
 clients = pd.read_csv("donnees/clients.csv")
-clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Instagram", "Site"])
+clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])
 base = smf.glm("rachat_12m ~ offre_bienvenue + age + canal", clients, family=sm.families.Binomial()).fit()
 avec_ville = smf.glm("rachat_12m ~ offre_bienvenue + age + canal + C(ville)", clients, family=sm.families.Binomial()).fit()
 dd = base.deviance - avec_ville.deviance
@@ -222,11 +222,11 @@ print(pd.DataFrame({"OR": np.exp(avec_ville.params), "IC95 bas": np.exp(ic[0]), 
 ΔD = 1.13 sur 5 ddl | p (rapport de vraisemblance) = 0.952
 AIC : sans ville = 2720.8 | avec ville = 2729.7 | BIC : sans = 2748.8 | avec = 2785.7
                         OR  IC95 bas  IC95 haut
-C(ville)[T.Bizerte]  0.985     0.687      1.411
-C(ville)[T.Nabeul]   1.002     0.713      1.407
-C(ville)[T.Sfax]     0.901     0.648      1.253
-C(ville)[T.Sousse]   1.062     0.774      1.457
-C(ville)[T.Tunis]    1.023     0.773      1.354
+C(ville)[T.Ville A]  0.985     0.687      1.411
+C(ville)[T.Ville B]   1.002     0.713      1.407
+C(ville)[T.Ville C]     0.901     0.648      1.253
+C(ville)[T.Ville D]   1.062     0.774      1.457
+C(ville)[T.Ville E]    1.023     0.773      1.354
 ```
 
 La ville n'améliore pas le modèle : $\Delta D=1{,}13$ pour 5 degrés de liberté ($p=0{,}95$, un résultat parfaitement banal si la ville n'a aucun effet). L'AIC **se dégrade** (de 2 720,8 à 2 729,7) et le BIC encore davantage (de 2 748,8 à 2 785,7) : les cinq paramètres de plus ne rapportent presque rien en vraisemblance. Les rapports de cotes de toutes les villes par rapport à la ville de référence (Autre) sont compris entre 0,90 et 1,06, avec des intervalles de confiance qui contiennent tous 1. **Conclusion : la ville n'a pas d'effet détectable sur le rachat**, et l'on garde le modèle sans elle. (Nous verrons plus bas que, dans la simulation, la ville n'a effectivement aucun rôle.)
@@ -345,7 +345,7 @@ Nos données sont simulées : nous connaissons les paramètres qui les ont produ
 ```python
 import statsmodels.api as sm
 clients = pd.read_csv("donnees/clients.csv")
-clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Instagram", "Site"])
+clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])
 
 # (1) rachat : logistique (vérité sur l'échelle du logit, canal relatif à la boutique)
 logi = smf.glm("rachat_12m ~ offre_bienvenue + age + canal", clients, family=sm.families.Binomial()).fit()
@@ -355,9 +355,9 @@ nbm = smf.negativebinomial("nb_commandes_an ~ offre_bienvenue + age + canal", cl
 twd = smf.glm("depense_annuelle ~ offre_bienvenue + age + canal", clients, family=sm.families.Tweedie(var_power=1.45, link=sm.families.links.Log())).fit(scale="X2")
 
 verite = {
-    "rachat (logit)": (logi, {"offre_bienvenue": 0.55, "age": -0.015, "canal[T.Instagram]": -0.30, "canal[T.Site]": -0.30}),
-    "commandes (log moyenne)": (nbm, {"offre_bienvenue": 0.0, "age": -0.005, "canal[T.Instagram]": -0.05, "canal[T.Site]": 0.10}),
-    "dépense (log moyenne)": (twd, {"offre_bienvenue": 0.0, "age": 0.003, "canal[T.Instagram]": -0.39, "canal[T.Site]": -0.07}),
+    "rachat (logit)": (logi, {"offre_bienvenue": 0.55, "age": -0.015, "canal[T.Réseaux]": -0.30, "canal[T.Site]": -0.30}),
+    "commandes (log moyenne)": (nbm, {"offre_bienvenue": 0.0, "age": -0.005, "canal[T.Réseaux]": -0.05, "canal[T.Site]": 0.10}),
+    "dépense (log moyenne)": (twd, {"offre_bienvenue": 0.0, "age": 0.003, "canal[T.Réseaux]": -0.39, "canal[T.Site]": -0.07}),
 }
 lignes = []
 for nom, (res, vrai) in verite.items():
@@ -369,7 +369,7 @@ print()
 print("alpha (binomiale négative) :", round(float(nbm.params["alpha"]), 3), "| IC95 % :", nbm.conf_int().loc["alpha"].round(3).tolist())
 # Écarts du modèle « commandes » : les moyennes par canal sont-elles conformes à la vérité programmée ?
 var_f = 0.22 ** 2 + 0.10 ** 2 + 2 * 0.22 * 0.10 * 0.3                          # variance de 0,22 F1 + 0,10 F2
-eff_canal = {"Boutique": 0.05, "Instagram": 0.0, "Site": 0.15}
+eff_canal = {"Boutique": 0.05, "Réseaux": 0.0, "Site": 0.15}
 lignes = []
 for canal, e in eff_canal.items():
     g = clients[clients["canal"] == canal]["nb_commandes_an"]
@@ -387,22 +387,22 @@ print("hétérogénéité attendue : (1 + 0,5) × (1 + variance relative de exp(
                  modèle          paramètre  estimation  erreur-type  vérité  écart (en erreurs-types)
          rachat (logit)    offre_bienvenue       0.493        0.091   0.550                    -0.624
          rachat (logit)                age      -0.015        0.004  -0.015                    -0.114
-         rachat (logit) canal[T.Instagram]      -0.463        0.116  -0.300                    -1.411
+         rachat (logit) canal[T.Réseaux]      -0.463        0.116  -0.300                    -1.411
          rachat (logit)      canal[T.Site]      -0.168        0.120  -0.300                     1.106
 commandes (log moyenne)    offre_bienvenue      -0.016        0.041   0.000                    -0.379
 commandes (log moyenne)                age      -0.001        0.002  -0.005                     1.938
-commandes (log moyenne) canal[T.Instagram]      -0.176        0.052  -0.050                    -2.430
+commandes (log moyenne) canal[T.Réseaux]      -0.176        0.052  -0.050                    -2.430
 commandes (log moyenne)      canal[T.Site]       0.015        0.053   0.100                    -1.597
   dépense (log moyenne)    offre_bienvenue      -0.014        0.051   0.000                    -0.277
   dépense (log moyenne)                age       0.008        0.002   0.003                     2.112
-  dépense (log moyenne) canal[T.Instagram]      -0.555        0.064  -0.390                    -2.570
+  dépense (log moyenne) canal[T.Réseaux]      -0.555        0.064  -0.390                    -2.570
   dépense (log moyenne)      canal[T.Site]      -0.151        0.064  -0.070                    -1.270
 
 alpha (binomiale négative) : 0.584 | IC95 % : [0.528, 0.639]
 
     canal  clients  commandes attendues  commandes observées  écart (en erreurs-types de la moyenne)
  Boutique      504                3.818                4.137                                   1.930
-Instagram      816                3.620                3.464                                  -1.293
+Réseaux      816                3.620                3.464                                  -1.293
      Site      680                4.219                4.197                                  -0.154
 
 hétérogénéité attendue : (1 + 0,5) × (1 + variance relative de exp(0,22 F1 + 0,10 F2)) - 1 = 0.611
@@ -412,4 +412,4 @@ Voici le bilan, sans fard.
 
 **Ce qui est retrouvé.** Dans le modèle de **rachat**, toutes les estimations sont à moins de 1,5 erreur-type de la vérité. Le coefficient de l'offre (0,493 pour 0,55) est un peu **atténué** : les facteurs latents de goût pour les produits et de sensibilité au service, qui influencent réellement le rachat, ne sont pas dans ce modèle, et omettre une variable qui explique le résultat atténue, dans un modèle logistique, les coefficients des autres variables (c'est la non-collapsibilité vue en 2.2.7 ; un calcul approché donne un facteur voisin de 0,93, soit environ 0,51, compatible avec 0,493). L'offre n'a, comme programmé, **aucun effet** sur le nombre de commandes ($-0{,}016$, $z=-0{,}38$) ni sur la dépense ($-0{,}014$, $z=-0{,}28$), et la ville n'a aucun rôle (exercice 10). Le paramètre de surdispersion $\hat\alpha=0{,}584$ (intervalle de 0,528 à 0,639) **exclut** la valeur 0,5 programmée pour l'hétérogénéité de la loi Gamma, mais ce n'est pas une erreur du modèle : l'hétérogénéité totale comprend aussi celle que créent les deux facteurs latents omis, et le calcul de la dernière ligne donne $(1+0{,}5)\times\exp(0{,}0716)-1=0{,}611$, **à l'intérieur** de l'intervalle estimé.
 
-**Ce qui s'écarte, et pourquoi.** Quatre des douze écarts dépassent environ deux erreurs-types : l'effet d'Instagram sur le nombre de commandes ($-0{,}176$ pour $-0{,}05$, $z=-2{,}4$) et sur la dépense ($-0{,}555$ pour $-0{,}39$, $z=-2{,}6$), et l'effet de l'âge sur la dépense ($z=2{,}1$) et sur les commandes ($z=1{,}9$). Ces écarts ne sont **pas indépendants** : le deuxième tableau ci-dessus (commandes attendues et observées par canal) montre que, dans cet échantillon, les clients de la **boutique** ont passé en moyenne 4,14 commandes alors que la vérité en prévoit 3,82 (1,9 erreur-type de plus), tandis que ceux d'Instagram en ont passé un peu moins que prévu (3,46 pour 3,62, $-1{,}3$ erreur-type). C'est une fluctuation d'échantillonnage (assez rare, mais pas invraisemblable) qui se propage aux effets sur les commandes **et** sur la dépense, puisque la dépense est le produit du nombre de commandes par le panier. Les erreurs-types du modèle de Tweedie reposent de plus sur une forme de variance seulement approximative (2.6.3), ce qui peut les rendre un peu optimistes (nous ne l'avons pas vérifié ici). Retenez la leçon : **un estimateur peut s'écarter de plus de deux erreurs-types de la vérité sans qu'il y ait de défaut dans le modèle**, parce que l'échantillon est une réalisation parmi d'autres ; avec douze comparaisons corrélées, ce n'est pas un signal d'alarme.
+**Ce qui s'écarte, et pourquoi.** Quatre des douze écarts dépassent environ deux erreurs-types : l'effet d'Réseaux sur le nombre de commandes ($-0{,}176$ pour $-0{,}05$, $z=-2{,}4$) et sur la dépense ($-0{,}555$ pour $-0{,}39$, $z=-2{,}6$), et l'effet de l'âge sur la dépense ($z=2{,}1$) et sur les commandes ($z=1{,}9$). Ces écarts ne sont **pas indépendants** : le deuxième tableau ci-dessus (commandes attendues et observées par canal) montre que, dans cet échantillon, les clients de la **boutique** ont passé en moyenne 4,14 commandes alors que la vérité en prévoit 3,82 (1,9 erreur-type de plus), tandis que ceux d'Réseaux en ont passé un peu moins que prévu (3,46 pour 3,62, $-1{,}3$ erreur-type). C'est une fluctuation d'échantillonnage (assez rare, mais pas invraisemblable) qui se propage aux effets sur les commandes **et** sur la dépense, puisque la dépense est le produit du nombre de commandes par le panier. Les erreurs-types du modèle de Tweedie reposent de plus sur une forme de variance seulement approximative (2.6.3), ce qui peut les rendre un peu optimistes (nous ne l'avons pas vérifié ici). Retenez la leçon : **un estimateur peut s'écarter de plus de deux erreurs-types de la vérité sans qu'il y ait de défaut dans le modèle**, parce que l'échantillon est une réalisation parmi d'autres ; avec douze comparaisons corrélées, ce n'est pas un signal d'alarme.

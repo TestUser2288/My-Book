@@ -1,8 +1,8 @@
 # Les données et l'environnement du volume
 
-## Dar Jasmin, de 2016 à 2025
+## La boutique, de 2016 à 2025
 
-Au volume I, Dar Jasmin était une petite boutique observée sur une année. Ici, nous suivons **dix ans d'activité** : la boutique ouverte à Tunis en 2016, le site web, puis la page Instagram. Yasmine a fait croître son affaire, a vécu un arrêt brutal au printemps 2020, et a lancé une **offre de bienvenue** tirée au sort pour les nouveaux clients.
+Au volume I, la boutique était une petite boutique observée sur une année. Ici, nous suivons **dix ans d'activité** : la boutique ouverte à Ville E en 2016, le site web, puis la page Réseaux. La gérante a fait croître son affaire, a vécu un arrêt brutal au printemps 2020, et a lancé une **offre de bienvenue** tirée au sort pour les nouveaux clients.
 
 Trois jeux de données, fournis dans le dossier `donnees/`, servent à presque tous les chapitres. Ils sont produits par le script `build/donnees2.py` avec des graines fixes : vous obtiendrez exactement les mêmes chiffres que dans le livre.
 
@@ -34,11 +34,11 @@ enquete   1212 lignes,  9 colonnes, 0 valeur(s) manquante(s)
 ventes     120 lignes,  5 colonnes, 0 valeur(s) manquante(s)
 
  id_client  age   ville canal_acquisition date_inscription  offre_bienvenue  nb_commandes_an  panier_moyen  depense_annuelle  rachat_12m  duree_mois  churn
-         1   19   Autre         Instagram       2020-03-11                0                4         40.95            116.50           0       15.89      1
-         2   43   Tunis              Site       2019-01-10                1                2         78.34            148.92           1       33.68      0
-         3   35 Bizerte          Boutique       2020-07-02                1                6         73.73            509.05           0       23.22      0
-         4   42  Sousse         Instagram       2024-08-01                0                0          0.00              0.00           0        0.96      0
-         5   21    Sfax         Instagram       2024-12-16                0                7         46.57            321.77           0       12.48      0
+         1   19   Autre         Réseaux       2020-03-11                0                4         40.95            116.50           0       15.89      1
+         2   43   Ville E              Site       2019-01-10                1                2         78.34            148.92           1       33.68      0
+         3   35 Ville A          Boutique       2020-07-02                1                6         73.73            509.05           0       23.22      0
+         4   42  Ville D         Réseaux       2024-08-01                0                0          0.00              0.00           0        0.96      0
+         5   21    Ville C         Réseaux       2024-12-16                0                7         46.57            321.77           0       12.48      0
 ```
 
 ### Le tableau des clients
@@ -48,13 +48,13 @@ Voici les variables de `clients.csv`, avec leur type statistique, car c'est lui 
 | Variable | Type | Signification |
 |---|---|---|
 | `age` | quantitative | âge à l'inscription (18 à 75 ans) |
-| `ville` | qualitative nominale | Tunis, Sousse, Sfax, Nabeul, Bizerte, Autre |
-| `canal_acquisition` | qualitative nominale | canal par lequel le client est arrivé : Instagram, Site, Boutique |
+| `ville` | qualitative nominale | Ville E, Ville D, Ville C, Ville B, Ville A, Autre |
+| `canal_acquisition` | qualitative nominale | canal par lequel le client est arrivé : Réseaux, Site, Boutique |
 | `date_inscription` | date | entre janvier 2019 et juin 2025 |
 | `offre_bienvenue` | binaire (0/1) | 1 si le client a reçu une offre de bienvenue ; **attribuée au hasard** |
 | `nb_commandes_an` | comptage (0, 1, 2…) | nombre de commandes sur l'année |
-| `panier_moyen` | quantitative positive | montant moyen d'une commande en DT (0 si aucune commande) |
-| `depense_annuelle` | quantitative ≥ 0 | dépense totale de l'année en DT : beaucoup de zéros, très asymétrique |
+| `panier_moyen` | quantitative positive | montant moyen d'une commande en € (0 si aucune commande) |
+| `depense_annuelle` | quantitative ≥ 0 | dépense totale de l'année en € : beaucoup de zéros, très asymétrique |
 | `rachat_12m` | binaire (0/1) | le client a-t-il racheté dans les douze mois ? |
 | `duree_mois` | quantitative positive | durée de la relation, en mois, **jusqu'au départ ou jusqu'à la fin de l'observation** |
 | `churn` | binaire (0/1) | 1 : le départ a été observé ; 0 : le client est encore là au 31/12/2025, donc sa durée est **censurée** |
@@ -88,7 +88,7 @@ part des clients qui ont racheté : 0.509
 départs observés / censurés      : 977 / 1023
 
 canal_acquisition
-Instagram    816
+Réseaux    816
 Site         680
 Boutique     504
 ```
@@ -101,8 +101,8 @@ L'offre de bienvenue est la variable la plus précieuse du jeu pour la **causali
 equilibre = clients.groupby("offre_bienvenue").agg(
     clients=("id_client", "count"),
     age_moyen=("age", "mean"),
-    part_instagram=("canal_acquisition", lambda s: (s == "Instagram").mean()),
-    part_tunis=("ville", lambda s: (s == "Tunis").mean()),
+    part_instagram=("canal_acquisition", lambda s: (s == "Réseaux").mean()),
+    part_tunis=("ville", lambda s: (s == "Ville E").mean()),
 ).round(3)
 print(equilibre.to_string())
 ```
@@ -183,7 +183,7 @@ mois
 
 On voit une croissance régulière, interrompue en 2020 : les mois de mars à juin 2020 (colonne `covid`) correspondent à l'arrêt de l'activité. La colonne `promo` marque les mois où une promotion a eu lieu. Nous décomposerons cette série (tendance, saisonnalité, bruit) au chapitre 4.
 
-> 📦 **Les chiffres du volume I et ceux-ci ne sont pas les mêmes, et c'est normal.** Au volume I, nous avions un échantillon de 400 commandes de l'année 2025. Ici, `ventes_mensuelles.csv` donne le chiffre d'affaires sur dix ans : l'année 2025 y est du même ordre de grandeur que les 24 098 DT observés au volume I, mais les deux jeux sont indépendants. Ne cherchez pas à les rapprocher ligne à ligne.
+> 📦 **Les chiffres du volume I et ceux-ci ne sont pas les mêmes, et c'est normal.** Au volume I, nous avions un échantillon de 400 commandes de l'année 2025. Ici, `ventes_mensuelles.csv` donne le chiffre d'affaires sur dix ans : l'année 2025 y est du même ordre de grandeur que les 24 098 € observés au volume I, mais les deux jeux sont indépendants. Ne cherchez pas à les rapprocher ligne à ligne.
 
 ## L'environnement de travail
 

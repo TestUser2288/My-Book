@@ -26,7 +26,7 @@ Ici, la section 1.6 sur le dénombrement nous sert directement : $P(\text{pair})
 > - **Union quelconque** : $P(A\cup B)=P(A)+P(B)-P(A\cap B)$. *Preuve* : en additionnant $P(A)$ et $P(B)$ on compte deux fois $A\cap B$ ; on retire donc une fois ce qui est en trop. (Formellement, on écrit $A\cup B$ comme union des trois morceaux incompatibles $A\setminus B$, $A\cap B$, $B\setminus A$.) $\blacksquare$
 > - **Monotonie** : si $A\subset B$ alors $P(A)\le P(B)$.
 
-**Exemple chiffré.** Yasmine envoie une promotion. La chance qu'un client ouvre l'e-mail est $P(O)=0{,}4$, celle qu'il visite le site est $P(V)=0{,}3$, et celle qu'il fasse les deux est $P(O\cap V)=0{,}2$. Quelle est la probabilité qu'il fasse **au moins une** des deux choses ?
+**Exemple chiffré.** la gérante envoie une promotion. La chance qu'un client ouvre l'e-mail est $P(O)=0{,}4$, celle qu'il visite le site est $P(V)=0{,}3$, et celle qu'il fasse les deux est $P(O\cap V)=0{,}2$. Quelle est la probabilité qu'il fasse **au moins une** des deux choses ?
 
 $$P(O\cup V)=0{,}4+0{,}3-0{,}2=0{,}5.$$
 
@@ -59,20 +59,20 @@ Vous voyez l'écart se réduire à mesure que $n$ grandit. Ce phénomène porte 
 
 ### 2.1.3 Probabilité conditionnelle : changer d'information
 
-> 💡 **Intuition.** Les probabilités dépendent de ce que l'on sait. La probabilité qu'une personne prise au hasard achète est de 20 %. Mais si l'on **sait** qu'elle vient d'Instagram, ce n'est plus la même question : on se restreint à la population Instagram.
+> 💡 **Intuition.** Les probabilités dépendent de ce que l'on sait. La probabilité qu'une personne prise au hasard achète est de 20 %. Mais si l'on **sait** qu'elle vient d'Réseaux, ce n'est plus la même question : on se restreint à la population Réseaux.
 
-Voici les 1 000 dernières visites de Dar Jasmin, classées par canal d'arrivée et par résultat (achat ou non) :
+Voici les 1 000 dernières visites de la boutique, classées par canal d'arrivée et par résultat (achat ou non) :
 
 | | Achat | Pas d'achat | Total |
 |---|---:|---:|---:|
-| **Instagram** | 60 | 340 | 400 |
+| **Réseaux** | 60 | 340 | 400 |
 | **Site (recherche)** | 70 | 280 | 350 |
 | **Boutique (passage)** | 75 | 175 | 250 |
 | **Total** | 205 | 795 | 1 000 |
 
 - $P(\text{achat})=205/1000=0{,}205$.
-- $P(\text{achat et Instagram})=60/1000=0{,}06$.
-- Parmi les 400 visiteurs Instagram, 60 achètent : $P(\text{achat}\mid\text{Instagram})=60/400=0{,}15$.
+- $P(\text{achat et Réseaux})=60/1000=0{,}06$.
+- Parmi les 400 visiteurs Réseaux, 60 achètent : $P(\text{achat}\mid\text{Réseaux})=60/400=0{,}15$.
 
 Cette dernière quantité se note $P(A\mid B)$, « probabilité de $A$ **sachant** $B$ ». Remarquez qu'on peut la retrouver à partir des probabilités globales :
 
@@ -83,7 +83,7 @@ C'est la **définition** de la probabilité conditionnelle (valable si $P(B)>0$)
 ```python
 import pandas as pd      # bibliothèque de tableaux, étudiée en détail à la section 4.4
 tableau = pd.DataFrame({"achat": [60, 70, 75], "pas_achat": [340, 280, 175]},
-                       index=["Instagram", "Site", "Boutique"])
+                       index=["Réseaux", "Site", "Boutique"])
 tableau["total"] = tableau.sum(axis=1)
 tableau["P(achat | canal)"] = (tableau["achat"] / tableau["total"]).round(3)
 print(tableau)
@@ -92,21 +92,21 @@ print("P(achat) global =", tableau["achat"].sum() / tableau["total"].sum())
 <!--sortie-->
 ```text
            achat  pas_achat  total  P(achat | canal)
-Instagram     60        340    400              0.15
+Réseaux     60        340    400              0.15
 Site          70        280    350              0.20
 Boutique      75        175    250              0.30
 P(achat) global = 0.205
 ```
 
-Le canal « Boutique » convertit deux fois mieux qu'Instagram (30 % contre 15 %). Mais attention à ne pas confondre :
+Le canal « Boutique » convertit deux fois mieux qu'Réseaux (30 % contre 15 %). Mais attention à ne pas confondre :
 
-> ⚠️ **$P(A\mid B)\neq P(B\mid A)$.** Ici, $P(\text{achat}\mid\text{Instagram})=0{,}15$ ; mais $P(\text{Instagram}\mid\text{achat})=60/205\approx0{,}29$. Parmi les acheteurs, 29 % viennent d'Instagram, alors que parmi les visiteurs Instagram, seuls 15 % achètent. Ce sont deux questions différentes. Cette confusion est l'erreur de raisonnement la plus répandue, y compris chez les professionnels (nous en verrons un cas spectaculaire plus bas).
+> ⚠️ **$P(A\mid B)\neq P(B\mid A)$.** Ici, $P(\text{achat}\mid\text{Réseaux})=0{,}15$ ; mais $P(\text{Réseaux}\mid\text{achat})=60/205\approx0{,}29$. Parmi les acheteurs, 29 % viennent d'Réseaux, alors que parmi les visiteurs Réseaux, seuls 15 % achètent. Ce sont deux questions différentes. Cette confusion est l'erreur de raisonnement la plus répandue, y compris chez les professionnels (nous en verrons un cas spectaculaire plus bas).
 
 **La règle du produit.** En réarrangeant la définition :
 
 $$P(A\cap B)=P(A\mid B)\,P(B).$$
 
-Pour qu'un visiteur soit **à la fois** Instagram **et** acheteur, il faut d'abord qu'il vienne d'Instagram (0,40), puis qu'il achète sachant cela (0,15) : $0{,}40\times0{,}15=0{,}06$ ✓.
+Pour qu'un visiteur soit **à la fois** Réseaux **et** acheteur, il faut d'abord qu'il vienne d'Réseaux (0,40), puis qu'il achète sachant cela (0,15) : $0{,}40\times0{,}15=0{,}06$ ✓.
 
 ### 2.1.4 Indépendance
 
@@ -114,7 +114,7 @@ Deux événements sont **indépendants** si en connaître un ne change rien à l
 
 $$P(A\cap B)=P(A)\,P(B).$$
 
-Dans le tableau, achat et canal sont-ils indépendants ? Si oui, on aurait $P(\text{achat}\mid\text{Instagram})=P(\text{achat})$. Or $0{,}15\neq0{,}205$ : **ils ne sont pas indépendants**. Le canal d'arrivée *informe* sur la probabilité d'achat, et c'est précisément ce qu'on cherche en analyse de données : repérer les variables qui informent sur d'autres.
+Dans le tableau, achat et canal sont-ils indépendants ? Si oui, on aurait $P(\text{achat}\mid\text{Réseaux})=P(\text{achat})$. Or $0{,}15\neq0{,}205$ : **ils ne sont pas indépendants**. Le canal d'arrivée *informe* sur la probabilité d'achat, et c'est précisément ce qu'on cherche en analyse de données : repérer les variables qui informent sur d'autres.
 
 > 🧪 **Indépendance ≠ incompatibilité.** Deux événements incompatibles ($A\cap B=\emptyset$) de probabilités non nulles sont au contraire **très dépendants** : si $A$ arrive, on est *certain* que $B$ n'arrive pas.
 
@@ -168,7 +168,7 @@ Les trois ingrédients ont des noms qu'on retrouvera tout au long de la data sci
 | $P(A\mid B)$ | **vraisemblance** (*likelihood*) | à quel point l'observation est probable *si* $B$ est vrai |
 | $P(B\mid A)$ | **a posteriori** (*posterior*) | ce que l'on croit *après* avoir observé |
 
-**Exemple fondateur : l'alerte antifraude.** Dar Jasmin reçoit des paiements en ligne. Parmi eux, **1 %** sont frauduleux. Le système de détection se déclenche pour **95 %** des paiements frauduleux (c'est sa *sensibilité*), mais aussi pour **5 %** des paiements légitimes (ses *fausses alertes*). Un paiement déclenche l'alerte. **Quelle est la probabilité qu'il soit réellement frauduleux ?**
+**Exemple fondateur : l'alerte antifraude.** la boutique reçoit des paiements en ligne. Parmi eux, **1 %** sont frauduleux. Le système de détection se déclenche pour **95 %** des paiements frauduleux (c'est sa *sensibilité*), mais aussi pour **5 %** des paiements légitimes (ses *fausses alertes*). Un paiement déclenche l'alerte. **Quelle est la probabilité qu'il soit réellement frauduleux ?**
 
 Réfléchissez avant de lire : beaucoup de gens répondent « environ 95 % ». Calculons.
 
@@ -225,7 +225,7 @@ Après une alerte : 16 %. Après deux : 78,5 %. Après trois : 98,6 %. Chaque no
 
 ### 2.1.7 Application : un mini-classifieur (le filtre naïf de Bayes)
 
-Yasmine reçoit trop d'avis clients à lire un par un. Elle veut les classer automatiquement en « positif » ou « négatif ». Voici un échantillon de 20 avis déjà étiquetés, où l'on note si le mot **« cassé »** y apparaît :
+La gérante reçoit trop d'avis clients à lire un par un. Elle veut les classer automatiquement en « positif » ou « négatif ». Voici un échantillon de 20 avis déjà étiquetés, où l'on note si le mot **« cassé »** y apparaît :
 
 | | Avis positif | Avis négatif |
 |---|---:|---:|
@@ -305,7 +305,7 @@ for n in (10, 23, 40, 70):
 
 Dès **23** personnes, la probabilité dépasse **50 %** ; à 70, elle est quasi certaine. Contre-intuitif parce qu'on pense à *notre* anniversaire alors que ce sont les $\binom{23}{2}=253$ **paires** qui comptent. Pour la data science, c'est la clé pour comprendre les **collisions** (deux clients avec le même identifiant haché, deux enregistrements en double) : elles arrivent bien plus tôt qu'on ne l'imagine.
 
-**Le paradoxe de Simpson.** Une tendance observée dans plusieurs groupes peut s'**inverser** quand on les fusionne. Exemple : Yasmine teste deux versions d'une page de paiement, A et B, auprès de clients sur mobile et sur ordinateur.
+**Le paradoxe de Simpson.** Une tendance observée dans plusieurs groupes peut s'**inverser** quand on les fusionne. Exemple : La gérante teste deux versions d'une page de paiement, A et B, auprès de clients sur mobile et sur ordinateur.
 
 | | Mobile | Ordinateur | Total |
 |---|---:|---:|---:|

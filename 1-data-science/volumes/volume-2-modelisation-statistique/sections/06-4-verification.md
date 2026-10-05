@@ -80,7 +80,7 @@ paramètre  R-chapeau (chauffe incluse)  R-chapeau (chauffe écartée)  ESS
     const                       1.0037                       1.0010 1281
     offre                       1.0064                       1.0023 1276
     age_c                       1.0163                       1.0009 1114
-Instagram                       1.0022                       1.0037 1158
+Réseaux                       1.0022                       1.0037 1158
      Site                       1.0043                       1.0024 1205
 ```
 
@@ -369,7 +369,7 @@ def waic(tir, Xs):
     return -2 * elpd_i.sum(), pw_i.sum(), -2 * elpd_i
 
 modeles = {"M0 : constante": ["const"], "M1 : + offre": ["const", "offre"],
-           "M2 : + canal": ["const", "offre", "Instagram", "Site"], "M3 : + âge": ["const", "offre", "Instagram", "Site", "age_c"]}
+           "M2 : + canal": ["const", "offre", "Réseaux", "Site"], "M3 : + âge": ["const", "offre", "Réseaux", "Site", "age_c"]}
 res, pointwise = [], {}
 for i, (nom, cols) in enumerate(modeles.items()):
     tir, Xs, emv_ = fit_mcmc_logit(cols, graine=650 + i)
@@ -397,14 +397,14 @@ M1 - M2 : différence de WAIC =   13.8, erreur-type = 8.5
 M2 - M3 : différence de WAIC =   11.4, erreur-type = 7.0
 ```
 
-Le WAIC **décroît** à mesure que l'on ajoute l'offre, puis le canal, puis l'âge. Le $p_{\mathrm{WAIC}}$ est très proche du nombre de paramètres (comme il se doit pour un modèle régulier avec beaucoup de données), et le WAIC est quasiment égal à l'AIC calculé par le maximum de vraisemblance : avec un a priori diffus et beaucoup de données, les deux critères racontent la même histoire. Les dernières lignes comparent les gains avec leur **incertitude** (un WAIC isolé ne signifie rien : seules les **différences entre modèles** comptent, et leur erreur-type). Une différence est jugée « claire » si elle dépasse environ deux erreurs-types. Ici, l'offre apporte un gain net (27,9 ± 10,9, soit 2,6 erreurs-types) ; le canal (13,8 ± 8,5) et l'âge (11,4 ± 7,0) apportent des gains d'environ 1,6 erreur-type : **plausibles mais non tranchés** par le WAIC seul. Cela ne contredit pas la section 6.3.5, où les intervalles de crédibilité de l'âge et du canal Instagram excluent 0 : le WAIC répond à la question « *ce coefficient améliore-t-il la prédiction de clients nouveaux ?* », pas à « *ce coefficient est-il différent de zéro ?* ».
+Le WAIC **décroît** à mesure que l'on ajoute l'offre, puis le canal, puis l'âge. Le $p_{\mathrm{WAIC}}$ est très proche du nombre de paramètres (comme il se doit pour un modèle régulier avec beaucoup de données), et le WAIC est quasiment égal à l'AIC calculé par le maximum de vraisemblance : avec un a priori diffus et beaucoup de données, les deux critères racontent la même histoire. Les dernières lignes comparent les gains avec leur **incertitude** (un WAIC isolé ne signifie rien : seules les **différences entre modèles** comptent, et leur erreur-type). Une différence est jugée « claire » si elle dépasse environ deux erreurs-types. Ici, l'offre apporte un gain net (27,9 ± 10,9, soit 2,6 erreurs-types) ; le canal (13,8 ± 8,5) et l'âge (11,4 ± 7,0) apportent des gains d'environ 1,6 erreur-type : **plausibles mais non tranchés** par le WAIC seul. Cela ne contredit pas la section 6.3.5, où les intervalles de crédibilité de l'âge et du canal Réseaux excluent 0 : le WAIC répond à la question « *ce coefficient améliore-t-il la prédiction de clients nouveaux ?* », pas à « *ce coefficient est-il différent de zéro ?* ».
 
 **Sensibilité à l'a priori (6.1.6, enfin faite).** Terminons par l'analyse de sensibilité promise : le coefficient de l'offre change-t-il si l'on modifie l'écart-type $s$ de l'a priori ?
 
 ```python
 lignes = []
 for i, s_ in enumerate((0.5, 1.5, 2.5, 10.0)):
-    tir, Xs, emv_ = fit_mcmc_logit(["const", "offre", "Instagram", "Site", "age_c"], graine=660 + i, s=s_)
+    tir, Xs, emv_ = fit_mcmc_logit(["const", "offre", "Réseaux", "Site", "age_c"], graine=660 + i, s=s_)
     bo = tir[:, 1]
     lignes.append({"s de l'a priori": s_, "moyenne a posteriori de beta_offre": round(bo.mean(), 3),
                    "IC95 bas": round(np.percentile(bo, 2.5), 3), "IC95 haut": round(np.percentile(bo, 97.5), 3)})

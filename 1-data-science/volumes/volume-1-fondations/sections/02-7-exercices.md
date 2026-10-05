@@ -16,11 +16,11 @@
 
 **Exercice 6 ⭐⭐ (normale).** Le poids des colis expédiés suit $\mathcal N(500\text{ g},\ 40^2)$. (a) Probabilité qu'un colis pèse moins de 450 g ? (b) Entre 460 et 540 g ? (c) Quel poids n'est dépassé que par 1 % des colis ?
 
-**Exercice 7 ⭐⭐ (espérance et variance).** Un jeu de fidélité distribue : 0 DT avec la probabilité 0,80 ; 10 DT avec 0,15 ; 50 DT avec 0,05. Calculez l'espérance, la variance et l'écart-type du gain. Si participer coûte 5 DT, le jeu est-il favorable au client ? Et si le client joue 100 fois, quelle est l'espérance et l'écart-type de son gain total ?
+**Exercice 7 ⭐⭐ (espérance et variance).** Un jeu de fidélité distribue : 0 € avec la probabilité 0,80 ; 10 € avec 0,15 ; 50 € avec 0,05. Calculez l'espérance, la variance et l'écart-type du gain. Si participer coûte 5 €, le jeu est-il favorable au client ? Et si le client joue 100 fois, quelle est l'espérance et l'écart-type de son gain total ?
 
 **Exercice 8 ⭐⭐ (covariance).** Cinq clients ont noté le délai de livraison ($x=1,2,3,4,5$ jours) et leur satisfaction ($y=2,4,5,4,5$ sur 5). Calculez à la main la covariance (divisée par $n$), la variance de chaque variable et la corrélation. Vérifiez avec NumPy.
 
-**Exercice 9 ⭐⭐⭐ (TCL).** Le panier d'un client a une moyenne de 45 DT et un écart-type de 30 DT (loi très asymétrique). On observe 100 clients. (a) Quelle est la loi approchée de la moyenne ? (b) Probabilité que la moyenne dépasse 50 DT ? (c) Combien de clients faut-il observer pour que l'erreur-type de la moyenne soit inférieure à 1 DT ? (d) Vérifiez (b) par simulation. Attention : une loi exponentielle de moyenne 45 a un écart-type de 45, pas 30 ; quelle loi asymétrique de moyenne 45 et d'écart-type 30 peut-on utiliser à la place ?
+**Exercice 9 ⭐⭐⭐ (TCL).** Le panier d'un client a une moyenne de 45 € et un écart-type de 30 € (loi très asymétrique). On observe 100 clients. (a) Quelle est la loi approchée de la moyenne ? (b) Probabilité que la moyenne dépasse 50 € ? (c) Combien de clients faut-il observer pour que l'erreur-type de la moyenne soit inférieure à 1 € ? (d) Vérifiez (b) par simulation. Attention : une loi exponentielle de moyenne 45 a un écart-type de 45, pas 30 ; quelle loi asymétrique de moyenne 45 et d'écart-type 30 peut-on utiliser à la place ?
 
 **Exercice 10 ⭐⭐⭐ (Markov).** Chaque jour, une machine est **en marche** (M) ou **en panne** (P). Si elle est en marche, elle tombe en panne le lendemain avec probabilité 0,1. Si elle est en panne, elle est réparée le lendemain avec probabilité 0,4. (a) Écrivez la matrice de transition. (b) Si elle est en marche aujourd'hui, quelle est la probabilité qu'elle le soit après-demain ? (c) Quelle est la proportion de temps passée en panne à long terme ?
 
@@ -101,7 +101,7 @@ print("(c)", round(W.ppf(0.99), 1))
 (c) 593.1
 ```
 
-**Corrigé 7.** $E=0{,}15\times10+0{,}05\times50=1{,}5+2{,}5=4$ DT. $E[X^2]=0{,}15\times100+0{,}05\times2500=15+125=140$, $\operatorname{Var}=140-16=124$, $\sigma\approx11{,}1$ DT. À 5 DT la partie, l'espérance du **gain net** est $4-5=-1$ DT : défavorable en moyenne (c'est favorable à la boutique). Sur 100 parties (indépendantes) : espérance $100\times4=400$ DT, variance $100\times124=12\,400$, écart-type $\sqrt{12400}\approx111$ DT. Remarquez que l'écart-type relatif diminue : 111/400 = 28 % contre 11,1/4 = 278 % pour une seule partie.
+**Corrigé 7.** $E=0{,}15\times10+0{,}05\times50=1{,}5+2{,}5=4$ €. $E[X^2]=0{,}15\times100+0{,}05\times2500=15+125=140$, $\operatorname{Var}=140-16=124$, $\sigma\approx11{,}1$ €. À 5 € la partie, l'espérance du **gain net** est $4-5=-1$ € : défavorable en moyenne (c'est favorable à la boutique). Sur 100 parties (indépendantes) : espérance $100\times4=400$ €, variance $100\times124=12\,400$, écart-type $\sqrt{12400}\approx111$ €. Remarquez que l'écart-type relatif diminue : 111/400 = 28 % contre 11,1/4 = 278 % pour une seule partie.
 
 ```python
 gains = np.array([0, 10, 50]); probas = np.array([0.8, 0.15, 0.05])
@@ -128,7 +128,7 @@ cov = 1.2   var x, y = 2.0 1.2
 rho = 0.7746
 ```
 
-**Corrigé 9.** (a) Par le TCL, $\bar X_{100}\approx\mathcal N(45,\ 30^2/100)=\mathcal N(45,\ 3^2)$ : erreur-type 3 DT. (b) $z=(50-45)/3\approx1{,}667$, $P(\bar X>50)\approx0{,}048$. (c) $\sigma/\sqrt n<1\iff n>900$. (d) Pour la simulation, une exponentielle de moyenne 45 a un écart-type de **45** (pas 30) : elle ne convient pas. On utilise une loi Gamma de moyenne 45 et d'écart-type 30 (forme $k=(45/30)^2=2{,}25$, échelle $\theta=30^2/45=20$). La simulation donne 5,1 % contre 4,8 % par le TCL : l'écart vient de l'asymétrie résiduelle à $n=100$.
+**Corrigé 9.** (a) Par le TCL, $\bar X_{100}\approx\mathcal N(45,\ 30^2/100)=\mathcal N(45,\ 3^2)$ : erreur-type 3 €. (b) $z=(50-45)/3\approx1{,}667$, $P(\bar X>50)\approx0{,}048$. (c) $\sigma/\sqrt n<1\iff n>900$. (d) Pour la simulation, une exponentielle de moyenne 45 a un écart-type de **45** (pas 30) : elle ne convient pas. On utilise une loi Gamma de moyenne 45 et d'écart-type 30 (forme $k=(45/30)^2=2{,}25$, échelle $\theta=30^2/45=20$). La simulation donne 5,1 % contre 4,8 % par le TCL : l'écart vient de l'asymétrie résiduelle à $n=100$.
 
 ```python
 print("(b) TCL :", round(stats.norm(45, 3).sf(50), 4))

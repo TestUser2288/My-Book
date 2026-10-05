@@ -12,9 +12,9 @@ $$E[X]=\sum_k k\,P(X=k)\qquad\text{et}\qquad E[X]=\int_{-\infty}^{+\infty}x\,f(x
 
 **Exemple 1 : le dé.** $E[X]=1\cdot\tfrac16+2\cdot\tfrac16+\dots+6\cdot\tfrac16=\tfrac{21}6=3{,}5$. Remarquez que l'espérance n'est **pas** une valeur possible : on n'obtiendra jamais 3,5. C'est un centre de gravité, pas un résultat.
 
-**Exemple 2 : une décision.** Yasmine hésite à lancer une nouvelle lampe. Elle envisage trois scénarios pour le bénéfice du premier trimestre :
+**Exemple 2 : une décision.** la gérante hésite à lancer une nouvelle lampe. Elle envisage trois scénarios pour le bénéfice du premier trimestre :
 
-| Scénario | Probabilité | Bénéfice (DT) |
+| Scénario | Probabilité | Bénéfice (€) |
 |---|---:|---:|
 | Grand succès | 0,3 | +5 000 |
 | Succès moyen | 0,5 | +1 000 |
@@ -22,7 +22,7 @@ $$E[X]=\sum_k k\,P(X=k)\qquad\text{et}\qquad E[X]=\int_{-\infty}^{+\infty}x\,f(x
 
 $$E[X]=0{,}3\times5000+0{,}5\times1000+0{,}2\times(-3000)=1500+500-600=1400.$$
 
-Le lancement rapporte **en moyenne** 1 400 DT. Une option alternative sûre rapporterait 1 200 DT. Faut-il lancer ? L'espérance seule dit oui, mais elle ne dit rien du **risque** : il y a 20 % de chances de perdre de l'argent. C'est exactement le rôle de la variance, ci-dessous.
+Le lancement rapporte **en moyenne** 1 400 €. Une option alternative sûre rapporterait 1 200 €. Faut-il lancer ? L'espérance seule dit oui, mais elle ne dit rien du **risque** : il y a 20 % de chances de perdre de l'argent. C'est exactement le rôle de la variance, ci-dessous.
 
 ```python
 import numpy as np
@@ -47,7 +47,7 @@ E[X] = 1400.0
 >
 > La seconde se démontre de la même façon avec une somme double. Elle est **toujours vraie, même si $X$ et $Y$ sont dépendantes** : c'est ce qui la rend si puissante.
 
-**Exemple d'usage.** Si les ventes du jour ont une espérance de 120 bols à 25 DT l'unité, les recettes $25X$ ont pour espérance $25\times120=3000$ DT : on multiplie simplement.
+**Exemple d'usage.** Si les ventes du jour ont une espérance de 120 bols à 25 € l'unité, les recettes $25X$ ont pour espérance $25\times120=3000$ € : on multiplie simplement.
 
 **Application élégante : l'espérance d'une binomiale.** Une binomiale $X\sim\text{Bin}(n,p)$ est la somme de $n$ Bernoulli : $X=B_1+\dots+B_n$, avec $E[B_i]=1\cdot p+0\cdot(1-p)=p$. Par linéarité,
 
@@ -68,11 +68,11 @@ Sans aucun calcul avec $\binom nk$ ! Pour nos 20 visiteurs à 20 % : $E[X]=4$, c
 
 ### 2.3.2 La variance : mesurer l'étalement
 
-Deux commerçants ont chacun un bénéfice moyen de 1 000 DT par mois. Chez l'un, c'est toujours entre 950 et 1 050. Chez l'autre, ça varie de −2 000 à +4 000. Même espérance, risques très différents. La **variance** mesure l'écart typique au centre :
+Deux commerçants ont chacun un bénéfice moyen de 1 000 € par mois. Chez l'un, c'est toujours entre 950 et 1 050. Chez l'autre, ça varie de −2 000 à +4 000. Même espérance, risques très différents. La **variance** mesure l'écart typique au centre :
 
 $$\operatorname{Var}(X)=E\bigl[(X-\mu)^2\bigr],\qquad \mu=E[X].$$
 
-On prend le **carré** de l'écart pour que les écarts positifs et négatifs ne se compensent pas. L'**écart-type** $\sigma=\sqrt{\operatorname{Var}(X)}$ ramène le résultat à l'unité d'origine (des dinars, pas des dinars²).
+On prend le **carré** de l'écart pour que les écarts positifs et négatifs ne se compensent pas. L'**écart-type** $\sigma=\sqrt{\operatorname{Var}(X)}$ ramène le résultat à l'unité d'origine (des euros, pas des dinars²).
 
 > 📐 **Formule de calcul (« moyenne des carrés moins carré de la moyenne »).**
 >
@@ -86,7 +86,7 @@ On prend le **carré** de l'écart pour que les écarts positifs et négatifs ne
 
 $$E[X^2]=0{,}3\times5000^2+0{,}5\times1000^2+0{,}2\times3000^2=7{,}5\cdot10^6+0{,}5\cdot10^6+1{,}8\cdot10^6=9{,}8\cdot10^6,$$
 
-$$\operatorname{Var}(X)=9{,}8\cdot10^6-1400^2=9{,}8\cdot10^6-1{,}96\cdot10^6=7{,}84\cdot10^6,\qquad\sigma=2800\ \text{DT}.$$
+$$\operatorname{Var}(X)=9{,}8\cdot10^6-1400^2=9{,}8\cdot10^6-1{,}96\cdot10^6=7{,}84\cdot10^6,\qquad\sigma=2800\ \text{€}.$$
 
 ```python
 e_carre = (benefices**2 * probas).sum()
@@ -104,7 +104,7 @@ Var(X)   = 7840000.0
 P(perte)   = 0.2
 ```
 
-L'écart-type (2 800 DT) est **deux fois plus grand** que l'espérance (1 400 DT) : l'option est très risquée. Face à l'option sûre à 1 200 DT, le gain moyen n'est supérieur que de 200 DT alors que le risque est considérable. Beaucoup de gens (et de gérants) préféreraient l'option sûre. Il n'y a pas de « bonne » réponse mathématique : la variance **quantifie** le risque pour que la décision soit éclairée.
+L'écart-type (2 800 €) est **deux fois plus grand** que l'espérance (1 400 €) : l'option est très risquée. Face à l'option sûre à 1 200 €, le gain moyen n'est supérieur que de 200 € alors que le risque est considérable. Beaucoup de gens (et de gérants) préféreraient l'option sûre. Il n'y a pas de « bonne » réponse mathématique : la variance **quantifie** le risque pour que la décision soit éclairée.
 
 #### Propriétés de la variance
 
@@ -112,7 +112,7 @@ L'écart-type (2 800 DT) est **deux fois plus grand** que l'espérance (1 400 DT
 >
 > *Preuve.* $E[aX+b]=a\mu+b$, donc $(aX+b)-E[aX+b]=a(X-\mu)$ et $\operatorname{Var}(aX+b)=E[a^2(X-\mu)^2]=a^2\operatorname{Var}(X)$. $\blacksquare$
 >
-> Conséquences : ajouter une constante ($+b$) ne change pas l'étalement ; multiplier par $a$ multiplie l'écart-type par $|a|$. Convertir des dinars en euros multiplie l'écart-type par le taux de change, et c'est tout.
+> Conséquences : ajouter une constante ($+b$) ne change pas l'étalement ; multiplier par $a$ multiplie l'écart-type par $|a|$. Convertir des euros en euros multiplie l'écart-type par le taux de change, et c'est tout.
 
 > 📐 **Somme de variables indépendantes.** Si $X$ et $Y$ sont **indépendantes**, $\operatorname{Var}(X+Y)=\operatorname{Var}(X)+\operatorname{Var}(Y)$. (Nous démontrons le cas général au 2.3.3.)
 
@@ -151,15 +151,15 @@ Exponentielle(0,5)      2.000     2.001     4.000       3.968
 Normale(120; 15)      120.000   120.001   225.000     225.467
 ```
 
-La **loi de Poisson** a la propriété particulière que sa variance est égale à son espérance. Si les commandes de Yasmine varient *beaucoup plus* que leur moyenne (on parle de **sur-dispersion**), c'est un signe que le modèle de Poisson est trop simple.
+La **loi de Poisson** a la propriété particulière que sa variance est égale à son espérance. Si les commandes de la gérante varient *beaucoup plus* que leur moyenne (on parle de **sur-dispersion**), c'est un signe que le modèle de Poisson est trop simple.
 
 ### 2.3.3 Covariance et corrélation : bouger ensemble
 
-> 💡 **Intuition.** Les jours où Yasmine dépense plus en publicité, vend-elle plus ? On cherche à mesurer si deux variables **varient dans le même sens**. Chaque jour, on regarde si $X$ est au-dessus de sa moyenne et si $Y$ l'est aussi : si les deux écarts ont **le même signe** la plupart du temps, la covariance est positive.
+> 💡 **Intuition.** Les jours où la gérante dépense plus en publicité, vend-elle plus ? On cherche à mesurer si deux variables **varient dans le même sens**. Chaque jour, on regarde si $X$ est au-dessus de sa moyenne et si $Y$ l'est aussi : si les deux écarts ont **le même signe** la plupart du temps, la covariance est positive.
 
 $$\operatorname{Cov}(X,Y)=E\bigl[(X-\mu_X)(Y-\mu_Y)\bigr]=E[XY]-E[X]E[Y].$$
 
-**Exemple à la main.** Quatre semaines : dépenses publicitaires $x=(10,20,30,40)$ DT et ventes $y=(12,18,26,32)$.
+**Exemple à la main.** Quatre semaines : dépenses publicitaires $x=(10,20,30,40)$ € et ventes $y=(12,18,26,32)$.
 
 - Moyennes : $\bar x=25$, $\bar y=22$.
 - Écarts à la moyenne : $x-\bar x=(-15,-5,5,15)$ et $y-\bar y=(-10,-4,4,10)$.

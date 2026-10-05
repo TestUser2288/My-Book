@@ -24,17 +24,17 @@ def distribution_montants():
     ax.axvline(med, color=VIOLET, lw=2, ls="--")
     ax.text(m + 4, ax.get_ylim()[1] * 0.92, f"moyenne\n{m:.1f}".replace(".", ","), color=ORANGE, fontsize=9)
     ax.text(med - 4, ax.get_ylim()[1] * 0.92, f"médiane\n{med:.1f}".replace(".", ","), color=VIOLET, fontsize=9, ha="right")
-    ax.set_xlabel("montant de la commande (DT)")
+    ax.set_xlabel("montant de la commande (€)")
     ax.set_ylabel("nombre de commandes")
     ax.set_title("Distribution des 400 commandes")
     ax = axes[1]
-    ordre = ["Instagram", "Site", "Boutique"]
+    ordre = ["Réseaux", "Site", "Boutique"]
     data = [df.montant[df.canal == c] for c in ordre]
     bp = ax.boxplot(data, tick_labels=ordre, patch_artist=True, widths=0.55,
                     medianprops=dict(color=ENCRE, lw=1.6), flierprops=dict(marker="o", markersize=3, markerfacecolor=MUET, markeredgecolor="none"))
     for patch, c in zip(bp["boxes"], [BLEU, ORANGE, AQUA]):
         patch.set_facecolor(c); patch.set_alpha(0.45); patch.set_edgecolor(ENCRE2)
-    ax.set_ylabel("montant (DT)")
+    ax.set_ylabel("montant (€)")
     ax.set_title("Montant selon le canal")
     ax.grid(axis="x", visible=False)
     save(fig, "ch03-distribution-montants.png")
@@ -116,7 +116,7 @@ def couverture():
     ax.axvline(mu, color=ENCRE, lw=1.4, ls="--")
     ax.text(mu + 0.8, N + 0.5, "vraie moyenne 60,25", color=ENCRE2, fontsize=9)
     ax.set_yticks([])
-    ax.set_xlabel("montant moyen (DT)")
+    ax.set_xlabel("montant moyen (€)")
     ax.set_ylim(-1, N + 3)
     ax.set_title(f"{N} intervalles à 95 % : {N - rates} ratent la vraie valeur (en rouge)")
     ax.grid(axis="y", visible=False)

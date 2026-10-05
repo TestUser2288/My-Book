@@ -101,7 +101,7 @@ A^5 directement :
 
 #### 🛠️ Application : la direction principale d'un nuage de clients
 
-Yasmine mesure, pour 200 clients, le nombre de visites mensuelles sur son site et leur dépense mensuelle. Elle soupçonne que les deux sont liées. On **standardise** chaque variable (on retranche la moyenne et on divise par l'écart-type, pour qu'elles aient la même échelle, comme promis dans la section sur les vecteurs), puis on calcule la **matrice de covariance** des deux variables standardisées :
+La gérante mesure, pour 200 clients, le nombre de visites mensuelles sur son site et leur dépense mensuelle. Elle soupçonne que les deux sont liées. On **standardise** chaque variable (on retranche la moyenne et on divise par l'écart-type, pour qu'elles aient la même échelle, comme promis dans la section sur les vecteurs), puis on calcule la **matrice de covariance** des deux variables standardisées :
 
 $$\mathbf{C} = \begin{pmatrix} 1 & r \\ r & 1 \end{pmatrix},$$
 
@@ -111,7 +111,7 @@ où $r$ est la corrélation entre les deux variables. C'est une matrice symétri
 rng = np.random.default_rng(42)
 n = 200
 visites = rng.normal(6, 2, n)                        # visites par mois
-depense = 15 * visites + rng.normal(0, 12, n)        # dépense en DT, liée aux visites
+depense = 15 * visites + rng.normal(0, 12, n)        # dépense en €, liée aux visites
 
 def standardise(x):
     return (x - x.mean()) / x.std(ddof=1)
@@ -196,7 +196,7 @@ Autrement dit : si les premières valeurs singulières sont grandes et les suiva
 
 #### 🛠️ Application : résumer un tableau de ventes
 
-Yasmine a les ventes hebdomadaires de 6 produits sur 8 semaines. Les données sont simulées selon une règle simple : *ventes = popularité du produit × effet de la semaine + un peu de bruit*. Une telle structure « produit × saison » doit se retrouver dans la première couche de la SVD.
+La gérante a les ventes hebdomadaires de 6 produits sur 8 semaines. Les données sont simulées selon une règle simple : *ventes = popularité du produit × effet de la semaine + un peu de bruit*. Une telle structure « produit × saison » doit se retrouver dans la première couche de la SVD.
 
 ```python
 rng = np.random.default_rng(7)

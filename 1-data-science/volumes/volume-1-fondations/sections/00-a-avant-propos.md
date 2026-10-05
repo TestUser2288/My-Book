@@ -85,27 +85,27 @@ Les sections marquées **➕ Pour aller plus loin** sont des cadeaux, pas des ob
 
 > 💡 **Vous n'avez jamais programmé ?** Pas de panique : chaque bloc de code est suivi de **sa sortie réelle**. On peut donc lire le livre sans rien exécuter et comprendre ce qui se passe. Quand vous serez prêt(e), le chapitre 4 (section 4.1) vous apprend Python depuis zéro.
 
-## Le fil rouge : la boutique Dar Jasmin
+## Le fil rouge : la boutique
 
 Apprendre sur des données abstraites est ennuyeux. Tout au long de ce volume, nous travaillerons donc sur une même histoire :
 
-> **Yasmine** vient de lancer **Dar Jasmin**, une boutique en ligne d'artisanat tunisien : poteries, huile d'olive, tapis, bijoux. Elle vend, elle livre, elle reçoit des retours. Elle a des questions ; vous allez l'aider à y répondre avec des données.
+> **La gérante** vient de lancer **la boutique**, une boutique en ligne d'artisanat tunisien : poteries, huile d'olive, tapis, bijoux. Elle vend, elle livre, elle reçoit des retours. Elle a des questions ; vous allez l'aider à y répondre avec des données.
 
 Voici quelques-unes de ses questions, et le chapitre où nous y répondrons :
 
-| Question de Yasmine | Outil | Chapitre |
+| Question de la gérante | Outil | Chapitre |
 |---|---|---|
 | « Quels clients se ressemblent ? » | vecteurs, similarité | 1 |
 | « Comment ajuster mes prix pour maximiser le chiffre d'affaires ? » | optimisation | 1 |
 | « Cette commande est-elle une fraude ? » | théorème de Bayes | 2 |
 | « Combien de commandes dois-je prévoir à 14 h ? » | loi de Poisson | 2 |
 | « Mon nouveau transporteur est-il vraiment plus rapide ? » | tests d'hypothèses | 3 |
-| « Combien vaut mon panier moyen, à ±2 dinars près ? » | intervalle de confiance | 3 |
+| « Combien vaut mon panier moyen, à ±2 euros près ? » | intervalle de confiance | 3 |
 | « Comment automatiser mes rapports de ventes ? » | Python, pandas | 4 |
 | « Quels sont mes dix meilleurs clients ? » | SQL | 5 |
 | « Comment retrouver la version de mon analyse d'il y a un mois ? » | Git | 6 |
 
-**Une précision importante :** Dar Jasmin et toutes ses données sont **fictifs**. Les chiffres sont générés par ordinateur, avec des règles simples que nous connaissons, ce qui permet de vérifier que nos méthodes retrouvent bien la réalité. Toute ressemblance avec une vraie boutique serait une coïncidence.
+**Une précision importante :** la boutique et toutes ses données sont **fictifs**. Les chiffres sont générés par ordinateur, avec des règles simples que nous connaissons, ce qui permet de vérifier que nos méthodes retrouvent bien la réalité. Toute ressemblance avec une vraie boutique serait une coïncidence.
 
 ## Le code de ce livre
 
@@ -113,11 +113,11 @@ Les exemples de code sont écrits en **Python** (langage principal du livre), av
 
 ```python
 prix = [45.0, 12.5, 80.0]
-print(f"Total du panier : {sum(prix):.2f} DT")
+print(f"Total du panier : {sum(prix):.2f} €")
 ```
 <!--sortie-->
 ```text
-Total du panier : 137.50 DT
+Total du panier : 137.50 €
 ```
 
 Les données aléatoires sont générées avec une **graine** (*seed*) fixée, ce qui fait qu'en rejouant le code, vous obtiendrez les mêmes nombres que dans le livre, à de très légères variations près selon les versions des bibliothèques.
@@ -140,7 +140,7 @@ pip install numpy pandas scipy matplotlib seaborn
  Chapitre 4 : Programmation ──► Chapitre 5 : SQL ──► Chapitre 6 : Outils
                                                │
                                                ▼
-                              Projet du volume : l'étude complète de Dar Jasmin
+                              Projet du volume : l'étude complète de la boutique
 ```
 
 | Chapitre | Il répond à la question… | À la fin, vous saurez… |
@@ -164,7 +164,7 @@ Prenez dix minutes, un crayon, et répondez **sans calculatrice**. Les réponses
 6. Quelle est la dérivée de $x^2$ ?
 7. Calculez $2^3 \times 2^4$.
 8. Que vaut $\log_{10}(1000)$ ?
-9. Un article coûte 120 DT. On applique 25 % de remise. Quel est le nouveau prix ?
+9. Un article coûte 120 €. On applique 25 % de remise. Quel est le nouveau prix ?
 10. Dans une phrase : à quoi sert une « variable » en programmation ?
 
 **Réponses.**
@@ -177,7 +177,7 @@ Prenez dix minutes, un crayon, et répondez **sans calculatrice**. Les réponses
 6. $2x$.
 7. $2^{3+4} = 2^7 = 128$.
 8. $3$, car $10^3 = 1000$.
-9. $120 \times 0{,}75 = 90$ DT.
+9. $120 \times 0{,}75 = 90$ €.
 10. Une variable est un nom qui désigne une valeur gardée en mémoire (par exemple `prix = 45.0`), que l'on peut relire et modifier.
 
 **Comment interpréter votre score ?**
@@ -186,4 +186,4 @@ Prenez dix minutes, un crayon, et répondez **sans calculatrice**. Les réponses
 - **5 à 7** : lisez d'abord le « Rappel express », puis commencez.
 - **Moins de 5** : lisez le « Rappel express » attentivement, en refaisant les calculs à la main. Ce n'est pas une affaire de talent, seulement de pratique.
 
-Maintenant, au travail. Yasmine nous attend, et sa boutique reçoit une commande à l'instant.
+Maintenant, au travail. La gérante nous attend, et sa boutique reçoit une commande à l'instant.

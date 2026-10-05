@@ -56,16 +56,16 @@ print(json.dumps(documents[2], ensure_ascii=False, indent=2))
 {
   "_id": 3,
   "date": "2025-01-04",
-  "canal": "Instagram",
+  "canal": "Réseaux",
   "montant": 88.2,
   "client": {
     "id": 3,
     "nom": "Aymen Hamdi",
-    "ville": "Sfax"
+    "ville": "Ville F"
   },
   "lignes": [
     {
-      "produit": "Bol en céramique de Nabeul",
+      "produit": "Bol en céramique de Ville E",
       "categorie": "Poterie",
       "quantite": 1,
       "prix": 17.84
@@ -86,7 +86,7 @@ print(json.dumps(documents[2], ensure_ascii=False, indent=2))
 }
 ```
 
-Ce document **contient tout ce qu'il faut** pour afficher la commande : pas de jointure à faire, une seule lecture suffit. C'est l'argument central des bases de documents : ce qu'on lit ensemble est rangé ensemble. On les interroge avec des filtres sur les champs, y compris dans les listes imbriquées. Voici « les commandes d'au moins 100 DT qui contiennent un bijou », d'abord à la manière de MongoDB (les filtres se décrivent avec des documents) :
+Ce document **contient tout ce qu'il faut** pour afficher la commande : pas de jointure à faire, une seule lecture suffit. C'est l'argument central des bases de documents : ce qu'on lit ensemble est rangé ensemble. On les interroge avec des filtres sur les champs, y compris dans les listes imbriquées. Voici « les commandes d'au moins 100 € qui contiennent un bijou », d'abord à la manière de MongoDB (les filtres se décrivent avec des documents) :
 
 ```javascript noexec
 // Non exécuté : nécessite un serveur MongoDB.
@@ -138,7 +138,7 @@ ORDER BY canal;
 ```text
     canal  commandes  panier_moyen
  Boutique        114         74.81
-Instagram        138         49.01
+Réseaux        138         49.01
      Site        148         59.50
 ```
 
@@ -160,7 +160,7 @@ WHERE json_extract(doc, '$.montant') >= 100
 Pour un agrégat complet, MongoDB utilise un **pipeline** d'étapes qui s'enchaînent (le même esprit que les CTE du 5.3) :
 
 ```javascript noexec
-// Non exécuté : chiffre d'affaires et nombre de commandes par canal, pour les commandes de 100 DT et plus.
+// Non exécuté : chiffre d'affaires et nombre de commandes par canal, pour les commandes de 100 € et plus.
 db.commandes.aggregate([
   { $match: { montant: { $gte: 100 } } },
   { $group: { _id: "$canal", ca: { $sum: "$montant" }, commandes: { $sum: 1 } } },
@@ -212,7 +212,7 @@ def chiffre_affaires_du_canal(canal):
     cache[cle] = valeur
     return valeur
 
-for canal in ["Site", "Site", "Boutique", "Site", "Boutique", "Instagram", "Site"]:
+for canal in ["Site", "Site", "Boutique", "Site", "Boutique", "Réseaux", "Site"]:
     print(f"{canal:10s}", chiffre_affaires_du_canal(canal))
 print("7 demandes, requêtes SQL réellement exécutées :", nb_requetes_sql)
 ```
@@ -223,7 +223,7 @@ Site       8807.0
 Boutique   8528.0
 Site       8807.0
 Boutique   8528.0
-Instagram  6764.0
+Réseaux  6764.0
 Site       8807.0
 7 demandes, requêtes SQL réellement exécutées : 3
 ```

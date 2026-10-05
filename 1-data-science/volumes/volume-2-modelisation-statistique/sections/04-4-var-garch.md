@@ -167,7 +167,7 @@ R2 moyen : 0.244 | statistique de Durbin-Watson moyenne : 0.172  (2 = pas d'auto
 
 Résultat : près de **quatre régressions sur cinq** déclarent « significatif » un lien qui n'existe pas (au lieu de 5 %), avec un $R^2$ moyen d'environ 0,25 et une statistique de Durbin-Watson très basse (les résidus sont très autocorrélés). C'est la **régression fallacieuse** (Granger et Newbold, 1974) : quand les séries ne sont pas stationnaires, les p-valeurs de la régression sont **fausses** (les hypothèses du chapitre 1 ne tiennent plus). Règle de prudence : si le $R^2$ est supérieur à la statistique de Durbin-Watson, méfiez-vous.
 
-Comment distinguer une vraie relation d'une illusion ? Par la **cointégration**. Deux séries non stationnaires (intégrées d'ordre 1) sont **cointégrées** s'il existe une combinaison linéaire $y_t-\beta x_t$ qui, elle, est **stationnaire** : les deux séries dérivent, mais **elles dérivent ensemble**, comme deux promeneurs liés par une corde élastique. Exemple plausible pour Dar Jasmin : un indice du coût des matières premières ($x_t$, une marche aléatoire) et le prix moyen de vente ($y_t$), qui suit le coût avec un écart temporaire. Nous les **simulons** : $x_t$ est une marche aléatoire, $y_t=2+1{,}5\,x_t+u_t$ avec $u_t$ un AR(1) de coefficient $0{,}6$.
+Comment distinguer une vraie relation d'une illusion ? Par la **cointégration**. Deux séries non stationnaires (intégrées d'ordre 1) sont **cointégrées** s'il existe une combinaison linéaire $y_t-\beta x_t$ qui, elle, est **stationnaire** : les deux séries dérivent, mais **elles dérivent ensemble**, comme deux promeneurs liés par une corde élastique. Exemple plausible pour la boutique : un indice du coût des matières premières ($x_t$, une marche aléatoire) et le prix moyen de vente ($y_t$), qui suit le coût avec un écart temporaire. Nous les **simulons** : $x_t$ est une marche aléatoire, $y_t=2+1{,}5\,x_t+u_t$ avec $u_t$ un AR(1) de coefficient $0{,}6$.
 
 La **méthode d'Engle et Granger** a deux temps : (1) on régresse $y$ sur $x$ ; (2) on teste la **racine unitaire des résidus** (ADF de 4.1.6, avec des seuils adaptés car les résidus sont estimés). S'ils sont stationnaires, il y a cointégration.
 
@@ -219,9 +219,9 @@ Les estimations sont proches de la théorie ($\hat\alpha\approx-0{,}42$ pour $-0
 
 ### 4.4.3 Quand la variabilité change : le modèle GARCH
 
-Les modèles précédents supposent que les chocs $\varepsilon_t$ ont une **variance constante**. Certaines séries violent cette hypothèse de façon flagrante : en finance, les rendements calmes alternent avec des périodes agitées (**clusters de volatilité**). C'est le cas, par exemple, du taux de change qui préoccupe Yasmine quand elle importe de la laine d'Italie : une variation quotidienne du taux dinar/euro est difficile à prévoir **en moyenne**, mais ses variations *absolues* se regroupent.
+Les modèles précédents supposent que les chocs $\varepsilon_t$ ont une **variance constante**. Certaines séries violent cette hypothèse de façon flagrante : en finance, les rendements calmes alternent avec des périodes agitées (**clusters de volatilité**). C'est le cas, par exemple, du taux de change qui préoccupe la gérante quand elle importe de la laine d'Italie : une variation quotidienne du taux euro/euro est difficile à prévoir **en moyenne**, mais ses variations *absolues* se regroupent.
 
-> 🧭 **Les données de cette sous-section sont simulées** : un jeu de 1 500 « rendements quotidiens » (en %) tiré d'un modèle GARCH(1,1) à paramètres connus (graine 41). Nous n'avons pas de série réelle de taux de change hors ligne ; ce n'est donc **pas** un historique du dinar.
+> 🧭 **Les données de cette sous-section sont simulées** : un jeu de 1 500 « rendements quotidiens » (en %) tiré d'un modèle GARCH(1,1) à paramètres connus (graine 41). Nous n'avons pas de série réelle de taux de change hors ligne ; ce n'est donc **pas** un historique du euro.
 
 Le modèle **GARCH(1,1)** (Bollerslev, 1986) écrit le rendement $r_t=\mu+\varepsilon_t$, avec $\varepsilon_t=\sigma_tz_t$ ($z_t$ de loi $\mathcal N(0,1)$) et une variance qui **évolue** :
 

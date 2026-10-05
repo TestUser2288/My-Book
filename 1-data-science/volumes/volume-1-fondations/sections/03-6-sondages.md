@@ -10,7 +10,7 @@ C'est la leçon centrale de cette section : **la taille de l'échantillon rédui
 
 Les formes de biais les plus courantes :
 
-| Biais | Mécanisme | Exemple chez Dar Jasmin |
+| Biais | Mécanisme | Exemple chez la boutique |
 |---|---|---|
 | **Sélection** | la méthode de recrutement favorise certains profils | enquête par e-mail : seuls les clients déjà inscrits à la newsletter répondent |
 | **Non-réponse** | les répondants diffèrent des non-répondants | seuls les clients très contents (ou très fâchés) répondent |
@@ -52,17 +52,17 @@ Avec 1 000 personnes : ±3,1 points. Pour obtenir ±1 point, il en faut près de
 
 **L'estimateur stratifié** pondère les moyennes de strates par leur poids dans la population : $\bar x_{\text{strat}}=\sum_h W_h\bar x_h$ avec $W_h=N_h/N$.
 
-Montrons le gain par simulation. La base clients de Dar Jasmin compte 10 000 personnes réparties en trois canaux, dont les dépenses moyennes diffèrent nettement :
+Montrons le gain par simulation. La base clients de la boutique compte 10 000 personnes réparties en trois canaux, dont les dépenses moyennes diffèrent nettement :
 
 ```python
 rng = np.random.default_rng(50)
-tailles = {"Instagram": 4000, "Site": 3500, "Boutique": 2500}
-base = {"Instagram": 3.7, "Site": 3.9, "Boutique": 4.1}
+tailles = {"Réseaux": 4000, "Site": 3500, "Boutique": 2500}
+base = {"Réseaux": 3.7, "Site": 3.9, "Boutique": 4.1}
 canaux_pop = np.concatenate([[c] * n for c, n in tailles.items()])
 depenses_pop = np.concatenate([np.exp(rng.normal(base[c], 0.55, size=n)) for c, n in tailles.items()])
 N = len(depenses_pop)
 vraie_moyenne = depenses_pop.mean()
-print("taille de la population :", N, "   vraie dépense moyenne :", round(vraie_moyenne, 2), "DT")
+print("taille de la population :", N, "   vraie dépense moyenne :", round(vraie_moyenne, 2), "€")
 
 n_ech, essais = 200, 5000
 est_eas, est_strat = [], []
@@ -71,7 +71,7 @@ poids = {c: tailles[c] / N for c in tailles}
 for _ in range(essais):
     # EAS : 200 clients au hasard dans toute la base
     est_eas.append(rng.choice(depenses_pop, size=n_ech, replace=False).mean())
-    # stratifié proportionnel : 80 Instagram, 70 Site, 50 Boutique
+    # stratifié proportionnel : 80 Réseaux, 70 Site, 50 Boutique
     moy = 0
     for c in tailles:
         n_h = int(round(n_ech * poids[c]))
@@ -84,13 +84,13 @@ print("gain de variance :", round(1 - np.var(est_strat) / np.var(est_eas), 3))
 ```
 <!--sortie-->
 ```text
-taille de la population : 10000    vraie dépense moyenne : 56.4 DT
+taille de la population : 10000    vraie dépense moyenne : 56.4 €
 EAS         : moyenne = 56.39   erreur-type = 2.46
 Stratifié   : moyenne = 56.39   erreur-type = 2.36
 gain de variance : 0.081
 ```
 
-Les deux estimateurs sont **sans biais** (leur moyenne tombe sur la vraie valeur), mais l'estimateur stratifié est **plus précis** : son erreur-type (2,36 DT) est inférieure d'environ 4 % à celle de l'EAS (2,46 DT), soit 8 % de variance en moins. Le gain est modeste ici car les différences entre canaux, bien que réelles, restent petites comparées à la dispersion *à l'intérieur* de chaque canal. Il serait bien plus grand si les strates étaient très différentes entre elles.
+Les deux estimateurs sont **sans biais** (leur moyenne tombe sur la vraie valeur), mais l'estimateur stratifié est **plus précis** : son erreur-type (2,36 €) est inférieure d'environ 4 % à celle de l'EAS (2,46 €), soit 8 % de variance en moins. Le gain est modeste ici car les différences entre canaux, bien que réelles, restent petites comparées à la dispersion *à l'intérieur* de chaque canal. Il serait bien plus grand si les strates étaient très différentes entre elles.
 
 > 📐 **Pourquoi ça marche : décomposition de la variance.** La variance totale se décompose en variance **entre** strates et variance **à l'intérieur** des strates : $\sigma^2=\sigma^2_{\text{entre}}+\sigma^2_{\text{intra}}$. Dans un EAS, le hasard de la composition de l'échantillon introduit l'incertitude liée à la variance *entre* strates. La stratification **fixe** cette composition, et seule la variance *intra* demeure : l'erreur-type diminue exactement de la part « entre ».
 
@@ -110,14 +110,14 @@ Les plans aléatoires (EAS, stratifié, grappes) permettent de **quantifier** l'
 
 ### 3.6.5 Redresser un échantillon biaisé : la pondération
 
-On ne choisit pas toujours son échantillon. Yasmine envoie un questionnaire de satisfaction à tous ses clients ; les **réponses sont inégalement réparties** : les clients de la boutique répondent très peu (ils ne laissent pas d'e-mail), ceux d'Instagram beaucoup. Parmi les 300 réponses : 150 d'Instagram, 120 du site et 30 de la boutique, alors que la clientèle réelle est répartie en 40 % / 35 % / 25 %.
+On ne choisit pas toujours son échantillon. La gérante envoie un questionnaire de satisfaction à tous ses clients ; les **réponses sont inégalement réparties** : les clients de la boutique répondent très peu (ils ne laissent pas d'e-mail), ceux d'Réseaux beaucoup. Parmi les 300 réponses : 150 d'Réseaux, 120 du site et 30 de la boutique, alors que la clientèle réelle est répartie en 40 % / 35 % / 25 %.
 
 Si l'on moyenne naïvement les 300 réponses, la boutique est **sous-représentée** (10 % au lieu de 25 %). Or les clients de la boutique sont aussi les plus satisfaits : on **sous-estime** donc la satisfaction globale. La solution est de **pondérer** chaque réponse par $w=\dfrac{\text{part dans la population}}{\text{part dans l'échantillon}}$ (une *post-stratification*).
 
 ```python
-satisf_vraie = {"Instagram": 0.63, "Site": 0.70, "Boutique": 0.96}   # taux de satisfaits par canal (3.4.6)
-pop_part = {"Instagram": 0.40, "Site": 0.35, "Boutique": 0.25}
-rep = {"Instagram": 150, "Site": 120, "Boutique": 30}
+satisf_vraie = {"Réseaux": 0.63, "Site": 0.70, "Boutique": 0.96}   # taux de satisfaits par canal (3.4.6)
+pop_part = {"Réseaux": 0.40, "Site": 0.35, "Boutique": 0.25}
+rep = {"Réseaux": 150, "Site": 120, "Boutique": 30}
 n_rep = sum(rep.values())
 
 naif = sum(rep[c] * satisf_vraie[c] for c in rep) / n_rep
@@ -132,13 +132,13 @@ print("estimation pondérée             :", round(pondere, 3))
 ```
 <!--sortie-->
 ```text
-poids : {'Instagram': 0.8, 'Site': 0.87, 'Boutique': 2.5}
+poids : {'Réseaux': 0.8, 'Site': 0.87, 'Boutique': 2.5}
 satisfaction vraie (population) : 0.737
 estimation naïve                : 0.691
 estimation pondérée             : 0.737
 ```
 
-La moyenne naïve (environ 69 %) sous-estime la vraie valeur (73,7 %) ; la pondération corrige l'erreur. Chaque réponse de la boutique « compte pour » 2,5 réponses (poids 2,5) et chaque réponse d'Instagram pour 0,8. (Cette correction n'est valable que si, **à l'intérieur de chaque canal**, répondants et non-répondants sont comparables : la pondération redresse les déséquilibres **observables**, pas ceux que l'on ne mesure pas.)
+La moyenne naïve (environ 69 %) sous-estime la vraie valeur (73,7 %) ; la pondération corrige l'erreur. Chaque réponse de la boutique « compte pour » 2,5 réponses (poids 2,5) et chaque réponse d'Réseaux pour 0,8. (Cette correction n'est valable que si, **à l'intérieur de chaque canal**, répondants et non-répondants sont comparables : la pondération redresse les déséquilibres **observables**, pas ceux que l'on ne mesure pas.)
 
 > ✅ **À retenir (sondages).**
 >

@@ -2,7 +2,7 @@
 
 > 💡 **Intuition.** Une série temporelle, c'est un enchaînement : ce qui se passe aujourd'hui dépend un peu de ce qui s'est passé hier, et un peu des **surprises** récentes. Les modèles ARIMA formalisent ces deux idées avec deux briques. La brique **AR** (*autorégressive*) dit : « la valeur d'aujourd'hui est un écho de celle d'hier ». La brique **MA** (*moyenne mobile*, *moving average*) dit : « la valeur d'aujourd'hui garde la trace des chocs d'hier ». On les assemble, on ajoute une différenciation (le **I** de *integrated*) et une version saisonnière, et on obtient la famille la plus utilisée de la prévision statistique.
 
-Nous partons des briques sur des séries **simulées**, où l'on connaît la vérité, pour comprendre ce que chaque modèle fabrique et comment le reconnaître. Puis nous les appliquerons aux ventes de Dar Jasmin.
+Nous partons des briques sur des séries **simulées**, où l'on connaît la vérité, pour comprendre ce que chaque modèle fabrique et comment le reconnaître. Puis nous les appliquerons aux ventes de la boutique.
 
 ### 4.2.1 Les deux briques : AR et MA
 
@@ -211,7 +211,7 @@ Sur une seule série de 500 points, les estimations sont proches des vraies vale
 
 > ⚠️ **Un piège classique : la redondance.** Un ARMA(1,1) avec $\varphi=\theta'$ (où le MA est « l'opposé » de l'AR) se simplifie : $(1-\varphi B)Y_t=(1-\varphi B)\varepsilon_t$ donne $Y_t=\varepsilon_t$. Quand les deux racines sont presque égales, les paramètres ne sont plus identifiables. Si votre modèle estime $\varphi\approx0{,}9$ et $\theta\approx-0{,}9$, il est probablement trop gros : **simplifiez**.
 
-### 4.2.4 La méthode de Box-Jenkins appliquée aux ventes de Dar Jasmin
+### 4.2.4 La méthode de Box-Jenkins appliquée aux ventes de la boutique
 
 Box et Jenkins ont proposé un cycle en quatre temps : **(1) identifier** la structure à partir de l'ACF et de la PACF, **(2) estimer** les paramètres, **(3) diagnostiquer** les résidus, et, si tout est correct, **(4) prévoir**. Appliquons-le à notre série d'apprentissage (96 mois, en logarithme).
 
@@ -348,7 +348,7 @@ AIC sans variables explicatives : -98.1 | avec promo et COVID : -176.7
 écart-type estimé des chocs (sigma) : sans = 0.107 | avec = 0.068
 ```
 
-> 💡 **Les variables explicatives doivent être connues pour prévoir.** Pour prévoir 2026, il faudra fournir la valeur future de `promo` (les promotions sont décidées par Yasmine : on peut les supposer connues ou raisonner en scénarios) et de `covid` (nulle). Une variable explicative inconnue dans le futur est inutilisable telle quelle : il faudrait la prévoir elle-même.
+> 💡 **Les variables explicatives doivent être connues pour prévoir.** Pour prévoir 2026, il faudra fournir la valeur future de `promo` (les promotions sont décidées par la gérante : on peut les supposer connues ou raisonner en scénarios) et de `covid` (nulle). Une variable explicative inconnue dans le futur est inutilisable telle quelle : il faudrait la prévoir elle-même.
 
 ### 4.2.6 Le diagnostic des résidus
 

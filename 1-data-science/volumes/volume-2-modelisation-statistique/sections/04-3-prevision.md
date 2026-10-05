@@ -1,8 +1,8 @@
 ## 4.3 Prévision et évaluation des prévisions
 
-> 💡 **Intuition.** Prévoir, ce n'est pas deviner un nombre : c'est annoncer **un nombre et son incertitude**. « Les ventes de décembre seront de 3 300 DT, avec 95 % de chances de tomber entre 2 800 et 3 900 » est une prévision utile ; « 3 300 » tout court n'en est pas une. Et un modèle ne se juge pas à la beauté de son ajustement passé, mais à la qualité des prévisions qu'il fait sur des données qu'il **n'a pas vues**.
+> 💡 **Intuition.** Prévoir, ce n'est pas deviner un nombre : c'est annoncer **un nombre et son incertitude**. « Les ventes de décembre seront de 3 300 €, avec 95 % de chances de tomber entre 2 800 et 3 900 » est une prévision utile ; « 3 300 » tout court n'en est pas une. Et un modèle ne se juge pas à la beauté de son ajustement passé, mais à la qualité des prévisions qu'il fait sur des données qu'il **n'a pas vues**.
 
-Dans cette section, nous faisons trois choses : comprendre comment un modèle ARIMA prévoit et d'où viennent ses intervalles (4.3.1 et 4.3.2) ; mettre en place une **évaluation honnête** (4.3.3 à 4.3.6) ; puis prévoir 2026 pour Yasmine (4.3.7) et **lever le voile** sur la fabrication des données (4.3.8).
+Dans cette section, nous faisons trois choses : comprendre comment un modèle ARIMA prévoit et d'où viennent ses intervalles (4.3.1 et 4.3.2) ; mettre en place une **évaluation honnête** (4.3.3 à 4.3.6) ; puis prévoir 2026 pour la gérante (4.3.7) et **lever le voile** sur la fabrication des données (4.3.8).
 
 ### 4.3.1 Comment un modèle prévoit : l'exemple de l'AR(1)
 
@@ -65,9 +65,9 @@ for h in (1, 3, 12, 60):
 
 > ⚠️ **Conséquence pratique.** Un modèle avec une différence (première ou saisonnière) a des intervalles de prévision qui **s'élargissent sans limite** quand l'horizon grandit ; un modèle stationnaire autour d'une tendance et d'une saison **déterministes** a des intervalles qui se stabilisent. Parmi nos trois modèles de 4.2, A (deux différences) et B (une différence saisonnière) sont du premier type, et C (aucune différence) du second. Choisir entre les deux, c'est choisir ce que l'on croit de l'avenir lointain : des chocs qui laissent une trace **permanente** ou qui s'effacent.
 
-### 4.3.2 Prévoir en logarithme, annoncer en dinars
+### 4.3.2 Prévoir en logarithme, annoncer en euros
 
-Nos modèles prévoient $\log(\text{ca})$. Pour annoncer des dinars, on revient par l'exponentielle. Deux précautions :
+Nos modèles prévoient $\log(\text{ca})$. Pour annoncer des euros, on revient par l'exponentielle. Deux précautions :
 
 - **Les intervalles** se transforment sans difficulté : si $[L,U]$ est un intervalle à 95 % pour $\log y$, alors $[e^L,e^U]$ en est un pour $y$ (l'exponentielle est croissante).
 - **La prévision ponctuelle** $e^{\hat y}$ est la **médiane** de la loi de $Y$, pas sa moyenne : si $\log Y\sim\mathcal N(m,s^2)$, alors $\mathbb E[Y]=e^{m+s^2/2}$. Pour des erreurs de l'ordre de 0,07 en log, le facteur $e^{s^2/2}$ vaut environ 1,0025 : négligeable ici. Il ne le serait pas pour une série plus volatile.
@@ -187,7 +187,7 @@ print({k: round(float(x), 3) for k, x in mesures([100, 120, 90, 110], [110, 115,
 {'MAE': 7.5, 'RMSE': 7.906, 'MAPE': 7.456, 'MASE': 1.5}
 ```
 
-Appliquons-les à nos cinq prévisions des 24 mois de test, **en dinars** (on revient de l'échelle logarithmique par l'exponentielle) :
+Appliquons-les à nos cinq prévisions des 24 mois de test, **en euros** (on revient de l'échelle logarithmique par l'exponentielle) :
 
 ```python
 ca_train = np.exp(train)
@@ -221,13 +221,13 @@ C : régression + AR(1)         175.374  227.290   8.366  0.823       -0.070    
 naïf saisonnier                309.604  386.582  13.487  1.452        0.141       0.169
 ```
 
-Lisons ce tableau (trié par RMSE en dinars ; `biais (log)` est la moyenne de $y-\hat y$ en logarithme, donc un biais **positif** signifie que le modèle **sous-estime**).
+Lisons ce tableau (trié par RMSE en euros ; `biais (log)` est la moyenne de $y-\hat y$ en logarithme, donc un biais **positif** signifie que le modèle **sous-estime**).
 
 - Le **naïf saisonnier simple** est le plus mauvais, avec une MASE de 1,45 (pire que lui-même sur l'apprentissage) et un biais de $+0{,}14$ : il répète l'année passée sans tenir compte de la croissance, et donc sous-estime d'environ 14 %.
-- Le **naïf saisonnier avec dérive**, trois lignes de code, est déjà très honorable : MASE de 0,74, MAPE de 6,7 %. Il **bat deux de nos trois modèles ARIMA** (A et C) sur cette fenêtre, en dinars comme en MAPE. Voilà pourquoi on ne néglige jamais les références simples.
+- Le **naïf saisonnier avec dérive**, trois lignes de code, est déjà très honorable : MASE de 0,74, MAPE de 6,7 %. Il **bat deux de nos trois modèles ARIMA** (A et C) sur cette fenêtre, en euros comme en MAPE. Voilà pourquoi on ne néglige jamais les références simples.
 - Le modèle **B** est le seul à faire nettement mieux que la référence (MASE de 0,64, MAPE de 6,1 %). Les modèles **A** et **C** ont un biais négatif d'environ $-0{,}07$ : ils **surestiment** de 7 % en moyenne. Nous verrons en 4.3.8 pourquoi.
 
-> ⚠️ **Prévoir en dinars ou en logarithme ?** Nous avons optimisé les modèles en log (erreurs relatives), mais nous les jugeons en dinars (ce qui intéresse Yasmine) : une erreur de 300 DT en décembre et de 300 DT en février n'ont pas le même poids en log, mais le même en dinars. Quand l'objectif métier est en unités de la série, évaluez dans ces unités.
+> ⚠️ **Prévoir en euros ou en logarithme ?** Nous avons optimisé les modèles en log (erreurs relatives), mais nous les jugeons en euros (ce qui intéresse la gérante) : une erreur de 300 € en décembre et de 300 € en février n'ont pas le même poids en log, mais le même en euros. Quand l'objectif métier est en unités de la série, évaluez dans ces unités.
 
 ### 4.3.5 Vingt-quatre mois suffisent-ils pour conclure ?
 
@@ -369,7 +369,7 @@ Trois enseignements, que les chiffres du tableau confirment :
 
 ### 4.3.7 Application : les ventes de 2026
 
-Yasmine prépare son budget. Nous prévoyons maintenant 2026 avec le modèle retenu (B), ajusté sur les **120** mois, en supposant une promotion en décembre 2026 (prévue par Yasmine), pas de COVID. Outre la prévision mois par mois, on lui donne une **prévision de l'année entière** avec son incertitude, obtenue par **simulation** : on tire 2 000 trajectoires futures plausibles du modèle (en respectant la corrélation entre mois) et on additionne les 12 mois de chacune.
+La gérante prépare son budget. Nous prévoyons maintenant 2026 avec le modèle retenu (B), ajusté sur les **120** mois, en supposant une promotion en décembre 2026 (prévue par la gérante), pas de COVID. Outre la prévision mois par mois, on lui donne une **prévision de l'année entière** avec son incertitude, obtenue par **simulation** : on tire 2 000 trajectoires futures plausibles du modèle (en respectant la corrélation entre mois) et on additionne les 12 mois de chacune.
 
 ```python
 X_2026 = pd.DataFrame({"promo": [0.0] * 11 + [1.0], "covid": [0.0] * 12},
@@ -377,7 +377,7 @@ X_2026 = pd.DataFrame({"promo": [0.0] * 11 + [1.0], "covid": [0.0] * 12},
 final = SARIMAX(y, exog=X, order=(1, 0, 0), seasonal_order=(0, 1, 1, 12), trend="ct").fit(disp=False, maxiter=300)
 pf = final.get_forecast(12, exog=X_2026)
 ic = np.asarray(pf.conf_int(alpha=0.05))
-resume = pd.DataFrame({"prévision (DT)": np.exp(pf.predicted_mean.values), "IC95 bas": np.exp(ic[:, 0]), "IC95 haut": np.exp(ic[:, 1])},
+resume = pd.DataFrame({"prévision (€)": np.exp(pf.predicted_mean.values), "IC95 bas": np.exp(ic[:, 0]), "IC95 haut": np.exp(ic[:, 1])},
                       index=X_2026.index.strftime("%Y-%m")).round(0).astype(int)
 print(resume.to_string())
 
@@ -397,8 +397,8 @@ totaux = np.exp(simul).sum(axis=0)
 total_2025 = v["ca"]["2025-01":"2025-12"].sum()
 p10, p50, p90 = np.percentile(totaux, [10, 50, 90])
 p025, p975 = np.percentile(totaux, [2.5, 97.5])
-print(f"\ntotal 2025 observé : {total_2025:,.0f} DT")
-print(f"total 2026 prévu   : médiane {p50:,.0f} DT | intervalle à 80 % [{p10:,.0f} ; {p90:,.0f}] | à 95 % [{p025:,.0f} ; {p975:,.0f}]")
+print(f"\ntotal 2025 observé : {total_2025:,.0f} €")
+print(f"total 2026 prévu   : médiane {p50:,.0f} € | intervalle à 80 % [{p10:,.0f} ; {p90:,.0f}] | à 95 % [{p025:,.0f} ; {p975:,.0f}]")
 print(f"croissance prévue sur 2025 : {100 * (p50 / total_2025 - 1):+.1f} %")
 
 fig, ax = plt.subplots(figsize=(10, 3.8))
@@ -406,7 +406,7 @@ hist = v["ca"]["2023-01":]
 ax.plot(hist.index, hist, color=BLEU, lw=1.6, label="observé")
 ax.plot(X_2026.index, np.exp(pf.predicted_mean), color=ORANGE, lw=1.8, label="prévision 2026")
 ax.fill_between(X_2026.index, np.exp(ic[:, 0]), np.exp(ic[:, 1]), color=ORANGE, alpha=0.2, label="intervalle à 95 %")
-ax.set_ylabel("chiffre d'affaires mensuel (DT)")
+ax.set_ylabel("chiffre d'affaires mensuel (€)")
 ax.legend(loc="upper left")
 ax.grid(True, color="#e1e0d9", lw=0.6)
 ax.spines[["top", "right"]].set_visible(False)
@@ -415,7 +415,7 @@ plt.savefig("figures/ch04-prevision-2026.png", bbox_inches="tight")
 ```
 <!--sortie-->
 ```text
-         prévision (DT)  IC95 bas  IC95 haut
+         prévision (€)  IC95 bas  IC95 haut
 2026-01            1414      1214       1648
 2026-02            1694      1434       2001
 2026-03            2130      1799       2522
@@ -429,20 +429,20 @@ plt.savefig("figures/ch04-prevision-2026.png", bbox_inches="tight")
 2026-11            2602      2197       3083
 2026-12            4195      3541       4970
 
-total 2025 observé : 27,630 DT
-total 2026 prévu   : médiane 29,169 DT | intervalle à 80 % [27,823 ; 30,597] | à 95 % [27,073 ; 31,397]
+total 2025 observé : 27,630 €
+total 2026 prévu   : médiane 29,169 € | intervalle à 80 % [27,823 ; 30,597] | à 95 % [27,073 ; 31,397]
 croissance prévue sur 2025 : +5.6 %
 ```
 
 ![Chiffre d'affaires mensuel depuis 2023 et prévision pour 2026 (courbe orange) avec son intervalle de prévision à 95 %.](figures/ch04-prevision-2026.png)
 
-Yasmine peut retenir trois messages : (1) **le profil de l'année** : le creux de janvier, le plateau d'été, le pic de décembre ; (2) une **fourchette** de chiffre d'affaires annuel plutôt qu'un point (la fourchette à 80 % est un bon outil de budget) ; (3) une croissance attendue de l'ordre de **+5 %** sur 2025, avec une incertitude que la fourchette rend visible. Cette croissance est inférieure à la tendance de long terme de la série (environ 9 % par an, voir 4.3.4) parce que le modèle B repart du **niveau récent**, resté sous la tendance : nous verrons en 4.3.8 que ce choix est un pari sur la persistance de ces écarts.
+La gérante peut retenir trois messages : (1) **le profil de l'année** : le creux de janvier, le plateau d'été, le pic de décembre ; (2) une **fourchette** de chiffre d'affaires annuel plutôt qu'un point (la fourchette à 80 % est un bon outil de budget) ; (3) une croissance attendue de l'ordre de **+5 %** sur 2025, avec une incertitude que la fourchette rend visible. Cette croissance est inférieure à la tendance de long terme de la série (environ 9 % par an, voir 4.3.4) parce que le modèle B repart du **niveau récent**, resté sous la tendance : nous verrons en 4.3.8 que ce choix est un pari sur la persistance de ces écarts.
 
 > ⚠️ **Ce que cette prévision suppose.** Que la structure observée de 2016 à 2025 **se prolonge** (même croissance, même saisonnalité), que la promotion de décembre ait lieu, et qu'aucun choc du type COVID n'arrive (un tel choc est par nature imprévisible : les intervalles de prévision ne le contiennent pas). Une prévision n'est pas une promesse : c'est le résultat d'un modèle et d'hypothèses, qu'il faut toujours énoncer à côté du chiffre.
 
 ### 4.3.8 Révélation : comment les données ont été fabriquées
 
-Les ventes de Dar Jasmin sont **simulées**. Il est temps de lever le voile. Voici la recette complète : une tendance exponentielle (+0,75 % par mois), une saisonnalité **déterministe** (un facteur multiplicatif par mois), un bruit **AR(1)** (coefficient 0,5, chocs de 0,07), un effet de promotion (+10 % en log), et un choc COVID (−0,55 en log, mars à juin 2020).
+Les ventes de la boutique sont **simulées**. Il est temps de lever le voile. Voici la recette complète : une tendance exponentielle (+0,75 % par mois), une saisonnalité **déterministe** (un facteur multiplicatif par mois), un bruit **AR(1)** (coefficient 0,5, chocs de 0,07), un effet de promotion (+10 % en log), et un choc COVID (−0,55 en log, mars à juin 2020).
 
 ```python
 def simuler_ventes(graine):

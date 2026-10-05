@@ -29,18 +29,18 @@ print((100 * N.div(N.sum(axis=1), axis=0)).round(1).to_string())
 tranche_panier     T1 très petit  T2 petit  T3 grand  T4 très grand
 canal_acquisition                                                  
 Boutique                      46        93       126            184
-Instagram                    258       184       158             87
+Réseaux                    258       184       158             87
 Site                         132       157       152            163
 
 profils-lignes (en %) : répartition des paniers dans chaque canal
 tranche_panier     T1 très petit  T2 petit  T3 grand  T4 très grand
 canal_acquisition                                                  
 Boutique                    10.2      20.7      28.1           41.0
-Instagram                   37.6      26.8      23.0           12.7
+Réseaux                   37.6      26.8      23.0           12.7
 Site                        21.9      26.0      25.2           27.0
 ```
 
-Les **profils-lignes** (la répartition des tranches de panier dans chaque canal) sont très différents d'un canal à l'autre : la boutique compte 69 % de paniers « grands » ou « très grands » (T3 et T4) contre 36 % pour Instagram, dont 64 % des paniers sont « petits » ou « très petits » (T1 et T2). Si le canal et le panier étaient **indépendants**, les trois lignes auraient le même profil, égal au profil des totaux. L'analyse des correspondances décrit **comment et dans quelle direction** les profils s'écartent de cette indépendance.
+Les **profils-lignes** (la répartition des tranches de panier dans chaque canal) sont très différents d'un canal à l'autre : la boutique compte 69 % de paniers « grands » ou « très grands » (T3 et T4) contre 36 % pour Réseaux, dont 64 % des paniers sont « petits » ou « très petits » (T1 et T2). Si le canal et le panier étaient **indépendants**, les trois lignes auraient le même profil, égal au profil des totaux. L'analyse des correspondances décrit **comment et dans quelle direction** les profils s'écartent de cette indépendance.
 
 Mesurons d'abord l'écart global avec le test du khi-deux (volume I, section 3.4.6) :
 
@@ -80,14 +80,14 @@ On dessine $F$ et $G$ sur la même carte. Ce choix a une conséquence élégante
 
 | | Petit panier | Grand panier |
 |---|---|---|
-| **Instagram** | 30 | 10 |
+| **Réseaux** | 30 | 10 |
 | **Boutique** | 10 | 30 |
 
 Les marges valent $\mathbf r=(0{,}5;0{,}5)$ et $\mathbf c=(0{,}5;0{,}5)$ ; $P=\begin{pmatrix}0{,}375&0{,}125\\0{,}125&0{,}375\end{pmatrix}$ ; $r_ic_j=0{,}25$ partout. Donc
 
 $$S=\frac{P-0{,}25}{\sqrt{0{,}25}}=\frac{1}{0{,}5}\begin{pmatrix}0{,}125&-0{,}125\\-0{,}125&0{,}125\end{pmatrix}=\begin{pmatrix}0{,}25&-0{,}25\\-0{,}25&0{,}25\end{pmatrix}.$$
 
-Cette matrice est de rang 1 : $S=0{,}5\times\begin{pmatrix}1/\sqrt2\\-1/\sqrt2\end{pmatrix}\begin{pmatrix}1/\sqrt2&-1/\sqrt2\end{pmatrix}$, donc $\sigma_1=0{,}5$ et $\sigma_1^2=0{,}25$. Vérification avec le khi-deux : les effectifs attendus valent $20$ partout, d'où $\chi^2=4\times\frac{(\pm10)^2}{20}=20$ et $\chi^2/n=20/80=0{,}25$. ✓ Les coordonnées des lignes sont $\pm\frac{1}{\sqrt{0{,}5}}\cdot\frac{1}{\sqrt2}\cdot0{,}5=\pm0{,}5$ : Instagram à $-0{,}5$ d'un côté, Boutique à $+0{,}5$ de l'autre. Un tableau $2\times2$ n'a qu'**un seul axe**, sur lequel les deux modalités s'opposent. Plus généralement, un tableau $I\times J$ a au plus $\min(I,J)-1$ axes non triviaux.
+Cette matrice est de rang 1 : $S=0{,}5\times\begin{pmatrix}1/\sqrt2\\-1/\sqrt2\end{pmatrix}\begin{pmatrix}1/\sqrt2&-1/\sqrt2\end{pmatrix}$, donc $\sigma_1=0{,}5$ et $\sigma_1^2=0{,}25$. Vérification avec le khi-deux : les effectifs attendus valent $20$ partout, d'où $\chi^2=4\times\frac{(\pm10)^2}{20}=20$ et $\chi^2/n=20/80=0{,}25$. ✓ Les coordonnées des lignes sont $\pm\frac{1}{\sqrt{0{,}5}}\cdot\frac{1}{\sqrt2}\cdot0{,}5=\pm0{,}5$ : Réseaux à $-0{,}5$ d'un côté, Boutique à $+0{,}5$ de l'autre. Un tableau $2\times2$ n'a qu'**un seul axe**, sur lequel les deux modalités s'opposent. Plus généralement, un tableau $I\times J$ a au plus $\min(I,J)-1$ axes non triviaux.
 
 Écrivons la méthode et vérifions-la sur cet exemple, puis sur notre tableau :
 
@@ -135,7 +135,7 @@ canaux :
                    axe 1  axe 2
 canal_acquisition              
 Boutique           0.448 -0.026
-Instagram         -0.354 -0.015
+Réseaux         -0.354 -0.015
 Site               0.070  0.036
 tranches de panier :
                 axe 1  axe 2
@@ -148,9 +148,9 @@ T4 très grand   0.452 -0.012
 
 ![Analyse des correspondances du tableau canal x tranche de panier (à gauche) et, en comparaison, du tableau canal x ville (à droite). Attention aux échelles : à gauche les points sont répartis sur près de ±0,45, à droite sur ±0,1 seulement.](figures/ch03-ca-carte.png)
 
-Sur la carte de gauche, **tout se passe sur le premier axe** (il porte presque toute l'inertie). Les trois canaux s'y rangent dans l'ordre Instagram, Site, Boutique ; et les quatre tranches de panier dans l'ordre T1, T2, T3, T4, **du même côté que** les canaux auxquels elles sont associées : les très grands paniers (T4) sont du côté de la boutique, les très petits (T1) du côté d'Instagram. L'axe 1 est donc un axe **« petits paniers / gros paniers »** commun aux deux variables. Le fait que les tranches de panier s'ordonnent exactement comme leur numérotation est typique : pour une variable ordinale, l'AC retrouve l'ordre sans qu'on le lui ait dit.
+Sur la carte de gauche, **tout se passe sur le premier axe** (il porte presque toute l'inertie). Les trois canaux s'y rangent dans l'ordre Réseaux, Site, Boutique ; et les quatre tranches de panier dans l'ordre T1, T2, T3, T4, **du même côté que** les canaux auxquels elles sont associées : les très grands paniers (T4) sont du côté de la boutique, les très petits (T1) du côté d'Réseaux. L'axe 1 est donc un axe **« petits paniers / gros paniers »** commun aux deux variables. Le fait que les tranches de panier s'ordonnent exactement comme leur numérotation est typique : pour une variable ordinale, l'AC retrouve l'ordre sans qu'on le lui ait dit.
 
-> 🧪 **Révélation.** C'est ce qui avait été programmé : le canal d'acquisition agit sur le panier (en échelle logarithmique : $+0{,}22$ pour la boutique, $+0{,}05$ pour le site, $-0{,}12$ pour Instagram). L'AC a retrouvé cette association sans qu'on lui désigne de variable « à expliquer », et a même restitué l'ordre des canaux.
+> 🧪 **Révélation.** C'est ce qui avait été programmé : le canal d'acquisition agit sur le panier (en échelle logarithmique : $+0{,}22$ pour la boutique, $+0{,}05$ pour le site, $-0{,}12$ pour Réseaux). L'AC a retrouvé cette association sans qu'on lui désigne de variable « à expliquer », et a même restitué l'ordre des canaux.
 
 > ⚠️ **Piège numéro un : une carte a toujours l'air de dire quelque chose.** Faites maintenant l'expérience inverse, avec deux variables qui n'ont **aucun lien** dans la simulation : le canal d'acquisition et la ville.
 
@@ -240,7 +240,7 @@ rachat_12m           5.0   37.0    0.0
 
 Avec la correction de Benzécri, le premier axe porte à lui seul près de $78\ \%$ de l'« inertie utile » et le deuxième $15\ \%$ : l'essentiel de la structure est dans le plan de la carte. Le tableau des contributions et la carte se lisent ensemble :
 
-1. **L'axe 1** est construit par la **tranche de panier** ($47\ \%$) et le **canal** ($36\ \%$) : il oppose Boutique et très grands paniers (à droite) à Instagram et très petits paniers (à gauche), l'association déjà vue en 3.4.3. L'âge y contribue un peu ($11\ \%$) : les moins de 30 ans sont du côté des petits paniers.
+1. **L'axe 1** est construit par la **tranche de panier** ($47\ \%$) et le **canal** ($36\ \%$) : il oppose Boutique et très grands paniers (à droite) à Réseaux et très petits paniers (à gauche), l'association déjà vue en 3.4.3. L'âge y contribue un peu ($11\ \%$) : les moins de 30 ans sont du côté des petits paniers.
 2. **L'axe 2** est construit par le **rachat** ($37\ \%$), l'**offre de bienvenue** ($28\ \%$) et, dans une moindre mesure, l'**âge** ($17\ \%$) : `offre=1` est proche de `rachat=1`, loin de `offre=0` et `rachat=0`, et les moins de 30 ans sont du même côté que les rachats.
 3. **Les villes** contribuent à peine aux deux premiers axes ($1\ \%$ et $11\ \%$) : leurs points gris sont dispersés (ce sont de petits groupes, dont les coordonnées sont instables) mais ne s'associent à rien de particulier.
 

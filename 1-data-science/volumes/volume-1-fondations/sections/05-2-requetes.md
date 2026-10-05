@@ -1,6 +1,6 @@
 ## 5.2 Requêtes SQL : sélection, jointures, agrégation
 
-> 💡 **Intuition.** SQL est un langage **déclaratif** : on ne dit pas *comment* trouver le résultat (« parcours la table, compare, recopie... »), on décrit *ce qu'on veut* (« les commandes de plus de 100 DT passées sur Instagram »), et la base choisit seule la meilleure méthode. C'est comme commander au restaurant : on dit « un tajine, sans piment », pas la recette.
+> 💡 **Intuition.** SQL est un langage **déclaratif** : on ne dit pas *comment* trouver le résultat (« parcours la table, compare, recopie... »), on décrit *ce qu'on veut* (« les commandes de plus de 100 € passées sur Réseaux »), et la base choisit seule la meilleure méthode. C'est comme commander au restaurant : on dit « un tajine, sans piment », pas la recette.
 
 ### 5.2.1 Anatomie d'une requête : `SELECT ... FROM ...`
 
@@ -16,11 +16,11 @@ LIMIT 4;
  id_commande     canal  montant
            1  Boutique     44.8
            2      Site     34.5
-           3 Instagram     88.2
-           4 Instagram     30.1
+           3 Réseaux     88.2
+           4 Réseaux     30.1
 ```
 
-On peut **calculer** de nouvelles colonnes et les **renommer** avec `AS` (un *alias*). Les montants de Dar Jasmin sont TTC, avec une TVA de 19 % ; calculons le hors taxe et la TVA :
+On peut **calculer** de nouvelles colonnes et les **renommer** avec `AS` (un *alias*). Les montants de la boutique sont TTC, avec une TVA de 19 % ; calculons le hors taxe et la TVA :
 
 ```sql
 SELECT id_commande,
@@ -63,7 +63,7 @@ LIMIT    n                          -- n lignes au maximum
 ```sql
 SELECT COUNT(*) AS nb
 FROM commandes
-WHERE canal = 'Instagram' AND montant > 100;
+WHERE canal = 'Réseaux' AND montant > 100;
 ```
 <!--sortie-->
 ```text
@@ -71,7 +71,7 @@ WHERE canal = 'Instagram' AND montant > 100;
  11
 ```
 
-(Les textes se mettent entre **apostrophes simples** : `'Instagram'`. Les guillemets doubles servent aux noms de colonnes.) Il y a donc peu de grosses commandes sur Instagram. Pour tester une liste de valeurs, `IN` ; pour un intervalle (**bornes incluses**), `BETWEEN` ; pour une recherche de motif dans un texte, `LIKE` (`%` remplace n'importe quelle suite de caractères, `_` un seul caractère) :
+(Les textes se mettent entre **apostrophes simples** : `'Réseaux'`. Les guillemets doubles servent aux noms de colonnes.) Il y a donc peu de grosses commandes sur Réseaux. Pour tester une liste de valeurs, `IN` ; pour un intervalle (**bornes incluses**), `BETWEEN` ; pour une recherche de motif dans un texte, `LIKE` (`%` remplace n'importe quelle suite de caractères, `_` un seul caractère) :
 
 ```sql
 SELECT COUNT(*) AS commandes_de_decembre
@@ -96,16 +96,16 @@ WHERE nom LIKE '%jasmin%';
          16 Bougie parfumée au jasmin            20.0
 ```
 
-**Attention aux priorités.** `AND` passe **avant** `OR`, comme la multiplication passe avant l'addition. L'expression `A OR B AND C` se lit donc `A OR (B AND C)`, ce qui n'est pas du tout `(A OR B) AND C`. Mesurons l'écart sur un exemple. On veut compter « les commandes de plus de 100 DT passées sur Instagram ou sur le site » :
+**Attention aux priorités.** `AND` passe **avant** `OR`, comme la multiplication passe avant l'addition. L'expression `A OR B AND C` se lit donc `A OR (B AND C)`, ce qui n'est pas du tout `(A OR B) AND C`. Mesurons l'écart sur un exemple. On veut compter « les commandes de plus de 100 € passées sur Réseaux ou sur le site » :
 
 ```sql
 SELECT 'sans parenthèses' AS version, COUNT(*) AS nb
 FROM commandes
-WHERE canal = 'Instagram' OR canal = 'Site' AND montant > 100
+WHERE canal = 'Réseaux' OR canal = 'Site' AND montant > 100
 UNION ALL
 SELECT 'avec parenthèses', COUNT(*)
 FROM commandes
-WHERE (canal = 'Instagram' OR canal = 'Site') AND montant > 100;
+WHERE (canal = 'Réseaux' OR canal = 'Site') AND montant > 100;
 ```
 <!--sortie-->
 ```text
@@ -114,7 +114,7 @@ sans parenthèses 152
 avec parenthèses  25
 ```
 
-Sans parenthèses, la requête compte **toutes** les commandes Instagram (quel que soit le montant) *plus* les commandes du site de plus de 100 DT : 152 lignes. Avec parenthèses, elle compte les grosses commandes (plus de 100 DT) d'Instagram *ou* du site : 25 lignes. Un écart de 1 à 6 dans le résultat, à cause de deux caractères.
+Sans parenthèses, la requête compte **toutes** les commandes Réseaux (quel que soit le montant) *plus* les commandes du site de plus de 100 € : 152 lignes. Avec parenthèses, elle compte les grosses commandes (plus de 100 €) d'Réseaux *ou* du site : 25 lignes. Un écart de 1 à 6 dans le résultat, à cause de deux caractères.
 
 > ⚠️ **Règle d'or.** Dès qu'on mélange `AND` et `OR`, **mettez des parenthèses**, même quand elles sont techniquement inutiles. Votre lecteur (et vous dans six mois) vous en sera reconnaissant.
 
@@ -148,14 +148,14 @@ ORDER BY ville;
 <!--sortie-->
 ```text
    ville
-  Ariana
- Bizerte
-La Marsa
-Monastir
-  Nabeul
-    Sfax
-  Sousse
-   Tunis
+  Ville A
+ Ville B
+Ville C
+Ville D
+  Ville E
+    Ville F
+  Ville G
+   Ville H
 ```
 
 ### 5.2.4 Agréger : `COUNT`, `SUM`, `AVG`, `GROUP BY`
@@ -177,7 +177,7 @@ FROM commandes;
           400                    66           24098.3         60.25          8.6        255.7
 ```
 
-Les 400 commandes totalisent environ 24 098 DT, soit un panier moyen de **60,25 DT** : c'est exactement la moyenne du chapitre 3. SQL et pandas calculent la même chose ; seule la syntaxe change. Autre information intéressante : sur les 80 clients inscrits, **66 seulement** ont passé au moins une commande.
+Les 400 commandes totalisent environ 24 098 €, soit un panier moyen de **60,25 €** : c'est exactement la moyenne du chapitre 3. SQL et pandas calculent la même chose ; seule la syntaxe change. Autre information intéressante : sur les 80 clients inscrits, **66 seulement** ont passé au moins une commande.
 
 > 💡 **Une table de correspondance pandas ↔ SQL** (que vous retrouverez en 4.4) : `df[df.canal == "Site"]` ↔ `WHERE canal = 'Site'` ; `df.groupby("canal")["montant"].mean()` ↔ `SELECT canal, AVG(montant) ... GROUP BY canal` ; `df.sort_values("montant")` ↔ `ORDER BY montant`.
 
@@ -199,10 +199,10 @@ ORDER BY chiffre_affaires DESC;
     canal  commandes  panier_moyen  chiffre_affaires  satisfaction  delai_moyen
      Site        148         59.50            8807.0          3.79         4.70
  Boutique        114         74.81            8528.0          4.49         0.00
-Instagram        138         49.01            6764.0          3.72         4.49
+Réseaux        138         49.01            6764.0          3.72         4.49
 ```
 
-En une requête de six lignes, nous avons la photographie de l'activité. Le **site** fait le plus de chiffre d'affaires parce qu'il a le plus de commandes ; la **boutique**, avec moins de commandes, a le panier moyen et la satisfaction les plus élevés (le délai de livraison y est nul : les clients repartent avec leur achat). **Instagram** a les paniers les plus modestes.
+En une requête de six lignes, nous avons la photographie de l'activité. Le **site** fait le plus de chiffre d'affaires parce qu'il a le plus de commandes ; la **boutique**, avec moins de commandes, a le panier moyen et la satisfaction les plus élevés (le délai de livraison y est nul : les clients repartent avec leur achat). **Réseaux** a les paniers les plus modestes.
 
 > ⚠️ **La règle du `GROUP BY`.** Dans un `SELECT` avec `GROUP BY`, chaque colonne affichée doit être **soit dans le `GROUP BY`, soit à l'intérieur d'une fonction d'agrégation**. Demander `SELECT canal, montant ... GROUP BY canal` n'a pas de sens : quelle valeur de `montant` choisir parmi les 148 lignes du groupe « Site » ? (SQLite en choisit une, arbitrairement, sans protester ; PostgreSQL refuse avec une erreur : c'est plus prudent.)
 
@@ -218,10 +218,10 @@ ORDER BY clients DESC, ville;
 <!--sortie-->
 ```text
   ville  clients
- Ariana       13
-Bizerte       11
- Sousse       11
-  Tunis       11
+ Ville A       13
+Ville B       11
+ Ville G       11
+  Ville H       11
 ```
 
 Un usage très pratique de `GROUP BY ... HAVING` : **détecter les doublons**. Reprenons notre remarque du 5.1.2 : peut-on identifier un client par son prénom et son nom ? Cherchons les couples qui apparaissent plus d'une fois (`GROUP_CONCAT` recolle les villes en un seul texte) :
@@ -236,14 +236,14 @@ ORDER BY homonymes DESC, nom;
 <!--sortie-->
 ```text
  prenom      nom  homonymes                   villes
-Oussama Chaabane          3 Ariana / La Marsa / Sfax
-   Ines    Dridi          3  Ariana / Tunis / Nabeul
-  Salma Bouazizi          2            Sousse / Sfax
-   Nour    Hamdi          2           Tunis / Sousse
-  Salma   Jlassi          2         Nabeul / Bizerte
-Yassine   Lahmar          2        La Marsa / Ariana
-  Dorra    Mejri          2         Monastir / Tunis
-   Emna    Sassi          2        Bizerte / Bizerte
+Oussama Chaabane          3 Ville A / Ville C / Ville F
+   Ines    Dridi          3  Ville A / Ville H / Ville E
+  Salma Bouazizi          2            Ville G / Ville F
+   Nour    Hamdi          2           Ville H / Ville G
+  Salma   Jlassi          2         Ville E / Ville B
+Yassine   Lahmar          2        Ville C / Ville A
+  Dorra    Mejri          2         Ville D / Ville H
+   Emna    Sassi          2        Ville B / Ville B
 ```
 
 Huit couples de prénom et nom apparaissent plusieurs fois, dont trois « Ines Dridi » ! Et deux « Emna Sassi » habitent la même ville : sans le numéro `id_client`, il serait **impossible** de les distinguer. La clé primaire n'est pas un luxe.
@@ -291,11 +291,11 @@ LIMIT 5;
 <!--sortie-->
 ```text
 prenom      nom  ville date_commande  montant
- Fares Bouazizi Sousse    2025-06-23    255.7
-  Nour Chaabane   Sfax    2025-03-28    243.8
-Mariem    Sassi  Tunis    2025-07-31    217.1
-  Sami    Dridi Ariana    2025-08-26    212.4
-  Sami    Dridi Ariana    2025-12-16    208.8
+ Fares Bouazizi Ville G    2025-06-23    255.7
+  Nour Chaabane   Ville F    2025-03-28    243.8
+Mariem    Sassi  Ville H    2025-07-31    217.1
+  Sami    Dridi Ville A    2025-08-26    212.4
+  Sami    Dridi Ville A    2025-12-16    208.8
 ```
 
 Deux détails de lisibilité : on donne des **alias courts aux tables** (`c`, `cl`), et on **préfixe** chaque colonne par la table d'où elle vient (`cl.nom`), ce qui évite les ambiguïtés quand deux tables ont une colonne du même nom (comme `id_client`).
@@ -323,7 +323,7 @@ ORDER BY chiffre_affaires DESC;
 Cosmétiques             196            3148.0
 ```
 
-Les trois premières catégories sont presque à égalité (les **bijoux** devancent de justesse le **textile** et la **poterie**, autour de 7 000 DT chacun) ; les **cosmétiques** se vendent en grand nombre (196 unités, presque autant que les bijoux avec 200) mais à petits prix, donc leur total est bien plus faible. Ce genre d'écart entre « ce qui se vend le plus » et « ce qui rapporte le plus » est exactement le type d'information qu'on cherche.
+Les trois premières catégories sont presque à égalité (les **bijoux** devancent de justesse le **textile** et la **poterie**, autour de 7 000 € chacun) ; les **cosmétiques** se vendent en grand nombre (196 unités, presque autant que les bijoux avec 200) mais à petits prix, donc leur total est bien plus faible. Ce genre d'écart entre « ce qui se vend le plus » et « ce qui rapporte le plus » est exactement le type d'information qu'on cherche.
 
 Souvenez-vous aussi de la promesse faite en 5.1.3 : les lignes de commande devaient avoir été construites pour que chaque commande « retombe » sur son montant. Vérifions-le, avec une requête qui compte les commandes **incohérentes** (dont le montant diffère de la somme de leurs lignes) :
 
@@ -357,20 +357,20 @@ ORDER BY cl.id_client;
 <!--sortie-->
 ```text
  id_client  prenom      nom    ville
-        10    Nour    Hamdi    Tunis
-        23   Hatem    Mejri   Sousse
-        31 Yassine Chaabane   Nabeul
-        38 Oussama    Sassi Monastir
-        42   Hatem Bouazizi  Bizerte
-        56    Lina    Dridi  Bizerte
-        58   Salma   Jlassi   Nabeul
-        67    Zied   Gharbi   Sousse
-        69   Salma   Jlassi  Bizerte
-        73   Salma Bouazizi     Sfax
-        75    Lina    Mejri La Marsa
-        77    Nour    Hamdi   Sousse
-        78    Ines    Ayari    Tunis
-        79   Hatem Trabelsi   Sousse
+        10    Nour    Hamdi    Ville H
+        23   Hatem    Mejri   Ville G
+        31 Yassine Chaabane   Ville E
+        38 Oussama    Sassi Ville D
+        42   Hatem Bouazizi  Ville B
+        56    Lina    Dridi  Ville B
+        58   Salma   Jlassi   Ville E
+        67    Zied   Gharbi   Ville G
+        69   Salma   Jlassi  Ville B
+        73   Salma Bouazizi     Ville F
+        75    Lina    Mejri Ville C
+        77    Nour    Hamdi   Ville G
+        78    Ines    Ayari    Ville H
+        79   Hatem Trabelsi   Ville G
 ```
 
 Ces quatorze clients se sont inscrits mais n'ont jamais acheté : une liste précieuse pour une campagne de relance (« votre premier achat à -10 % »). Le motif **`LEFT JOIN ... WHERE droite IS NULL`** (« les lignes de gauche sans correspondance à droite ») est l'un des plus utiles de tout SQL. Avec un `INNER JOIN`, ces quatorze clients n'auraient jamais été trouvés, puisqu'ils n'ont aucune commande à joindre.
@@ -435,7 +435,7 @@ WHERE montant > (SELECT AVG(montant) FROM commandes);
 
 La sous-requête `(SELECT AVG(montant) FROM commandes)` vaut 60,25 ; la requête externe garde donc les commandes au-dessus de ce seuil. Il y en a **160 sur 400** : 40 %, bien moins que la moitié, signe d'une distribution asymétrique à droite (la moyenne dépasse la médiane, 3.1.3).
 
-**(b) Une liste de valeurs**, avec `IN` : « les clients qui ont passé au moins une commande de plus de 200 DT ».
+**(b) Une liste de valeurs**, avec `IN` : « les clients qui ont passé au moins une commande de plus de 200 € ».
 
 ```sql
 SELECT cl.id_client, cl.prenom, cl.nom
@@ -579,7 +579,7 @@ ORDER BY mois;
 2025-12         57            3325.0
 ```
 
-`strftime('%Y-%m', ...)` extrait « année-mois » (`%Y` année, `%m` mois, `%d` jour, `%w` jour de la semaine, 0 = dimanche). On voit la saisonnalité : un creux en janvier-février, une belle période estivale, un petit creux en octobre, et le pic des fêtes en **décembre** (57 commandes, 3 325 DT).
+`strftime('%Y-%m', ...)` extrait « année-mois » (`%Y` année, `%m` mois, `%d` jour, `%w` jour de la semaine, 0 = dimanche). On voit la saisonnalité : un creux en janvier-février, une belle période estivale, un petit creux en octobre, et le pic des fêtes en **décembre** (57 commandes, 3 325 €).
 
 Autres opérations utiles : `date('2025-12-31', '-90 days')` (soustraire une durée), `julianday(d2) - julianday(d1)` (nombre de jours entre deux dates).
 
@@ -598,7 +598,7 @@ il_y_a_90_jours debut_du_mois  jours_ecoules
 
 ### 5.2.8 Mises en pratique
 
-Réunissons tous ces outils pour répondre à trois vraies questions de Yasmine.
+Réunissons tous ces outils pour répondre à trois vraies questions de la gérante.
 
 **Question 1 : « Qui sont mes dix meilleurs clients ? »** On joint clients et commandes, on regroupe par client, on trie par chiffre d'affaires décroissant.
 
@@ -619,25 +619,25 @@ LIMIT 10;
 <!--sortie-->
 ```text
  id_client         client    ville  commandes  chiffre_affaires  panier_moyen derniere_commande
-         2     Sami Dridi   Ariana         23            1874.3         81.49        2025-12-24
-         1 Yassine Lahmar La Marsa         28            1701.7         60.77        2025-12-20
-        47    Sarra Hamdi La Marsa         22            1317.3         59.88        2025-12-17
-        11 Bilel Bouazizi    Tunis         18            1218.9         67.72        2025-12-29
-        45  Emna Trabelsi   Ariana         15            1009.3         67.29        2025-12-25
-        17     Ines Dridi   Ariana         15             937.6         62.51        2025-12-22
-        39  Nour Chaabane     Sfax         10             833.1         83.31        2025-12-10
-        27 Salma Bouazizi   Sousse         13             808.9         62.22        2025-12-28
-        14 Fares Bouazizi   Sousse          5             566.0        113.20        2025-11-09
-        51    Dorra Mejri Monastir         12             552.0         46.00        2025-12-10
+         2     Sami Dridi   Ville A         23            1874.3         81.49        2025-12-24
+         1 Yassine Lahmar Ville C         28            1701.7         60.77        2025-12-20
+        47    Sarra Hamdi Ville C         22            1317.3         59.88        2025-12-17
+        11 Bilel Bouazizi    Ville H         18            1218.9         67.72        2025-12-29
+        45  Emna Trabelsi   Ville A         15            1009.3         67.29        2025-12-25
+        17     Ines Dridi   Ville A         15             937.6         62.51        2025-12-22
+        39  Nour Chaabane     Ville F         10             833.1         83.31        2025-12-10
+        27 Salma Bouazizi   Ville G         13             808.9         62.22        2025-12-28
+        14 Fares Bouazizi   Ville G          5             566.0        113.20        2025-11-09
+        51    Dorra Mejri Ville D         12             552.0         46.00        2025-12-10
 ```
 
-On trouve un client très fidèle (Yassine Lahmar : 28 commandes) et un client qui dépense le plus (Sami Dridi : 1 874 DT, panier moyen de 81 DT). Notez que le dixième client (Dorra Mejri) a un chiffre d'affaires de 552 DT, **plus de trois fois moins** que le premier : la clientèle est très inégale. Remarquez aussi le `GROUP BY cl.id_client` et non `GROUP BY cl.nom` : regrouper par nom aurait fusionné les homonymes !
+On trouve un client très fidèle (Yassine Lahmar : 28 commandes) et un client qui dépense le plus (Sami Dridi : 1 874 €, panier moyen de 81 €). Notez que le dixième client (Dorra Mejri) a un chiffre d'affaires de 552 €, **plus de trois fois moins** que le premier : la clientèle est très inégale. Remarquez aussi le `GROUP BY cl.id_client` et non `GROUP BY cl.nom` : regrouper par nom aurait fusionné les homonymes !
 
 **Question 2 : « Quel est le chiffre d'affaires de chaque mois, canal par canal ? »** On veut un tableau avec un canal par colonne : c'est un **tableau croisé** (*pivot*). SQL n'a pas de commande universelle pour cela, mais l'astuce `SUM(CASE WHEN ... THEN ... ELSE 0 END)` fait très bien l'affaire. `CASE WHEN` est le « si... alors... sinon » de SQL.
 
 ```sql
 SELECT strftime('%Y-%m', date_commande) AS mois,
-       ROUND(SUM(CASE WHEN canal = 'Instagram' THEN montant ELSE 0 END)) AS instagram,
+       ROUND(SUM(CASE WHEN canal = 'Réseaux' THEN montant ELSE 0 END)) AS instagram,
        ROUND(SUM(CASE WHEN canal = 'Site'      THEN montant ELSE 0 END)) AS site,
        ROUND(SUM(CASE WHEN canal = 'Boutique'  THEN montant ELSE 0 END)) AS boutique,
        ROUND(SUM(montant))                                               AS total
@@ -714,7 +714,7 @@ ORDER BY jours_sans_achat DESC;
         29    Walid Ayari          7        2025-09-26                96
 ```
 
-Neuf clients répondent à ces critères : voilà la liste de relance de Yasmine. Le client le plus ancien (Aymen Bouazizi, dernière commande le 7 mai) n'est pas revenu depuis 238 jours. Notez l'emploi de `HAVING` avec **deux conditions sur le groupe** : le nombre de commandes **et** la date de la dernière.
+Neuf clients répondent à ces critères : voilà la liste de relance de la gérante. Le client le plus ancien (Aymen Bouazizi, dernière commande le 7 mai) n'est pas revenu depuis 238 jours. Notez l'emploi de `HAVING` avec **deux conditions sur le groupe** : le nombre de commandes **et** la date de la dernière.
 
 > ✅ **À retenir**
 >

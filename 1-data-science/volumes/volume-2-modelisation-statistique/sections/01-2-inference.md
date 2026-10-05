@@ -1,6 +1,6 @@
 ## 1.2 Inférence sur les coefficients
 
-> 💡 **Intuition.** Les coefficients de `m2` (−0,34 pour Instagram, +0,009 par année d'âge…) sont calculés sur **un** échantillon de 1 740 clients. Avec un autre échantillon, on aurait obtenu d'autres valeurs. La question de l'inférence est : *de combien ces chiffres peuvent-ils bouger ?* et donc *que peut-on affirmer sur la vraie valeur ?* C'est exactement l'esprit du chapitre 3 du volume I (intervalles de confiance, tests), appliqué maintenant à chaque coefficient d'un modèle.
+> 💡 **Intuition.** Les coefficients de `m2` (−0,34 pour Réseaux, +0,009 par année d'âge…) sont calculés sur **un** échantillon de 1 740 clients. Avec un autre échantillon, on aurait obtenu d'autres valeurs. La question de l'inférence est : *de combien ces chiffres peuvent-ils bouger ?* et donc *que peut-on affirmer sur la vraie valeur ?* C'est exactement l'esprit du chapitre 3 du volume I (intervalles de confiance, tests), appliqué maintenant à chaque coefficient d'un modèle.
 
 On part des mêmes données qu'en 1.1. Voici la préparation (identique), que nous ne détaillerons plus :
 
@@ -22,7 +22,7 @@ plt.rcParams.update(STYLE)
 
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy()
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36
 df["log_panier"] = np.log(df["panier_moyen"])
 
@@ -80,7 +80,7 @@ print(f"s = {np.sqrt(s2):.4f} | quantile t(n-p, 97,5 %) = {crit:.4f}  (presque 1
                          coef  std err         t  P>|t|  IC bas  IC haut
 Intercept              4.2206   0.0175  241.3693    0.0  4.1863   4.2549
 C(canal)[T.Site]      -0.1571   0.0231   -6.8065    0.0 -0.2024  -0.1119
-C(canal)[T.Instagram] -0.3368   0.0225  -14.9770    0.0 -0.3809  -0.2927
+C(canal)[T.Réseaux] -0.3368   0.0225  -14.9770    0.0 -0.3809  -0.2927
 a                      0.0092   0.0008   10.8618    0.0  0.0075   0.0108
 
 identique à statsmodels : True True True
@@ -97,11 +97,11 @@ Dans le tableau précédent, les trois coefficients du canal et de l'âge ont de
 
 > ⚠️ **Rappels du volume I, appliqués ici.** (1) Une p-valeur n'est **pas** la probabilité que $H_0$ soit vraie (3.5.2). (2) « Significatif » n'est pas « important » (3.5.3) : avec 1 740 clients, même un très petit effet serait détecté. Il faut donc toujours lire **l'estimation et son intervalle**, pas seulement le test. (3) Si l'on teste beaucoup de coefficients, il faut se méfier des faux positifs (3.5.5) : nous y reviendrons au 1.4.
 
-L'**intervalle de confiance** est bien plus informatif que la p-valeur. Pour Instagram, l'intervalle sur le log-panier est environ $[-0{,}381\,;-0{,}293]$ ; en passant à l'exponentielle (une fonction croissante conserve les bornes), on obtient une **fourchette sur l'effet multiplicatif** :
+L'**intervalle de confiance** est bien plus informatif que la p-valeur. Pour Réseaux, l'intervalle sur le log-panier est environ $[-0{,}381\,;-0{,}293]$ ; en passant à l'exponentielle (une fonction croissante conserve les bornes), on obtient une **fourchette sur l'effet multiplicatif** :
 
 ```python
 ic = m2.conf_int()
-for nom in ["C(canal)[T.Site]", "C(canal)[T.Instagram]"]:
+for nom in ["C(canal)[T.Site]", "C(canal)[T.Réseaux]"]:
     bas, haut = ic.loc[nom]
     print(f"{nom:24s} effet sur le panier : {100*(np.exp(m2.params[nom])-1):+.1f} %   IC95 % : [{100*(np.exp(bas)-1):+.1f} % ; {100*(np.exp(haut)-1):+.1f} %]")
 bas, haut = ic.loc["a"]
@@ -110,20 +110,20 @@ print(f"{'a (10 ans de plus)':24s} effet sur le panier : {100*(np.exp(10*m2.para
 <!--sortie-->
 ```text
 C(canal)[T.Site]         effet sur le panier : -14.5 %   IC95 % : [-18.3 % ; -10.6 %]
-C(canal)[T.Instagram]    effet sur le panier : -28.6 %   IC95 % : [-31.7 % ; -25.4 %]
+C(canal)[T.Réseaux]    effet sur le panier : -28.6 %   IC95 % : [-31.7 % ; -25.4 %]
 a (10 ans de plus)       effet sur le panier : +9.6 %   IC95 % : [+7.8 % ; +11.4 %]
 ```
 
-La phrase honnête à transmettre à Yasmine est donc : « *à âge égal, un client acquis par Instagram dépense environ 29 % de moins qu'un client de la boutique ; avec 95 % de confiance, la vraie différence se situe entre 25 % et 32 % de moins* ». Et pour l'âge : « *dix ans de plus sont associés à un panier de 8 à 11 % plus élevé* ».
+La phrase honnête à transmettre à la gérante est donc : « *à âge égal, un client acquis par Réseaux dépense environ 29 % de moins qu'un client de la boutique ; avec 95 % de confiance, la vraie différence se situe entre 25 % et 32 % de moins* ». Et pour l'âge : « *dix ans de plus sont associés à un panier de 8 à 11 % plus élevé* ».
 
-**Un test peut aussi porter sur une combinaison de coefficients.** Par exemple : « le Site et Instagram ont-ils le même panier (à âge égal) ? ». L'hypothèse est $H_0:\beta_{\text{Site}}-\beta_{\text{Instagram}}=0$, c'est-à-dire $H_0:\mathbf c^\top\boldsymbol\beta=0$ avec $\mathbf c=(0,1,-1,0)^\top$. La variance de $\mathbf c^\top\hat{\boldsymbol\beta}$ est $\sigma^2\mathbf c^\top(\mathbf X^\top\mathbf X)^{-1}\mathbf c$ : les covariances entre coefficients **comptent** (on ne peut pas se contenter de lire les deux erreurs standard du tableau).
+**Un test peut aussi porter sur une combinaison de coefficients.** Par exemple : « le Site et Réseaux ont-ils le même panier (à âge égal) ? ». L'hypothèse est $H_0:\beta_{\text{Site}}-\beta_{\text{Réseaux}}=0$, c'est-à-dire $H_0:\mathbf c^\top\boldsymbol\beta=0$ avec $\mathbf c=(0,1,-1,0)^\top$. La variance de $\mathbf c^\top\hat{\boldsymbol\beta}$ est $\sigma^2\mathbf c^\top(\mathbf X^\top\mathbf X)^{-1}\mathbf c$ : les covariances entre coefficients **comptent** (on ne peut pas se contenter de lire les deux erreurs standard du tableau).
 
 ```python
 c = np.array([0, 1, -1, 0])
 diff = c @ beta
 se_diff = np.sqrt(s2 * c @ XtX_inv @ c)
 print(f"beta_Site - beta_Instagram = {diff:.4f} | erreur standard = {se_diff:.4f} | t = {diff/se_diff:.2f} | p = {2*stats.t.sf(abs(diff/se_diff), n-p):.2e}")
-print(m2.t_test("C(canal)[T.Site] - C(canal)[T.Instagram] = 0"))
+print(m2.t_test("C(canal)[T.Site] - C(canal)[T.Réseaux] = 0"))
 ```
 <!--sortie-->
 ```text
@@ -138,7 +138,7 @@ c0             0.1796      0.021      8.691      0.000       0.139       0.220
 
 ### 1.2.3 Le test $F$ : tester plusieurs coefficients à la fois
 
-Comment tester que le **canal** compte, quand il se traduit par *deux* coefficients (`Site` et `Instagram`) ? Faire deux tests $t$ séparés ne répond pas à la question (et multiplie les risques de faux positif). On utilise un **test $F$ de modèles emboîtés** : on compare le modèle complet $M_1$ (avec $p_1$ paramètres) au modèle réduit $M_0$ (avec $p_0<p_1$ paramètres, obtenu en imposant $q=p_1-p_0$ contraintes, par exemple « les deux coefficients du canal sont nuls »).
+Comment tester que le **canal** compte, quand il se traduit par *deux* coefficients (`Site` et `Réseaux`) ? Faire deux tests $t$ séparés ne répond pas à la question (et multiplie les risques de faux positif). On utilise un **test $F$ de modèles emboîtés** : on compare le modèle complet $M_1$ (avec $p_1$ paramètres) au modèle réduit $M_0$ (avec $p_0<p_1$ paramètres, obtenu en imposant $q=p_1-p_0$ contraintes, par exemple « les deux coefficients du canal sont nuls »).
 
 > 📐 **Statistique de Fisher.** En notant $\text{SCR}_0$ et $\text{SCR}_1$ les sommes de carrés résiduelles des deux modèles (le modèle réduit ajuste toujours moins bien : $\text{SCR}_0\ge\text{SCR}_1$),
 > $$F=\frac{(\text{SCR}_0-\text{SCR}_1)/q}{\text{SCR}_1/(n-p_1)}\ \sim\ F_{q,\;n-p_1}\quad\text{sous }H_0 .$$
@@ -202,14 +202,14 @@ Pour l'interaction, la p-valeur est grande : rien n'indique que l'effet de l'âg
 
 Deux questions très différentes se cachent derrière « prédire » :
 
-1. **Quel est le panier moyen** des clients Instagram de 25 ans ? Il s'agit d'estimer une **espérance** $\mathbf x_0^\top\boldsymbol\beta$ : on veut un **intervalle de confiance de la moyenne**.
-2. **Quel sera le panier** d'*un* nouveau client Instagram de 25 ans ? Il s'agit de prévoir une **observation** $y_0=\mathbf x_0^\top\boldsymbol\beta+\varepsilon_0$ : on veut un **intervalle de prédiction**, plus large, car il faut ajouter le bruit individuel $\varepsilon_0$.
+1. **Quel est le panier moyen** des clients Réseaux de 25 ans ? Il s'agit d'estimer une **espérance** $\mathbf x_0^\top\boldsymbol\beta$ : on veut un **intervalle de confiance de la moyenne**.
+2. **Quel sera le panier** d'*un* nouveau client Réseaux de 25 ans ? Il s'agit de prévoir une **observation** $y_0=\mathbf x_0^\top\boldsymbol\beta+\varepsilon_0$ : on veut un **intervalle de prédiction**, plus large, car il faut ajouter le bruit individuel $\varepsilon_0$.
 
 > 📐 **Les deux formules.** La valeur prédite est $\hat y_0=\mathbf x_0^\top\hat{\boldsymbol\beta}$, de variance $\sigma^2\,\mathbf x_0^\top(\mathbf X^\top\mathbf X)^{-1}\mathbf x_0$. Posons $h_0=\mathbf x_0^\top(\mathbf X^\top\mathbf X)^{-1}\mathbf x_0$ (le « levier » du point $\mathbf x_0$). Alors
 > $$\text{IC de la moyenne :}\ \ \hat y_0\pm t_{n-p,\,0{,}975}\;s\sqrt{h_0},\qquad\text{intervalle de prédiction :}\ \ \hat y_0\pm t_{n-p,\,0{,}975}\;s\sqrt{1+h_0}.$$
 > Dans le second cas, l'erreur de prévision est $y_0-\hat y_0=\varepsilon_0-\mathbf x_0^\top(\hat{\boldsymbol\beta}-\boldsymbol\beta)$ : somme de deux termes **indépendants** ($\varepsilon_0$ est un nouveau bruit, indépendant de l'échantillon), d'où la variance $\sigma^2(1+h_0)$.
 
-**À la main, sur les quatre commandes du 1.1.1.** Quel montant prévoir pour une commande de **5 articles** ? On a $\hat y_0=3+19{,}6\times5=101$ DT, $s^2=\text{SCR}/(n-p)=25{,}2/2=12{,}6$, et $\mathbf x_0=(1,5)^\top$ donne $h_0=\frac1{20}(30-2\cdot10\cdot5+4\cdot25)=\frac{30}{20}=1{,}5$ (calcul avec $(\mathbf X^\top\mathbf X)^{-1}=\frac1{20}\begin{pmatrix}30&-10\\-10&4\end{pmatrix}$). Avec $n-p=2$ degrés de liberté, $t_{2,\,0{,}975}\approx4{,}303$ : IC de la moyenne $101\pm4{,}303\sqrt{12{,}6\times1{,}5}\approx101\pm18{,}7$ ; intervalle de prédiction $101\pm4{,}303\sqrt{12{,}6\times2{,}5}\approx101\pm24{,}2$. Vérifions :
+**À la main, sur les quatre commandes du 1.1.1.** Quel montant prévoir pour une commande de **5 articles** ? On a $\hat y_0=3+19{,}6\times5=101$ €, $s^2=\text{SCR}/(n-p)=25{,}2/2=12{,}6$, et $\mathbf x_0=(1,5)^\top$ donne $h_0=\frac1{20}(30-2\cdot10\cdot5+4\cdot25)=\frac{30}{20}=1{,}5$ (calcul avec $(\mathbf X^\top\mathbf X)^{-1}=\frac1{20}\begin{pmatrix}30&-10\\-10&4\end{pmatrix}$). Avec $n-p=2$ degrés de liberté, $t_{2,\,0{,}975}\approx4{,}303$ : IC de la moyenne $101\pm4{,}303\sqrt{12{,}6\times1{,}5}\approx101\pm18{,}7$ ; intervalle de prédiction $101\pm4{,}303\sqrt{12{,}6\times2{,}5}\approx101\pm24{,}2$. Vérifions :
 
 ```python
 x4 = np.array([1, 2, 3, 4]); y4 = np.array([22, 41, 66, 79])
@@ -232,17 +232,17 @@ print("à la main : h0 =", round(h0, 3), "| IC moyenne ±", round(tq*np.sqrt(s2_
 
 Ces intervalles sont énormes parce que $n=4$ et que $x_0=5$ est **hors de la plage** des données ($1$ à $4$) : $h_0=1{,}5$ est grand. C'est une propriété générale : $h_0$ **croît quand $\mathbf x_0$ s'éloigne du centre des données**, si bien que l'incertitude explose en **extrapolation**.
 
-**Sur les clients de Dar Jasmin.** Dessinons, pour les clients acquis par Instagram, le nuage log-panier contre âge avec la droite ajustée par `m2`, la bande de confiance de la moyenne et la bande de prédiction.
+**Sur les clients de la boutique.** Dessinons, pour les clients acquis par Réseaux, le nuage log-panier contre âge avec la droite ajustée par `m2`, la bande de confiance de la moyenne et la bande de prédiction.
 
 ```python
 grille = pd.DataFrame({"age": np.arange(18, 76)})
 grille["a"] = grille["age"] - 36
-grille["canal"] = pd.Categorical(["Instagram"] * len(grille), categories=["Boutique", "Site", "Instagram"])
+grille["canal"] = pd.Categorical(["Réseaux"] * len(grille), categories=["Boutique", "Site", "Réseaux"])
 pf = m2.get_prediction(grille).summary_frame(alpha=0.05)
 
-insta = df[df["canal"] == "Instagram"]
+insta = df[df["canal"] == "Réseaux"]
 fig, ax = plt.subplots(figsize=(7.4, 4.6))
-ax.scatter(insta["age"], insta["log_panier"], s=9, color=GRIS, alpha=0.55, label="clients Instagram")
+ax.scatter(insta["age"], insta["log_panier"], s=9, color=GRIS, alpha=0.55, label="clients Réseaux")
 ax.fill_between(grille["age"], pf["obs_ci_lower"], pf["obs_ci_upper"], color=ORANGE, alpha=0.15, label="intervalle de prédiction à 95 % (un client)")
 ax.fill_between(grille["age"], pf["mean_ci_lower"], pf["mean_ci_upper"], color=BLEU, alpha=0.45, label="intervalle de confiance à 95 % (le panier moyen)")
 ax.plot(grille["age"], pf["mean"], color=BLEU, lw=2)
@@ -253,38 +253,38 @@ ax.set_ylim(2.3, 5.9)
 plt.savefig("figures/ch01-bandes-prediction.png", dpi=200, bbox_inches="tight")
 dans = ((insta["log_panier"] >= np.interp(insta["age"], grille["age"], pf["obs_ci_lower"])) &
         (insta["log_panier"] <= np.interp(insta["age"], grille["age"], pf["obs_ci_upper"]))).mean()
-print(f"part des {len(insta)} clients Instagram situés dans l'intervalle de prédiction à 95 % : {100*dans:.1f} %")
+print(f"part des {len(insta)} clients Réseaux situés dans l'intervalle de prédiction à 95 % : {100*dans:.1f} %")
 ```
 <!--sortie-->
 ```text
-part des 687 clients Instagram situés dans l'intervalle de prédiction à 95 % : 94.8 %
+part des 687 clients Réseaux situés dans l'intervalle de prédiction à 95 % : 94.8 %
 ```
 
-![Clients Instagram : log du panier selon l'âge. La bande bleue (intervalle de confiance de la moyenne) est étroite ; la bande orange (prédiction pour un client) est beaucoup plus large et contient environ 95 % des points.](figures/ch01-bandes-prediction.png)
+![Clients Réseaux : log du panier selon l'âge. La bande bleue (intervalle de confiance de la moyenne) est étroite ; la bande orange (prédiction pour un client) est beaucoup plus large et contient environ 95 % des points.](figures/ch01-bandes-prediction.png)
 
 Deux observations. La bande de **confiance** est étroite et se resserre autour de l'âge moyen (là où $h_0$ est minimal), tout en s'évasant aux âges extrêmes. La bande de **prédiction** est quasi parallèle à la droite et très large : elle est dominée par le terme « $1$ » (le bruit individuel), que **rien** ne peut réduire, même avec un échantillon infini. Retenons : *on peut connaître très précisément le panier moyen d'un groupe, et pourtant prévoir très mal le panier d'un individu*.
 
-En dinars, il suffit d'appliquer l'exponentielle aux bornes (la transformation est croissante) :
+En euros, il suffit d'appliquer l'exponentielle aux bornes (la transformation est croissante) :
 
 ```python
-nouveau = pd.DataFrame({"a": [25 - 36], "canal": pd.Categorical(["Instagram"], categories=["Boutique", "Site", "Instagram"])})
+nouveau = pd.DataFrame({"a": [25 - 36], "canal": pd.Categorical(["Réseaux"], categories=["Boutique", "Site", "Réseaux"])})
 r = m2.get_prediction(nouveau).summary_frame(alpha=0.05).iloc[0]
 print(f"log-panier prédit : {r['mean']:.3f}")
-print(f"panier médian prédit : {np.exp(r['mean']):.1f} DT | IC95 % de la médiane : [{np.exp(r['mean_ci_lower']):.1f} ; {np.exp(r['mean_ci_upper']):.1f}] DT")
-print(f"un nouveau client Instagram de 25 ans : panier entre {np.exp(r['obs_ci_lower']):.1f} et {np.exp(r['obs_ci_upper']):.1f} DT avec 95 % de confiance")
+print(f"panier médian prédit : {np.exp(r['mean']):.1f} € | IC95 % de la médiane : [{np.exp(r['mean_ci_lower']):.1f} ; {np.exp(r['mean_ci_upper']):.1f}] €")
+print(f"un nouveau client Réseaux de 25 ans : panier entre {np.exp(r['obs_ci_lower']):.1f} et {np.exp(r['obs_ci_upper']):.1f} € avec 95 % de confiance")
 ```
 <!--sortie-->
 ```text
 log-panier prédit : 3.783
-panier médian prédit : 43.9 DT | IC95 % de la médiane : [42.5 ; 45.4] DT
-un nouveau client Instagram de 25 ans : panier entre 21.2 et 91.0 DT avec 95 % de confiance
+panier médian prédit : 43.9 € | IC95 % de la médiane : [42.5 ; 45.4] €
+un nouveau client Réseaux de 25 ans : panier entre 21.2 et 91.0 € avec 95 % de confiance
 ```
 
 Remarquez le vocabulaire : l'exponentielle des bornes de l'IC de $\mathbb E[\log y]$ donne un intervalle pour la **médiane** de $y$ (et non pour sa moyenne, cf. 1.1.8). L'intervalle de prédiction, lui, se transforme sans difficulté, car il concerne une observation.
 
 ### 1.2.5 Vérifier la théorie par simulation : la couverture des intervalles
 
-Tout ceci repose sur H1-H5. Que vaut vraiment « 95 % de confiance » ? Vérifions-le comme on vérifie un théorème : en **répétant l'expérience** un grand nombre de fois quand on connaît la vérité. Utilisons le plan d'expérience réel $\mathbf X$ de `m2` (mêmes 1 740 clients), des coefficients vrais $\boldsymbol\beta^\star$ choisis par nous, un bruit normal d'écart-type 0,37, et générons 4 000 jeux de données. Pour chacun, nous construisons l'intervalle à 95 % du coefficient d'Instagram et vérifions s'il contient la vraie valeur.
+Tout ceci repose sur H1-H5. Que vaut vraiment « 95 % de confiance » ? Vérifions-le comme on vérifie un théorème : en **répétant l'expérience** un grand nombre de fois quand on connaît la vérité. Utilisons le plan d'expérience réel $\mathbf X$ de `m2` (mêmes 1 740 clients), des coefficients vrais $\boldsymbol\beta^\star$ choisis par nous, un bruit normal d'écart-type 0,37, et générons 4 000 jeux de données. Pour chacun, nous construisons l'intervalle à 95 % du coefficient d'Réseaux et vérifions s'il contient la vraie valeur.
 
 ```python
 rng = np.random.default_rng(12)
@@ -301,7 +301,7 @@ low, high = B - crit * SE, B + crit * SE
 couverture = ((low <= beta_etoile) & (beta_etoile <= high)).mean(axis=0)
 print("couverture empirique de l'IC à 95 % :")
 print(pd.Series(couverture, index=m2.params.index).round(3).to_string())
-print("statistique t pour Instagram : moyenne =", Tst[:, 2].mean().round(3), "| écart-type =", Tst[:, 2].std().round(3),
+print("statistique t pour Réseaux : moyenne =", Tst[:, 2].mean().round(3), "| écart-type =", Tst[:, 2].std().round(3),
       "| écart-type théorique de t(n-p) =", round(np.sqrt((n - p) / (n - p - 2)), 3))
 print("part de |t| > 1,96 quand H0 est vraie (erreur de type I) pour l'âge :", (np.abs(Tst[:, 3]) > 1.96).mean().round(3))
 ```
@@ -310,9 +310,9 @@ print("part de |t| > 1,96 quand H0 est vraie (erreur de type I) pour l'âge :", 
 couverture empirique de l'IC à 95 % :
 Intercept                0.944
 C(canal)[T.Site]         0.951
-C(canal)[T.Instagram]    0.948
+C(canal)[T.Réseaux]    0.948
 a                        0.950
-statistique t pour Instagram : moyenne = 0.008 | écart-type = 1.01 | écart-type théorique de t(n-p) = 1.001
+statistique t pour Réseaux : moyenne = 0.008 | écart-type = 1.01 | écart-type théorique de t(n-p) = 1.001
 part de |t| > 1,96 quand H0 est vraie (erreur de type I) pour l'âge : 0.05
 ```
 
@@ -340,17 +340,17 @@ print(comp.round(4).to_string())
                        IC t (bas)  IC t (haut)  IC bootstrap (bas)  IC bootstrap (haut)  se (formule)  se (bootstrap)
 Intercept                  4.1863       4.2549              4.1868               4.2545        0.0175          0.0172
 C(canal)[T.Site]          -0.2024      -0.1119             -0.2021              -0.1131        0.0231          0.0227
-C(canal)[T.Instagram]     -0.3809      -0.2927             -0.3794              -0.2931        0.0225          0.0216
+C(canal)[T.Réseaux]     -0.3809      -0.2927             -0.3794              -0.2931        0.0225          0.0216
 a                          0.0075       0.0108              0.0075               0.0108        0.0008          0.0008
 ```
 
 Les deux approches donnent des intervalles quasi identiques : ici, la formule théorique est fiable. Le bootstrap devient précieux quand les hypothèses sont douteuses (erreurs très asymétriques, petit échantillon, quantité d'intérêt compliquée comme un rapport de coefficients).
 
-### 1.2.7 Retour aux questions de Yasmine
+### 1.2.7 Retour aux questions de la gérante
 
 Nous pouvons maintenant répondre honnêtement aux trois questions de l'introduction du chapitre :
 
-1. **« Combien dépense un client Instagram de 50 ans par rapport à un client de la boutique de 30 ans ? »** C'est une combinaison linéaire de coefficients : effet du canal (−0,34) plus 20 ans d'âge (+20 × 0,009). Son intervalle de confiance s'obtient par la formule de variance d'une combinaison (1.2.2).
+1. **« Combien dépense un client Réseaux de 50 ans par rapport à un client de la boutique de 30 ans ? »** C'est une combinaison linéaire de coefficients : effet du canal (−0,34) plus 20 ans d'âge (+20 × 0,009). Son intervalle de confiance s'obtient par la formule de variance d'une combinaison (1.2.2).
 2. **« Est-ce le canal ou l'âge ? »** Le test $F$ du canal est très significatif **à âge égal** (1.2.3) : ce n'est pas l'âge. Et réciproquement.
 3. **« Quel panier prévoir pour un nouveau client ? »** Un intervalle de prédiction, large (1.2.4).
 
@@ -360,7 +360,7 @@ est = c1 @ beta
 se_c = np.sqrt(s2 * c1 @ XtX_inv @ c1)
 bas, haut = est - crit * se_c, est + crit * se_c
 print(f"effet estimé : {est:+.3f} (log) -> panier {100*(np.exp(est)-1):+.1f} %   IC95 % : [{100*(np.exp(bas)-1):+.1f} % ; {100*(np.exp(haut)-1):+.1f} %]")
-print(m2.t_test("C(canal)[T.Instagram] + 20*a = 0").summary_frame().round(4).to_string())
+print(m2.t_test("C(canal)[T.Réseaux] + 20*a = 0").summary_frame().round(4).to_string())
 ```
 <!--sortie-->
 ```text
@@ -369,7 +369,7 @@ effet estimé : -0.153 (log) -> panier -14.2 %   IC95 % : [-18.8 % ; -9.4 %]
 c0 -0.1534    0.028 -5.4802    0.0         -0.2083          -0.0985
 ```
 
-Un client Instagram de 50 ans dépense donc, en moyenne géométrique, environ **14 % de moins** qu'un client de la boutique de 30 ans : les 20 ans d'âge de plus compensent un peu plus de la moitié de l'écart de canal. Cette comparaison de deux profils précis, avec son intervalle (de −19 % à −9 %), est typiquement ce qu'une simple comparaison de moyennes de groupes ne peut pas donner.
+Un client Réseaux de 50 ans dépense donc, en moyenne géométrique, environ **14 % de moins** qu'un client de la boutique de 30 ans : les 20 ans d'âge de plus compensent un peu plus de la moitié de l'écart de canal. Cette comparaison de deux profils précis, avec son intervalle (de −19 % à −9 %), est typiquement ce qu'une simple comparaison de moyennes de groupes ne peut pas donner.
 
 > ✅ **À retenir (1.2).**
 > - Sous H1-H5, $\hat{\boldsymbol\beta}\sim\mathcal N(\boldsymbol\beta,\sigma^2(\mathbf X^\top\mathbf X)^{-1})$, $\text{SCR}/\sigma^2\sim\chi^2_{n-p}$, et les deux sont indépendants : d'où $T_j=(\hat\beta_j-\beta_j)/\operatorname{se}(\hat\beta_j)\sim t_{n-p}$ avec $\operatorname{se}(\hat\beta_j)=s\sqrt{c_{jj}}$.

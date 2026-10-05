@@ -4,7 +4,7 @@
 
 ### 1.6.1 Ensembles : le langage de base
 
-Un **ensemble** est une collection d'objets distincts, sans ordre. Yasmine propose quatre produits : $P = \{\text{bol}, \text{tapis}, \text{lampe}, \text{plateau}\}$. Ses clients de la semaine ont acheté des sous-ensembles de $P$.
+Un **ensemble** est une collection d'objets distincts, sans ordre. La gérante propose quatre produits : $P = \{\text{bol}, \text{tapis}, \text{lampe}, \text{plateau}\}$. Ses clients de la semaine ont acheté des sous-ensembles de $P$.
 
 Les opérations de la fiche de notations (1.4.2) se testent directement en Python avec le type `set` :
 
@@ -48,7 +48,7 @@ Un seul produit en commun (le bol), sur quatre produits au total : $1/4 = 0{,}25
 
 > 💡 **Intuition.** Si vous avez 3 pulls et 4 pantalons, vous avez $3\times 4 = 12$ tenues. Quand on enchaîne des choix indépendants, on **multiplie** le nombre d'options.
 
-Yasmine veut proposer un **coffret cadeau** : un produit principal (4 choix), un emballage (3 choix), une carte message (2 choix). Le nombre de coffrets différents est $4\times3\times2 = 24$.
+La gérante veut proposer un **coffret cadeau** : un produit principal (4 choix), un emballage (3 choix), une carte message (2 choix). Le nombre de coffrets différents est $4\times3\times2 = 24$.
 
 **Permutations.** De combien de façons peut-on **ranger** $n$ objets distincts dans l'ordre ? $n$ choix pour la première place, $n-1$ pour la suivante, etc. :
 

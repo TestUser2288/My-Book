@@ -4,11 +4,11 @@
 
 ### Énoncés
 
-**Exercice 1 ⭐ (ACP à la main).** Cinq clientes ont passé $4,\,5,\,6,\,7,\,8$ commandes dans l'année, pour un panier moyen respectif de $4,\,3,\,6,\,7,\,5$ dizaines de DT. (a) Centrez les données et calculez la matrice de covariance. (b) Trouvez ses valeurs propres et ses vecteurs propres unitaires. (c) Quelle part de la variance la première composante explique-t-elle ? (d) Calculez les scores des cinq clientes sur cette composante. (e) Vérifiez par le code.
+**Exercice 1 ⭐ (ACP à la main).** Cinq clientes ont passé $4,\,5,\,6,\,7,\,8$ commandes dans l'année, pour un panier moyen respectif de $4,\,3,\,6,\,7,\,5$ dizaines de €. (a) Centrez les données et calculez la matrice de covariance. (b) Trouvez ses valeurs propres et ses vecteurs propres unitaires. (c) Quelle part de la variance la première composante explique-t-elle ? (d) Calculez les scores des cinq clientes sur cette composante. (e) Vérifiez par le code.
 
 **Exercice 2 ⭐ (lire un éboulis).** Une ACP normée sur 5 variables a donné les valeurs propres $2{,}6;\ 1{,}1;\ 0{,}7;\ 0{,}4;\ 0{,}2$. (a) Quelle est la variance totale ? (b) Calculez la part de variance de chaque composante et les parts cumulées. (c) Combien de composantes retient la règle de Kaiser ? Combien faut-il pour atteindre 80 % de la variance ? (d) Pourquoi les deux critères ne donnent-ils pas la même réponse, et lequel préférez-vous ?
 
-**Exercice 3 ⭐ (les unités).** Dans la table `clients.csv`, on exprime la dépense annuelle en **centimes** de dinar au lieu de dinars. (a) Que devient la part de variance de la première composante d'une ACP **non standardisée** ? (b) Et d'une ACP **standardisée** ? Justifiez, puis vérifiez par le code.
+**Exercice 3 ⭐ (les unités).** Dans la table `clients.csv`, on exprime la dépense annuelle en **centimes** de euro au lieu de euros. (a) Que devient la part de variance de la première composante d'une ACP **non standardisée** ? (b) Et d'une ACP **standardisée** ? Justifiez, puis vérifiez par le code.
 
 **Exercice 4 ⭐⭐ (propriétés des scores).** Soit $Z$ un tableau de variables standardisées, $R$ sa matrice de corrélation, $\mathbf v_j$ et $\lambda_j$ ses éléments propres, et $\mathbf t_j=Z\mathbf v_j$ les scores. (a) Démontrez que $\operatorname{Var}(\mathbf t_j)=\lambda_j$ et que $\operatorname{Cov}(\mathbf t_i,\mathbf t_j)=0$ pour $i\neq j$. (b) Démontrez que la corrélation entre la variable $z_i$ et le score $\mathbf t_j$ vaut $v_{ij}\sqrt{\lambda_j}$. (c) Vérifiez les deux propriétés numériquement sur les cinq variables numériques de `clients.csv` standardisées.
 
@@ -20,24 +20,24 @@
 
 **Exercice 8 ⭐⭐ (alpha de Cronbach).** Une échelle de trois questions standardisées a une corrélation moyenne de $0{,}5$ entre questions. (a) Calculez la variance de la somme des trois questions, puis l'alpha de Cronbach. (b) Combien de questions de même corrélation moyenne faut-il pour atteindre $\alpha\geq0{,}9$ ? On rappelle la formule de Spearman-Brown : pour des questions standardisées, $\alpha=\dfrac{k\,\bar r}{1+(k-1)\bar r}$.
 
-**Exercice 9 ⭐⭐ (k-means : le piège du minimum local).** Six paniers (en dizaines de DT) : $2,\ 3,\ 4,\ 10,\ 12,\ 20$. On cherche $k=2$ groupes. (a) Déroulez l'algorithme de Lloyd à partir des centres $(2;\,20)$ et calculez la variance intra-groupe finale $W$. (b) Recommencez à partir des centres $(2;\,10)$. (c) Comparez les deux solutions : que conclure sur l'algorithme ?
+**Exercice 9 ⭐⭐ (k-means : le piège du minimum local).** Six paniers (en dizaines de €) : $2,\ 3,\ 4,\ 10,\ 12,\ 20$. On cherche $k=2$ groupes. (a) Déroulez l'algorithme de Lloyd à partir des centres $(2;\,20)$ et calculez la variance intra-groupe finale $W$. (b) Recommencez à partir des centres $(2;\,10)$. (c) Comparez les deux solutions : que conclure sur l'algorithme ?
 
 **Exercice 10 ⭐⭐ (silhouette).** Pour la partition $\{2,3,4\}$ et $\{10,12,20\}$ de l'exercice 9, calculez à la main la silhouette des points $4$, $10$ et $20$, puis la silhouette moyenne (code). Quel point est le moins bien classé ?
 
 **Exercice 11 ⭐⭐ (critères d'agrégation).** Quatre clientes $A,B,C,D$ ont les distances deux à deux suivantes : $AB=2$, $AC=5$, $AD=9$, $BC=3$, $BD=7$, $CD=4{,}5$. Construisez à la main l'arbre de la classification hiérarchique pour les critères **simple**, **complet** et **moyen**, en donnant les fusions successives et leurs hauteurs. Vérifiez avec `scipy`.
 
-**Exercice 12 ⭐⭐⭐ (une segmentation, ou pas ?).** Yasmine veut des segments de clientes selon deux critères seulement : le nombre de commandes par an et le panier moyen (clientes ayant commandé, variables standardisées). (a) Calculez la silhouette moyenne des k-means pour $k=2,\dots,6$. (b) Évaluez la stabilité (indice de Rand ajusté entre deux ré-estimations sur des échantillons bootstrap) du découpage en $k=3$. (c) Que conseillez-vous à Yasmine ? Rédigez deux phrases pour elle, sans jargon.
+**Exercice 12 ⭐⭐⭐ (une segmentation, ou pas ?).** la gérante veut des segments de clientes selon deux critères seulement : le nombre de commandes par an et le panier moyen (clientes ayant commandé, variables standardisées). (a) Calculez la silhouette moyenne des k-means pour $k=2,\dots,6$. (b) Évaluez la stabilité (indice de Rand ajusté entre deux ré-estimations sur des échantillons bootstrap) du découpage en $k=3$. (c) Que conseillez-vous à la gérante ? Rédigez deux phrases pour elle, sans jargon.
 
-**Exercice 13 ⭐⭐ (analyse discriminante, section 3.5).** Les clientes à petit panier ont un panier moyen de 40 DT, celles à gros panier de 55 DT, avec un écart-type de 10 DT dans chaque groupe, et les gros paniers représentent 20 % des commandes. (a) À partir de quel panier la règle de Bayes (LDA à une variable) classe-t-elle une commande dans « gros panier » ? (b) Quelle est la probabilité a posteriori d'être un gros panier pour une commande de 55 DT ? (c) Commentez : une commande de 55 DT, égale à la moyenne du groupe « gros panier », est-elle classée dans ce groupe ?
+**Exercice 13 ⭐⭐ (analyse discriminante, section 3.5).** Les clientes à petit panier ont un panier moyen de 40 €, celles à gros panier de 55 €, avec un écart-type de 10 € dans chaque groupe, et les gros paniers représentent 20 % des commandes. (a) À partir de quel panier la règle de Bayes (LDA à une variable) classe-t-elle une commande dans « gros panier » ? (b) Quelle est la probabilité a posteriori d'être un gros panier pour une commande de 55 € ? (c) Commentez : une commande de 55 €, égale à la moyenne du groupe « gros panier », est-elle classée dans ce groupe ?
 
-**Exercice 14 ⭐⭐⭐ (analyse des correspondances, section 3.4).** Un tableau croise le canal (Instagram, Boutique) et trois tranches de délai de livraison (court, moyen, long) :
+**Exercice 14 ⭐⭐⭐ (analyse des correspondances, section 3.4).** Un tableau croise le canal (Réseaux, Boutique) et trois tranches de délai de livraison (court, moyen, long) :
 
 | | court | moyen | long |
 |---|---|---|---|
-| Instagram | 40 | 30 | 10 |
+| Réseaux | 40 | 30 | 10 |
 | Boutique | 10 | 30 | 30 |
 
-(a) Calculez $\chi^2$ et l'inertie totale $\chi^2/n$. (b) Combien d'axes non triviaux l'AC aura-t-elle ? (c) Vérifiez par le code que la somme des inerties des axes est égale à $\chi^2/n$, et dites quelle modalité de délai est la plus associée à Instagram.
+(a) Calculez $\chi^2$ et l'inertie totale $\chi^2/n$. (b) Combien d'axes non triviaux l'AC aura-t-elle ? (c) Vérifiez par le code que la somme des inerties des axes est égale à $\chi^2/n$, et dites quelle modalité de délai est la plus associée à Réseaux.
 
 ### Corrigés
 
@@ -85,7 +85,7 @@ cumul (%)   : [ 52.  74.  88.  96. 100.]
 Kaiser (> 1): 2 | composantes pour 80 % : 3
 ```
 
-**Corrigé 3.** (a) Multiplier une variable par 100 multiplie sa variance par $10\,000$ : la dépense, qui dominait déjà, **écrase** tout le reste. La première composante, qui expliquait déjà $98{,}8\ \%$ de la variance en dinars, en explique alors pratiquement $100\ \%$ (le code arrondit à $1{,}0$) et pointe sur la dépense. (b) Avec la standardisation, chaque variable est divisée par son écart-type : **changer d'unité ne change rien** (la variable standardisée est la même). Les parts de variance sont identiques à celles du 3.1.5.
+**Corrigé 3.** (a) Multiplier une variable par 100 multiplie sa variance par $10\,000$ : la dépense, qui dominait déjà, **écrase** tout le reste. La première composante, qui expliquait déjà $98{,}8\ \%$ de la variance en euros, en explique alors pratiquement $100\ \%$ (le code arrondit à $1{,}0$) et pointe sur la dépense. (b) Avec la standardisation, chaque variable est divisée par son écart-type : **changer d'unité ne change rien** (la variable standardisée est la même). Les parts de variance sont identiques à celles du 3.1.5.
 
 ```python
 import pandas as pd
@@ -99,16 +99,16 @@ def parts(M, standardiser):
     w = np.sort(np.linalg.eigvalsh(np.cov(M.to_numpy(), rowvar=False)))[::-1]
     return w / w.sum()
 
-print("non standardisé, dinars   :", parts(X0, False)[0].round(5))
+print("non standardisé, euros   :", parts(X0, False)[0].round(5))
 print("non standardisé, centimes :", parts(X1, False)[0].round(5))
-print("standardisé, dinars       :", parts(X0, True).round(3))
+print("standardisé, euros       :", parts(X0, True).round(3))
 print("standardisé, centimes     :", parts(X1, True).round(3))
 ```
 <!--sortie-->
 ```text
-non standardisé, dinars   : 0.98789
+non standardisé, euros   : 0.98789
 non standardisé, centimes : 1.0
-standardisé, dinars       : [0.442 0.214 0.194 0.125 0.025]
+standardisé, euros       : [0.442 0.214 0.194 0.125 0.025]
 standardisé, centimes     : [0.442 0.214 0.194 0.125 0.025]
 ```
 
@@ -315,28 +315,28 @@ stabilité (k = 3) : ARI moyen = 0.920, minimum = 0.824
 
 (b) La stabilité du découpage en trois groupes est bonne (ARI moyen $0{,}92$, minimum $0{,}82$) : la partition est reproductible. Comme au 3.3.5, **stabilité n'est pas existence** : ce sont des tranches reproductibles d'un nuage continu.
 
-(c) *Conseil à Yasmine :* « Vos clientes ne forment pas des familles distinctes selon le nombre de commandes et le panier : elles se répartissent sur un continuum, avec beaucoup de petites clientes et quelques très grosses. Pour vos relances, vous pouvez néanmoins utiliser trois tranches pratiques (peu actives, régulières, très actives), à condition de les voir comme des repères commodes, pas comme des types de clientes qui existeraient vraiment. »
+(c) *Conseil à la gérante :* « Vos clientes ne forment pas des familles distinctes selon le nombre de commandes et le panier : elles se répartissent sur un continuum, avec beaucoup de petites clientes et quelques très grosses. Pour vos relances, vous pouvez néanmoins utiliser trois tranches pratiques (peu actives, régulières, très actives), à condition de les voir comme des repères commodes, pas comme des types de clientes qui existeraient vraiment. »
 
-**Corrigé 13.** (a) Seuil $=\dfrac{40+55}{2}+\dfrac{10^2}{55-40}\ln\dfrac{0{,}8}{0{,}2}=47{,}5+6{,}667\times1{,}386\approx56{,}74$ DT. (b) $\mathbb P(\text{gros}\mid55)=\dfrac{0{,}2\,f_{55}(55)}{0{,}8\,f_{40}(55)+0{,}2\,f_{55}(55)}$ : calculé par le code, environ $0{,}435$. (c) **Non** : malgré un panier égal à la moyenne du groupe « gros panier », la commande est classée « petit panier » ($0{,}435<0{,}5$). Les gros paniers étant quatre fois plus rares, il faut une commande plus élevée ($\geq56{,}74$) pour faire basculer la décision : c'est l'effet de la probabilité a priori (3.5.1).
+**Corrigé 13.** (a) Seuil $=\dfrac{40+55}{2}+\dfrac{10^2}{55-40}\ln\dfrac{0{,}8}{0{,}2}=47{,}5+6{,}667\times1{,}386\approx56{,}74$ €. (b) $\mathbb P(\text{gros}\mid55)=\dfrac{0{,}2\,f_{55}(55)}{0{,}8\,f_{40}(55)+0{,}2\,f_{55}(55)}$ : calculé par le code, environ $0{,}435$. (c) **Non** : malgré un panier égal à la moyenne du groupe « gros panier », la commande est classée « petit panier » ($0{,}435<0{,}5$). Les gros paniers étant quatre fois plus rares, il faut une commande plus élevée ($\geq56{,}74$) pour faire basculer la décision : c'est l'effet de la probabilité a priori (3.5.1).
 
 ```python
 from scipy.stats import norm
 mu0, mu1, sig, pi0 = 40, 55, 10, 0.8
 seuil = (mu0 + mu1) / 2 + sig**2 / (mu1 - mu0) * np.log(pi0 / (1 - pi0))
-print("seuil de décision :", round(seuil, 2), "DT")
+print("seuil de décision :", round(seuil, 2), "€")
 for x in (50, 55, 60):
     a = pi0 * norm.pdf(x, mu0, sig); b = (1 - pi0) * norm.pdf(x, mu1, sig)
-    print(f"panier de {x} DT : P(gros panier | x) = {b / (a + b):.3f}")
+    print(f"panier de {x} € : P(gros panier | x) = {b / (a + b):.3f}")
 ```
 <!--sortie-->
 ```text
-seuil de décision : 56.74 DT
-panier de 50 DT : P(gros panier | x) = 0.267
-panier de 55 DT : P(gros panier | x) = 0.435
-panier de 60 DT : P(gros panier | x) = 0.620
+seuil de décision : 56.74 €
+panier de 50 € : P(gros panier | x) = 0.267
+panier de 55 € : P(gros panier | x) = 0.435
+panier de 60 € : P(gros panier | x) = 0.620
 ```
 
-**Corrigé 14.** (a) $n=150$ ; marges des lignes $80$ et $70$ ; marges des colonnes $50$, $60$, $40$. Effectifs attendus : $\frac{80\times50}{150}\approx26{,}67$, $\frac{80\times60}{150}=32$, $\frac{80\times40}{150}\approx21{,}33$ pour Instagram, et $23{,}33$, $28$, $18{,}67$ pour la boutique. $\chi^2=\frac{13{,}33^2}{26{,}67}+\frac{2^2}{32}+\frac{11{,}33^2}{21{,}33}+\frac{13{,}33^2}{23{,}33}+\frac{2^2}{28}+\frac{11{,}33^2}{18{,}67}\approx6{,}67+0{,}13+6{,}02+7{,}62+0{,}14+6{,}88\approx27{,}5$ ; inertie totale $\chi^2/n\approx0{,}183$. (b) Un tableau $2\times3$ a $\min(2,3)-1=1$ axe non trivial. (c) Voir le code ; la modalité de délai la plus proche d'Instagram sur l'axe est « court » (Instagram a $50\ \%$ de délais courts contre $14\ \%$ pour la boutique).
+**Corrigé 14.** (a) $n=150$ ; marges des lignes $80$ et $70$ ; marges des colonnes $50$, $60$, $40$. Effectifs attendus : $\frac{80\times50}{150}\approx26{,}67$, $\frac{80\times60}{150}=32$, $\frac{80\times40}{150}\approx21{,}33$ pour Réseaux, et $23{,}33$, $28$, $18{,}67$ pour la boutique. $\chi^2=\frac{13{,}33^2}{26{,}67}+\frac{2^2}{32}+\frac{11{,}33^2}{21{,}33}+\frac{13{,}33^2}{23{,}33}+\frac{2^2}{28}+\frac{11{,}33^2}{18{,}67}\approx6{,}67+0{,}13+6{,}02+7{,}62+0{,}14+6{,}88\approx27{,}5$ ; inertie totale $\chi^2/n\approx0{,}183$. (b) Un tableau $2\times3$ a $\min(2,3)-1=1$ axe non trivial. (c) Voir le code ; la modalité de délai la plus proche d'Réseaux sur l'axe est « court » (Réseaux a $50\ \%$ de délais courts contre $14\ \%$ pour la boutique).
 
 ```python
 from scipy import stats
@@ -349,14 +349,14 @@ F = (U / np.sqrt(r)[:, None]) * sv
 G = (Vt.T / np.sqrt(cc)[:, None]) * sv
 print("khi-deux =", round(chi2, 2), "| khi-deux / n =", round(chi2 / N.sum(), 4))
 print("inerties des axes :", (sv**2).round(4), "| somme :", (sv**2).sum().round(4))
-print("axe 1, lignes   :", pd.Series(F[:, 0], index=["Instagram", "Boutique"]).round(3).to_dict())
+print("axe 1, lignes   :", pd.Series(F[:, 0], index=["Réseaux", "Boutique"]).round(3).to_dict())
 print("axe 1, colonnes :", pd.Series(G[:, 0], index=["court", "moyen", "long"]).round(3).to_dict())
 ```
 <!--sortie-->
 ```text
 khi-deux = 27.46 | khi-deux / n = 0.183
 inerties des axes : [0.183 0.   ] | somme : 0.183
-axe 1, lignes   : {'Instagram': -0.4, 'Boutique': 0.457}
+axe 1, lignes   : {'Réseaux': -0.4, 'Boutique': 0.457}
 axe 1, colonnes : {'court': -0.535, 'moyen': 0.067, 'long': 0.568}
 ```
 
@@ -374,4 +374,4 @@ Vous savez maintenant :
 
 Un fil rouge traverse le chapitre : **une méthode descriptive rend toujours un résultat**, même sur du bruit. Un axe, un facteur, un groupe, une carte n'ont de valeur qu'accompagnés de leurs **diagnostics** (parts d'inertie et analyse parallèle, test d'ajustement, silhouette et stabilité, khi-deux avant de lire une carte).
 
-Le chapitre 4 change d'horizon : après les données « en coupe » (un instantané de clientes), les **séries temporelles**, où l'ordre des observations compte et où la mémoire du passé devient l'information principale. Les ventes mensuelles de Dar Jasmin, de 2016 à 2025, nous y attendent.
+Le chapitre 4 change d'horizon : après les données « en coupe » (un instantané de clientes), les **séries temporelles**, où l'ordre des observations compte et où la mémoire du passé devient l'information principale. Les ventes mensuelles de la boutique, de 2016 à 2025, nous y attendent.

@@ -4,7 +4,7 @@
 
 ### 8.1.1 Le vocabulaire
 
-Yasmine veut savoir quel agencement de vitrine fait vendre le plus. Les mots du métier :
+La gérante veut savoir quel agencement de vitrine fait vendre le plus. Les mots du métier :
 
 | Terme | Sens | Dans l'exemple |
 |---|---|---|
@@ -12,17 +12,17 @@ Yasmine veut savoir quel agencement de vitrine fait vendre le plus. Les mots du 
 | **Niveau** | une valeur possible d'un facteur | « Classique », « Par couleur », « Par thème », « Vedette » |
 | **Traitement** | une combinaison de niveaux (un seul facteur : un niveau) | « vitrine Par thème » |
 | **Unité expérimentale** | l'objet auquel on applique un traitement, **indépendamment** des autres | **une journée** d'ouverture |
-| **Réponse** | ce que l'on mesure | les ventes du jour (DT) |
-| **Essai** (*run*) | une unité + un traitement + une mesure | « mardi 3, vitrine Vedette : 213 DT » |
+| **Réponse** | ce que l'on mesure | les ventes du jour (€) |
+| **Essai** (*run*) | une unité + un traitement + une mesure | « mardi 3, vitrine Vedette : 213 € » |
 | **Plan** | la liste des essais, avec leur ordre | 12 jours par agencement, ordre tiré au hasard |
 
 Le point le plus subtil est l'**unité expérimentale** : c'est la plus petite entité à laquelle on peut affecter un traitement **sans que le traitement d'une unité ne dépende de celui d'une autre**. Ici, on ne peut pas changer la vitrine client par client : tous les clients d'une même journée voient la même vitrine. L'unité est donc la journée, pas le client. Nous verrons en 8.1.4 ce que coûte cette confusion.
 
-> 💡 **Expérience ou observation ?** Dans une étude **observationnelle** (les clients des volumes précédents), on constate ce qui s'est passé : les clients « Instagram » et « Boutique » diffèrent sans que personne ne l'ait décidé, et les différences observées peuvent venir d'autre chose que du canal. Dans une **expérience**, c'est l'expérimentateur qui **affecte** les traitements. C'est cette affectation, et surtout sa manière d'être faite, qui permet de parler de **cause** (chapitre 7 pour le cas observationnel).
+> 💡 **Expérience ou observation ?** Dans une étude **observationnelle** (les clients des volumes précédents), on constate ce qui s'est passé : les clients « Réseaux » et « Boutique » diffèrent sans que personne ne l'ait décidé, et les différences observées peuvent venir d'autre chose que du canal. Dans une **expérience**, c'est l'expérimentateur qui **affecte** les traitements. C'est cette affectation, et surtout sa manière d'être faite, qui permet de parler de **cause** (chapitre 7 pour le cas observationnel).
 
 ### 8.1.2 Première règle : randomiser
 
-Supposons que Yasmine teste deux vitrines, A et B, sans effet réel : les deux sont aussi efficaces. Elle installe A du **lundi au jeudi** et B du **vendredi au dimanche**, pendant quatre semaines. Or le week-end, la boutique vend plus (disons 60 DT de plus par jour en moyenne, quel que soit l'agencement). Elle va conclure que B est meilleure : le **jour de la semaine** est un **facteur de confusion** : il influence la réponse *et* est lié à l'affectation des traitements (le chapitre 7 en donne la théorie). Voyons l'ampleur du dégât par simulation, en comparant cette affectation à une affectation **tirée au hasard** (14 jours pour A, 14 pour B).
+Supposons que la gérante teste deux vitrines, A et B, sans effet réel : les deux sont aussi efficaces. Elle installe A du **lundi au jeudi** et B du **vendredi au dimanche**, pendant quatre semaines. Or le week-end, la boutique vend plus (disons 60 € de plus par jour en moyenne, quel que soit l'agencement). Elle va conclure que B est meilleure : le **jour de la semaine** est un **facteur de confusion** : il influence la réponse *et* est lié à l'affectation des traitements (le chapitre 7 en donne la théorie). Voyons l'ampleur du dégât par simulation, en comparant cette affectation à une affectation **tirée au hasard** (14 jours pour A, 14 pour B).
 
 ```python
 import numpy as np
@@ -31,7 +31,7 @@ from scipy import stats
 rng = np.random.default_rng(81)
 jours = np.arange(28)                      # 4 semaines ; le jour 0 est un lundi
 jour_semaine = jours % 7                   # 0 = lundi ... 6 = dimanche
-effet_jour = np.where(jour_semaine >= 4, 60, 0)    # vendredi, samedi, dimanche : +60 DT
+effet_jour = np.where(jour_semaine >= 4, 60, 0)    # vendredi, samedi, dimanche : +60 €
 
 naif_A = jour_semaine <= 3                 # A : lundi-jeudi (16 jours) ; B : vendredi-dimanche (12 jours)
 ecarts = {"naïve": [], "aléatoire": []}
@@ -46,16 +46,16 @@ for _ in range(n_sim):
 
 for nom in ecarts:
     e = np.array(ecarts[nom])
-    print(f"affectation {nom:9s}: écart moyen B - A = {e.mean():6.1f} DT ; écart-type = {e.std():5.1f} ; "
+    print(f"affectation {nom:9s}: écart moyen B - A = {e.mean():6.1f} € ; écart-type = {e.std():5.1f} ; "
           f"'effet significatif' dans {100 * rejets[nom] / n_sim:5.1f} % des expériences")
 ```
 <!--sortie-->
 ```text
-affectation naïve    : écart moyen B - A =   60.3 DT ; écart-type =   9.4 ; 'effet significatif' dans 100.0 % des expériences
-affectation aléatoire: écart moyen B - A =   -0.1 DT ; écart-type =  14.8 ; 'effet significatif' dans   5.2 % des expériences
+affectation naïve    : écart moyen B - A =   60.3 € ; écart-type =   9.4 ; 'effet significatif' dans 100.0 % des expériences
+affectation aléatoire: écart moyen B - A =   -0.1 € ; écart-type =  14.8 ; 'effet significatif' dans   5.2 % des expériences
 ```
 
-On le lit ainsi : avec l'affectation naïve, la différence B − A est **systématiquement** d'environ 60 DT (le biais) et le test « détecte » un effet qui n'existe pas dans **100 %** des 2 000 expériences simulées. Avec l'affectation aléatoire, la différence est **centrée sur zéro** (−0,1 DT en moyenne) et le test se trompe dans 5,2 % des cas, **exactement ce que promet son niveau** $\alpha=5\,\%$.
+On le lit ainsi : avec l'affectation naïve, la différence B − A est **systématiquement** d'environ 60 € (le biais) et le test « détecte » un effet qui n'existe pas dans **100 %** des 2 000 expériences simulées. Avec l'affectation aléatoire, la différence est **centrée sur zéro** (−0,1 € en moyenne) et le test se trompe dans 5,2 % des cas, **exactement ce que promet son niveau** $\alpha=5\,\%$.
 
 > 📐 **Pourquoi ça marche.** Quand on tire les étiquettes au hasard, le week-end a la **même chance** d'avoir reçu A ou B. Les jours « forts » se répartissent donc équitablement entre les deux traitements *en espérance* : le facteur de confusion, même **inconnu** ou **non mesuré**, cesse d'être confondu avec le traitement. C'est le seul procédé qui protège aussi contre les causes que l'on n'a pas pensé à noter. De plus, c'est le tirage au sort lui-même qui **justifie** les p-valeurs : c'est exactement la logique du test de permutation (volume I, section 3.7.4), où les étiquettes sont mélangées au hasard pour fabriquer la loi de la statistique sous l'hypothèse « aucun effet ».
 
@@ -65,7 +65,7 @@ On le lit ainsi : avec l'affectation naïve, la différence B − A est **systé
 
 Une seule journée par vitrine ne dit rien : la différence entre deux journées vient du **bruit** autant que du traitement. **Répéter** le même traitement sur plusieurs unités permet deux choses : **estimer le bruit** (la variabilité entre unités traitées pareil) et **le réduire** (la moyenne de $n$ unités a une variance $\sigma^2/n$, volume I, section 2.4).
 
-> ⚠️ **Répétition ne veut pas dire mesure répétée.** C'est l'erreur la plus fréquente, et elle s'appelle la **pseudo-réplication**. Si Yasmine interroge **40 clients** chaque jour, ces 40 réponses du même jour partagent la même vitrine **et** les mêmes aléas de la journée (météo, jour de marché…) : ce ne sont pas 40 unités indépendantes, mais **une** unité mesurée 40 fois. Voyons ce qu'il en coûte. On simule deux vitrines **sans aucune différence**, 5 jours chacune, 40 clients par jour, avec un aléa propre à chaque jour.
+> ⚠️ **Répétition ne veut pas dire mesure répétée.** C'est l'erreur la plus fréquente, et elle s'appelle la **pseudo-réplication**. Si la gérante interroge **40 clients** chaque jour, ces 40 réponses du même jour partagent la même vitrine **et** les mêmes aléas de la journée (météo, jour de marché…) : ce ne sont pas 40 unités indépendantes, mais **une** unité mesurée 40 fois. Voyons ce qu'il en coûte. On simule deux vitrines **sans aucune différence**, 5 jours chacune, 40 clients par jour, avec un aléa propre à chaque jour.
 
 ```python
 rng = np.random.default_rng(83)
@@ -99,7 +99,7 @@ La répétition réduit le bruit, mais certaines sources de variabilité sont **
 
 ### 8.1.5 Faire varier un seul facteur à la fois : une fausse bonne idée
 
-L'instinct dit : « pour savoir ce que fait chaque facteur, changeons-les un par un, les autres restant fixes ». Cette méthode, appelée **OFAT** (*one factor at a time*), semble prudente. Elle est en réalité **inefficace** et **aveugle aux interactions**. Considérons un exemple assez petit pour être calculé à la main. Yasmine hésite entre deux facteurs : l'**emballage** (standard ou cadeau) et le **prix** (normal ou promotion de 10 %). Imaginons que nous connaissions, sans bruit, le nombre moyen de commandes par semaine dans chacune des quatre situations :
+L'instinct dit : « pour savoir ce que fait chaque facteur, changeons-les un par un, les autres restant fixes ». Cette méthode, appelée **OFAT** (*one factor at a time*), semble prudente. Elle est en réalité **inefficace** et **aveugle aux interactions**. Considérons un exemple assez petit pour être calculé à la main. La gérante hésite entre deux facteurs : l'**emballage** (standard ou cadeau) et le **prix** (normal ou promotion de 10 %). Imaginons que nous connaissions, sans bruit, le nombre moyen de commandes par semaine dans chacune des quatre situations :
 
 | | prix normal | promo −10 % |
 |---|---|---|

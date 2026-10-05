@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 BLEU, ORANGE, AQUA, VIOLET = "#2a78d6", "#eb6834", "#1baf7a", "#4a3aa7"     # la palette du livre
-COULEURS = {"Instagram": BLEU, "Site": ORANGE, "Boutique": AQUA}
+COULEURS = {"Réseaux": BLEU, "Site": ORANGE, "Boutique": AQUA}
 
 plt.rcParams.update({
     "figure.facecolor": "white", "axes.facecolor": "white",
@@ -33,11 +33,11 @@ df["id_client"] = rng.integers(1, 121, size=len(df))
 df = df.sort_values("date").reset_index(drop=True)
 df["semaine"] = df["date"].dt.to_period("W").dt.start_time
 hebdo = df.groupby("semaine").agg(commandes=("montant", "count"), ca=("montant", "sum"))
-print(df.shape, "|", len(hebdo), "semaines | CA total :", round(df["montant"].sum(), 1), "DT")
+print(df.shape, "|", len(hebdo), "semaines | CA total :", round(df["montant"].sum(), 1), "€")
 ```
 <!--sortie-->
 ```text
-(400, 7) | 20 semaines | CA total : 24098.3 DT
+(400, 7) | 20 semaines | CA total : 24098.3 €
 ```
 
 ### 4.5.1 Quel graphique pour quelle question ?
@@ -72,18 +72,18 @@ Il existe deux manières de s'en servir. L'interface « état » (`plt.plot(...)
 ```python
 fig, ax = plt.subplots(figsize=(7, 3.6))              # une figure contenant un seul Axes
 ax.plot(hebdo.index, hebdo["ca"], marker="o", ms=4, color=BLEU)
-ax.set_title("Chiffre d'affaires hebdomadaire de Dar Jasmin")
+ax.set_title("Chiffre d'affaires hebdomadaire de la boutique")
 ax.set_xlabel("semaine (lundi)")
-ax.set_ylabel("chiffre d'affaires (DT)")
+ax.set_ylabel("chiffre d'affaires (€)")
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m"))   # dates au format jour/mois
 fig.autofmt_xdate()                                    # incline les dates si nécessaire
 fig.savefig("figures/ch04-premier-graphique.png", dpi=150, bbox_inches="tight")
 plt.close(fig)                                         # libère la mémoire
-print("figure enregistrée :", "semaine la plus forte =", hebdo["ca"].idxmax().date(), f"({hebdo['ca'].max():.0f} DT)")
+print("figure enregistrée :", "semaine la plus forte =", hebdo["ca"].idxmax().date(), f"({hebdo['ca'].max():.0f} €)")
 ```
 <!--sortie-->
 ```text
-figure enregistrée : semaine la plus forte = 2026-03-23 (1737 DT)
+figure enregistrée : semaine la plus forte = 2026-03-23 (1737 €)
 ```
 
 ![Notre premier graphique : une courbe du chiffre d'affaires par semaine.](figures/ch04-premier-graphique.png)
@@ -112,15 +112,15 @@ ax = axes[0, 0]
 df["montant"].plot.hist(bins=30, ax=ax, color=BLEU, alpha=0.7, edgecolor="white")
 ax.axvline(df["montant"].median(), color=ORANGE, ls="--", lw=2)
 ax.text(df["montant"].median() + 5, ax.get_ylim()[1] * 0.9, "médiane", color=ORANGE)
-ax.set(title="Histogramme : la distribution des montants", xlabel="montant d'une commande (DT)", ylabel="nombre de commandes")
+ax.set(title="Histogramme : la distribution des montants", xlabel="montant d'une commande (€)", ylabel="nombre de commandes")
 
 # 2. barres horizontales, triées (pandas)
 ax = axes[0, 1]
 ca_canal = df.groupby("canal")["montant"].sum().sort_values()
 ca_canal.plot.barh(ax=ax, color=[COULEURS[c] for c in ca_canal.index], alpha=0.8)
 for i, v in enumerate(ca_canal):
-    ax.text(v + 80, i, f"{v:,.0f} DT".replace(",", " "), va="center")
-ax.set(title="Barres : le chiffre d'affaires par canal", xlabel="chiffre d'affaires (DT)", ylabel="", xlim=(0, ca_canal.max() * 1.2))
+    ax.text(v + 80, i, f"{v:,.0f} €".replace(",", " "), va="center")
+ax.set(title="Barres : le chiffre d'affaires par canal", xlabel="chiffre d'affaires (€)", ylabel="", xlim=(0, ca_canal.max() * 1.2))
 ax.grid(axis="y", visible=False)
 
 # 3. courbe + moyenne mobile (pandas)
@@ -129,7 +129,7 @@ hebdo["ca"].plot(ax=ax, color=BLEU, alpha=0.45, marker="o", ms=3, label="une sem
 hebdo["ca"].rolling(4).mean().plot(ax=ax, color=ORANGE, lw=2.5, label="moyenne mobile sur 4 semaines")
 ax.set_ylim(top=2100)                                   # on laisse de la place en haut pour la légende
 ax.legend(loc="upper left")
-ax.set(title="Courbe : l'évolution dans le temps", xlabel="semaine", ylabel="chiffre d'affaires (DT)")
+ax.set(title="Courbe : l'évolution dans le temps", xlabel="semaine", ylabel="chiffre d'affaires (€)")
 
 # 4. nuage de points avec jitter (matplotlib)
 ax = axes[1, 1]
@@ -156,7 +156,7 @@ part du CA du canal en tête : 37%
 
 **Comment lire chaque panneau** (c'est aussi comme cela qu'on doit *légender* un graphique dans un rapport) :
 
-- **Histogramme** : la forme est asymétrique à droite, avec une longue queue de grosses commandes ; la médiane (trait orange, 51 DT) est nettement sous la moyenne (60 DT), tirée vers le haut par les grosses commandes (revoir 3.1.5).
+- **Histogramme** : la forme est asymétrique à droite, avec une longue queue de grosses commandes ; la médiane (trait orange, 51 €) est nettement sous la moyenne (60 €), tirée vers le haut par les grosses commandes (revoir 3.1.5).
 - **Barres** : on lit au premier coup d'œil l'ordre des canaux, et les valeurs sont écrites au bout des barres : plus besoin de deviner sur l'axe. Les barres sont **triées** : un classement doit être lisible.
 - **Courbe** : le trait pâle est le chiffre d'affaires de chaque semaine, très irrégulier ; le trait orange, plus lisse, montre la **tendance**.
 - **Nuage de points** : plus le délai augmente, plus les notes basses apparaissent ; la corrélation affichée (−0,53) est négative et d'intensité moyenne : un retard fait *tendanciellement* baisser la note, sans que ce soit une règle absolue (beaucoup de commandes tardives ont quand même 4).
@@ -173,16 +173,16 @@ Deux exemples. D'abord la distribution des montants **selon le canal**, en histo
 import seaborn as sns
 
 sns.set_theme(style="whitegrid", rc={"axes.spines.top": False, "axes.spines.right": False})
-ordre = ["Instagram", "Site", "Boutique"]
+ordre = ["Réseaux", "Site", "Boutique"]
 
 fig, axes = plt.subplots(1, 2, figsize=(11, 4), gridspec_kw={"width_ratios": [1.3, 1], "wspace": 0.25})
 sns.histplot(data=df, x="montant", hue="canal", hue_order=ordre, palette=COULEURS, bins=30,
              element="step", alpha=0.3, ax=axes[0])
-axes[0].set(title="Histogrammes superposés selon le canal", xlabel="montant (DT)", ylabel="nombre de commandes")
+axes[0].set(title="Histogrammes superposés selon le canal", xlabel="montant (€)", ylabel="nombre de commandes")
 
 sns.boxplot(data=df, x="canal", y="montant", order=ordre, hue="canal", palette=COULEURS, legend=False,
             width=0.55, fliersize=3, ax=axes[1])
-axes[1].set(title="Boîtes à moustaches selon le canal", xlabel="", ylabel="montant (DT)")
+axes[1].set(title="Boîtes à moustaches selon le canal", xlabel="", ylabel="montant (€)")
 
 fig.savefig("figures/ch04-seaborn-distributions.png", dpi=150, bbox_inches="tight")
 plt.close(fig)
@@ -191,14 +191,14 @@ print(df.groupby("canal")["montant"].median().reindex(ordre).round(1).to_string(
 <!--sortie-->
 ```text
 canal
-Instagram    41.5
+Réseaux    41.5
 Site         49.5
 Boutique     64.8
 ```
 
 ![Avec seaborn, une ligne suffit pour séparer les données par canal : histogrammes superposés et boîtes à moustaches.](figures/ch04-seaborn-distributions.png)
 
-Les médianes imprimées confirment la lecture : 64,8 DT pour la boutique, 49,5 DT pour le site, 41,5 DT pour Instagram. (Cette différence est-elle réelle ou due au hasard ? C'est la question d'un test statistique, 3.4.)
+Les médianes imprimées confirment la lecture : 64,8 € pour la boutique, 49,5 € pour le site, 41,5 € pour Réseaux. (Cette différence est-elle réelle ou due au hasard ? C'est la question d'un test statistique, 3.4.)
 
 Deuxième exemple : une **carte de chaleur** pour le croisement de deux variables qualitatives, le canal et la note de satisfaction. On calcule d'abord le tableau croisé (en proportions par canal), puis on le colore :
 
@@ -216,14 +216,14 @@ plt.close(fig)
 ```text
 satisfaction     1     2     3     4     5
 canal                                     
-Instagram     0.00  0.06  0.31  0.49  0.14
+Réseaux     0.00  0.06  0.31  0.49  0.14
 Site          0.01  0.05  0.25  0.54  0.16
 Boutique      0.00  0.00  0.04  0.42  0.54
 ```
 
 ![Carte de chaleur : chaque ligne (canal) somme à 100 %. Plus la case est foncée, plus la note est fréquente dans ce canal.](figures/ch04-seaborn-heatmap.png)
 
-Chaque ligne du tableau somme à 1 (donc 100 %) : on lit « *parmi* les commandes de la boutique, 54 % ont donné la note 5 » (contre 14 % pour Instagram et 16 % pour le Site). La case la plus foncée de la ligne Boutique est à droite (la note 5), celles d'Instagram et du Site sont sur la note 4, avec une part importante de 3 : la boutique, où la livraison est immédiate, a les clients les plus satisfaits.
+Chaque ligne du tableau somme à 1 (donc 100 %) : on lit « *parmi* les commandes de la boutique, 54 % ont donné la note 5 » (contre 14 % pour Réseaux et 16 % pour le Site). La case la plus foncée de la ligne Boutique est à droite (la note 5), celles d'Réseaux et du Site sont sur la note 4, avec une part importante de 3 : la boutique, où la livraison est immédiate, a les clients les plus satisfaits.
 
 > 💡 **matplotlib, pandas ou seaborn ?** Ce n'est pas un choix exclusif : seaborn et pandas **dessinent dans des Axes matplotlib**, que l'on peut retoucher avec les méthodes de 4.5.2. Règle pratique : pandas `.plot` pour regarder vite, seaborn pour les graphiques statistiques avec groupes, matplotlib pour tout ce qui doit être personnalisé au pixel près.
 
@@ -241,14 +241,14 @@ On additionne ces couches avec le signe `+`. Reproduisons l'histogramme par cana
 ```r
 library(ggplot2)
 commandes <- read.csv("donnees/commandes.csv")
-commandes$canal <- factor(commandes$canal, levels = c("Instagram", "Site", "Boutique"))
+commandes$canal <- factor(commandes$canal, levels = c("Réseaux", "Site", "Boutique"))
 print(aggregate(montant ~ canal, data = commandes, FUN = function(x) round(median(x), 1)))
 
 p <- ggplot(commandes, aes(x = montant, fill = canal)) +
   geom_histogram(bins = 30, alpha = 0.8, colour = "white") +
   facet_wrap(~ canal, ncol = 1) +
-  scale_fill_manual(values = c(Instagram = "#2a78d6", Site = "#eb6834", Boutique = "#1baf7a")) +
-  labs(title = "Distribution des montants selon le canal", x = "montant (DT)", y = "nombre de commandes") +
+  scale_fill_manual(values = c(Réseaux = "#2a78d6", Site = "#eb6834", Boutique = "#1baf7a")) +
+  labs(title = "Distribution des montants selon le canal", x = "montant (€)", y = "nombre de commandes") +
   theme_minimal(base_size = 11) +
   theme(legend.position = "none")
 ggsave("figures/ch04-ggplot-montants.png", plot = p, width = 7, height = 5, dpi = 150)
@@ -257,7 +257,7 @@ cat("figure enregistrée\n")
 <!--sortie-->
 ```text
       canal montant
-1 Instagram    41.5
+1 Réseaux    41.5
 2      Site    49.5
 3  Boutique    64.8
 figure enregistrée
@@ -280,25 +280,25 @@ On retrouve les mêmes médianes qu'en Python (confirmant que les deux outils li
 
 Un graphique peut mentir sans qu'une seule donnée soit fausse. Voici les six pièges les plus répandus. Le premier mérite une démonstration.
 
-**Piège n°1 : l'axe tronqué.** Comparons la satisfaction moyenne d'Instagram et du Site. Les deux graphiques ci-dessous montrent **exactement les mêmes deux nombres**.
+**Piège n°1 : l'axe tronqué.** Comparons la satisfaction moyenne d'Réseaux et du Site. Les deux graphiques ci-dessous montrent **exactement les mêmes deux nombres**.
 
 ```python
-moy = df[df["canal"].isin(["Instagram", "Site"])].groupby("canal")["satisfaction"].mean()
-insta, site = moy["Instagram"], moy["Site"]
+moy = df[df["canal"].isin(["Réseaux", "Site"])].groupby("canal")["satisfaction"].mean()
+insta, site = moy["Réseaux"], moy["Site"]
 print("moyennes :", round(insta, 2), "et", round(site, 2))
 print("écart réel : +", round((site / insta - 1) * 100, 1), "%")
-print("barre du Site / barre d'Instagram si l'axe commence à 3,70 :", round((site - 3.70) / (insta - 3.70), 1), "fois plus haute")
+print("barre du Site / barre d'Réseaux si l'axe commence à 3,70 :", round((site - 3.70) / (insta - 3.70), 1), "fois plus haute")
 ```
 <!--sortie-->
 ```text
 moyennes : 3.72 et 3.79
 écart réel : + 2.0 %
-barre du Site / barre d'Instagram si l'axe commence à 3,70 : 5.2 fois plus haute
+barre du Site / barre d'Réseaux si l'axe commence à 3,70 : 5.2 fois plus haute
 ```
 
 ![Mêmes données, deux impressions opposées : à gauche l'axe commence à 3,70, à droite à 0.](figures/ch04-axe-tronque.png)
 
-À gauche, avec un axe qui commence à 3,70, la barre du Site paraît **plus de 5 fois plus haute** que celle d'Instagram (c'est le « 5,2 fois » imprimé ci-dessus) ; à droite, sur un axe complet, les deux barres sont quasiment identiques, ce qui correspond bien à l'écart réel de 2 %. **Règle : pour un diagramme en barres, l'axe doit commencer à 0**, car c'est la *longueur* de la barre qui porte l'information. (Pour une courbe ou un nuage de points, c'est la position qui compte : on peut zoomer, à condition de le signaler.)
+À gauche, avec un axe qui commence à 3,70, la barre du Site paraît **plus de 5 fois plus haute** que celle d'Réseaux (c'est le « 5,2 fois » imprimé ci-dessus) ; à droite, sur un axe complet, les deux barres sont quasiment identiques, ce qui correspond bien à l'écart réel de 2 %. **Règle : pour un diagramme en barres, l'axe doit commencer à 0**, car c'est la *longueur* de la barre qui porte l'information. (Pour une courbe ou un nuage de points, c'est la position qui compte : on peut zoomer, à condition de le signaler.)
 
 **Les autres pièges, et leurs remèdes :**
 
@@ -309,7 +309,7 @@ barre du Site / barre d'Instagram si l'axe commence à 3,70 : 5.2 fois plus haut
 | **Trop de couleurs** | 10 couleurs sans ordre : personne ne retient la légende | 3 à 5 couleurs, avec un sens (une couleur = un canal, partout dans le document) |
 | **Points superposés** | 400 observations qui se cachent les unes les autres (voir le jitter, 4.5.3) | transparence, bruitage, ou histogramme 2D |
 | **Titre vague** (« Graphique 3 ») | le lecteur doit deviner la conclusion | un titre qui **dit** le message : « La boutique a les clients les plus satisfaits » |
-| **Axes sans nom ni unité** | « 60 », mais de quoi ? | toujours nommer et donner l'unité (DT, jours, %) |
+| **Axes sans nom ni unité** | « 60 », mais de quoi ? | toujours nommer et donner l'unité (€, jours, %) |
 
 > ✅ **La liste de contrôle d'un bon graphique.** (1) Un message, un titre qui le dit. (2) Le bon type de graphique pour la question (tableau 4.5.1). (3) Des axes nommés avec leurs unités ; **zéro pour les barres**. (4) Des barres **triées** quand elles représentent un classement. (5) Peu de couleurs, avec un sens constant. (6) Lisible en noir et blanc et pour un daltonien : ne pas reposer sur l'opposition rouge/vert seule. (7) La source des données et la date, si l'on communique à d'autres.
 
@@ -344,11 +344,11 @@ plt.close(fig)
 .pdf enregistré, taille non nulle : True
 ```
 
-> 🛠️ **Application : le tableau de bord de Yasmine.** Mettons tout en commun dans une **fonction** qui produit en une fois la figure que Yasmine joint à son rapport du lundi (celui de 4.4.13). Remarquez que chaque panneau a un **titre qui énonce sa conclusion**, calculée à partir des données (et non écrite à la main) : si les chiffres changent, le titre reste vrai.
+> 🛠️ **Application : le tableau de bord de la gérante.** Mettons tout en commun dans une **fonction** qui produit en une fois la figure que la gérante joint à son rapport du lundi (celui de 4.4.13). Remarquez que chaque panneau a un **titre qui énonce sa conclusion**, calculée à partir des données (et non écrite à la main) : si les chiffres changent, le titre reste vrai.
 
 ```python
 def tableau_de_bord(df, chemin):
-    """Dessine le tableau de bord de Dar Jasmin à partir du DataFrame `df` et l'enregistre dans `chemin`."""
+    """Dessine le tableau de bord de la boutique à partir du DataFrame `df` et l'enregistre dans `chemin`."""
     ca = df.groupby("semaine")["montant"].sum()
     lisse = ca.rolling(4).mean().dropna()
     par_canal = df.groupby("canal")["montant"].sum().sort_values()
@@ -361,8 +361,8 @@ def tableau_de_bord(df, chemin):
     ax = fig.add_subplot(grille[0, :])                              # panneau du haut : toute la largeur
     ax.plot(ca.index, ca.values, color=BLEU, alpha=0.35, marker="o", ms=3)
     ax.plot(lisse.index, lisse.values, color=BLEU, lw=2.5)
-    ax.set_title(f"Le chiffre d'affaires hebdomadaire {sens} : de {lisse.iloc[0]:.0f} à {lisse.iloc[-1]:.0f} DT (moyenne mobile)")
-    ax.set_ylabel("DT par semaine")
+    ax.set_title(f"Le chiffre d'affaires hebdomadaire {sens} : de {lisse.iloc[0]:.0f} à {lisse.iloc[-1]:.0f} € (moyenne mobile)")
+    ax.set_ylabel("€ par semaine")
     ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO, interval=4))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m"))
 
@@ -371,7 +371,7 @@ def tableau_de_bord(df, chemin):
     for i, v in enumerate(par_canal):
         ax.text(v + 80, i, f"{v / par_canal.sum():.0%}".replace("%", " %"), va="center")
     ax.set_title(f"{par_canal.index[-1]} : {par_canal.iloc[-1] / par_canal.sum():.0%} du chiffre d'affaires".replace("%", " %"))
-    ax.set_xlabel("chiffre d'affaires (DT)")
+    ax.set_xlabel("chiffre d'affaires (€)")
     ax.set_xlim(0, par_canal.max() * 1.2)
     ax.grid(axis="y", visible=False)
 
@@ -396,7 +396,7 @@ print(tableau_de_bord(df, "figures/ch04-tableau-de-bord.png"))
 
 ![Le tableau de bord produit par la fonction : trois panneaux, chacun avec un titre qui énonce sa conclusion.](figures/ch04-tableau-de-bord.png)
 
-Lisons-le comme le ferait Yasmine : la tendance du chiffre d'affaires est à la hausse (1 080 → 1 434 DT par semaine en moyenne mobile), le Site et la Boutique pèsent chacun plus d'un tiers des ventes, et trois clients sur quatre sont satisfaits (4 ou 5). Voilà le chemin complet : des **données brutes** (fichier CSV) aux **tableaux** (pandas, 4.4) puis aux **figures** prêtes à insérer dans un rapport, le tout dans un script que l'on peut relancer chaque semaine. C'est l'esprit de la **recherche reproductible** que nous retrouverons au chapitre 6.
+Lisons-le comme le ferait la gérante : la tendance du chiffre d'affaires est à la hausse (1 080 → 1 434 € par semaine en moyenne mobile), le Site et la Boutique pèsent chacun plus d'un tiers des ventes, et trois clients sur quatre sont satisfaits (4 ou 5). Voilà le chemin complet : des **données brutes** (fichier CSV) aux **tableaux** (pandas, 4.4) puis aux **figures** prêtes à insérer dans un rapport, le tout dans un script que l'on peut relancer chaque semaine. C'est l'esprit de la **recherche reproductible** que nous retrouverons au chapitre 6.
 
 > ✅ **À retenir (visualisation).**
 >

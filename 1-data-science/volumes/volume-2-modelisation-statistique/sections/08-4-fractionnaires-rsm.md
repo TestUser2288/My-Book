@@ -34,7 +34,7 @@ Avec 7 facteurs, un plan complet demande **128 essais** pour estimer 127 effets,
 
 ### 8.4.2 Une demi-fraction : le plan $2^{4-1}$
 
-Reprenons les quatre facteurs de l'expérience $2^4$ de 8.3.6 (A emballage, B prix, C relance, D message personnalisé), mais supposons que Yasmine n'ait pu faire que **8 essais** au lieu de 16. Comment choisir 8 combinaisons parmi 16 ?
+Reprenons les quatre facteurs de l'expérience $2^4$ de 8.3.6 (A emballage, B prix, C relance, D message personnalisé), mais supposons que la gérante n'ait pu faire que **8 essais** au lieu de 16. Comment choisir 8 combinaisons parmi 16 ?
 
 Construisons un plan complet $2^3$ sur A, B, C, et **définissons D comme le produit** $D=ABC$ : la colonne de D n'est plus libre, elle est **imposée** par les trois autres. C'est le **générateur** de la fraction. Multiplier les deux membres par $D$ donne la **relation de définition** :
 $$D=ABC\ \Longrightarrow\ D\cdot D=ABC\cdot D\ \Longrightarrow\ I=ABCD,$$
@@ -213,7 +213,7 @@ Après le repliement, l'effet de **D** est proche de zéro et celui de l'interac
 
 ### 8.4.5 Optimiser un réglage : les surfaces de réponse
 
-Jusqu'ici, nous cherchions *quels* facteurs comptent. Voici une autre question : **quel réglage donne la meilleure réponse ?** Yasmine cuit ses céramiques de Nabeul au four et veut maximiser le **pourcentage de pièces sans défaut**. Deux réglages continus : la **température** (autour de 1 000 °C) et la **durée** (autour de 6 heures). La **méthodologie des surfaces de réponse** (*response surface methodology*) procède par étapes :
+Jusqu'ici, nous cherchions *quels* facteurs comptent. Voici une autre question : **quel réglage donne la meilleure réponse ?** la gérante cuit ses céramiques de Ville B au four et veut maximiser le **pourcentage de pièces sans défaut**. Deux réglages continus : la **température** (autour de 1 000 °C) et la **durée** (autour de 6 heures). La **méthodologie des surfaces de réponse** (*response surface methodology*) procède par étapes :
 
 1. un plan factoriel à deux niveaux **avec points au centre** pour détecter si la réponse est une surface **plane** (modèle du premier ordre) ou **courbe** ;
 2. si la surface est plane, on suit le **chemin de plus forte pente** (la direction du gradient) jusqu'à ce que la réponse cesse de monter ;

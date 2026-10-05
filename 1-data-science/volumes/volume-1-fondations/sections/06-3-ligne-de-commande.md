@@ -18,7 +18,7 @@ Les fichiers sont rangés dans une **arborescence** : un dossier contient des fi
 
 Quelques **chemins spéciaux** à connaître : `.` est le dossier courant, `..` le dossier **parent** (celui qui contient le dossier courant), `~` votre dossier personnel, `/` la racine de toute l'arborescence. Un chemin est **absolu** s'il part de la racine (`/home/yasmine/atelier`) et **relatif** s'il part du dossier courant (`donnees/commandes.csv`).
 
-Yasmine organise enfin son travail. Voici l'arborescence d'un projet d'analyse bien rangé, créée d'un coup :
+La gérante organise enfin son travail. Voici l'arborescence d'un projet d'analyse bien rangé, créée d'un coup :
 
 ```bash
 cd ~/atelier
@@ -87,11 +87,11 @@ wc -l commandes.csv
 canal,montant,livraison,satisfaction
 Boutique,44.8,0,4
 Site,34.5,2,4
-Instagram,88.2,5,4
-Instagram,30.1,4,4
+Réseaux,88.2,5,4
+Réseaux,30.1,4,4
 ...
 Site,62.6,4,3
-Instagram,37.5,3,4
+Réseaux,37.5,3,4
 Site,31.4,4,4
 401 commandes.csv
 ```
@@ -100,7 +100,7 @@ Site,31.4,4,4
 
 ### 6.3.3 Interroger des données avec des outils de texte
 
-Il existe quelques outils très anciens, très rapides, et parfaitement adaptés aux fichiers de données en colonnes. Les voici, appliqués au fichier de Dar Jasmin. Chaque outil fait **une chose** :
+Il existe quelques outils très anciens, très rapides, et parfaitement adaptés aux fichiers de données en colonnes. Les voici, appliqués au fichier de la boutique. Chaque outil fait **une chose** :
 
 | Outil | Rôle |
 |---|---|
@@ -110,17 +110,17 @@ Il existe quelques outils très anciens, très rapides, et parfaitement adaptés
 | `uniq -c` | compter les lignes identiques **consécutives** (d'où le `sort` avant) |
 | `awk` | mini-langage pour calculer sur les colonnes |
 
-Première question : combien de commandes viennent d'Instagram ?
+Première question : combien de commandes viennent d'Réseaux ?
 
 ```bash
-grep -c Instagram commandes.csv
+grep -c Réseaux commandes.csv
 ```
 <!--sortie-->
 ```text
 138
 ```
 
-`grep -c` compte les lignes contenant le mot. (Pandas nous donnerait la même chose avec `(df["canal"] == "Instagram").sum()`.) Combien de commandes par canal ? Il faut extraire la colonne des canaux (sans l'en-tête), la trier pour regrouper les valeurs identiques, puis compter :
+`grep -c` compte les lignes contenant le mot. (Pandas nous donnerait la même chose avec `(df["canal"] == "Réseaux").sum()`.) Combien de commandes par canal ? Il faut extraire la colonne des canaux (sans l'en-tête), la trier pour regrouper les valeurs identiques, puis compter :
 
 ```bash
 tail -n +2 commandes.csv | cut -d, -f1 | sort | uniq -c | sort -rn
@@ -128,11 +128,11 @@ tail -n +2 commandes.csv | cut -d, -f1 | sort | uniq -c | sort -rn
 <!--sortie-->
 ```text
     148 Site
-    138 Instagram
+    138 Réseaux
     114 Boutique
 ```
 
-Cette ligne est un **pipeline** (« tuyau ») : `tail -n +2` supprime l'en-tête (« commence à la ligne 2 »), `cut -d, -f1` garde la première colonne, `sort` regroupe les canaux, `uniq -c` compte chaque groupe, et `sort -rn` classe du plus fréquent au plus rare. Le site est donc le premier canal en nombre de commandes (148), devant Instagram (138) et la boutique (114) : 400 commandes au total, comme prévu. Le symbole `|` (« pipe ») envoie la sortie d'une commande à l'entrée de la suivante. Quelles sont les trois plus grosses commandes ?
+Cette ligne est un **pipeline** (« tuyau ») : `tail -n +2` supprime l'en-tête (« commence à la ligne 2 »), `cut -d, -f1` garde la première colonne, `sort` regroupe les canaux, `uniq -c` compte chaque groupe, et `sort -rn` classe du plus fréquent au plus rare. Le site est donc le premier canal en nombre de commandes (148), devant Réseaux (138) et la boutique (114) : 400 commandes au total, comme prévu. Le symbole `|` (« pipe ») envoie la sortie d'une commande à l'entrée de la suivante. Quelles sont les trois plus grosses commandes ?
 
 ```bash
 tail -n +2 commandes.csv | sort -t, -k2 -n -r | head -n 3
@@ -144,17 +144,17 @@ Site,243.8,5,3
 Site,217.1,7,4
 ```
 
-On trie sur la 2ᵉ colonne (`-k2`), numériquement (`-n`), de la plus grande à la plus petite (`-r`), et on garde les trois premières lignes. La plus grosse commande atteint 255,7 DT : c'est le maximum déjà vu avec `describe()` au chapitre 3. Et pour le montant moyen ? Il faut calculer, ce que fait `awk` : il lit le fichier ligne par ligne, `$2` désigne la 2ᵉ colonne, `NR` le numéro de ligne.
+On trie sur la 2ᵉ colonne (`-k2`), numériquement (`-n`), de la plus grande à la plus petite (`-r`), et on garde les trois premières lignes. La plus grosse commande atteint 255,7 € : c'est le maximum déjà vu avec `describe()` au chapitre 3. Et pour le montant moyen ? Il faut calculer, ce que fait `awk` : il lit le fichier ligne par ligne, `$2` désigne la 2ᵉ colonne, `NR` le numéro de ligne.
 
 ```bash
-awk -F, 'NR > 1 { somme += $2; n++ } END { printf "montant moyen : %.2f DT sur %d commandes\n", somme/n, n }' commandes.csv
+awk -F, 'NR > 1 { somme += $2; n++ } END { printf "montant moyen : %.2f € sur %d commandes\n", somme/n, n }' commandes.csv
 ```
 <!--sortie-->
 ```text
-montant moyen : 60.25 DT sur 400 commandes
+montant moyen : 60.25 € sur 400 commandes
 ```
 
-L'option `-F,` fixe le séparateur. Pour chaque ligne sauf l'en-tête (`NR > 1`), on ajoute le montant à une somme et on compte ; à la fin (`END`) on affiche la moyenne. Retrouve-t-on bien le 60,25 DT du chapitre 3 ? On peut même faire une moyenne **par canal**, avec un tableau associatif (l'équivalent d'un dictionnaire Python) :
+L'option `-F,` fixe le séparateur. Pour chaque ligne sauf l'en-tête (`NR > 1`), on ajoute le montant à une somme et on compte ; à la fin (`END`) on affiche la moyenne. Retrouve-t-on bien le 60,25 € du chapitre 3 ? On peut même faire une moyenne **par canal**, avec un tableau associatif (l'équivalent d'un dictionnaire Python) :
 
 ```bash
 awk -F, 'NR > 1 { somme[$1] += $2; n[$1]++ }
@@ -163,7 +163,7 @@ awk -F, 'NR > 1 { somme[$1] += $2; n[$1]++ }
 <!--sortie-->
 ```text
 Boutique   74.81
-Instagram  49.01
+Réseaux  49.01
 Site       59.50
 ```
 
@@ -197,7 +197,7 @@ cat rapports/erreurs.txt
 <!--sortie-->
 ```text
     114 Boutique
-    138 Instagram
+    138 Réseaux
     148 Site
 # généré par la ligne de commande
 code de sortie : 2
@@ -254,7 +254,7 @@ Notre script respecte la convention : code **0** quand tout va bien, **1** pour 
 
 ### 6.3.6 Le problème des bibliothèques : les environnements virtuels
 
-Voici un scénario qui arrive à tout le monde. En janvier, Yasmine installe `pandas` pour son analyse. En juin, elle commence un autre projet qui nécessite une **ancienne** version de la même bibliothèque. Si tout est installé au même endroit, mettre à jour casse l'ancien projet, et rétrograder casse le nouveau. Pire : quand elle envoie son code à Amine, comment sait-il quelles versions utiliser ? D'où l'**environnement virtuel** :
+Voici un scénario qui arrive à tout le monde. En janvier, la gérante installe `pandas` pour son analyse. En juin, elle commence un autre projet qui nécessite une **ancienne** version de la même bibliothèque. Si tout est installé au même endroit, mettre à jour casse l'ancien projet, et rétrograder casse le nouveau. Pire : quand elle envoie son code à Amine, comment sait-il quelles versions utiliser ? D'où l'**environnement virtuel** :
 
 > 💡 **Définition.** Un environnement virtuel est un **dossier isolé** contenant une copie de l'interpréteur Python et ses propres bibliothèques. Chaque projet a le sien : les bibliothèques de l'un n'affectent jamais celles de l'autre. L'environnement se **crée**, s'**active**, puis on y installe ce dont le projet a besoin avec **pip**, le gestionnaire de paquets de Python.
 
@@ -279,7 +279,7 @@ pip     25.0
 
 ```bash
 pip install --quiet tabulate 2>&1 | grep -v -i -E "notice|warning"
-python -c "from tabulate import tabulate; print(tabulate([['Boutique', 74.81], ['Instagram', 49.01], ['Site', 59.5]], headers=['canal', 'montant moyen'], floatfmt='.2f'))"
+python -c "from tabulate import tabulate; print(tabulate([['Boutique', 74.81], ['Réseaux', 49.01], ['Site', 59.5]], headers=['canal', 'montant moyen'], floatfmt='.2f'))"
 pip freeze
 ```
 <!--sortie-->
@@ -287,7 +287,7 @@ pip freeze
 canal        montant moyen
 ---------  ---------------
 Boutique             74.81
-Instagram            49.01
+Réseaux            49.01
 Site                 59.50
 tabulate==0.10.0
 ```
@@ -304,7 +304,7 @@ deactivate
 tabulate==0.10.0
 ```
 
-`deactivate` quitte l'environnement et rend le terminal à son état ordinaire. Quelqu'un qui reçoit le projet (Amine, ou Yasmine dans un an) reconstruit **le même environnement** en deux commandes :
+`deactivate` quitte l'environnement et rend le terminal à son état ordinaire. Quelqu'un qui reçoit le projet (Amine, ou la gérante dans un an) reconstruit **le même environnement** en deux commandes :
 
 ```bash
 python -m venv .venv-amine
@@ -318,7 +318,7 @@ deactivate
 tabulate==0.10.0
 ```
 
-La liste obtenue est **identique** à celle de Yasmine : mêmes bibliothèques, mêmes versions. Le dossier `.venv` lui-même ne se partage pas (il est propre à la machine et volumineux) : il figure dans le `.gitignore` de 6.1, et seul `requirements.txt` voyage avec le projet.
+La liste obtenue est **identique** à celle de la gérante : mêmes bibliothèques, mêmes versions. Le dossier `.venv` lui-même ne se partage pas (il est propre à la machine et volumineux) : il figure dans le `.gitignore` de 6.1, et seul `requirements.txt` voyage avec le projet.
 
 > ⚠️ **`requirements.txt` fige les bibliothèques, pas Python lui-même.** Mentionnez aussi la version de Python dans le `README` (« testé avec Python 3.13 »). Pour des besoins plus avancés, il existe des outils qui gèrent aussi la version de Python : `conda` (très répandu en data science, notamment sous Windows), `uv` (récent et très rapide), ou Poetry. Ils répondent au même besoin : isoler, figer, reproduire.
 
@@ -336,14 +336,14 @@ pip freeze > requirements.txt
 Le terminal garde en mémoire des **variables** (texte nommé), que l'on affiche avec `$` : c'est ainsi que nous avons utilisé `$?` et `$HOME`. On en crée avec `NOM=valeur` (sans espaces autour du `=`) ; `export` les rend visibles aux programmes lancés ensuite.
 
 ```bash
-BOUTIQUE="Dar Jasmin"
+BOUTIQUE="la boutique"
 echo "Bienvenue chez $BOUTIQUE"
 export TAUX_TVA=0.19
 python -c "import os; print('TVA lue depuis Python :', float(os.environ['TAUX_TVA']))"
 ```
 <!--sortie-->
 ```text
-Bienvenue chez Dar Jasmin
+Bienvenue chez la boutique
 TVA lue depuis Python : 0.19
 ```
 

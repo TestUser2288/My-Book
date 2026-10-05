@@ -47,22 +47,22 @@ Mann-Whitney   : p = 0.02
 
 Presque **tous** les clients du premier groupe dépensent plus que ceux du second ; seul le cas de 40 gonfle la variance et noie l'effet dans le test de Student ($p\approx0{,}15$, non significatif). Le test de Mann-Whitney, lui, voit la domination systématique du groupe A ($p\approx0{,}02$, significatif). C'est le gain de puissance de la robustesse quand les données sont « sales ».
 
-**Sur nos 400 commandes** (boutique contre Instagram) :
+**Sur nos 400 commandes** (boutique contre Réseaux) :
 
 ```python
 b = df.loc[df["canal"] == "Boutique", "montant"]
-i = df.loc[df["canal"] == "Instagram", "montant"]
+i = df.loc[df["canal"] == "Réseaux", "montant"]
 u = stats.mannwhitneyu(b, i, alternative="two-sided")
 print("U =", u.statistic, "  p-valeur =", u.pvalue)
-print("P(commande boutique > commande Instagram) =", round(u.statistic / (len(b) * len(i)), 3))
+print("P(commande boutique > commande Réseaux) =", round(u.statistic / (len(b) * len(i)), 3))
 ```
 <!--sortie-->
 ```text
 U = 11246.0   p-valeur = 4.410098845865466e-09
-P(commande boutique > commande Instagram) = 0.715
+P(commande boutique > commande Réseaux) = 0.715
 ```
 
-Une commande de la boutique dépasse une commande d'Instagram dans 71 % des paires comparées ($p\approx4\times10^{-9}$). Conclusion identique à celle du test de Welch, avec une interprétation plus intuitive.
+Une commande de la boutique dépasse une commande d'Réseaux dans 71 % des paires comparées ($p\approx4\times10^{-9}$). Conclusion identique à celle du test de Welch, avec une interprétation plus intuitive.
 
 ### 3.7.3 Autres tests de rangs
 
@@ -80,7 +80,7 @@ apres = np.array([4, 4, 5, 6, 5, 5, 6, 4])
 print("Wilcoxon apparié :", round(stats.wilcoxon(avant, apres).pvalue, 4))
 
 # Kruskal-Wallis : les trois canaux ensemble
-groupes = [df.loc[df["canal"] == c, "montant"] for c in ["Instagram", "Site", "Boutique"]]
+groupes = [df.loc[df["canal"] == c, "montant"] for c in ["Réseaux", "Site", "Boutique"]]
 print("ANOVA          : p =", f"{stats.f_oneway(*groupes).pvalue:.1e}")
 print("Kruskal-Wallis : p =", f"{stats.kruskal(*groupes).pvalue:.1e}")
 
@@ -105,7 +105,7 @@ Les lignes de corrélation donnent (coefficient, p-valeur) ; la p-valeur arrondi
 
 ### 3.7.4 Les tests de permutation : l'idée la plus simple de la statistique
 
-> 💡 **Intuition.** $H_0$ dit : « le canal n'a aucun effet sur le montant ». Si c'est vrai, l'étiquette « boutique » ou « Instagram » collée sur une commande est **arbitraire** : on aurait pu l'échanger avec n'importe quelle autre. Alors **mélangeons** les étiquettes au hasard, recalculons la différence de moyennes, et recommençons des milliers de fois. On obtient ainsi la **distribution de la différence quand $H_0$ est vraie**, sans aucune hypothèse de loi. La p-valeur est la fréquence des mélanges qui donnent une différence au moins aussi grande que celle observée.
+> 💡 **Intuition.** $H_0$ dit : « le canal n'a aucun effet sur le montant ». Si c'est vrai, l'étiquette « boutique » ou « Réseaux » collée sur une commande est **arbitraire** : on aurait pu l'échanger avec n'importe quelle autre. Alors **mélangeons** les étiquettes au hasard, recalculons la différence de moyennes, et recommençons des milliers de fois. On obtient ainsi la **distribution de la différence quand $H_0$ est vraie**, sans aucune hypothèse de loi. La p-valeur est la fréquence des mélanges qui donnent une différence au moins aussi grande que celle observée.
 
 ```python
 rng = np.random.default_rng(12)
@@ -120,18 +120,18 @@ for k in range(n_perm):
     diffs[k] = melange[:n_b].mean() - melange[n_b:].mean()
 
 p_perm = (np.sum(np.abs(diffs) >= abs(diff_obs)) + 1) / (n_perm + 1)
-print("différence observée :", round(diff_obs, 2), "DT")
-print("plus grande différence parmi les 20 000 mélanges :", round(np.abs(diffs).max(), 2), "DT")
+print("différence observée :", round(diff_obs, 2), "€")
+print("plus grande différence parmi les 20 000 mélanges :", round(np.abs(diffs).max(), 2), "€")
 print("p-valeur de permutation :", p_perm)
 ```
 <!--sortie-->
 ```text
-différence observée : 25.8 DT
-plus grande différence parmi les 20 000 mélanges : 20.58 DT
+différence observée : 25.8 €
+plus grande différence parmi les 20 000 mélanges : 20.58 €
 p-valeur de permutation : 4.999750012499375e-05
 ```
 
-Aucun des 20 000 mélanges n'atteint la différence observée de 25,8 DT : la différence maximale obtenue par hasard est bien plus petite. On majore donc la p-valeur par $1/20\,001\approx5\times10^{-5}$ (le « +1 » évite de déclarer p = 0). Faisons maintenant la même chose sur la petite expérience à 6 + 6 commandes, où l'on peut même énumérer toutes les permutations possibles :
+Aucun des 20 000 mélanges n'atteint la différence observée de 25,8 € : la différence maximale obtenue par hasard est bien plus petite. On majore donc la p-valeur par $1/20\,001\approx5\times10^{-5}$ (le « +1 » évite de déclarer p = 0). Faisons maintenant la même chose sur la petite expérience à 6 + 6 commandes, où l'on peut même énumérer toutes les permutations possibles :
 
 ```python
 from itertools import combinations

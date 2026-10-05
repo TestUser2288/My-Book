@@ -6,7 +6,7 @@
 
 ### 6.5.1 Le problème : la queue d'une loi normale est trompeuse
 
-Un exemple simple pour fixer les idées. Yasmine suit la **durée de livraison** de chaque colis (en jours). Elle veut savoir quel retard est « tellement long qu'on ne le voit qu'une fois en dix ans ». Elle n'a que dix ans de données : l'événement qu'elle cherche est, au mieux, **à la limite de ce qu'elle a observé**, et souvent au-delà. Il faut donc **extrapoler** hors des données, et la forme de la queue décide du résultat.
+Un exemple simple pour fixer les idées. La gérante suit la **durée de livraison** de chaque colis (en jours). Elle veut savoir quel retard est « tellement long qu'on ne le voit qu'une fois en dix ans ». Elle n'a que dix ans de données : l'événement qu'elle cherche est, au mieux, **à la limite de ce qu'elle a observé**, et souvent au-delà. Il faut donc **extrapoler** hors des données, et la forme de la queue décide du résultat.
 
 **Trois comportements de queue.**
 
@@ -60,7 +60,7 @@ La loi de Gumbel colle presque parfaitement. Pour un **autre type de queue**, le
 
 ### 6.5.3 Les données : des retards de livraison simulés, à queue lourde
 
-Pour que nous puissions **comparer à la vérité**, nous simulons un jeu de données de colis (il s'agit bien d'une **simulation**, de graine 671 ; ce ne sont pas des données réelles de Dar Jasmin). Dix ans (2016-2025) de livraisons : environ 3 colis par jour en moyenne (loi de Poisson), chacun avec une durée de livraison en jours qui suit une loi de **Pareto généralisée** décalée de 1 jour (la durée minimale) :
+Pour que nous puissions **comparer à la vérité**, nous simulons un jeu de données de colis (il s'agit bien d'une **simulation**, de graine 671 ; ce ne sont pas des données réelles de la boutique). Dix ans (2016-2025) de livraisons : environ 3 colis par jour en moyenne (loi de Poisson), chacun avec une durée de livraison en jours qui suit une loi de **Pareto généralisée** décalée de 1 jour (la durée minimale) :
 $$P(\text{durée}>x)=\Bigl(1+\xi\,\frac{x-1}{\sigma}\Bigr)^{-1/\xi},\qquad x\ge1,$$
 avec $\xi=0{,}25$ (queue lourde modérée : la variance est finie, mais pas le moment d'ordre 4) et $\sigma=1{,}5$ jour. Nous garderons ces valeurs **cachées** de nos calculs : nous les utiliserons à la fin pour juger les estimations.
 
@@ -121,7 +121,7 @@ xi : IC95 bootstrap [0.213 ; 0.459]  (écart-type 0.066)
 
 L'estimation de $\xi$ est positive, ce qui indique une queue lourde, mais son **intervalle d'incertitude est large** : avec seulement 120 maxima, la forme de la queue est difficile à préciser. C'est la caractéristique majeure de la théorie des extrêmes : **on dispose de très peu de données par construction** (les extrêmes sont rares), et donc l'incertitude est grande.
 
-**Les niveaux de retour.** La quantité que Yasmine veut vraiment est le **niveau de retour** $z_T$ : la valeur dépassée en moyenne **une fois toutes les $T$ périodes** (ici, $T$ mois). Autrement dit, la valeur telle que $P(\text{max mensuel}>z_T)=1/T$, soit $G(z_T)=1-1/T$. En résolvant l'équation avec la forme de la GEV, on trouve
+**Les niveaux de retour.** La quantité que la gérante veut vraiment est le **niveau de retour** $z_T$ : la valeur dépassée en moyenne **une fois toutes les $T$ périodes** (ici, $T$ mois). Autrement dit, la valeur telle que $P(\text{max mensuel}>z_T)=1/T$, soit $G(z_T)=1-1/T$. En résolvant l'équation avec la forme de la GEV, on trouve
 $$z_T=\mu-\frac\sigma\xi\Bigl[1-\bigl(-\ln(1-1/T)\bigr)^{-\xi}\Bigr].$$
 (*Démonstration* : $G(z)=1-1/T\iff\bigl[1+\xi\frac{z-\mu}\sigma\bigr]^{-1/\xi}=-\ln(1-1/T)$, car $\exp(-y)=1-1/T\iff y=-\ln(1-1/T)$ ; on élève à la puissance $-\xi$ et on isole $z$.) Un niveau de retour à **10 ans**, c'est $T=120$ mois ; à **100 ans**, $T=1\,200$ mois.
 

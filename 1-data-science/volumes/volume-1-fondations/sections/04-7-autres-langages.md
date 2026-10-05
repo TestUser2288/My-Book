@@ -6,7 +6,7 @@
 
 ### 4.7.1 La tâche : un résumé par canal
 
-Yasmine demande : *« Pour chaque canal de vente, combien de commandes, quel montant moyen, et quel écart-type ? »* C'est le calcul du 3.1, appliqué au fichier `donnees/commandes.csv` : lire, regrouper, résumer. Cinq lignes dans chaque langage.
+La gérante demande : *« Pour chaque canal de vente, combien de commandes, quel montant moyen, et quel écart-type ? »* C'est le calcul du 3.1, appliqué au fichier `donnees/commandes.csv` : lire, regrouper, résumer. Cinq lignes dans chaque langage.
 
 **En Python** (pandas, section 4.4) :
 
@@ -24,7 +24,7 @@ print(resume)
              n  moyenne  ecart_type
 canal                              
 Boutique   114     74.8        40.6
-Instagram  138     49.0        31.1
+Réseaux  138     49.0        31.1
 Site       148     59.5        38.3
 ```
 
@@ -44,11 +44,11 @@ commandes |>
   canal         n moyenne ecart_type
   <chr>     <int>   <dbl>      <dbl>
 1 Boutique    114    74.8       40.6
-2 Instagram   138    49         31.1
+2 Réseaux   138    49         31.1
 3 Site        148    59.5       38.3
 ```
 
-Les deux langages donnent exactement les mêmes nombres : 114 commandes en boutique pour un montant moyen d'environ 75 DT, comme au 3.1. (Le tri alphabétique des canaux est le même ; seule la présentation du tableau diffère.)
+Les deux langages donnent exactement les mêmes nombres : 114 commandes en boutique pour un montant moyen d'environ 75 €, comme au 3.1. (Le tri alphabétique des canaux est le même ; seule la présentation du tableau diffère.)
 
 ### 4.7.2 SAS : le langage des grandes organisations
 

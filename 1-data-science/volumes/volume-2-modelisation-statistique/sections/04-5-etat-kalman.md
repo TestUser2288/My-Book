@@ -4,7 +4,7 @@
 
 ### 4.5.1 L'idée : un état caché, des observations bruitées
 
-Yasmine voudrait connaître le **niveau réel** de ses ventes, c'est-à-dire ce que serait son chiffre d'affaires sans les accidents du mois (une grosse commande, un jour de pluie). Elle n'observe que le chiffre d'affaires du mois, qui est **le niveau réel plus du bruit**. Le niveau réel, lui, évolue lentement. C'est un problème à **deux niveaux** :
+La gérante voudrait connaître le **niveau réel** de ses ventes, c'est-à-dire ce que serait son chiffre d'affaires sans les accidents du mois (une grosse commande, un jour de pluie). Elle n'observe que le chiffre d'affaires du mois, qui est **le niveau réel plus du bruit**. Le niveau réel, lui, évolue lentement. C'est un problème à **deux niveaux** :
 
 - une **équation d'observation** : ce que l'on mesure, $y_t=\mu_t+\varepsilon_t$, avec $\varepsilon_t\sim\mathcal N(0,\sigma_\varepsilon^2)$ ;
 - une **équation d'état** : comment l'état caché évolue, $\mu_{t+1}=\mu_t+\eta_t$, avec $\eta_t\sim\mathcal N(0,\sigma_\eta^2)$.
@@ -145,7 +145,7 @@ gain final du filtre : 0.39039 | théorie p/(p+4) : 0.39039
 
 Le gain converge vers sa valeur théorique, et le lissage exponentiel avec $\alpha=0{,}39$ **est** le filtre de Kalman une fois le régime permanent atteint (écart de l'ordre de $10^{-7}$). Plus le niveau bouge vite par rapport au bruit ($q$ grand), plus $K_\infty$ est grand : le filtre « oublie » vite le passé.
 
-### 4.5.5 Un modèle structurel pour les ventes de Dar Jasmin
+### 4.5.5 Un modèle structurel pour les ventes de la boutique
 
 L'intérêt des modèles d'espace d'états est de **mettre bout à bout** des composantes comprises : un niveau, une pente, une saison, des variables explicatives. C'est ce qu'on appelle un **modèle structurel**. Pour nos ventes (en logarithme, 96 mois d'apprentissage), prenons un niveau, une pente, une saison de période 12 et les variables `promo` et `covid`. Pour commencer, laissons la pente évoluer aléatoirement (le « *local linear trend* » classique) :
 
@@ -227,7 +227,7 @@ composantes de l'état : ['level', 'trend', 'seasonal', 'seasonal.L1'] ...
 
 ### 4.5.6 Combler un trou : les données manquantes
 
-Un atout décisif du filtre de Kalman est de traiter les **observations manquantes** sans bricolage : à une date sans mesure, il ne fait que prédire (l'incertitude grandit), et le **lissage** (qui utilise aussi l'avenir) reconstitue la valeur manquante avec son intervalle d'incertitude. Un cas réaliste : les registres de Yasmine ont perdu les ventes de **mars à août 2022**. Nous effaçons ces six mois de la série d'apprentissage (nous connaissons les vraies valeurs, ce qui permet de vérifier), ajustons le modèle sur ce qui reste, puis **reconstituons** les mois manquants.
+Un atout décisif du filtre de Kalman est de traiter les **observations manquantes** sans bricolage : à une date sans mesure, il ne fait que prédire (l'incertitude grandit), et le **lissage** (qui utilise aussi l'avenir) reconstitue la valeur manquante avec son intervalle d'incertitude. Un cas réaliste : les registres de la gérante ont perdu les ventes de **mars à août 2022**. Nous effaçons ces six mois de la série d'apprentissage (nous connaissons les vraies valeurs, ce qui permet de vérifier), ajustons le modèle sur ce qui reste, puis **reconstituons** les mois manquants.
 
 ```python
 trou = train["2022-03":"2022-08"].index

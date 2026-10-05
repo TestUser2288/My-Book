@@ -2,15 +2,15 @@
 
 > 💡 **Intuition.** En 8.1, nous avons vu que changer un facteur à la fois gaspille des essais et rate les interactions. Un plan **factoriel complet** à $k$ facteurs, chacun à **deux niveaux**, fait l'inverse : on teste **toutes** les $2^k$ combinaisons. Chaque essai sert ensuite à estimer **tous** les effets à la fois (les effets principaux comme les interactions), et chaque effet est mesuré sur **tous** les essais, en comparant « la moitié haute » à « la moitié basse ». C'est le plan le plus efficace que l'on puisse imaginer pour un nombre de facteurs modéré.
 
-### 8.3.1 L'expérience de Yasmine : trois facteurs, huit combinaisons
+### 8.3.1 L'expérience de la gérante : trois facteurs, huit combinaisons
 
-Yasmine veut booster les commandes hebdomadaires de sa boutique en ligne. Trois leviers l'intéressent, chacun à deux niveaux :
+La gérante veut booster les commandes hebdomadaires de sa boutique en ligne. Trois leviers l'intéressent, chacun à deux niveaux :
 
 | Facteur | Niveau « − » (−1) | Niveau « + » (+1) |
 |---|---|---|
 | **A** : emballage | standard | cadeau |
 | **B** : prix | normal | promotion de 10 % |
-| **C** : relance | e-mail | stories Instagram |
+| **C** : relance | e-mail | stories Réseaux |
 
 Il y a $2^3=8$ combinaisons. Chaque combinaison est testée sur **deux semaines** (deux **répétitions**), tirées au hasard dans le calendrier : $16$ semaines au total. La réponse est le nombre de commandes de la semaine.
 

@@ -21,9 +21,9 @@ Rassurez-vous : il ne s'agit pas de refaire un cursus de mathématiques. Il suff
 
 ## Le chemin de ce chapitre
 
-Nous allons suivre la boutique **Dar Jasmin** et ses questions concrètes :
+Nous allons suivre la boutique **la boutique** et ses questions concrètes :
 
-- **1.1 Algèbre linéaire** : Yasmine veut savoir quels clients se ressemblent, calculer son chiffre d'affaires par mois sans boucle interminable, et résumer un tableau de ventes en quelques tendances.
+- **1.1 Algèbre linéaire** : La gérante veut savoir quels clients se ressemblent, calculer son chiffre d'affaires par mois sans boucle interminable, et résumer un tableau de ventes en quelques tendances.
 - **1.2 Analyse** : comment son bénéfice change-t-il quand elle modifie un prix un tout petit peu ? Et quelle est la probabilité qu'une commande arrive dans les trois prochaines minutes ?
 - **1.3 Optimisation** : quel prix maximise ses recettes ? Comment répartir son budget publicitaire ?
 - **1.4 Fiche de notations** : toutes les notations du livre, au même endroit.

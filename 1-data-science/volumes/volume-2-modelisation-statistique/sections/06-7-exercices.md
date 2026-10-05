@@ -4,7 +4,7 @@
 
 ### Énoncés
 
-**Exercice 1 ⭐ (bêta-binomial).** Yasmine teste un nouvel emballage : 3 clients sur 8 le jugent « excellent ». Avec l'a priori $\mathrm{Beta}(2,2)$ (« je pense plutôt autour de 50 % »), donnez (a) la loi a posteriori, (b) sa moyenne, (c) le poids de l'a priori dans cette moyenne, (d) la comparaison avec l'estimation du maximum de vraisemblance.
+**Exercice 1 ⭐ (bêta-binomial).** la gérante teste un nouvel emballage : 3 clients sur 8 le jugent « excellent ». Avec l'a priori $\mathrm{Beta}(2,2)$ (« je pense plutôt autour de 50 % »), donnez (a) la loi a posteriori, (b) sa moyenne, (c) le poids de l'a priori dans cette moyenne, (d) la comparaison avec l'estimation du maximum de vraisemblance.
 
 **Exercice 2 ⭐ (gamma-Poisson).** Le site reçoit 2, 4 et 1 commandes lors de trois soirées. A priori $\lambda\sim\mathrm{Gamma}(3;\ \text{taux }1)$ (moyenne 3 commandes par soirée). Donnez la loi a posteriori de $\lambda$, sa moyenne, et un intervalle de crédibilité à 95 %.
 
@@ -24,7 +24,7 @@
 
 **Exercice 10 ⭐⭐ (diagnostics).** Une chaîne autorégressive $x_t=\varphi\,x_{t-1}+\sqrt{1-\varphi^2}\,\varepsilon_t$ ($\varepsilon_t\sim\mathcal N(0,1)$) a pour loi stationnaire $\mathcal N(0,1)$ et pour autocorrélation $\rho_k=\varphi^k$. (a) Montrez que son ESS théorique vaut environ $n\,\dfrac{1-\varphi}{1+\varphi}$. (b) Pour $\varphi=0{,}9$ et $n=20\,000$, comparez avec l'ESS calculée. (c) Quatre chaînes de $\varphi=0{,}99$ lancées de $-10,-3,3,10$ : calculez le $\widehat R$ avec et sans élimination des 300 premiers points.
 
-**Exercice 11 ⭐⭐ (vérification prédictive).** Modélisez les paniers des acheteurs de la boutique (a) par une loi normale sur le panier en DT, (b) par une loi normale sur le **logarithme** du panier. Avec la statistique-test « asymétrie » (skewness) et le plus petit panier, quel modèle passe la vérification prédictive a posteriori ?
+**Exercice 11 ⭐⭐ (vérification prédictive).** Modélisez les paniers des acheteurs de la boutique (a) par une loi normale sur le panier en €, (b) par une loi normale sur le **logarithme** du panier. Avec la statistique-test « asymétrie » (skewness) et le plus petit panier, quel modèle passe la vérification prédictive a posteriori ?
 
 **Exercice 12 ⭐⭐ (facteur de Bayes).** Neuf clients sur dix préfèrent le nouvel emballage. $H_0$ : $\theta=0{,}5$ ; $H_1$ : $\theta\sim\mathcal U(0,1)$. Calculez à la main $\mathrm{BF}_{10}$, comparez à la p-valeur exacte bilatérale, puis calculez la probabilité a posteriori de $H_1$ si l'on pense au départ qu'il y a 1 chance sur 4 que l'emballage ait un effet.
 
@@ -251,18 +251,18 @@ def ppc_normal(y_, graine, S=2000):
     To, Tr = T(y_[None, :])[0], T(yrep)
     return To, Tr, (Tr >= To).mean(axis=0)
 
-for nom, donnees in (("normale sur le panier (DT)", pan), ("normale sur le log du panier", np.log(pan))):
+for nom, donnees in (("normale sur le panier (€)", pan), ("normale sur le log du panier", np.log(pan))):
     To, Tr, pb = ppc_normal(donnees, 697)
     print(f"{nom:32s} asymétrie : observée {To[0]:6.3f}, répliques {Tr[:, 0].mean():6.3f} (p bayésien {pb[0]:.3f}) | "
           f"minimum : observé {To[1]:7.3f}, répliques {Tr[:, 1].mean():7.3f} (p bayésien {pb[1]:.3f})")
 ```
 <!--sortie-->
 ```text
-normale sur le panier (DT)       asymétrie : observée  1.037, répliques  0.003 (p bayésien 0.000) | minimum : observé  25.530, répliques -11.756 (p bayésien 0.000)
+normale sur le panier (€)       asymétrie : observée  1.037, répliques  0.003 (p bayésien 0.000) | minimum : observé  25.530, répliques -11.756 (p bayésien 0.000)
 normale sur le log du panier     asymétrie : observée  0.046, répliques  0.003 (p bayésien 0.360) | minimum : observé   3.240, répliques   3.094 (p bayésien 0.144)
 ```
 
-Le modèle sur le panier brut échoue : les données ont une asymétrie de 1,04 (queue à droite) que le modèle symétrique ne reproduit jamais (asymétrie répliquée : 0,00 ; $p_B=0$), et il prédit des **paniers négatifs** (le minimum répliqué vaut en moyenne −11,8 DT, ce qui est absurde), alors que le plus petit panier observé est de 25,5 DT. Le modèle sur le logarithme (c'est-à-dire une loi log-normale pour le panier) passe les deux vérifications ($p_B=0{,}36$ pour l'asymétrie et $0{,}14$ pour le minimum). C'est la raison pour laquelle on modélise les montants positifs sur une échelle logarithmique.
+Le modèle sur le panier brut échoue : les données ont une asymétrie de 1,04 (queue à droite) que le modèle symétrique ne reproduit jamais (asymétrie répliquée : 0,00 ; $p_B=0$), et il prédit des **paniers négatifs** (le minimum répliqué vaut en moyenne −11,8 €, ce qui est absurde), alors que le plus petit panier observé est de 25,5 €. Le modèle sur le logarithme (c'est-à-dire une loi log-normale pour le panier) passe les deux vérifications ($p_B=0{,}36$ pour l'asymétrie et $0{,}14$ pour le minimum). C'est la raison pour laquelle on modélise les montants positifs sur une échelle logarithmique.
 
 **Corrigé 12.** $n=10$, $y=9$. $p(y\mid H_0)=\binom{10}9\,0{,}5^{10}=10/1024=0{,}00977$ ; $p(y\mid H_1)=1/11=0{,}0909$. $\mathrm{BF}_{10}=\dfrac{1/11}{10/1024}=\dfrac{1024}{110}=9{,}31$ : des données environ 9 fois plus probables sous $H_1$. La p-valeur exacte bilatérale est $2\bigl[\binom{10}9+\binom{10}{10}\bigr]/1024=22/1024=0{,}0215$. Avec une cote a priori de $\dfrac{1/4}{3/4}=\dfrac13$ en faveur de $H_1$, la cote a posteriori est $9{,}31\times\tfrac13=3{,}10$, soit une probabilité $3{,}10/4{,}10=0{,}756$ pour $H_1$ : on a gagné en crédibilité mais on est loin de la certitude, alors que la p-valeur de 0,02 « rejette $H_0$ au seuil de 5 % ». C'est la différence de langage entre « rejeter » et « mettre à jour ses croyances ».
 

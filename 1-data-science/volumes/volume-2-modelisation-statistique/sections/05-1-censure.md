@@ -4,7 +4,7 @@
 
 ### 5.1.1 Un problème que la moyenne ne sait pas résoudre
 
-Commençons petit, avec huit clients que Yasmine a suivis dans son cahier. Pour chacun, elle a noté le nombre de mois pendant lesquels elle l'a observé, et si elle l'a vu **partir** (il n'a plus jamais commandé) ou s'il était **encore là** quand elle a fermé son cahier.
+Commençons petit, avec huit clients que la gérante a suivis dans son cahier. Pour chacun, elle a noté le nombre de mois pendant lesquels elle l'a observé, et si elle l'a vu **partir** (il n'a plus jamais commandé) ou s'il était **encore là** quand elle a fermé son cahier.
 
 | Client | Mois observés | Situation |
 |---|---|---|
@@ -226,7 +226,7 @@ médiane σ (ln 2)^(1/k) : 27.44 mois
 
 Nous avons parlé de censure « à droite » sans la définir précisément. Il en existe plusieurs sortes, qu'il faut savoir reconnaître car elles ne se traitent pas de la même façon.
 
-| Type | Ce que l'on sait | Exemple chez Dar Jasmin |
+| Type | Ce que l'on sait | Exemple chez la boutique |
 |---|---|---|
 | **À droite** | $T > c$ : l'événement n'a pas eu lieu à la fin de l'observation | un client inscrit en mars 2025, toujours actif en décembre |
 | **À gauche** | $T < c$ : l'événement a *déjà* eu lieu avant la première observation | on découvre en 2025 qu'un client de la base n'a rien acheté depuis une date inconnue, avant l'étude |

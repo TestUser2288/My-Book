@@ -31,13 +31,13 @@ Ce dernier chapitre court a deux rôles. Le premier : **fixer l'essentiel** de c
 1. Que signifie l'égalité $A\mathbf v=\lambda\mathbf v$ ?
 2. Dans quelle direction faut-il se déplacer pour **faire diminuer** le plus vite possible une fonction ?
 3. Pourquoi `0.1 + 0.2 == 0.3` vaut-il `False` en Python, et comment comparer proprement deux nombres décimaux ?
-4. Yasmine veut présenter 3 produits choisis parmi 8 dans une vitrine, sans tenir compte de l'ordre. Combien de vitrines possibles ?
+4. La gérante veut présenter 3 produits choisis parmi 8 dans une vitrine, sans tenir compte de l'ordre. Combien de vitrines possibles ?
 
 ### Probabilités (chapitre 2)
 
 5. Une maladie touche 1 % de la population. Un test la détecte dans 90 % des cas, mais donne un faux positif chez 5 % des personnes saines. Vous êtes positif : quelle est la probabilité d'être malade ?
 6. Quelle différence entre la loi des grands nombres et le théorème central limite ?
-7. Les montants de commandes ont un écart-type de 38 DT. Quel est l'écart-type de la **moyenne** de 400 commandes ?
+7. Les montants de commandes ont un écart-type de 38 €. Quel est l'écart-type de la **moyenne** de 400 commandes ?
 8. Quelle loi pour (a) le nombre de commandes reçues en une heure ; (b) le fait qu'une commande soit retournée ou non ?
 
 ### Statistique (chapitre 3)
@@ -47,7 +47,7 @@ Ce dernier chapitre court a deux rôles. Le premier : **fixer l'essentiel** de c
 11. Qu'est-ce qu'une p-valeur ? Citez une mauvaise interprétation fréquente.
 12. On réalise 20 tests indépendants au seuil de 5 %, alors qu'**aucun** effet n'existe. Combien de faux positifs attend-on, et quelle est la probabilité d'en obtenir **au moins un** ?
 13. Quand préférer la médiane à la moyenne ?
-14. Un test donne $p = 10^{-9}$ pour une différence de 0,3 DT entre deux paniers moyens. Doit-on s'en réjouir ?
+14. Un test donne $p = 10^{-9}$ pour une différence de 0,3 € entre deux paniers moyens. Doit-on s'en réjouir ?
 
 ### Programmation (chapitre 4)
 
@@ -93,7 +93,7 @@ p_positif = sensibilite * prevalence + faux_positifs * (1 - prevalence)
 print(f"Q5  P(malade | test positif) = {sensibilite * prevalence / p_positif:.4f}")
 
 # Q7 : écart-type d'une moyenne
-print(f"Q7  38 / sqrt(400) = {38 / math.sqrt(400):.2f} DT")
+print(f"Q7  38 / sqrt(400) = {38 / math.sqrt(400):.2f} €")
 
 # Q12 : tests multiples
 print(f"Q12 faux positifs attendus : {20 * 0.05:.0f} ; P(au moins un) = {1 - 0.95 ** 20:.4f}")
@@ -106,7 +106,7 @@ print("Q19 comparaisons max pour 1 000 000 éléments :", math.ceil(math.log2(1_
 Q3  0.1 + 0.2 == 0.3 : False | avec tolérance : True
 Q4  C(8,3) = 56
 Q5  P(malade | test positif) = 0.1538
-Q7  38 / sqrt(400) = 1.90 DT
+Q7  38 / sqrt(400) = 1.90 €
 Q12 faux positifs attendus : 1 ; P(au moins un) = 0.6415
 Q19 comparaisons max pour 1 000 000 éléments : 20
 ```
@@ -125,7 +125,7 @@ Q19 comparaisons max pour 1 000 000 éléments : 20
 
 **6.** La loi des grands nombres dit que la **moyenne d'échantillon converge** vers l'espérance quand $n$ grandit ; le théorème central limite décrit **comment elle fluctue** autour de celle-ci : approximativement selon une loi normale d'écart-type $\sigma/\sqrt n$, quelle que soit la loi d'origine. (2.4)
 
-**7.** $38/\sqrt{400}=38/20=1{,}9$ DT : la moyenne est bien plus stable que chaque commande. C'est la raison pour laquelle on moyenne. (2.4)
+**7.** $38/\sqrt{400}=38/20=1{,}9$ € : la moyenne est bien plus stable que chaque commande. C'est la raison pour laquelle on moyenne. (2.4)
 
 **8.** (a) Une loi de **Poisson** (événements rares et indépendants dans un intervalle de temps) ; (b) une loi de **Bernoulli** (deux issues), ou binomiale si l'on compte le nombre de retours sur $n$ commandes. (2.2)
 
@@ -139,13 +139,13 @@ Q19 comparaisons max pour 1 000 000 éléments : 20
 
 **13.** Quand la distribution est **asymétrique** ou contient des **valeurs extrêmes** (montants, revenus, durées) : la médiane est robuste, la moyenne est tirée par la queue. (3.1.3)
 
-**14.** Pas vraiment : avec assez de données, même une différence minuscule devient « significative ». 0,3 DT sur un panier de 60 DT n'a **aucune importance pratique**. Il faut toujours regarder la **taille de l'effet** et l'intervalle de confiance, pas seulement la p-valeur. (3.5.3)
+**14.** Pas vraiment : avec assez de données, même une différence minuscule devient « significative ». 0,3 € sur un panier de 60 € n'a **aucune importance pratique**. Il faut toujours regarder la **taille de l'effet** et l'intervalle de confiance, pas seulement la p-valeur. (3.5.3)
 
 **15.** Un `set` ou un `dict` utilise une **table de hachage** : il calcule directement où se trouve l'élément (coût quasi constant). Une liste doit être **parcourue** élément par élément (coût proportionnel à sa taille). (4.3.2 et 4.8)
 
 **16.** La somme vectorisée s'exécute en **code compilé** sur un tableau contigu, sans le surcoût de l'interpréteur Python à chaque ligne : elle est en général beaucoup plus rapide (au moins plusieurs fois, souvent bien davantage selon la taille du tableau), et plus courte à écrire. (4.4 et 4.8)
 
-**17.** Une **Series** pandas dont l'index est le canal (Boutique, Instagram, Site) et dont les valeurs sont les montants moyens. (4.4)
+**17.** Une **Series** pandas dont l'index est le canal (Boutique, Réseaux, Site) et dont les valeurs sont les montants moyens. (4.4)
 
 **18.** Par exemple : **tronquer l'axe vertical** (un écart réel de 2 % peut sembler un rapport de 5 à 1), utiliser un **camembert en 3D** (la perspective déforme les aires) ou un **double axe vertical** (on rend « visible » n'importe quelle corrélation en choisissant les échelles). Une barre doit toujours partir de zéro. (4.5.6)
 
@@ -199,7 +199,7 @@ Pour chaque ligne, cochez mentalement : **je sais l'expliquer** / **je sais le f
 
 ## Et maintenant ?
 
-Le volume I vous a donné le **socle**. Il ne contient volontairement aucun modèle « à la mode » : ceux-ci demandent justement les bases que vous venez d'acquérir. Dans le **volume II : Modélisation statistique**, vous apprendrez à **modéliser** : la régression linéaire (la droite des moindres carrés de ce projet, généralisée à plusieurs variables), les modèles linéaires généralisés, les séries temporelles (la saisonnalité de Dar Jasmin, enfin traitée proprement), l'analyse de survie et la statistique bayésienne.
+Le volume I vous a donné le **socle**. Il ne contient volontairement aucun modèle « à la mode » : ceux-ci demandent justement les bases que vous venez d'acquérir. Dans le **volume II : Modélisation statistique**, vous apprendrez à **modéliser** : la régression linéaire (la droite des moindres carrés de ce projet, généralisée à plusieurs variables), les modèles linéaires généralisés, les séries temporelles (la saisonnalité de la boutique, enfin traitée proprement), l'analyse de survie et la statistique bayésienne.
 
 > 💡 **Un conseil pour la suite.** Ne passez pas au volume II en vous reprochant de ne pas tout retenir du volume I : personne ne retient tout. Retenez **où chercher**. Gardez ce livre à portée de main, et revenez-y chaque fois qu'une notion (une p-valeur, une jointure, un gradient) revient dans un contexte nouveau. C'est ainsi, en revenant, que les fondations deviennent solides.
 

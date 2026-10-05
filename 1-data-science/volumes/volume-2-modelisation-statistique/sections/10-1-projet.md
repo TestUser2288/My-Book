@@ -1,4 +1,4 @@
-# Projet du volume : le plan 2026 de Dar Jasmin
+# Projet du volume : le plan 2026 de la boutique
 
 > « Prévoir, c'est facile : il suffit de se tromper de façon honnête, et de dire de combien. »
 
@@ -8,7 +8,7 @@ Dans le volume I, le projet de clôture assemblait des mesures simples. Ici, nou
 
 ## P.1 Le cahier des charges
 
-Début janvier 2026, Yasmine vous écrit :
+Début janvier 2026, la gérante vous écrit :
 
 > *« Bonjour ! 2025 est bouclée, je prépare le budget de 2026. J'ai quatre questions.*
 >
@@ -18,7 +18,7 @@ Début janvier 2026, Yasmine vous écrit :
 >
 > *3. Un client, ça me rapporte combien par an ? Ça dépend de l'âge, du canal ?*
 >
-> *4. Et combien de temps un client reste-t-il ? Au fond, je voudrais savoir ce que vaut un client, et si l'offre de bienvenue (elle me coûte environ 10 DT par client) vaut la peine. Merci ! »*
+> *4. Et combien de temps un client reste-t-il ? Au fond, je voudrais savoir ce que vaut un client, et si l'offre de bienvenue (elle me coûte environ 10 € par client) vaut la peine. Merci ! »*
 
 La méthode suit six étapes. Chacune s'appuie sur un chapitre du volume.
 
@@ -87,11 +87,11 @@ fig, ax = plt.subplots(1, 2, figsize=(11, 3.8))
 ax[0].plot(ventes.index, ventes["ca"], color="#2a78d6", lw=1.6)
 ax[0].axvspan(pd.Timestamp("2020-03-01"), pd.Timestamp("2020-06-30"), color="#e34948", alpha=0.15)
 ax[0].text(pd.Timestamp("2020-03-15"), ventes["ca"].max() * 0.93, "2020", color="#e34948", fontsize=9)
-ax[0].set_title("Chiffre d'affaires mensuel (DT)")
-ax[0].set_ylabel("DT")
+ax[0].set_title("Chiffre d'affaires mensuel (€)")
+ax[0].set_ylabel("€")
 ax[1].plot(ventes.index, y, color="#2a78d6", lw=1.6)
 ax[1].set_title("Même série en logarithme")
-ax[1].set_ylabel("log(DT)")
+ax[1].set_ylabel("log(€)")
 plt.tight_layout()
 plt.savefig("figures/ch10-serie-ventes.png", dpi=200, bbox_inches="tight")
 print("figure enregistrée")
@@ -101,7 +101,7 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![À gauche : chiffre d'affaires mensuel de Dar Jasmin de 2016 à 2025 (la bande rouge marque l'arrêt du printemps 2020). À droite : la même série en logarithme, où la saisonnalité est de même amplitude à tous les niveaux.](figures/ch10-serie-ventes.png)
+![À gauche : chiffre d'affaires mensuel de la boutique de 2016 à 2025 (la bande rouge marque l'arrêt du printemps 2020). À droite : la même série en logarithme, où la saisonnalité est de même amplitude à tous les niveaux.](figures/ch10-serie-ventes.png)
 
 Pour juger un modèle de prévision, il faut un **repère** : une méthode si simple que ne pas la battre serait inquiétant. Le plus utile ici est la **prévision naïve saisonnière** : « chaque mois ressemblera au même mois de l'an passé ».
 
@@ -176,7 +176,7 @@ Les p-valeurs de Ljung-Box (chapitre 4, section 4.1) sont élevées : on ne dét
 
 ### P.3.3 Prévoir 2026
 
-On réajuste le modèle retenu sur **les 120 mois**, puis on prévoit les 12 mois de 2026. Il faut fournir les valeurs futures des variables exogènes : pas de nouvel arrêt (`covid` = 0), et une hypothèse sur les promotions. Yasmine prévoit une promotion en décembre, comme en 2025 :
+On réajuste le modèle retenu sur **les 120 mois**, puis on prévoit les 12 mois de 2026. Il faut fournir les valeurs futures des variables exogènes : pas de nouvel arrêt (`covid` = 0), et une hypothèse sur les promotions. La gérante prévoit une promotion en décembre, comme en 2025 :
 
 ```python
 spec = candidats[meilleur]
@@ -196,7 +196,7 @@ print(prevision.to_string())
 print()
 total_2025 = ventes.loc["2025", "ca"].sum()
 total_2026 = prevision["prévision"].sum()
-print(f"total 2025 : {total_2025:,.0f} DT   total 2026 prévu : {total_2026:,.0f} DT   ({100 * (total_2026 / total_2025 - 1):+.1f} %)")
+print(f"total 2025 : {total_2025:,.0f} €   total 2026 prévu : {total_2026:,.0f} €   ({100 * (total_2026 / total_2025 - 1):+.1f} %)")
 ```
 <!--sortie-->
 ```text
@@ -214,7 +214,7 @@ print(f"total 2025 : {total_2025:,.0f} DT   total 2026 prévu : {total_2026:,.0f
 2026-11     2681.0  1714.0   4194.0
 2026-12     4599.0  2883.0   7335.0
 
-total 2025 : 27,630 DT   total 2026 prévu : 32,029 DT   (+15.9 %)
+total 2025 : 27,630 €   total 2026 prévu : 32,029 €   (+15.9 %)
 ```
 
 Les bornes à 95 % s'écartent à mesure que l'on s'éloigne dans le futur : l'incertitude s'accumule. Voici la prévision en image :
@@ -225,7 +225,7 @@ recent = ventes.loc["2023":]
 ax.plot(recent.index, recent["ca"], color="#2a78d6", lw=1.8, label="observé")
 ax.plot(futur, np.exp(pred.predicted_mean), color="#eb6834", lw=1.8, label="prévision 2026")
 ax.fill_between(futur, np.exp(ic.iloc[:, 0]), np.exp(ic.iloc[:, 1]), color="#eb6834", alpha=0.18, label="intervalle à 95 %")
-ax.set_ylabel("chiffre d'affaires (DT)")
+ax.set_ylabel("chiffre d'affaires (€)")
 ax.set_title("Prévision du chiffre d'affaires mensuel de 2026")
 ax.legend(frameon=False, loc="upper left")
 plt.tight_layout()
@@ -265,13 +265,13 @@ offre_bienvenue
 
                                     coef  rapport_de_cotes  IC95_bas  IC95_haut      p
 Intercept                          0.031             1.031     0.847      1.255  0.761
-C(canal_acquisition)[T.Instagram] -0.463             0.629     0.502      0.789  0.000
+C(canal_acquisition)[T.Réseaux] -0.463             0.629     0.502      0.789  0.000
 C(canal_acquisition)[T.Site]      -0.168             0.846     0.669      1.069  0.161
 offre_bienvenue                    0.493             1.638     1.370      1.957  0.000
 I(age - 36)                       -0.015             0.985     0.976      0.993  0.000
 ```
 
-Un coefficient s'interprète sur l'échelle **logit** ; on le rend lisible en l'exponentiant, ce qui donne un **rapport de cotes** (*odds ratio*). Mais un rapport de cotes n'est pas une différence de probabilité, et c'est la seconde que Yasmine veut : « de combien l'offre augmente-t-elle la probabilité de racheter ? ». Nous la calculons en **prédisant deux mondes** : le monde où chaque client a reçu l'offre, et celui où aucun ne l'a reçue (l'« effet marginal moyen »), puis nous en donnons un intervalle de confiance par **bootstrap** (volume I, section 3.3.5).
+Un coefficient s'interprète sur l'échelle **logit** ; on le rend lisible en l'exponentiant, ce qui donne un **rapport de cotes** (*odds ratio*). Mais un rapport de cotes n'est pas une différence de probabilité, et c'est la seconde que la gérante veut : « de combien l'offre augmente-t-elle la probabilité de racheter ? ». Nous la calculons en **prédisant deux mondes** : le monde où chaque client a reçu l'offre, et celui où aucun ne l'a reçue (l'« effet marginal moyen »), puis nous en donnons un intervalle de confiance par **bootstrap** (volume I, section 3.3.5).
 
 ```python
 def effet_offre(df):
@@ -315,7 +315,7 @@ groupe
 4           398                 0.630         0.631
 ```
 
-> 💡 **Lire une AUC modeste.** Une AUC proche de 0,6 signifie que le modèle ne trie pas très bien les clients individuellement : savoir qu'un client est jeune, d'Instagram, et qu'il a reçu l'offre aide peu à prédire **son** rachat, parce que l'essentiel de la variabilité tient à des facteurs que nous n'observons pas. Cela ne contredit pas la qualité de l'estimation de l'**effet moyen** de l'offre : on peut estimer très précisément une différence moyenne tout en prédisant mal chaque individu. Prédire et expliquer sont deux tâches distinctes.
+> 💡 **Lire une AUC modeste.** Une AUC proche de 0,6 signifie que le modèle ne trie pas très bien les clients individuellement : savoir qu'un client est jeune, d'Réseaux, et qu'il a reçu l'offre aide peu à prédire **son** rachat, parce que l'essentiel de la variabilité tient à des facteurs que nous n'observons pas. Cela ne contredit pas la qualité de l'estimation de l'**effet moyen** de l'offre : on peut estimer très précisément une différence moyenne tout en prédisant mal chaque individu. Prédire et expliquer sont deux tâches distinctes.
 
 ## P.5 Étape 4 : combien rapporte un client ? (question 3)
 
@@ -335,9 +335,9 @@ partie2 = smf.glm("depense_annuelle " + formule, clients[clients["achete"] == 1]
                   family=sm.families.Gamma(sm.families.links.Log())).fit()
 
 deux_parties = partie1.predict(clients) * partie2.predict(clients)
-print(f"dépense annuelle moyenne observée       : {clients['depense_annuelle'].mean():.1f} DT")
-print(f"prévue par le modèle de Tweedie         : {tweedie.predict(clients).mean():.1f} DT")
-print(f"prévue par le modèle en deux parties    : {deux_parties.mean():.1f} DT")
+print(f"dépense annuelle moyenne observée       : {clients['depense_annuelle'].mean():.1f} €")
+print(f"prévue par le modèle de Tweedie         : {tweedie.predict(clients).mean():.1f} €")
+print(f"prévue par le modèle en deux parties    : {deux_parties.mean():.1f} €")
 print(f"corrélation entre les deux prévisions   : {np.corrcoef(tweedie.predict(clients), deux_parties)[0, 1]:.3f}")
 print()
 coefs = pd.DataFrame({"Tweedie": tweedie.params, "Gamma (acheteurs)": partie2.params}).round(3)
@@ -349,14 +349,14 @@ print(f"effet de l'offre sur la probabilité d'au moins une commande : coef logi
 ```
 <!--sortie-->
 ```text
-dépense annuelle moyenne observée       : 247.0 DT
-prévue par le modèle de Tweedie         : 247.0 DT
-prévue par le modèle en deux parties    : 247.0 DT
+dépense annuelle moyenne observée       : 247.0 €
+prévue par le modèle de Tweedie         : 247.0 €
+prévue par le modèle en deux parties    : 247.0 €
 corrélation entre les deux prévisions   : 1.000
 
                                    Tweedie  Gamma (acheteurs)  effet Tweedie (%)
 Intercept                            5.766              5.880                NaN
-C(canal_acquisition)[T.Instagram]   -0.555             -0.499              -42.6
+C(canal_acquisition)[T.Réseaux]   -0.555             -0.499              -42.6
 C(canal_acquisition)[T.Site]        -0.151             -0.152              -14.0
 I(age - 36)                          0.008              0.008                0.8
 offre_bienvenue                     -0.014             -0.010               -1.4
@@ -367,7 +367,7 @@ effet de l'offre sur la probabilité d'au moins une commande : coef logit = -0.0
 Les deux approches donnent des prévisions pratiquement identiques. Les coefficients d'un modèle à lien log se lisent en **pourcentages** : `exp(coef) - 1` est la variation relative de la dépense moyenne pour une unité de la variable. Le tableau montre un résultat **nuancé et important pour la suite** : l'offre de bienvenue n'a pratiquement **aucun effet** sur la dépense annuelle (ni sur la probabilité de passer commande), alors que le canal d'acquisition en a un net.
 
 ```python
-profils = pd.DataFrame({"age": [25, 25, 40, 40], "canal_acquisition": ["Instagram", "Boutique", "Instagram", "Boutique"],
+profils = pd.DataFrame({"age": [25, 25, 40, 40], "canal_acquisition": ["Réseaux", "Boutique", "Réseaux", "Boutique"],
                         "offre_bienvenue": [0, 0, 0, 0]})
 profils["valeur_annuelle_DT"] = tweedie.predict(profils).round(1)
 print(profils.to_string(index=False))
@@ -375,9 +375,9 @@ print(profils.to_string(index=False))
 <!--sortie-->
 ```text
  age canal_acquisition  offre_bienvenue  valeur_annuelle_DT
-  25         Instagram                0               167.5
+  25         Réseaux                0               167.5
   25          Boutique                0               291.8
-  40         Instagram                0               189.2
+  40         Réseaux                0               189.2
   40          Boutique                0               329.8
 ```
 
@@ -447,15 +447,15 @@ canal_acquisition_Instagram  0.635               1.887     1.600      2.226  0.0
 canal_acquisition_Site       0.326               1.385     1.164      1.648  0.0
 ```
 
-Un **rapport de risques** inférieur à 1 signifie que la variable *réduit* le risque instantané de départ. L'offre de bienvenue réduit le risque de départ d'environ un tiers ; les clients arrivés par Instagram ou par le site partent plus vite que ceux de la boutique (référence).
+Un **rapport de risques** inférieur à 1 signifie que la variable *réduit* le risque instantané de départ. L'offre de bienvenue réduit le risque de départ d'environ un tiers ; les clients arrivés par Réseaux ou par le site partent plus vite que ceux de la boutique (référence).
 
 ## P.7 Étape 6 : que vaut un client, et l'offre est-elle rentable ?
 
-Assemblons les pièces. La **valeur d'un client** sur un horizon donné est la somme de ce qu'il dépensera tant qu'il reste, **actualisée** (un dinar dans cinq ans vaut moins qu'un dinar aujourd'hui). Si $A$ est la **marge** annuelle (la part de la dépense qui reste après le coût des produits : c'est elle qui paie l'offre, pas le chiffre d'affaires) et $S(t)$ la probabilité de rester au moins $t$ ans, alors, avec un taux d'actualisation $\delta$ :
+Assemblons les pièces. La **valeur d'un client** sur un horizon donné est la somme de ce qu'il dépensera tant qu'il reste, **actualisée** (un euro dans cinq ans vaut moins qu'un euro aujourd'hui). Si $A$ est la **marge** annuelle (la part de la dépense qui reste après le coût des produits : c'est elle qui paie l'offre, pas le chiffre d'affaires) et $S(t)$ la probabilité de rester au moins $t$ ans, alors, avec un taux d'actualisation $\delta$ :
 
 $$\text{valeur}=A\int_0^{\tau}S(t)\,e^{-\delta t}\,dt$$
 
-L'intégrale est la **durée de vie moyenne restreinte actualisée** : le nombre d'années pondérées qu'un client passe chez nous dans l'horizon $\tau$. Nous prenons $\tau=5$ ans et $\delta=8$ % (hypothèses de calcul, à discuter avec Yasmine), un taux de marge brute de 40 % (hypothèse de calcul, à vérifier avec la comptabilité), appliqué à la dépense annuelle moyenne prévue par le modèle de Tweedie.
+L'intégrale est la **durée de vie moyenne restreinte actualisée** : le nombre d'années pondérées qu'un client passe chez nous dans l'horizon $\tau$. Nous prenons $\tau=5$ ans et $\delta=8$ % (hypothèses de calcul, à discuter avec la gérante), un taux de marge brute de 40 % (hypothèse de calcul, à vérifier avec la comptabilité), appliqué à la dépense annuelle moyenne prévue par le modèle de Tweedie.
 
 ```python
 def duree_actualisee(instants, courbe, horizon_mois=60, taux=0.08):
@@ -474,16 +474,16 @@ for nom, g in clients.groupby("offre_bienvenue"):
     t, s = kaplan_meier(g["duree_mois"], g["churn"])
     d = duree_actualisee(t, s)
     resultats[nom] = d
-    print(f"offre = {nom} : durée de vie actualisée sur 5 ans = {d:.2f} années ;  valeur du client = {marge_annuelle * d:.0f} DT")
+    print(f"offre = {nom} : durée de vie actualisée sur 5 ans = {d:.2f} années ;  valeur du client = {marge_annuelle * d:.0f} €")
 gain = marge_annuelle * (resultats[1] - resultats[0])
-print(f"\ngain brut de l'offre : {gain:.0f} DT par client ; coût : {cout_offre:.0f} DT ; gain net : {gain - cout_offre:.0f} DT par client")
+print(f"\ngain brut de l'offre : {gain:.0f} € par client ; coût : {cout_offre:.0f} € ; gain net : {gain - cout_offre:.0f} € par client")
 ```
 <!--sortie-->
 ```text
-offre = 0 : durée de vie actualisée sur 5 ans = 2.23 années ;  valeur du client = 220 DT
-offre = 1 : durée de vie actualisée sur 5 ans = 2.65 années ;  valeur du client = 262 DT
+offre = 0 : durée de vie actualisée sur 5 ans = 2.23 années ;  valeur du client = 220 €
+offre = 1 : durée de vie actualisée sur 5 ans = 2.65 années ;  valeur du client = 262 €
 
-gain brut de l'offre : 42 DT par client ; coût : 10 DT ; gain net : 32 DT par client
+gain brut de l'offre : 42 € par client ; coût : 10 € ; gain net : 32 € par client
 ```
 
 Le gain net est-il vraiment positif, ou le hasard de l'échantillon pourrait-il l'expliquer ? Le **bootstrap** donne une réponse : on rééchantillonne les clients, on recalcule tout, et on regarde la dispersion du gain net.
@@ -499,16 +499,16 @@ def gain_net(df):
 rng = np.random.default_rng(99)
 sim = np.array([gain_net(clients.sample(len(clients), replace=True, random_state=int(s))) for s in rng.integers(0, 2**31 - 1, 200)])
 gain_bas, gain_haut = np.percentile(sim, [2.5, 97.5])
-print(f"gain net par client : {gain_net(clients):.0f} DT   IC95 bootstrap (200 rééchantillons) : [{gain_bas:.0f} ; {gain_haut:.0f}] DT")
+print(f"gain net par client : {gain_net(clients):.0f} €   IC95 bootstrap (200 rééchantillons) : [{gain_bas:.0f} ; {gain_haut:.0f}] €")
 print(f"part des rééchantillons où l'offre est rentable : {np.mean(sim > 0):.2f}")
 ```
 <!--sortie-->
 ```text
-gain net par client : 32 DT   IC95 bootstrap (200 rééchantillons) : [18 ; 44] DT
+gain net par client : 32 €   IC95 bootstrap (200 rééchantillons) : [18 ; 44] €
 part des rééchantillons où l'offre est rentable : 1.00
 ```
 
-## P.8 Le rapport pour Yasmine, et ce qui avait été programmé
+## P.8 Le rapport pour la gérante, et ce qui avait été programmé
 
 Comme au volume I, le rapport est **généré** à partir des résultats déjà calculés, sans aucun nombre recopié à la main.
 
@@ -521,8 +521,8 @@ rapport = f"""PLAN 2026 : DAR JASMIN
 {"=" * 60}
 
 1. Ventes 2026
-   - Chiffre d'affaires prévu : {fr(total_2026)} DT (2025 : {fr(t_unique)} DT, soit {100 * (total_2026 / t_unique - 1):+.1f} %).
-   - Mois le plus fort : décembre ({fr(prevision['prévision'].iloc[-1])} DT) ; le plus faible : {prevision['prévision'].idxmin()[-2:]}/2026.
+   - Chiffre d'affaires prévu : {fr(total_2026)} € (2025 : {fr(t_unique)} €, soit {100 * (total_2026 / t_unique - 1):+.1f} %).
+   - Mois le plus fort : décembre ({fr(prevision['prévision'].iloc[-1])} €) ; le plus faible : {prevision['prévision'].idxmin()[-2:]}/2026.
    - Précision attendue : erreur moyenne d'environ {mape(ventes['ca'][test], np.exp(ajustes[meilleur].get_forecast(24, exog=X[test]).predicted_mean)):.0f} % mois par mois lors du rétro-test.
 
 2. L'offre de bienvenue
@@ -531,10 +531,10 @@ rapport = f"""PLAN 2026 : DAR JASMIN
    - Elle ne change pas la dépense annuelle d'un client.
 
 3. Valeur d'un client (horizon 5 ans, actualisé à 8 %)
-   - Dépense annuelle moyenne : {fr(depense_annuelle)} DT (marge supposée de 40 %) ; clients du canal Boutique : plus rentables que ceux d'Instagram.
-   - Gain net de l'offre : {fr(gain_net(clients))} DT par client (intervalle à 95 % : de {fr(gain_bas)} à {fr(gain_haut)} DT).
+   - Dépense annuelle moyenne : {fr(depense_annuelle)} € (marge supposée de 40 %) ; clients du canal Boutique : plus rentables que ceux d'Réseaux.
+   - Gain net de l'offre : {fr(gain_net(clients))} € par client (intervalle à 95 % : de {fr(gain_bas)} à {fr(gain_haut)} €).
 
-Hypothèses et limites : dépense annuelle supposée constante tant que le client reste ; marge brute de 40 % ; coût de l'offre de 10 DT ;
+Hypothèses et limites : dépense annuelle supposée constante tant que le client reste ; marge brute de 40 % ; coût de l'offre de 10 € ;
 pas de nouvel arrêt d'activité en 2026 ; données d'une seule boutique.
 """
 print(rapport)
@@ -545,8 +545,8 @@ PLAN 2026 : DAR JASMIN
 ============================================================
 
 1. Ventes 2026
-   - Chiffre d'affaires prévu : 32 029 DT (2025 : 27 630 DT, soit +15.9 %).
-   - Mois le plus fort : décembre (4 599 DT) ; le plus faible : 01/2026.
+   - Chiffre d'affaires prévu : 32 029 € (2025 : 27 630 €, soit +15.9 %).
+   - Mois le plus fort : décembre (4 599 €) ; le plus faible : 01/2026.
    - Précision attendue : erreur moyenne d'environ 7 % mois par mois lors du rétro-test.
 
 2. L'offre de bienvenue
@@ -555,14 +555,14 @@ PLAN 2026 : DAR JASMIN
    - Elle ne change pas la dépense annuelle d'un client.
 
 3. Valeur d'un client (horizon 5 ans, actualisé à 8 %)
-   - Dépense annuelle moyenne : 247 DT (marge supposée de 40 %) ; clients du canal Boutique : plus rentables que ceux d'Instagram.
-   - Gain net de l'offre : 32 DT par client (intervalle à 95 % : de 18 à 44 DT).
+   - Dépense annuelle moyenne : 247 € (marge supposée de 40 %) ; clients du canal Boutique : plus rentables que ceux d'Réseaux.
+   - Gain net de l'offre : 32 € par client (intervalle à 95 % : de 18 à 44 €).
 
-Hypothèses et limites : dépense annuelle supposée constante tant que le client reste ; marge brute de 40 % ; coût de l'offre de 10 DT ;
+Hypothèses et limites : dépense annuelle supposée constante tant que le client reste ; marge brute de 40 % ; coût de l'offre de 10 € ;
 pas de nouvel arrêt d'activité en 2026 ; données d'une seule boutique.
 ```
 
-> 🛠️ **Relisez ce rapport comme Yasmine** : aucun mot technique ne devrait la gêner. L'annexe technique, c'est le reste de ce projet.
+> 🛠️ **Relisez ce rapport comme la gérante** : aucun mot technique ne devrait la gêner. L'annexe technique, c'est le reste de ce projet.
 
 ### Ce qui avait été programmé
 
@@ -571,12 +571,12 @@ Les données étant simulées, nous pouvons maintenant comparer ce que nos modè
 | Quantité | Valeur programmée | Estimée ici |
 |---|---|---|
 | Effet de l'offre sur le logit du rachat | +0,55 | voir P.4 (≈ +0,49, intervalle compatible) |
-| Effet du canal Instagram sur le logit du rachat (réf. Boutique) | −0,30 | voir P.4 (≈ −0,46, intervalle compatible) |
+| Effet du canal Réseaux sur le logit du rachat (réf. Boutique) | −0,30 | voir P.4 (≈ −0,46, intervalle compatible) |
 | Effet de l'offre sur la dépense (log) | 0 | voir P.5 (≈ −0,01) |
 | Forme de Weibull de la durée de relation | 1,35 | non estimée ici (chapitre 5, section 5.4) |
 | Tendance de la série (log, par mois) | +0,0075 | cohérente avec la croissance de 2016 à 2025 |
 
-> 💡 **Pourquoi les estimations ne sont-elles pas exactement les valeurs programmées ?** Deux raisons, qui valent bien au-delà de ce projet. D'abord le **hasard d'échantillonnage** : les intervalles de confiance de P.4 contiennent les valeurs programmées (par exemple, celui de l'effet d'Instagram contient −0,30), ce qui est exactement ce que la théorie promet. Ensuite, la **variabilité non observée** : le générateur fait dépendre le rachat de deux « goûts » latents (produits et service, ceux que révèlera l'analyse factorielle du chapitre 3) que notre modèle ne contient pas. Omettre des variables qui influencent la réponse **atténue** les coefficients d'une régression logistique, même si ces variables n'ont aucun lien avec l'offre : l'effet estimé de l'offre (+0,49) est un peu inférieur au +0,55 programmé. Ce phénomène, la *non-collapsibilité* du rapport de cotes (chapitre 2, section 2.2), n'existe pas en régression linéaire. Dans la vie réelle, on n'a jamais la valeur programmée pour comparer : il faut connaître le piège.
+> 💡 **Pourquoi les estimations ne sont-elles pas exactement les valeurs programmées ?** Deux raisons, qui valent bien au-delà de ce projet. D'abord le **hasard d'échantillonnage** : les intervalles de confiance de P.4 contiennent les valeurs programmées (par exemple, celui de l'effet d'Réseaux contient −0,30), ce qui est exactement ce que la théorie promet. Ensuite, la **variabilité non observée** : le générateur fait dépendre le rachat de deux « goûts » latents (produits et service, ceux que révèlera l'analyse factorielle du chapitre 3) que notre modèle ne contient pas. Omettre des variables qui influencent la réponse **atténue** les coefficients d'une régression logistique, même si ces variables n'ont aucun lien avec l'offre : l'effet estimé de l'offre (+0,49) est un peu inférieur au +0,55 programmé. Ce phénomène, la *non-collapsibilité* du rapport de cotes (chapitre 2, section 2.2), n'existe pas en régression linéaire. Dans la vie réelle, on n'a jamais la valeur programmée pour comparer : il faut connaître le piège.
 
 ## P.9 Un détour par de vraies données
 
@@ -632,7 +632,7 @@ Les rapports de risques se lisent comme en P.6 : l'aide financière (`fin`) est 
 ## P.10 Limites, et la suite
 
 - **Une boutique, un jeu simulé.** La vraie vie a des variables oubliées, des erreurs de saisie, et des phénomènes que nous n'avons pas programmés.
-- **Des hypothèses fortes dans la valeur client** : dépense constante dans le temps, taux de marge (40 %) et taux d'actualisation (8 %) fixés, coût de l'offre (10 DT) connu. La rentabilité de l'offre dépend de ces choix : une étude sérieuse ferait varier ces hypothèses (analyse de sensibilité).
+- **Des hypothèses fortes dans la valeur client** : dépense constante dans le temps, taux de marge (40 %) et taux d'actualisation (8 %) fixés, coût de l'offre (10 €) connu. La rentabilité de l'offre dépend de ces choix : une étude sérieuse ferait varier ces hypothèses (analyse de sensibilité).
 - **La prévision est conditionnelle.** Elle suppose que le futur ressemble au passé, y compris pour les variables exogènes que nous avons dû fixer (`promo`, `covid`).
 - **Prédire n'est pas expliquer.** L'AUC modeste de P.4 le rappelle : un modèle peut estimer correctement un effet moyen sans bien prédire chaque cas.
 

@@ -1,18 +1,18 @@
 ## 5.6 Exercices du chapitre 5
 
-> 🧭 Cherchez d'abord seul(e) (sur papier, ou en écrivant la requête dans votre éditeur), vérifiez ensuite en exécutant, et seulement après lisez le corrigé. ⭐ = application directe, ⭐⭐ = raisonnement, ⭐⭐⭐ = synthèse. Tous les exercices s'appuient sur la base de Dar Jasmin du 5.1 (`donnees/dar_jasmin.db`). **La date « du jour » est le 31 décembre 2025.**
+> 🧭 Cherchez d'abord seul(e) (sur papier, ou en écrivant la requête dans votre éditeur), vérifiez ensuite en exécutant, et seulement après lisez le corrigé. ⭐ = application directe, ⭐⭐ = raisonnement, ⭐⭐⭐ = synthèse. Tous les exercices s'appuient sur la base de la boutique du 5.1 (`donnees/boutique.db`). **La date « du jour » est le 31 décembre 2025.**
 
 ### Énoncés
 
-**Exercice 1 ⭐ (clés et contraintes).** Yasmine veut enregistrer les **avis** des clients sur les produits. Un avis a un numéro, est écrit par **un** client sur **un** produit, à une date, avec une note de 1 à 5 et un commentaire facultatif. Un client ne peut laisser **qu'un seul avis par produit**. (a) Quelle est la clé primaire, quelles sont les clés étrangères ? (b) Écrivez le `CREATE TABLE` avec toutes les contraintes. (c) Vérifiez qu'un avis valide est accepté, et que trois avis invalides (note 6, doublon client/produit, produit inexistant) sont refusés.
+**Exercice 1 ⭐ (clés et contraintes).** la gérante veut enregistrer les **avis** des clients sur les produits. Un avis a un numéro, est écrit par **un** client sur **un** produit, à une date, avec une note de 1 à 5 et un commentaire facultatif. Un client ne peut laisser **qu'un seul avis par produit**. (a) Quelle est la clé primaire, quelles sont les clés étrangères ? (b) Écrivez le `CREATE TABLE` avec toutes les contraintes. (c) Vérifiez qu'un avis valide est accepté, et que trois avis invalides (note 6, doublon client/produit, produit inexistant) sont refusés.
 
-**Exercice 2 ⭐ (filtrer).** Combien de commandes de **plus de 100 DT** ont été passées **en boutique** en **décembre 2025** ? Affichez les trois plus grosses.
+**Exercice 2 ⭐ (filtrer).** Combien de commandes de **plus de 100 €** ont été passées **en boutique** en **décembre 2025** ? Affichez les trois plus grosses.
 
 **Exercice 3 ⭐ (agréger et joindre).** Pour chaque **ville de client**, donnez le nombre de clients ayant commandé, le nombre de commandes, le chiffre d'affaires et le panier moyen, classées par chiffre d'affaires décroissant. Quelle ville a le meilleur panier moyen ? Est-ce aussi celle qui a le plus gros chiffre d'affaires ?
 
 **Exercice 4 ⭐⭐ (`HAVING`, jointure externe).** Quels produits se sont vendus à **moins de 40 unités** sur l'année ? Pour chacun, donnez les unités vendues et le chiffre d'affaires. Faut-il arrêter de vendre tous ces produits ?
 
-**Exercice 5 ⭐⭐ (anti-jointure).** Les clients qui habitent près de la boutique (**Tunis, La Marsa, Ariana**) mais n'y ont **jamais acheté** sont une cible de choix pour une invitation. Listez-les, de deux façons différentes (`NOT EXISTS` et `LEFT JOIN ... IS NULL`), et vérifiez que les deux donnent le même nombre.
+**Exercice 5 ⭐⭐ (anti-jointure).** Les clients qui habitent près de la boutique (**Ville H, Ville C, Ville A**) mais n'y ont **jamais acheté** sont une cible de choix pour une invitation. Listez-les, de deux façons différentes (`NOT EXISTS` et `LEFT JOIN ... IS NULL`), et vérifiez que les deux donnent le même nombre.
 
 **Exercice 6 ⭐⭐ (`NULL`).** (a) Pour chaque ville, quel est le **pourcentage de clients dont le téléphone est renseigné** ? (b) Un stagiaire écrit `WHERE id_parrain != 3` pour compter les clients **qui n'ont pas été parrainés par le client n° 3**. Combien de lignes obtient-il ? Combien devrait-il en obtenir ? Corrigez.
 
@@ -24,7 +24,7 @@
 
 **Exercice 10 ⭐⭐⭐ (récursivité).** Pour les trois clients ayant le plus de filleuls (directs ou non), calculez le **nombre de membres** de leur réseau (sans eux-mêmes) et le **chiffre d'affaires cumulé de ces membres**. Qui est l'ambassadeur le plus rentable ?
 
-**Exercice 11 ⭐⭐⭐ (dépendances fonctionnelles).** Dar Jasmin enregistre ses livraisons dans une seule table : `livraisons(id_livraison, id_commande, transporteur, tel_transporteur, ville_livraison, frais)`. Règles de gestion : une livraison concerne une commande, est assurée par un transporteur et part vers une ville ; un transporteur n'a qu'un seul numéro de téléphone ; les **frais ne dépendent que de la ville** de livraison (barème par ville). (a) Écrivez les dépendances fonctionnelles. (b) Déterminez la clé. (c) La table est-elle en 2FN ? en 3FN ? (d) Proposez une décomposition en 3FN, et vérifiez-la avec la fonction `fermeture` du 5.4.2.
+**Exercice 11 ⭐⭐⭐ (dépendances fonctionnelles).** la boutique enregistre ses livraisons dans une seule table : `livraisons(id_livraison, id_commande, transporteur, tel_transporteur, ville_livraison, frais)`. Règles de gestion : une livraison concerne une commande, est assurée par un transporteur et part vers une ville ; un transporteur n'a qu'un seul numéro de téléphone ; les **frais ne dépendent que de la ville** de livraison (barème par ville). (a) Écrivez les dépendances fonctionnelles. (b) Déterminez la clé. (c) La table est-elle en 2FN ? en 3FN ? (d) Proposez une décomposition en 3FN, et vérifiez-la avec la fonction `fermeture` du 5.4.2.
 
 ### Corrigés
 
@@ -112,17 +112,17 @@ ORDER BY chiffre_affaires DESC;
 <!--sortie-->
 ```text
    ville  clients_actifs  commandes  chiffre_affaires  panier_moyen
-  Ariana              13        100            6456.0         64.56
-La Marsa               9         80            4619.0         57.73
-   Tunis               9         49            3407.0         69.53
-  Sousse               7         38            2200.0         57.89
-Monastir               6         41            2101.0         51.25
-    Sfax               6         34            2043.0         60.09
- Bizerte               8         31            1735.0         55.95
-  Nabeul               8         27            1538.0         56.96
+  Ville A              13        100            6456.0         64.56
+Ville C               9         80            4619.0         57.73
+   Ville H               9         49            3407.0         69.53
+  Ville G               7         38            2200.0         57.89
+Ville D               6         41            2101.0         51.25
+    Ville F               6         34            2043.0         60.09
+ Ville B               8         31            1735.0         55.95
+  Ville E               8         27            1538.0         56.96
 ```
 
-Ariana est en tête pour le chiffre d'affaires (6 456 DT) mais pas pour le panier : c'est **Tunis** qui a le meilleur panier moyen (69,53 DT), avec un nombre de commandes beaucoup plus faible (49 contre 100). Le chiffre d'affaires est le produit *nombre de commandes × panier moyen* : un fort volume de petits paniers peut battre un faible volume de gros paniers.
+Ville A est en tête pour le chiffre d'affaires (6 456 €) mais pas pour le panier : c'est **Ville H** qui a le meilleur panier moyen (69,53 €), avec un nombre de commandes beaucoup plus faible (49 contre 100). Le chiffre d'affaires est le produit *nombre de commandes × panier moyen* : un fort volume de petits paniers peut battre un faible volume de gros paniers.
 
 **Corrigé 4.** `LEFT JOIN` pour ne pas perdre un éventuel produit **jamais vendu** (il aurait 0 unité, ou `NULL` : voir `COALESCE`). Le filtre sur une valeur agrégée s'écrit avec `HAVING`.
 
@@ -144,14 +144,14 @@ Margoum (petit tapis)      13            1593.0
       Écharpe en soie      37            2031.0
 ```
 
-Trois produits. Mais **faible volume ne veut pas dire faible intérêt** : le margoum (petit tapis), à 120 DT l'unité, ne s'est vendu qu'à 13 exemplaires et rapporte pourtant 1 593 DT, plus que bien des produits très vendus. Le vase peint et l'écharpe en soie (37 unités chacun) sont même parmi les produits au plus gros chiffre d'affaires du magasin. Arrêter de les vendre serait une erreur : le bon indicateur dépend de la question (rotation, chiffre d'affaires, marge). Aucun de nos produits n'est resté invendu.
+Trois produits. Mais **faible volume ne veut pas dire faible intérêt** : le margoum (petit tapis), à 120 € l'unité, ne s'est vendu qu'à 13 exemplaires et rapporte pourtant 1 593 €, plus que bien des produits très vendus. Le vase peint et l'écharpe en soie (37 unités chacun) sont même parmi les produits au plus gros chiffre d'affaires du magasin. Arrêter de les vendre serait une erreur : le bon indicateur dépend de la question (rotation, chiffre d'affaires, marge). Aucun de nos produits n'est resté invendu.
 
 **Corrigé 5.** Version `NOT EXISTS` : on garde les clients de ces villes pour lesquels il n'existe **aucune** commande en boutique. Version `LEFT JOIN` : on joint **seulement** les commandes de boutique (la condition sur le canal va dans le `ON`, pas dans le `WHERE` !), puis on garde ceux qui n'ont aucun partenaire.
 
 ```sql
 SELECT cl.id_client, cl.prenom, cl.nom, cl.ville
 FROM clients AS cl
-WHERE cl.ville IN ('Tunis', 'La Marsa', 'Ariana')
+WHERE cl.ville IN ('Ville H', 'Ville C', 'Ville A')
   AND NOT EXISTS (SELECT 1 FROM commandes AS c
                   WHERE c.id_client = cl.id_client AND c.canal = 'Boutique')
 ORDER BY cl.id_client;
@@ -159,21 +159,21 @@ ORDER BY cl.id_client;
 <!--sortie-->
 ```text
  id_client  prenom       nom    ville
-        10    Nour     Hamdi    Tunis
-        20   Aymen  Bouazizi    Tunis
-        28    Emna Ben Salah   Ariana
-        32 Oussama   Khelifi La Marsa
-        55 Oussama     Mejri La Marsa
-        65   Dorra     Mejri    Tunis
-        75    Lina     Mejri La Marsa
-        78    Ines     Ayari    Tunis
+        10    Nour     Hamdi    Ville H
+        20   Aymen  Bouazizi    Ville H
+        28    Emna Ben Salah   Ville A
+        32 Oussama   Khelifi Ville C
+        55 Oussama     Mejri Ville C
+        65   Dorra     Mejri    Ville H
+        75    Lina     Mejri Ville C
+        78    Ines     Ayari    Ville H
 ```
 
 ```sql
 SELECT COUNT(*) AS avec_left_join
 FROM clients AS cl
 LEFT JOIN commandes AS c ON c.id_client = cl.id_client AND c.canal = 'Boutique'
-WHERE cl.ville IN ('Tunis', 'La Marsa', 'Ariana')
+WHERE cl.ville IN ('Ville H', 'Ville C', 'Ville A')
   AND c.id_commande IS NULL;
 ```
 <!--sortie-->
@@ -198,17 +198,17 @@ ORDER BY pourcentage DESC;
 <!--sortie-->
 ```text
    ville  clients  avec_telephone  pourcentage
-Monastir        7               7        100.0
- Bizerte       11              11        100.0
-  Sousse       11              10         90.9
-    Sfax        7               6         85.7
-  Nabeul       10               8         80.0
-   Tunis       11               8         72.7
-  Ariana       13               9         69.2
-La Marsa       10               6         60.0
+Ville D        7               7        100.0
+ Ville B       11              11        100.0
+  Ville G       11              10         90.9
+    Ville F        7               6         85.7
+  Ville E       10               8         80.0
+   Ville H       11               8         72.7
+  Ville A       13               9         69.2
+Ville C       10               6         60.0
 ```
 
-Les numéros sont toujours renseignés à Monastir et à Bizerte, mais seulement à 60 % à La Marsa. (b) Le comparatif `!=` renvoie *inconnu* quand `id_parrain` est `NULL` : les 49 clients **sans parrain** sont éliminés, alors qu'ils ne sont évidemment pas parrainés par le client n° 3.
+Les numéros sont toujours renseignés à Ville D et à Ville B, mais seulement à 60 % à Ville C. (b) Le comparatif `!=` renvoie *inconnu* quand `id_parrain` est `NULL` : les 49 clients **sans parrain** sont éliminés, alors qu'ils ne sont évidemment pas parrainés par le client n° 3.
 
 ```sql
 SELECT (SELECT COUNT(*) FROM clients WHERE id_parrain != 3)                      AS naif,
@@ -339,7 +339,7 @@ FROM premiere_et_derniere;
       58                       29             61.91              57.4
 ```
 
-Sur 66 clients actifs, 58 ont recommandé au moins une fois : un **taux de réachat de 87,9 %**, excellent. Parmi eux, la moitié exactement (29 sur 58) dépense davantage lors de la dernière commande que lors de la première, et les montants moyens sont proches (61,91 DT contre 57,40 DT) : **pas de tendance** à dépenser plus avec le temps dans ces données (là encore, un test de comparaison de moyennes au sens du chapitre 3 serait à faire avant de conclure à autre chose que du hasard).
+Sur 66 clients actifs, 58 ont recommandé au moins une fois : un **taux de réachat de 87,9 %**, excellent. Parmi eux, la moitié exactement (29 sur 58) dépense davantage lors de la dernière commande que lors de la première, et les montants moyens sont proches (61,91 € contre 57,40 €) : **pas de tendance** à dépenser plus avec le temps dans ces données (là encore, un test de comparaison de moyennes au sens du chapitre 3 serait à faire avant de conclure à autre chose que du hasard).
 
 **Corrigé 10.** Une CTE récursive parcourt les réseaux, en gardant la **racine** de chacun comme au 5.3.6. On retire la racine elle-même (profondeur 0) du décompte et du chiffre d'affaires.
 
@@ -373,7 +373,7 @@ LIMIT 3;
       1 Yassine Lahmar        4          1117.0
 ```
 
-Le `LEFT JOIN` est indispensable : un membre qui n'a jamais commandé n'a pas de ligne dans `ca_client` ; avec un `JOIN` ordinaire, il disparaîtrait du décompte des membres. Les trois plus gros réseaux sont ceux de Nour Hamdi (n° 10, 5 membres), de Zied Ben Salah (n° 7, 4 membres) et de Yassine Lahmar (n° 1, 4 membres ; il est classé après Zied car on départage les ex æquo par le chiffre d'affaires). L'ambassadeur le plus **rentable** est **Zied Ben Salah** : ses quatre filleuls ont dépensé 2 048,70 DT, contre 1 117,00 DT pour ceux de Yassine Lahmar et 808,20 DT seulement pour les cinq membres du plus grand réseau, celui de Nour Hamdi. Le réseau le plus **grand** n'est donc pas le plus **rentable** : il faut mesurer ce qu'on veut optimiser.
+Le `LEFT JOIN` est indispensable : un membre qui n'a jamais commandé n'a pas de ligne dans `ca_client` ; avec un `JOIN` ordinaire, il disparaîtrait du décompte des membres. Les trois plus gros réseaux sont ceux de Nour Hamdi (n° 10, 5 membres), de Zied Ben Salah (n° 7, 4 membres) et de Yassine Lahmar (n° 1, 4 membres ; il est classé après Zied car on départage les ex æquo par le chiffre d'affaires). L'ambassadeur le plus **rentable** est **Zied Ben Salah** : ses quatre filleuls ont dépensé 2 048,70 €, contre 1 117,00 € pour ceux de Yassine Lahmar et 808,20 € seulement pour les cinq membres du plus grand réseau, celui de Nour Hamdi. Le réseau le plus **grand** n'est donc pas le plus **rentable** : il faut mesurer ce qu'on veut optimiser.
 
 **Corrigé 11.** (a) Dépendances :
 - `id_livraison` $\to$ `id_commande`, `transporteur`, `ville_livraison` (une livraison fixe sa commande, son transporteur et sa destination) ;

@@ -33,7 +33,7 @@ Le **paramètre de régularisation** $\lambda$ règle la sévérité de la laiss
 > $$(\mathbf X^\top\mathbf X+\lambda\mathbf I)\,\hat{\boldsymbol\beta}_{\text{ridge}}=\mathbf X^\top\mathbf y\quad\Longrightarrow\quad\hat{\boldsymbol\beta}_{\text{ridge}}=(\mathbf X^\top\mathbf X+\lambda\mathbf I)^{-1}\mathbf X^\top\mathbf y .$$
 > Pour $\lambda>0$, $\mathbf X^\top\mathbf X+\lambda\mathbf I$ est **toujours inversible** (ses valeurs propres sont $\ge\lambda>0$), même si $\mathbf X$ n'est pas de rang plein ou si $p>n$ : la régularisation résout aussi le problème de la colinéarité parfaite.
 
-Deux règles pratiques, essentielles : (1) **la constante n'est pas pénalisée** (on centre simplement $\mathbf y$ et les colonnes de $\mathbf X$) ; (2) **il faut standardiser les variables** (moyenne 0, écart-type 1) : sinon la pénalité frappe plus les variables exprimées dans de petites unités (un âge en années contre un revenu en milliers de dinars) et le résultat dépend des unités choisies.
+Deux règles pratiques, essentielles : (1) **la constante n'est pas pénalisée** (on centre simplement $\mathbf y$ et les colonnes de $\mathbf X$) ; (2) **il faut standardiser les variables** (moyenne 0, écart-type 1) : sinon la pénalité frappe plus les variables exprimées dans de petites unités (un âge en années contre un revenu en milliers de euros) et le résultat dépend des unités choisies.
 
 **Voir ce que fait la pénalité : la SVD.** Écrivons la décomposition en valeurs singulières de $\mathbf X$ centrée : $\mathbf X=\mathbf U\mathbf D\mathbf V^\top$ (volume I, section 1.1.4), où les $d_j$ sont les valeurs singulières. Alors
 
@@ -93,12 +93,12 @@ corrélation entre les deux estimations MCO du même échantillon : -0.984
 
 Pour $\lambda=0$ (les moindres carrés), la **variance** domine : les deux estimations sont fortement corrélées négativement entre elles (si l'une surestime, l'autre sous-estime : voir la corrélation affichée), ce qui rend chacune très instable. Quand $\lambda$ augmente, le **biais²** augmente et la **variance** chute ; l'EQM totale passe par un **minimum** vers $\lambda=10$ (0,029, contre 2,09 pour les moindres carrés : soixante-dix fois moins), avant de remonter quand le biais devient excessif ($\lambda=50$ : 0,13). Le meilleur estimateur au sens de l'EQM est donc **biaisé** : ce n'est pas en contradiction avec Gauss-Markov, qui ne parlait que des estimateurs **sans biais**.
 
-**À la main contre `scikit-learn`.** Vérifions notre formule sur les données de Dar Jasmin, avec les notes de l'enquête (nous introduisons ici le jeu de variables de la section suivante) :
+**À la main contre `scikit-learn`.** Vérifions notre formule sur les données de la boutique, avec les notes de l'enquête (nous introduisons ici le jeu de variables de la section suivante) :
 
 ```python
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy()
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36
 df["log_panier"] = np.log(df["panier_moyen"])
 enq = pd.read_csv("donnees/enquete_satisfaction.csv")
@@ -107,7 +107,7 @@ enq["score_service"] = enq[["q5", "q6", "q7", "q8"]].mean(axis=1)
 bq = df.merge(enq[["id_client", "score_produit", "score_service"]], on="id_client").reset_index(drop=True)
 
 # Un petit jeu de variables : l'âge, le canal, les scores
-Xp = pd.DataFrame({"age": bq["a"], "Site": (bq["canal"] == "Site").astype(float), "Instagram": (bq["canal"] == "Instagram").astype(float),
+Xp = pd.DataFrame({"age": bq["a"], "Site": (bq["canal"] == "Site").astype(float), "Réseaux": (bq["canal"] == "Réseaux").astype(float),
                    "score_produit": bq["score_produit"], "score_service": bq["score_service"]})
 yv = bq["log_panier"].to_numpy()
 sc = StandardScaler().fit(Xp)
@@ -123,12 +123,12 @@ print(pd.DataFrame({"à la main": beta_main, "scikit-learn": sk.coef_, "MCO (λ 
                à la main  scikit-learn  MCO (λ = 0)
 age              0.09800       0.09800      0.10255
 Site            -0.06342      -0.06342     -0.07490
-Instagram       -0.15797      -0.15797     -0.17241
+Réseaux       -0.15797      -0.15797     -0.17241
 score_produit    0.09827       0.09827      0.10322
 score_service    0.02016       0.02016      0.02035
 ```
 
-Les deux colonnes de Ridge coïncident : `scikit-learn` fait exactement le calcul de la formule. Les coefficients de Ridge sont **rétrécis** par rapport aux moindres carrés, modestement ici ($\lambda=50$ est petit devant $n\approx1\,000$) : environ 4 % pour l'âge, 15 % pour le Site, 8 % pour Instagram. Le rétrécissement est le plus marqué pour les indicatrices du canal, qui sont **corrélées entre elles** (les clients Site ne sont pas Instagram) : leurs directions ont de petites valeurs singulières, exactement celles que le facteur $d_j^2/(d_j^2+\lambda)$ pénalise le plus.
+Les deux colonnes de Ridge coïncident : `scikit-learn` fait exactement le calcul de la formule. Les coefficients de Ridge sont **rétrécis** par rapport aux moindres carrés, modestement ici ($\lambda=50$ est petit devant $n\approx1\,000$) : environ 4 % pour l'âge, 15 % pour le Site, 8 % pour Réseaux. Le rétrécissement est le plus marqué pour les indicatrices du canal, qui sont **corrélées entre elles** (les clients Site ne sont pas Réseaux) : leurs directions ont de petites valeurs singulières, exactement celles que le facteur $d_j^2/(d_j^2+\lambda)$ pénalise le plus.
 
 ### 1.5.2 Le Lasso : la pénalité qui élimine des variables
 
@@ -224,7 +224,7 @@ print("coefficients exactement nuls (à la main) :", list(Xp.columns[b_main == 0
                à la main  scikit-learn      MCO
 age              0.05297       0.05297  0.10255
 Site            -0.00000      -0.00000 -0.07490
-Instagram       -0.07486      -0.07486 -0.17241
+Réseaux       -0.07486      -0.07486 -0.17241
 score_produit    0.05465       0.05465  0.10322
 score_service    0.00000       0.00000  0.02035
 coefficients exactement nuls (à la main) : ['Site', 'score_service']
@@ -250,10 +250,10 @@ ville = bq["id_client"].map(clients.set_index("id_client")["ville"])
 villes = pd.get_dummies(ville, prefix="ville", drop_first=True, dtype=float)       # 5 indicatrices (Autre = référence)
 F = pd.DataFrame({
     "age": bq["a"].astype(float), "age_carre": bq["a"].astype(float) ** 2, "age_cube": bq["a"].astype(float) ** 3,
-    "canal_Site": (bq["canal"] == "Site").astype(float), "canal_Instagram": (bq["canal"] == "Instagram").astype(float),
+    "canal_Site": (bq["canal"] == "Site").astype(float), "canal_Instagram": (bq["canal"] == "Réseaux").astype(float),
     "offre_bienvenue": bq["id_client"].map(clients.set_index("id_client")["offre_bienvenue"]).astype(float),
     "score_produit": bq["score_produit"], "score_service": bq["score_service"],
-    "age_x_Site": bq["a"] * (bq["canal"] == "Site").astype(float), "age_x_Instagram": bq["a"] * (bq["canal"] == "Instagram").astype(float),
+    "age_x_Site": bq["a"] * (bq["canal"] == "Site").astype(float), "age_x_Instagram": bq["a"] * (bq["canal"] == "Réseaux").astype(float),
 })
 F = pd.concat([F, villes], axis=1)
 bruit = pd.DataFrame(rng.normal(size=(len(F), 20)), columns=[f"bruit_{i+1:02d}" for i in range(20)])
@@ -360,7 +360,7 @@ bruit_20        -0.054 -0.021 -0.014       -0.014
 variables de bruit : plus grand |coefficient| MCO = 0.073 | Ridge = 0.024 | Lasso = 0.025
 ```
 
-Le Lasso retient **les quatre vraies variables** (âge, Site, Instagram, score produit), avec des coefficients de 0,05 à 0,13 en valeur absolue, et laisse passer 7 variables de bruit dont les coefficients sont **au plus 0,025**, c'est-à-dire plus de deux fois plus petits que le plus petit coefficient d'une vraie variable : l'ordre de grandeur permet de les distinguer. Avec les moindres carrés, au contraire, les variables de bruit atteignent 0,073, un coefficient du même ordre que celui du score produit (0,106) : on ne peut plus faire la différence. Remarquez aussi que les coefficients MCO des vraies variables sont **gonflés** par rapport à ceux du Lasso (l'âge : 0,165 contre 0,050) : c'est le **biais de sélection** vu au 1.4.5, qui joue ici à l'envers, puisque la régularisation le contrôle.
+Le Lasso retient **les quatre vraies variables** (âge, Site, Réseaux, score produit), avec des coefficients de 0,05 à 0,13 en valeur absolue, et laisse passer 7 variables de bruit dont les coefficients sont **au plus 0,025**, c'est-à-dire plus de deux fois plus petits que le plus petit coefficient d'une vraie variable : l'ordre de grandeur permet de les distinguer. Avec les moindres carrés, au contraire, les variables de bruit atteignent 0,073, un coefficient du même ordre que celui du score produit (0,106) : on ne peut plus faire la différence. Remarquez aussi que les coefficients MCO des vraies variables sont **gonflés** par rapport à ceux du Lasso (l'âge : 0,165 contre 0,050) : c'est le **biais de sélection** vu au 1.4.5, qui joue ici à l'envers, puisque la régularisation le contrôle.
 
 **Les chemins de régularisation.** Pour voir la régularisation à l'œuvre, on trace comment chaque coefficient évolue quand la pénalité varie, de très forte (tous les coefficients à 0) à très faible (on retrouve les moindres carrés).
 
@@ -397,14 +397,14 @@ figure enregistrée
 
 ![Chemins de régularisation (à gauche : Ridge ; à droite : Lasso). Les coefficients des quatre vraies variables sont en couleur, ceux des 31 autres variables en gris. Plus on va vers la droite (pénalité faible), plus les coefficients grossissent. Le Lasso met à zéro les coefficients un par un ; Ridge les rétrécit tous ensemble sans jamais les annuler. La ligne pointillée marque la pénalité choisie par validation croisée.](figures/ch01-chemins-regularisation.png)
 
-Sur la gauche de chaque graphique, la pénalité est énorme et tous les coefficients valent 0 ; en allant vers la droite, la pénalité se relâche et les coefficients se déploient. Avec le Lasso, les variables **entrent une par une** dans le modèle, à peu près dans l'ordre de leur pouvoir prédictif : le score produit, l'âge et Instagram apparaissent en premier ; le Site, dont l'effet est pourtant réel, n'apparaît qu'à peu près en même temps que les premières variables de bruit (il est partiellement redondant avec Instagram, comme on l'a vu avec Ridge) ; les variables de bruit entrent avec de petits coefficients. À la valeur choisie par validation croisée (pointillés), on est dans la zone où le signal est capté et où la plus grande partie du bruit est encore écartée. Avec Ridge, tous les coefficients se rétrécissent **ensemble** : le bruit n'est pas éliminé, seulement atténué.
+Sur la gauche de chaque graphique, la pénalité est énorme et tous les coefficients valent 0 ; en allant vers la droite, la pénalité se relâche et les coefficients se déploient. Avec le Lasso, les variables **entrent une par une** dans le modèle, à peu près dans l'ordre de leur pouvoir prédictif : le score produit, l'âge et Réseaux apparaissent en premier ; le Site, dont l'effet est pourtant réel, n'apparaît qu'à peu près en même temps que les premières variables de bruit (il est partiellement redondant avec Réseaux, comme on l'a vu avec Ridge) ; les variables de bruit entrent avec de petits coefficients. À la valeur choisie par validation croisée (pointillés), on est dans la zone où le signal est capté et où la plus grande partie du bruit est encore écartée. Avec Ridge, tous les coefficients se rétrécissent **ensemble** : le bruit n'est pas éliminé, seulement atténué.
 
 ### 1.5.5 Précautions
 
 - **Standardisez toujours** les variables (et estimez la moyenne et l'écart-type sur l'échantillon d'**entraînement** seulement, jamais sur les données de test : sinon on laisse fuir de l'information du test dans le modèle).
 - Choisissez $\lambda$ **par validation croisée** sur l'entraînement ; ne regardez l'échantillon de test qu'à la fin.
 - Les coefficients régularisés sont **biaisés** par construction : on ne les interprète pas comme des effets (« à toutes choses égales par ailleurs ») avec la même confiance. Il n'y a pas de p-valeurs ni d'intervalles de confiance « standard » : les formules du 1.2 ne s'appliquent plus, et la sélection par le Lasso soulève précisément le problème de l'inférence **après sélection** discuté au 1.4.5.
-- La régularisation vise la **prédiction**. Pour estimer un effet précis et le décrire à Yasmine, on revient en général à un modèle plus simple et interprétable, éventuellement **choisi** avec l'aide du Lasso, mais **réajusté** sur de nouvelles données.
+- La régularisation vise la **prédiction**. Pour estimer un effet précis et le décrire à la gérante, on revient en général à un modèle plus simple et interprétable, éventuellement **choisi** avec l'aide du Lasso, mais **réajusté** sur de nouvelles données.
 - **Lien avec le bayésien (chapitre 6).** Ridge équivaut à une approche bayésienne où chaque coefficient a une loi *a priori* **normale** centrée en 0 (le coefficient est « probablement petit »), et le Lasso à une loi *a priori* de **Laplace** (plus piquée en 0, d'où les zéros). La section 6.1 reprendra cette interprétation : $\lambda$ y correspond au rapport entre la variance du bruit et celle de l'*a priori*.
 
 > ✅ **À retenir (1.5).**

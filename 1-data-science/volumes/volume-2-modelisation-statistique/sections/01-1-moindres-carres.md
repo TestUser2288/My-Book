@@ -4,9 +4,9 @@
 
 ### 1.1.1 Un exemple minuscule, entièrement à la main
 
-Yasmine a noté, pour quatre commandes, le **nombre d'articles** et le **montant total** en DT :
+La gérante a noté, pour quatre commandes, le **nombre d'articles** et le **montant total** en € :
 
-| Commande | Articles $x$ | Montant $y$ (DT) |
+| Commande | Articles $x$ | Montant $y$ (€) |
 |---|---|---|
 | A | 1 | 22 |
 | B | 2 | 41 |
@@ -30,7 +30,7 @@ Le déterminant de $\mathbf X^\top\mathbf X$ vaut $4\times30-10\times10=20$, don
 $$(\mathbf X^\top\mathbf X)^{-1}=\frac1{20}\begin{pmatrix}30&-10\\-10&4\end{pmatrix},\qquad
 \hat{\boldsymbol\beta}=\frac1{20}\begin{pmatrix}30\cdot208-10\cdot618\\-10\cdot208+4\cdot618\end{pmatrix}=\frac1{20}\begin{pmatrix}60\\392\end{pmatrix}=\begin{pmatrix}3\\19{,}6\end{pmatrix}.$$
 
-La meilleure droite est donc $\hat y=3+19{,}6\,x$ : un coût fixe de 3 DT et 19,60 DT par article. Les valeurs ajustées sont $22{,}6;\ 42{,}2;\ 61{,}8;\ 81{,}4$, et les **résidus** (écarts entre le réel et l'ajusté) valent $-0{,}6;\ -1{,}2;\ +4{,}2;\ -2{,}4$. Leur somme est nulle, et la somme de leurs carrés vaut $0{,}36+1{,}44+17{,}64+5{,}76=25{,}2$. Vérifions tout cela par le code.
+La meilleure droite est donc $\hat y=3+19{,}6\,x$ : un coût fixe de 3 € et 19,60 € par article. Les valeurs ajustées sont $22{,}6;\ 42{,}2;\ 61{,}8;\ 81{,}4$, et les **résidus** (écarts entre le réel et l'ajusté) valent $-0{,}6;\ -1{,}2;\ +4{,}2;\ -2{,}4$. Leur somme est nulle, et la somme de leurs carrés vaut $0{,}36+1{,}44+17{,}64+5{,}76=25{,}2$. Vérifions tout cela par le code.
 
 ```python
 import numpy as np
@@ -91,7 +91,7 @@ for xi, yi, nom in zip(x, y, "ABCD"):
 ax.text(2.45, 30, "droite des moindres carrés\nŷ = 3 + 19,6 x", color=BLEU)
 ax.text(3.08, 60, "résidu", color=ORANGE)
 ax.set_xlabel("nombre d'articles")
-ax.set_ylabel("montant de la commande (DT)")
+ax.set_ylabel("montant de la commande (€)")
 ax.set_xlim(0.5, 4.6)
 ax.set_ylim(10, 95)
 plt.savefig("figures/ch01-droite-4-points.png", dpi=200, bbox_inches="tight")
@@ -337,9 +337,9 @@ R² = corr(x, y)² (simple): 0.9871
 
 > ⚠️ **Les limites du $R^2$.** (1) Il **ne peut qu'augmenter** quand on ajoute une variable, même une variable sans rapport : un $R^2$ élevé peut être le signe d'un surajustement. Le **$R^2$ ajusté**, $R^2_{\text{aj}}=1-\dfrac{\text{SCR}/(n-p)}{\text{SCT}/(n-1)}$, corrige ce défaut en comparant des variances *sans biais*. (2) Un $R^2$ faible n'est pas un échec : quand le phénomène est intrinsèquement bruité (le comportement d'achat d'un individu), un $R^2$ de 15 % peut déjà être très informatif sur les **effets moyens**. (3) Un $R^2$ élevé ne prouve ni que le modèle est correct, ni que la relation est causale. Rappelez-vous le quartet d'Anscombe (volume I, section 3.1.7) : quatre jeux très différents donnent la même droite et le même $R^2$. **Dessinez toujours.**
 
-### 1.1.7 Première étude : le panier des clients de Dar Jasmin
+### 1.1.7 Première étude : le panier des clients de la boutique
 
-Passons aux données de Dar Jasmin (simulées, rappelons-le) : 2 000 clients. Yasmine s'intéresse au **panier moyen** (en DT) des clients qui ont commandé au moins une fois dans l'année.
+Passons aux données de la boutique (simulées, rappelons-le) : 2 000 clients. La gérante s'intéresse au **panier moyen** (en €) des clients qui ont commandé au moins une fois dans l'année.
 
 ```python
 import pandas as pd
@@ -356,10 +356,10 @@ print("clients sans aucune commande :", int((clients["nb_commandes_an"] == 0).su
 ```text
 (2000, 12)
  id_client  age   ville canal_acquisition date_inscription  offre_bienvenue  nb_commandes_an  panier_moyen  depense_annuelle  rachat_12m  duree_mois  churn
-         1   19   Autre         Instagram       2020-03-11                0                4         40.95            116.50           0       15.89      1
-         2   43   Tunis              Site       2019-01-10                1                2         78.34            148.92           1       33.68      0
-         3   35 Bizerte          Boutique       2020-07-02                1                6         73.73            509.05           0       23.22      0
-         4   42  Sousse         Instagram       2024-08-01                0                0          0.00              0.00           0        0.96      0
+         1   19   Autre         Réseaux       2020-03-11                0                4         40.95            116.50           0       15.89      1
+         2   43   Ville E              Site       2019-01-10                1                2         78.34            148.92           1       33.68      0
+         3   35 Ville A          Boutique       2020-07-02                1                6         73.73            509.05           0       23.22      0
+         4   42  Ville D         Réseaux       2024-08-01                0                0          0.00              0.00           0        0.96      0
 
 clients sans aucune commande : 260 sur 2000 ( 13.0 %)
 ```
@@ -368,7 +368,7 @@ Les clients sans commande ont un panier moyen égal à 0 par convention : ce 0 n
 
 ```python
 df = clients[clients["nb_commandes_an"] > 0].copy()
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36                       # âge centré sur 36 ans (l'âge moyen de la clientèle)
 df["log_panier"] = np.log(df["panier_moyen"])
 print(len(df), "clients actifs")
@@ -394,7 +394,7 @@ Le panier est nettement **asymétrique** (queue vers les gros paniers), alors qu
 ```python
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 3.6))
 ax1.hist(df["panier_moyen"], bins=40, color=BLEU, alpha=0.85)
-ax1.set_xlabel("panier moyen (DT)"); ax1.set_ylabel("nombre de clients"); ax1.set_title("Panier : asymétrique")
+ax1.set_xlabel("panier moyen (€)"); ax1.set_ylabel("nombre de clients"); ax1.set_title("Panier : asymétrique")
 ax2.hist(df["log_panier"], bins=40, color=AQUA, alpha=0.85)
 ax2.set_xlabel("log du panier moyen"); ax2.set_title("Log du panier : presque symétrique")
 plt.tight_layout()
@@ -428,17 +428,17 @@ R² = 0.0549 | écart-type résiduel s = 0.3941
 
 La formule `log_panier ~ a` se lit « log-panier expliqué par `a` » ; `statsmodels` ajoute la constante tout seul. Le tableau donne, pour chaque coefficient, l'estimation (`coef`), son erreur standard (`std err`), une statistique $t$, une p-valeur et un intervalle de confiance à 95 % : nous en comprendrons chaque colonne au 1.2. Retenons pour l'instant l'**interprétation** :
 
-- La **constante** vaut environ 4,03 : un client de 36 ans a un log-panier de 4,03, soit un panier typique de $e^{4{,}03}\approx56$ DT.
+- La **constante** vaut environ 4,03 : un client de 36 ans a un log-panier de 4,03, soit un panier typique de $e^{4{,}03}\approx56$ €.
 - Le coefficient de **`a`** vaut environ 0,009 : chaque année d'âge supplémentaire est associée à une hausse de **0,9 %** du panier ($\log$ y augmente de 0,009, donc $y$ est multiplié par $e^{0{,}009}\approx1{,}009$).
 - Le $R^2$ est faible (environ 5,5 %) : l'âge à lui seul explique peu de choses, ce qui n'a rien de surprenant.
 
-**Variable qualitative : le codage par indicatrices.** Comment faire entrer le **canal** (Boutique/Site/Instagram), qui n'est pas un nombre ? On le remplace par des **variables indicatrices** (ou *dummies*) : une colonne par modalité *sauf une*, la **modalité de référence**, qui est absorbée par la constante. Avec Boutique pour référence :
+**Variable qualitative : le codage par indicatrices.** Comment faire entrer le **canal** (Boutique/Site/Réseaux), qui n'est pas un nombre ? On le remplace par des **variables indicatrices** (ou *dummies*) : une colonne par modalité *sauf une*, la **modalité de référence**, qui est absorbée par la constante. Avec Boutique pour référence :
 
-| canal | `Site` | `Instagram` |
+| canal | `Site` | `Réseaux` |
 |---|---|---|
 | Boutique | 0 | 0 |
 | Site | 1 | 0 |
-| Instagram | 0 | 1 |
+| Réseaux | 0 | 1 |
 
 > ⚠️ **Pourquoi pas une colonne par modalité ?** Parce que les trois colonnes s'additionnent exactement à la colonne de 1 de la constante : $\mathbf X$ ne serait plus de rang plein, et $(\mathbf X^\top\mathbf X)^{-1}$ n'existerait pas (violation de H2 : c'est le « piège de la variable indicatrice »). Retirer une colonne règle le problème.
 
@@ -459,7 +459,7 @@ print(m2.model.exog[:6].round(0).astype(int), "  <- colonnes :", m2.model.exog_n
 -----------------------------------------------------------------------------------------
 Intercept                 4.2206      0.017    241.369      0.000       4.186       4.255
 C(canal)[T.Site]         -0.1571      0.023     -6.807      0.000      -0.202      -0.112
-C(canal)[T.Instagram]    -0.3368      0.022    -14.977      0.000      -0.381      -0.293
+C(canal)[T.Réseaux]    -0.3368      0.022    -14.977      0.000      -0.381      -0.293
 a                         0.0092      0.001     10.862      0.000       0.008       0.011
 =========================================================================================
 R² = 0.1657 | R² ajusté = 0.1643 | s = 0.3705
@@ -470,19 +470,19 @@ Début de la matrice X (les 6 premières lignes) :
  [  1   0   0  -1]
  [  1   0   1 -15]
  [  1   1   0  -6]
- [  1   0   1 -10]]   <- colonnes : ['Intercept', 'C(canal)[T.Site]', 'C(canal)[T.Instagram]', 'a']
+ [  1   0   1 -10]]   <- colonnes : ['Intercept', 'C(canal)[T.Site]', 'C(canal)[T.Réseaux]', 'a']
 ```
 
 L'écriture `C(canal)` demande à `statsmodels` de traiter `canal` comme qualitative. Voici comment lire chaque ligne :
 
-- **Constante** (≈ 4,22) : le log-panier d'un client de **36 ans acquis en boutique** (modalité de référence, âge à 0 après centrage), soit $e^{4{,}22}\approx68$ DT.
+- **Constante** (≈ 4,22) : le log-panier d'un client de **36 ans acquis en boutique** (modalité de référence, âge à 0 après centrage), soit $e^{4{,}22}\approx68$ €.
 - **`C(canal)[T.Site]`** (≈ −0,16) : à âge égal, un client acquis par le site a un log-panier inférieur de 0,16 à celui d'un client de la boutique. En pourcentage : $e^{-0{,}157}\approx0{,}855$, soit un panier **environ 14,5 % plus petit**.
-- **`C(canal)[T.Instagram]`** (≈ −0,34) : $e^{-0{,}34}\approx0{,}71$ : à âge égal, un panier **29 % plus petit** qu'en boutique.
+- **`C(canal)[T.Réseaux]`** (≈ −0,34) : $e^{-0{,}34}\approx0{,}71$ : à âge égal, un panier **29 % plus petit** qu'en boutique.
 - **`a`** (≈ 0,009) : à canal égal, +0,9 % de panier par année d'âge.
 
-Et le $R^2$ a presque triplé par rapport au modèle précédent (de 5,5 % à 16,6 %). C'est la réponse à la première question de Yasmine : *à âge égal*, un client Instagram dépense environ 29 % de moins qu'un client de la boutique.
+Et le $R^2$ a presque triplé par rapport au modèle précédent (de 5,5 % à 16,6 %). C'est la réponse à la première question de la gérante : *à âge égal*, un client Réseaux dépense environ 29 % de moins qu'un client de la boutique.
 
-> 🧪 **Un détail d'interprétation fréquemment raté.** Les coefficients se lisent **à l'intérieur du modèle**. Le coefficient de l'âge ne dit pas « l'effet de l'âge sur le panier » dans l'absolu, mais « l'effet de l'âge **quand on compare des clients de même canal** ». C'est le sens de l'expression **« toutes choses égales par ailleurs »**. Ici, le coefficient de l'âge change à peine entre `m1` et `m2` car l'âge et le canal sont presque indépendants dans nos données ; s'ils étaient liés (par exemple si Instagram attirait surtout les jeunes), le coefficient de l'âge dans `m1` mélangerait l'effet de l'âge et l'effet du canal, et il changerait nettement. Ce mélange, c'est la **confusion**.
+> 🧪 **Un détail d'interprétation fréquemment raté.** Les coefficients se lisent **à l'intérieur du modèle**. Le coefficient de l'âge ne dit pas « l'effet de l'âge sur le panier » dans l'absolu, mais « l'effet de l'âge **quand on compare des clients de même canal** ». C'est le sens de l'expression **« toutes choses égales par ailleurs »**. Ici, le coefficient de l'âge change à peine entre `m1` et `m2` car l'âge et le canal sont presque indépendants dans nos données ; s'ils étaient liés (par exemple si Réseaux attirait surtout les jeunes), le coefficient de l'âge dans `m1` mélangerait l'effet de l'âge et l'effet du canal, et il changerait nettement. Ce mélange, c'est la **confusion**.
 
 **Le théorème de Frisch-Waugh-Lovell : « toutes choses égales par ailleurs » rendu concret.** Il existe une manière explicite de retrouver le coefficient de l'âge dans `m2`, qui montre ce que veut dire « tenir compte du canal » :
 
@@ -520,7 +520,7 @@ print("nombre de conditionnement de X'X :", round(np.linalg.cond(Xd.T @ Xd), 1))
                        à la main  statsmodels
 Intercept               4.220621     4.220621
 C(canal)[T.Site]       -0.157139    -0.157139
-C(canal)[T.Instagram]  -0.336759    -0.336759
+C(canal)[T.Réseaux]  -0.336759    -0.336759
 a                       0.009170     0.009170
 n = 1740 | p = 4
 nombre de conditionnement de X'X : 1501.8
@@ -538,7 +538,7 @@ Le choix d'une transformation modifie l'**interprétation** des coefficients. Vo
 | $\log y=\beta_0+\beta x$ (log-niveau) | +1 unité de $x$ ⇒ $y$ est multiplié par $e^\beta$, soit une variation de **≈ $100\,\beta$ %** si $\beta$ est petit (exactement $100(e^\beta-1)$ %) |
 | $\log y=\beta_0+\beta\log x$ (log-log) | +1 % de $x$ ⇒ $y$ varie d'environ $\beta$ % : $\beta$ est une **élasticité** |
 
-> ⚠️ **« ≈ 100 β % » n'est vrai que pour les petits coefficients.** Pour $\beta=-0{,}34$ (Instagram), l'approximation donne −34 %, alors que la variation exacte est $100(e^{-0{,}34}-1)\approx-28{,}8$ %. Au-delà de $|\beta|\approx0{,}1$, utilisez toujours $e^\beta-1$.
+> ⚠️ **« ≈ 100 β % » n'est vrai que pour les petits coefficients.** Pour $\beta=-0{,}34$ (Réseaux), l'approximation donne −34 %, alors que la variation exacte est $100(e^{-0{,}34}-1)\approx-28{,}8$ %. Au-delà de $|\beta|\approx0{,}1$, utilisez toujours $e^\beta-1$.
 
 ```python
 for nom, coef in m2.params.items():
@@ -549,37 +549,37 @@ for nom, coef in m2.params.items():
 <!--sortie-->
 ```text
 C(canal)[T.Site]       coefficient = -0.157 | approximation 100*beta = -15.7 % | exact 100*(exp(beta)-1) = -14.5 %
-C(canal)[T.Instagram]  coefficient = -0.337 | approximation 100*beta = -33.7 % | exact 100*(exp(beta)-1) = -28.6 %
+C(canal)[T.Réseaux]  coefficient = -0.337 | approximation 100*beta = -33.7 % | exact 100*(exp(beta)-1) = -28.6 %
 a                      coefficient = +0.009 | approximation 100*beta = +0.9 % | exact 100*(exp(beta)-1) = +0.9 %
 ```
 
-**Prédire en échelle d'origine : le piège de la rétro-transformation.** Le modèle prédit un **log**-panier. Pour revenir en dinars, on pense à prendre l'exponentielle : $\hat y=e^{\hat\mu}$. Mais $e^{\hat\mu}$ est la prédiction de la **médiane** du panier, pas de sa **moyenne**, à cause de l'asymétrie de la loi log-normale.
+**Prédire en échelle d'origine : le piège de la rétro-transformation.** Le modèle prédit un **log**-panier. Pour revenir en euros, on pense à prendre l'exponentielle : $\hat y=e^{\hat\mu}$. Mais $e^{\hat\mu}$ est la prédiction de la **médiane** du panier, pas de sa **moyenne**, à cause de l'asymétrie de la loi log-normale.
 
 > 📐 **Rétro-transformation.** Si $\log y\sim\mathcal N(\mu,\sigma^2)$, alors $\mathbb E[y]=e^{\mu+\sigma^2/2}$ (c'est la fonction génératrice des moments de la loi normale : $\mathbb E[e^{Z}]=e^{\mu+\sigma^2/2}$ pour $Z\sim\mathcal N(\mu,\sigma^2)$), alors que la médiane est $e^\mu$. Pour prédire la **moyenne** d'un panier, il faut donc multiplier $e^{\hat\mu}$ par un facteur correctif $e^{s^2/2}$ (ou, sans supposer la normalité, par le facteur « de Duan » $\frac1n\sum_ie^{\hat\varepsilon_i}$).
 
 ```python
 cible = df[(df["canal"] == "Boutique") & (df["age"].between(33, 39))]            # clients de la boutique, 33-39 ans
-mu_hat = m2.predict(pd.DataFrame({"a": [0], "canal": pd.Categorical(["Boutique"], categories=["Boutique", "Site", "Instagram"])})).iloc[0]
+mu_hat = m2.predict(pd.DataFrame({"a": [0], "canal": pd.Categorical(["Boutique"], categories=["Boutique", "Site", "Réseaux"])})).iloc[0]
 s2 = m2.scale
 duan = np.exp(m2.resid).mean()
-print("panier moyen observé (clients boutique, 33-39 ans) :", round(cible["panier_moyen"].mean(), 2), "DT   (n =", len(cible), ")")
-print("exp(mu chapeau)                  [médiane prédite] :", round(np.exp(mu_hat), 2), "DT")
-print("exp(mu chapeau + s²/2)           [moyenne, normale]:", round(np.exp(mu_hat + s2 / 2), 2), "DT")
-print("exp(mu chapeau) x facteur de Duan[moyenne, libre]  :", round(np.exp(mu_hat) * duan, 2), "DT")
+print("panier moyen observé (clients boutique, 33-39 ans) :", round(cible["panier_moyen"].mean(), 2), "€   (n =", len(cible), ")")
+print("exp(mu chapeau)                  [médiane prédite] :", round(np.exp(mu_hat), 2), "€")
+print("exp(mu chapeau + s²/2)           [moyenne, normale]:", round(np.exp(mu_hat + s2 / 2), 2), "€")
+print("exp(mu chapeau) x facteur de Duan[moyenne, libre]  :", round(np.exp(mu_hat) * duan, 2), "€")
 ```
 <!--sortie-->
 ```text
-panier moyen observé (clients boutique, 33-39 ans) : 74.33 DT   (n = 110 )
-exp(mu chapeau)                  [médiane prédite] : 68.08 DT
-exp(mu chapeau + s²/2)           [moyenne, normale]: 72.91 DT
-exp(mu chapeau) x facteur de Duan[moyenne, libre]  : 72.96 DT
+panier moyen observé (clients boutique, 33-39 ans) : 74.33 €   (n = 110 )
+exp(mu chapeau)                  [médiane prédite] : 68.08 €
+exp(mu chapeau + s²/2)           [moyenne, normale]: 72.91 €
+exp(mu chapeau) x facteur de Duan[moyenne, libre]  : 72.96 €
 ```
 
-La moyenne observée est nettement plus proche des prédictions **corrigées** que de $e^{\hat\mu}$ : ignorer la correction conduit à sous-estimer systématiquement le panier moyen (ici de plusieurs dinars), ce qui, multiplié par des milliers de clients, devient un manque à gagner dans un budget prévisionnel.
+La moyenne observée est nettement plus proche des prédictions **corrigées** que de $e^{\hat\mu}$ : ignorer la correction conduit à sous-estimer systématiquement le panier moyen (ici de plusieurs euros), ce qui, multiplié par des milliers de clients, devient un manque à gagner dans un budget prévisionnel.
 
 ### 1.1.9 Interactions : quand un effet dépend d'un autre
 
-Dans `m2`, l'effet de l'âge est supposé **le même** pour les trois canaux. Mais peut-être que l'âge compte plus chez les clients Instagram que chez ceux de la boutique ? On le teste en ajoutant une **interaction** : le produit de l'âge par les indicatrices du canal.
+Dans `m2`, l'effet de l'âge est supposé **le même** pour les trois canaux. Mais peut-être que l'âge compte plus chez les clients Réseaux que chez ceux de la boutique ? On le teste en ajoutant une **interaction** : le produit de l'âge par les indicatrices du canal.
 
 ```python
 m3 = smf.ols("log_panier ~ a * C(canal)", data=df).fit()       # a + C(canal) + a:C(canal)
@@ -592,10 +592,10 @@ print(m3.summary().tables[1])
 -------------------------------------------------------------------------------------------
 Intercept                   4.2205      0.017    241.183      0.000       4.186       4.255
 C(canal)[T.Site]           -0.1568      0.023     -6.788      0.000      -0.202      -0.112
-C(canal)[T.Instagram]      -0.3366      0.022    -14.961      0.000      -0.381      -0.292
+C(canal)[T.Réseaux]      -0.3366      0.022    -14.961      0.000      -0.381      -0.292
 a                           0.0086      0.002      5.115      0.000       0.005       0.012
 a:C(canal)[T.Site]          0.0010      0.002      0.463      0.643      -0.003       0.005
-a:C(canal)[T.Instagram]     0.0005      0.002      0.235      0.814      -0.004       0.005
+a:C(canal)[T.Réseaux]     0.0005      0.002      0.235      0.814      -0.004       0.005
 ===========================================================================================
 ```
 
@@ -608,4 +608,4 @@ L'écriture `a * C(canal)` signifie `a + C(canal) + a:C(canal)`. Les deux lignes
 > - Sous H1-H4 : $\hat{\boldsymbol\beta}$ est sans biais, de variance $\sigma^2(\mathbf X^\top\mathbf X)^{-1}$, et **le meilleur estimateur linéaire sans biais** (Gauss-Markov). On estime $\sigma^2$ par $\text{SCR}/(n-p)$.
 > - $R^2=1-\text{SCR}/\text{SCT}$ mesure la part de variance expliquée ; il ne peut qu'augmenter avec le nombre de variables (préférer $R^2$ ajusté pour comparer).
 > - Une variable qualitative entre par des **indicatrices** (une modalité de référence) ; un coefficient se lit « toutes choses égales par ailleurs » (Frisch-Waugh-Lovell).
-> - Avec $\log y$, un coefficient $\beta$ correspond à un effet multiplicatif $e^\beta$ ; pour prédire la **moyenne** en dinars, corrigez la rétro-transformation.
+> - Avec $\log y$, un coefficient $\beta$ correspond à un effet multiplicatif $e^\beta$ ; pour prédire la **moyenne** en euros, corrigez la rétro-transformation.

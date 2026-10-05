@@ -6,7 +6,7 @@
 
 ### 5.5.1 Deux façons de sortir
 
-Reprenons le fil de Dar Jasmin. Un client peut :
+Reprenons le fil de la boutique. Un client peut :
 
 - **cause 1 : partir volontairement** (il ne commande plus et se désinscrit) ;
 - **cause 2 : voir son compte fermé de force** (un incident de paiement, par exemple).
@@ -98,7 +98,7 @@ Le « 1 − KM » donne 0,58 pour la probabilité de départ volontaire à 9 moi
 Pour voir tout cela à l'échelle, simulons 6 000 clients avec deux causes. Nous choisissons les risques de sorte que :
 
 - **cause 1 (départ volontaire)** : durée de loi de Weibull (forme 1,3), allongée par l'offre de bienvenue (offre tirée au hasard) ;
-- **cause 2 (fermeture forcée)** : risque **constant** de 0,6 % par mois, multiplié par 2,2 pour les clients arrivés par Instagram, et **sans effet de l'offre** ;
+- **cause 2 (fermeture forcée)** : risque **constant** de 0,6 % par mois, multiplié par 2,2 pour les clients arrivés par Réseaux, et **sans effet de l'offre** ;
 - une censure uniforme entre 12 et 72 mois.
 
 ```python
@@ -109,7 +109,7 @@ insta = (rng.random(n) < 0.45).astype(int)
 k1 = 1.3
 echelle1 = 40 * np.exp(0.40 * offre)                       # l'offre allonge de 49 % le départ volontaire (exp(0.40))
 T1 = echelle1 * rng.weibull(k1, n)                         # durée potentielle de départ volontaire
-taux2 = 0.006 * np.exp(0.8 * insta)                        # fermeture forcée : taux constant, x 2.2 pour Instagram
+taux2 = 0.006 * np.exp(0.8 * insta)                        # fermeture forcée : taux constant, x 2.2 pour Réseaux
 T2 = rng.exponential(1 / taux2)
 C = rng.uniform(12, 72, n)
 t_obs = np.minimum.reduce([T1, T2, C])
@@ -166,7 +166,7 @@ lifelines, F1 aux horizons : [0.1428, 0.2993, 0.4217, 0.5141]
 à la main,  F1 aux horizons : [0.1428, 0.2993, 0.4217, 0.5141]
 ```
 
-Les trois méthodes donnent les mêmes incidences. Remarquez la dernière colonne du premier tableau : le « 1 − KM » naïf **surestime** systématiquement la probabilité de départ volontaire (par exemple 0,49 contre 0,42 à 36 mois, et 0,63 contre 0,51 à 48 mois). La simulation nous permet même de comparer à la **vérité** : pour un groupe donné, $F_k(t)=\int_0^th_k(u)S(u)\,du$ s'évalue par une intégrale numérique, en mélangeant les clients d'Instagram (45 %) et des autres canaux.
+Les trois méthodes donnent les mêmes incidences. Remarquez la dernière colonne du premier tableau : le « 1 − KM » naïf **surestime** systématiquement la probabilité de départ volontaire (par exemple 0,49 contre 0,42 à 36 mois, et 0,63 contre 0,51 à 48 mois). La simulation nous permet même de comparer à la **vérité** : pour un groupe donné, $F_k(t)=\int_0^th_k(u)S(u)\,du$ s'évalue par une intégrale numérique, en mélangeant les clients d'Réseaux (45 %) et des autres canaux.
 
 ```python
 import matplotlib
@@ -178,7 +178,7 @@ u = np.linspace(0, 100, 20001)
 du = u[1] - u[0]
 
 def vraies_cif(off):
-    """CIF vraies des deux causes pour le groupe 'off', en moyennant sur la part d'Instagram (45 %)."""
+    """CIF vraies des deux causes pour le groupe 'off', en moyennant sur la part d'Réseaux (45 %)."""
     echelle = 40 * np.exp(0.40 * off)
     h1 = (k1 / echelle) * (u / echelle) ** (k1 - 1)
     H1 = (u / echelle) ** k1
@@ -280,8 +280,8 @@ instagram     2.280 2.036 2.554
 Lisons ces deux familles de résultats ensemble.
 
 - **Cause 1 (départ volontaire).** L'offre réduit le risque propre à la cause 1 : $\widehat{\mathrm{HR}}\approx0{,}58$ (IC95 : 0,54 à 0,63), ce qui retrouve l'effet programmé ($e^{-0{,}40\times1{,}3}\approx0{,}59$ ; voir la conversion AFT ↔ risques proportionnels au 5.4.2). Le modèle de Fine et Gray donne un rapport de sous-distribution du même ordre (environ 0,60) : la réduction du risque se traduit en réduction de l'incidence.
-- **Cause 2 (fermeture forcée).** Les clients d'**Instagram** ont un risque propre multiplié par **2,3** environ (IC95 : 2,07 à 2,60 ; la valeur programmée est $e^{0{,}8}\approx2{,}2$). Et l'**offre** n'a **aucun effet sur le risque** de fermeture : HR $=1{,}03$ (IC95 : 0,93 à 1,15). Mais, dans le modèle de Fine et Gray, l'offre **augmente significativement l'incidence** de la cause 2 : rapport de sous-distribution d'environ **1,22** (IC95 : 1,09 à 1,36). C'est exactement l'effet de compétition que montrait la figure : l'offre ne change pas le risque de fermeture, mais, en retenant plus longtemps les clients, elle les expose plus longtemps à ce risque.
-- **Instagram et la cause 1 : le piège.** Dans le modèle par cause, Instagram n'a **aucun effet** sur le départ volontaire : HR $=0{,}97$ (IC95 : 0,90 à 1,05), et c'est la vérité. Mais dans le modèle de Fine et Gray, son rapport de sous-distribution est de **0,79** (IC95 : 0,73 à 0,86), **significativement inférieur à 1** : les clients d'Instagram ont une *incidence cumulée de départ volontaire plus faible*. Ce n'est pas qu'ils soient plus fidèles : ils sont **plus souvent éliminés avant** par la fermeture forcée, qui les empêche de partir volontairement. Le coefficient de Fine et Gray mélange l'effet direct sur la cause et l'effet de la compétition.
+- **Cause 2 (fermeture forcée).** Les clients d'**Réseaux** ont un risque propre multiplié par **2,3** environ (IC95 : 2,07 à 2,60 ; la valeur programmée est $e^{0{,}8}\approx2{,}2$). Et l'**offre** n'a **aucun effet sur le risque** de fermeture : HR $=1{,}03$ (IC95 : 0,93 à 1,15). Mais, dans le modèle de Fine et Gray, l'offre **augmente significativement l'incidence** de la cause 2 : rapport de sous-distribution d'environ **1,22** (IC95 : 1,09 à 1,36). C'est exactement l'effet de compétition que montrait la figure : l'offre ne change pas le risque de fermeture, mais, en retenant plus longtemps les clients, elle les expose plus longtemps à ce risque.
+- **Réseaux et la cause 1 : le piège.** Dans le modèle par cause, Réseaux n'a **aucun effet** sur le départ volontaire : HR $=0{,}97$ (IC95 : 0,90 à 1,05), et c'est la vérité. Mais dans le modèle de Fine et Gray, son rapport de sous-distribution est de **0,79** (IC95 : 0,73 à 0,86), **significativement inférieur à 1** : les clients d'Réseaux ont une *incidence cumulée de départ volontaire plus faible*. Ce n'est pas qu'ils soient plus fidèles : ils sont **plus souvent éliminés avant** par la fermeture forcée, qui les empêche de partir volontairement. Le coefficient de Fine et Gray mélange l'effet direct sur la cause et l'effet de la compétition.
 
 > 💡 **Quelle question posez-vous ?**
 > - *« Pourquoi les clients partent-ils ? »* (étiologie, mécanisme) : **modèles par cause**. On y lit l'effet de chaque variable sur chaque cause, toutes choses égales.

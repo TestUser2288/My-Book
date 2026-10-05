@@ -247,9 +247,9 @@ Pourquoi alors se servir de la descente de gradient ? Parce que **la plupart des
 
 ### 1.3.4 🛠️ Application : le prix qui maximise les recettes
 
-Voici un vrai petit problème de décision, qui combine tout le chapitre. Yasmine a testé huit prix pour un même bol en céramique, chacun pendant une semaine :
+Voici un vrai petit problème de décision, qui combine tout le chapitre. La gérante a testé huit prix pour un même bol en céramique, chacun pendant une semaine :
 
-| Prix $p$ (DT) | 25 | 28 | 31 | 34 | 37 | 40 | 43 | 46 |
+| Prix $p$ (€) | 25 | 28 | 31 | 34 | 37 | 40 | 43 | 46 |
 |---|---|---|---|---|---|---|---|---|
 | Ventes $q$ (pièces) | 93 | 82 | 82 | 69 | 67 | 56 | 56 | 47 |
 
@@ -278,7 +278,7 @@ alpha = 143.944   beta = -2.111
 contrôle avec np.polyfit : [143.944  -2.111]
 ```
 
-Treize itérations seulement. Le modèle trouvé est $q \approx 143{,}9 - 2{,}11\,p$ : **chaque dinar de hausse fait perdre environ 2,1 ventes par semaine**. (La ligne `polyfit` vérifie notre résultat avec la fonction toute faite de NumPy.)
+Treize itérations seulement. Le modèle trouvé est $q \approx 143{,}9 - 2{,}11\,p$ : **chaque euro de hausse fait perdre environ 2,1 ventes par semaine**. (La ligne `polyfit` vérifie notre résultat avec la fonction toute faite de NumPy.)
 
 **Étape 2 : exprimer les recettes.** Les recettes sont le prix multiplié par les quantités vendues :
 
@@ -293,22 +293,22 @@ Comme $\beta < 0$, on a $R'' = 2\beta < 0$ : c'est bien un maximum.
 ```python
 p_opt = -alpha / (2 * beta)
 R = lambda p: p * (alpha + beta * p)
-print(f"prix optimal p* = {p_opt:.2f} DT")
-print(f"recettes prévues à p* : {R(p_opt):8.1f} DT par semaine")
-print(f"recettes prévues à 40 DT : {R(40):8.1f} DT par semaine")
-print(f"recettes prévues à 46 DT : {R(46):8.1f} DT par semaine")
+print(f"prix optimal p* = {p_opt:.2f} €")
+print(f"recettes prévues à p* : {R(p_opt):8.1f} € par semaine")
+print(f"recettes prévues à 40 € : {R(40):8.1f} € par semaine")
+print(f"recettes prévues à 46 € : {R(46):8.1f} € par semaine")
 ```
 <!--sortie-->
 ```text
-prix optimal p* = 34.09 DT
-recettes prévues à p* :   2453.7 DT par semaine
-recettes prévues à 40 DT :   2380.0 DT par semaine
-recettes prévues à 46 DT :   2154.3 DT par semaine
+prix optimal p* = 34.09 €
+recettes prévues à p* :   2453.7 € par semaine
+recettes prévues à 40 € :   2380.0 € par semaine
+recettes prévues à 46 € :   2154.3 € par semaine
 ```
 
-![À gauche : les huit mesures et la droite de demande ajustée. À droite : les recettes prévues selon le prix, avec leur maximum vers 34 DT.](figures/ch01-demande-recettes.png)
+![À gauche : les huit mesures et la droite de demande ajustée. À droite : les recettes prévues selon le prix, avec leur maximum vers 34 €.](figures/ch01-demande-recettes.png)
 
-**Résultat.** Le prix qui maximise les recettes est d'environ **34 DT**, avec 2 454 DT de recettes hebdomadaires prévues. Au prix actuel de 40 DT, elles seraient de 2 380 DT : baisser le prix de 6 dinars rapporterait un peu plus de **70 DT par semaine**, soit environ 3 % de mieux.
+**Résultat.** Le prix qui maximise les recettes est d'environ **34 €**, avec 2 454 € de recettes hebdomadaires prévues. Au prix actuel de 40 €, elles seraient de 2 380 € : baisser le prix de 6 euros rapporterait un peu plus de **70 € par semaine**, soit environ 3 % de mieux.
 
 > ⚠️ **Prudence.** Ce résultat est obtenu avec **huit** points et un modèle très simple. Il ne dit rien de l'incertitude (de combien $p^\star$ pourrait-il se tromper ?), ni du bénéfice (ici nous avons maximisé les *recettes*, sans tenir compte des coûts), ni de l'extrapolation hors de la plage de prix testée. Ces questions sont l'objet du chapitre 3 (statistique) et du volume II (régression). Retenez la démarche : **modéliser, écrire la fonction objectif, la dériver, l'annuler.**
 
@@ -320,11 +320,11 @@ Dans la vraie vie, on n'optimise presque jamais librement : on a un **budget**, 
 
 #### Un exemple concret
 
-Yasmine dispose de 1 000 DT de budget publicitaire à répartir entre Facebook ($x$ dinars) et Instagram ($y$ dinars). Elle estime les recettes générées par :
+La gérante dispose de 1 000 € de budget publicitaire à répartir entre Facebook ($x$ euros) et Réseaux ($y$ euros). Elle estime les recettes générées par :
 
 $$R(x, y) = 80\sqrt{x} + 120\sqrt{y}.$$
 
-(La racine carrée traduit des **rendements décroissants** : les premiers dinars investis rapportent plus que les derniers.) Elle veut maximiser $R$ sous la contrainte $x + y = 1000$.
+(La racine carrée traduit des **rendements décroissants** : les premiers euros investis rapportent plus que les derniers.) Elle veut maximiser $R$ sous la contrainte $x + y = 1000$.
 
 **La méthode de Lagrange.** On introduit un nombre $\lambda$ (le *multiplicateur*) et on forme le **lagrangien** :
 
@@ -338,9 +338,9 @@ On annule toutes ses dérivées partielles :
 
 > 🧪 **Résolution à la main.** Les deux premières équations donnent $\dfrac{40}{\sqrt{x}} = \dfrac{60}{\sqrt{y}}$, donc $\sqrt{y} = 1{,}5\sqrt{x}$, soit $y = 2{,}25\,x$. En reportant dans la contrainte : $x + 2{,}25\,x = 1000$, donc
 >
-> $$x = \frac{1000}{3{,}25} \approx 307{,}7\ \text{DT}, \qquad y = 2{,}25\,x \approx 692{,}3\ \text{DT}.$$
+> $$x = \frac{1000}{3{,}25} \approx 307{,}7\ \text{€}, \qquad y = 2{,}25\,x \approx 692{,}3\ \text{€}.$$
 >
-> Recettes : $80\sqrt{307{,}7} + 120\sqrt{692{,}3} \approx 1\,403{,}3 + 3\,157{,}4 = 4\,560{,}7$ DT.
+> Recettes : $80\sqrt{307{,}7} + 120\sqrt{692{,}3} \approx 1\,403{,}3 + 3\,157{,}4 = 4\,560{,}7$ €.
 
 > 📐 **Pourquoi cette méthode marche.** Le long de la contrainte, on peut paramétrer $y = 1000 - x$ et regarder $R$ comme fonction d'une seule variable. Au maximum, sa dérivée s'annule, ce qui s'écrit $\nabla R \cdot \mathbf{t} = 0$ où $\mathbf{t}$ est la direction du sentier : $\nabla R$ est perpendiculaire au sentier. Or le gradient de $g(x,y) = x + y - 1000$ l'est aussi. Deux vecteurs perpendiculaires à la même direction (en dimension 2) sont parallèles : $\nabla R = \lambda\,\nabla g$. C'est exactement ce que disent les équations $\partial\mathcal{L}/\partial x = \partial\mathcal{L}/\partial y = 0$. $\blacksquare$
 
@@ -371,20 +371,20 @@ recherche exhaustive : x = 307.7, y = 692.3, recettes = 4560.70
 formule              : x = 307.7, y = 692.3, recettes = 4560.70
 ```
 
-**Le multiplicateur $\lambda$ a une signification concrète.** Au point optimal, $\lambda = 40/\sqrt{x} \approx 40/17{,}54 \approx 2{,}28$. C'est le **prix de l'ombre** (*shadow price*) de la contrainte : **un dinar de budget supplémentaire rapporterait environ 2,28 DT de recettes en plus**, si l'on réoptimise la répartition. Vérifions :
+**Le multiplicateur $\lambda$ a une signification concrète.** Au point optimal, $\lambda = 40/\sqrt{x} \approx 40/17{,}54 \approx 2{,}28$. C'est le **prix de l'ombre** (*shadow price*) de la contrainte : **un euro de budget supplémentaire rapporterait environ 2,28 € de recettes en plus**, si l'on réoptimise la répartition. Vérifions :
 
 ```python
 meilleur = lambda B: R2([B / 3.25, B - B / 3.25])       # répartition optimale pour un budget B
-print("gain réel avec 1 DT de plus :", round(meilleur(1001) - meilleur(1000), 4))
+print("gain réel avec 1 € de plus :", round(meilleur(1001) - meilleur(1000), 4))
 print("multiplicateur lambda       :", round(40 / np.sqrt(x_th), 4))
 ```
 <!--sortie-->
 ```text
-gain réel avec 1 DT de plus : 2.2798
+gain réel avec 1 € de plus : 2.2798
 multiplicateur lambda       : 2.2804
 ```
 
-C'est une information précieuse pour fixer un budget : 1 DT de publicité en plus rapporte environ 2,28 DT de recettes. Il n'est donc rentable d'augmenter le budget que si la marge brute de Yasmine dépasse $1/2{,}28 \approx 44\,\%$ (sinon la dépense supplémentaire coûte plus qu'elle ne rapporte).
+C'est une information précieuse pour fixer un budget : 1 € de publicité en plus rapporte environ 2,28 € de recettes. Il n'est donc rentable d'augmenter le budget que si la marge brute de la gérante dépasse $1/2{,}28 \approx 44\,\%$ (sinon la dépense supplémentaire coûte plus qu'elle ne rapporte).
 
 > ✅ **À retenir (optimisation).**
 >

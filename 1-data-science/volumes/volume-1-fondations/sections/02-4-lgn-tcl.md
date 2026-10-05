@@ -25,7 +25,7 @@ $$E[\bar X_n]=\frac1n\sum E[X_i]=\mu,\qquad \operatorname{Var}(\bar X_n)=\frac1{
 >
 > En mots : la probabilité que la moyenne observée s'écarte de $\mu$ de plus de $\varepsilon$ **tend vers 0**.
 
-Voyons-le en action sur le taux de conversion de Dar Jasmin (vraie valeur $p=0{,}205$). Quatre « expériences » indépendantes observent les visiteurs un à un et notent la proportion d'acheteurs au fil du temps :
+Voyons-le en action sur le taux de conversion de la boutique (vraie valeur $p=0{,}205$). Quatre « expériences » indépendantes observent les visiteurs un à un et notent la proportion d'acheteurs au fil du temps :
 
 ![À gauche : la proportion observée se stabilise sur la vraie valeur, quel que soit le départ. À droite : avec une loi de Cauchy, la moyenne ne converge jamais.](figures/ch02-lgn.png)
 
@@ -105,7 +105,7 @@ On observe trois choses : la moyenne reste à 1 (sans biais) ; l'écart-type sui
 
 ### 2.4.4 Applications
 
-**Application 1 : la probabilité sur une moyenne.** Les paniers de Dar Jasmin sont très asymétriques (beaucoup de petits achats, quelques gros) ; supposons-les exponentiels de moyenne 60 DT, donc d'écart-type 60 DT. Yasmine regarde les 40 prochains paniers. Quelle est la probabilité que leur **moyenne dépasse 70 DT** ?
+**Application 1 : la probabilité sur une moyenne.** Les paniers de la boutique sont très asymétriques (beaucoup de petits achats, quelques gros) ; supposons-les exponentiels de moyenne 60 €, donc d'écart-type 60 €. La gérante regarde les 40 prochains paniers. Quelle est la probabilité que leur **moyenne dépasse 70 €** ?
 
 Par le TCL, $\bar X_{40}\approx\mathcal N\bigl(60,\ 60^2/40\bigr)$, d'erreur-type $60/\sqrt{40}\approx9{,}49$. Le score $z$ est $(70-60)/9{,}49\approx1{,}05$, d'où $P\approx0{,}146$.
 

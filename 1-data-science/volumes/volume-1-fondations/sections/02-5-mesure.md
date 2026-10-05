@@ -40,9 +40,9 @@ $$E[X]=\int_\Omega X\,dP .$$
 
 Cette seule définition recouvre les cas discret ($\sum$) et continu ($\int f$) du 2.3.1, mais aussi les cas **mixtes** que ni l'un ni l'autre ne gère. Voici un exemple pratique.
 
-> 💡 **Un cas réel : les dépenses « à zéros ».** Un client visitant la boutique dépense **0 DT** avec une probabilité de 70 % (il regarde sans acheter) ; sinon sa dépense suit une loi exponentielle de moyenne 80 DT. Cette variable n'a **ni** fonction de masse (car elle prend un continuum de valeurs) **ni** densité (car elle a un « atome » en 0 : $P(X=0)=0{,}7>0$). C'est une loi **mixte**. Mais son espérance se calcule sans difficulté : on décompose selon le cas.
+> 💡 **Un cas réel : les dépenses « à zéros ».** Un client visitant la boutique dépense **0 €** avec une probabilité de 70 % (il regarde sans acheter) ; sinon sa dépense suit une loi exponentielle de moyenne 80 €. Cette variable n'a **ni** fonction de masse (car elle prend un continuum de valeurs) **ni** densité (car elle a un « atome » en 0 : $P(X=0)=0{,}7>0$). C'est une loi **mixte**. Mais son espérance se calcule sans difficulté : on décompose selon le cas.
 
-$$E[X]=0{,}7\times0+0{,}3\times80=24\ \text{DT}.$$
+$$E[X]=0{,}7\times0+0{,}3\times80=24\ \text{€}.$$
 
 ```python
 import numpy as np

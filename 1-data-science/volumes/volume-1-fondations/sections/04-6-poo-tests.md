@@ -1,6 +1,6 @@
 ## 4.6 ➕ Pour aller plus loin : programmation orientée objet, code propre et tests
 
-> 🧭 **Section optionnelle.** Vous pouvez faire toute une carrière d'analyste avec des fonctions, des listes et des tableaux pandas. Mais dès que votre code dépasse quelques dizaines de lignes, ou qu'un collègue (ou vous-même, dans six mois) doit le relire, trois outils changent la vie : **regrouper** les données et les opérations qui vont ensemble (les *objets*), **écrire clairement** (le *code propre*), et **vérifier automatiquement** que le code fait ce qu'on croit (les *tests*). Cette section les présente sur un exemple concret : le panier d'une cliente de Dar Jasmin.
+> 🧭 **Section optionnelle.** Vous pouvez faire toute une carrière d'analyste avec des fonctions, des listes et des tableaux pandas. Mais dès que votre code dépasse quelques dizaines de lignes, ou qu'un collègue (ou vous-même, dans six mois) doit le relire, trois outils changent la vie : **regrouper** les données et les opérations qui vont ensemble (les *objets*), **écrire clairement** (le *code propre*), et **vérifier automatiquement** que le code fait ce qu'on croit (les *tests*). Cette section les présente sur un exemple concret : le panier d'une cliente de la boutique.
 
 Pour cette section, nous écrivons de vrais **fichiers** Python, puis nous les exécutons depuis un terminal, exactement comme vous le feriez sur votre machine. Les blocs ci-dessous sont donc des commandes du terminal (`bash`) : la commande `cat > fichier <<'FIN' … FIN` crée un fichier avec le texte qui suit, et `python fichier.py` l'exécute. (Le chapitre 6.3 détaille le terminal.)
 
@@ -94,9 +94,9 @@ Nous construirons le module de la boutique en 4.6.5, en deux temps : d'abord une
 Voici les règles métier, que nous vérifierons **à la main** avant de coder :
 
 - la TVA est de 19 % ;
-- un panier de 2 savons à 20 DT et 1 plateau à 30 DT vaut $2\times 20+30=70$ DT hors taxe, soit $70\times1{,}19=83{,}30$ DT TTC ;
-- avec une remise de 10 % sur le hors-taxe : $70\times0{,}90=63$ DT HT, soit $63\times1{,}19=74{,}97$ DT TTC ;
-- sur le site, la livraison coûte 7 DT, **offerte** si le panier TTC atteint 100 DT ; en boutique, le retrait est gratuit.
+- un panier de 2 savons à 20 € et 1 plateau à 30 € vaut $2\times 20+30=70$ € hors taxe, soit $70\times1{,}19=83{,}30$ € TTC ;
+- avec une remise de 10 % sur le hors-taxe : $70\times0{,}90=63$ € HT, soit $63\times1{,}19=74{,}97$ € TTC ;
+- sur le site, la livraison coûte 7 €, **offerte** si le panier TTC atteint 100 € ; en boutique, le retrait est gratuit.
 
 ### 4.6.4 Code propre : lisible avant tout
 
@@ -172,7 +172,7 @@ cat > test_remises.py <<'FIN'
 from remises import prix_apres_remise
 
 def test_remise_de_25_pour_cent():
-    # 80 DT avec 25 % de remise : 80 * (1 - 0,25) = 60 DT
+    # 80 € avec 25 % de remise : 80 * (1 - 0,25) = 60 €
     assert prix_apres_remise(80.0, 0.25) == 60.0
 
 def test_sans_remise():
@@ -195,7 +195,7 @@ FAILED test_remises.py::test_remise_de_25_pour_cent - assert 79.75 == 60.0
 1 failed, 1 passed
 ```
 
-Le test a fait son travail : la fonction soustrait le *taux* (0,25 DT !) au lieu d'appliquer le pourcentage. Notez que `test_sans_remise` passe, ce qui montre pourquoi **un seul test ne suffit pas** : un code faux peut réussir un cas particulier. Le message affiche la ligne en cause, la valeur obtenue (79,75) et la valeur attendue (60).
+Le test a fait son travail : la fonction soustrait le *taux* (0,25 € !) au lieu d'appliquer le pourcentage. Notez que `test_sans_remise` passe, ce qui montre pourquoi **un seul test ne suffit pas** : un code faux peut réussir un cas particulier. Le message affiche la ligne en cause, la valeur obtenue (79,75) et la valeur attendue (60).
 
 **Étape 2 : on corrige, on relance.**
 
@@ -224,19 +224,19 @@ Deux tests verts. Remarquez que nous avons aussi ajouté une **validation** : un
 
 ```bash
 cat > boutique.py <<'FIN'
-"""Modèle objet minimal de la boutique Dar Jasmin."""
+"""Modèle objet minimal de la boutique."""
 from dataclasses import dataclass, field
 
 from remises import prix_apres_remise
 
 TVA = 0.19
-SEUIL_LIVRAISON_OFFERTE = 100.0     # DT, panier TTC
-FRAIS_LIVRAISON_SITE = 7.0          # DT
+SEUIL_LIVRAISON_OFFERTE = 100.0     # €, panier TTC
+FRAIS_LIVRAISON_SITE = 7.0          # €
 
 
 @dataclass(frozen=True)             # frozen : on ne peut plus modifier un article créé
 class Article:
-    """Un article du catalogue : un nom et un prix hors taxe (DT)."""
+    """Un article du catalogue : un nom et un prix hors taxe (€)."""
     nom: str
     prix_ht: float
 
@@ -280,7 +280,7 @@ class Commande:
 
 
 class CommandeSite(Commande):
-    """Une commande sur le site : 7 DT de livraison, offerts dès 100 DT TTC."""
+    """Une commande sur le site : 7 € de livraison, offerts dès 100 € TTC."""
 
     def frais_livraison(self) -> float:
         if self.panier.total_ttc() >= SEUIL_LIVRAISON_OFFERTE:
@@ -314,7 +314,7 @@ from boutique import Article, Commande, CommandeSite, Panier
 
 @pytest.fixture
 def panier():
-    """Le panier de l'exemple : 2 savons à 20 DT + 1 plateau à 30 DT."""
+    """Le panier de l'exemple : 2 savons à 20 € + 1 plateau à 30 €."""
     p = Panier()
     p.ajouter(Article("savon", 20.0), 2)
     p.ajouter(Article("plateau", 30.0))
@@ -353,12 +353,12 @@ def test_retrait_boutique_gratuit(panier):
 
 
 def test_livraison_payante_sous_le_seuil(panier):
-    # 83,30 DT < 100 DT : 7 DT de frais -> 90,30 DT
+    # 83,30 € < 100 € : 7 € de frais -> 90,30 €
     assert CommandeSite(panier).total_a_payer() == pytest.approx(90.30)
 
 
 def test_livraison_offerte_au_dessus_du_seuil(panier):
-    panier.ajouter(Article("coffret", 20.0))     # 90 DT HT -> 107,10 DT TTC
+    panier.ajouter(Article("coffret", 20.0))     # 90 € HT -> 107,10 € TTC
     assert CommandeSite(panier).total_a_payer() == pytest.approx(107.10)
 FIN
 
@@ -385,9 +385,9 @@ test_remises.py::test_sans_remise PASSED                                 [100%]
 ============================== 12 passed ==============================
 ```
 
-Chaque ligne verte est une promesse tenue. Vérifiez qu'elles correspondent bien aux calculs faits à la main : $83{,}30$, $74{,}97$, $83{,}30+7=90{,}30$, et le panier de $90$ DT HT qui vaut $90\times1{,}19=107{,}10$ DT TTC, donc livraison offerte.
+Chaque ligne verte est une promesse tenue. Vérifiez qu'elles correspondent bien aux calculs faits à la main : $83{,}30$, $74{,}97$, $83{,}30+7=90{,}30$, et le panier de $90$ € HT qui vaut $90\times1{,}19=107{,}10$ € TTC, donc livraison offerte.
 
-> 🧪 **Que se passe-t-il si on casse le code ?** Modifions le seuil de livraison offerte à 1 000 DT dans le module (une faute de frappe plausible : un zéro en trop), et relançons les tests. Un seul test devrait passer au rouge, celui qui protège précisément cette règle :
+> 🧪 **Que se passe-t-il si on casse le code ?** Modifions le seuil de livraison offerte à 1 000 € dans le module (une faute de frappe plausible : un zéro en trop), et relançons les tests. Un seul test devrait passer au rouge, celui qui protège précisément cette règle :
 
 ```bash
 sed -i 's/SEUIL_LIVRAISON_OFFERTE = 100.0/SEUIL_LIVRAISON_OFFERTE = 1000.0/' boutique.py

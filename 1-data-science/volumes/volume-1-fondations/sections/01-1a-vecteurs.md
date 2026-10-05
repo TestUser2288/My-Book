@@ -13,7 +13,7 @@ L'algèbre linéaire est le langage des tableaux de nombres. Tout ce que fait un
 
 #### Un exemple concret
 
-Dar Jasmin compte, pour chaque client, le nombre d'achats dans trois catégories : **poteries**, **huile d'olive**, **bijoux**. Chaque client devient un vecteur à trois composantes :
+La boutique compte, pour chaque client, le nombre d'achats dans trois catégories : **poteries**, **huile d'olive**, **bijoux**. Chaque client devient un vecteur à trois composantes :
 
 | Client | Poteries | Huile | Bijoux | Vecteur |
 |---|---|---|---|---|
@@ -149,12 +149,12 @@ Remarquez la nuance. Selon le **cosinus**, Amel et Bilel sont *identiques* (1) ;
 | **Cosinus** | « Ont-ils les mêmes goûts ? » | seule la *proportion* compte (profils, textes, recommandations) |
 | **Distance** | « Sont-ils proches en valeur absolue ? » | la *quantité* compte (regroupement par niveau de dépense, par exemple) |
 
-> ⚠️ **Piège : les unités.** La distance additionne des carrés de différences, donc une variable exprimée en grands nombres écrase les autres. Soit trois clients décrits par (âge, panier moyen en DT) : $P = (30,\; 100)$, $Q = (60,\; 102)$ et $R = (31,\; 160)$.
+> ⚠️ **Piège : les unités.** La distance additionne des carrés de différences, donc une variable exprimée en grands nombres écrase les autres. Soit trois clients décrits par (âge, panier moyen en €) : $P = (30,\; 100)$, $Q = (60,\; 102)$ et $R = (31,\; 160)$.
 >
 > - $d(P, Q) = \sqrt{30^2 + 2^2} = \sqrt{904} \approx 30{,}1$
 > - $d(P, R) = \sqrt{1^2 + 60^2} = \sqrt{3601} \approx 60{,}0$
 >
-> Selon la distance, $P$ (30 ans) ressemble davantage à $Q$ (60 ans) qu'à $R$ (31 ans), simplement parce que 60 dinars « pèsent » plus que 30 ans dans le calcul ! La cause : les deux variables n'ont pas la même échelle. Le remède est de **standardiser** les variables avant de les comparer, ce que nous ferons au chapitre 3.
+> Selon la distance, $P$ (30 ans) ressemble davantage à $Q$ (60 ans) qu'à $R$ (31 ans), simplement parce que 60 euros « pèsent » plus que 30 ans dans le calcul ! La cause : les deux variables n'ont pas la même échelle. Le remède est de **standardiser** les variables avant de les comparer, ce que nous ferons au chapitre 3.
 
 > ✅ **À retenir (vecteurs).**
 >

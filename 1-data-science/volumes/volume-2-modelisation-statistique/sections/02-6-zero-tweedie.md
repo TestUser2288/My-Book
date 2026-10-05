@@ -2,7 +2,7 @@
 
 > 🧭 **Section optionnelle.** Elle traite un cas très fréquent en assurance, en vente et en santé : des variables **positives avec un paquet de zéros** (aucune commande, aucun sinistre, aucune dépense). Elle s'appuie sur les sections 2.3 et 2.4.
 
-> 💡 **Intuition.** Parmi nos 2 000 clients, 13 % n'ont passé aucune commande dans l'année, donc dépensé 0 DT. Ces zéros posent deux questions de nature différente. *Pour un comptage* (nombre de commandes) : ces zéros sont-ils **trop nombreux** pour la loi choisie ? Y a-t-il des clients « structurellement » inactifs, qui ne commanderont jamais, mélangés à des clients actifs qui, eux, peuvent aussi tomber par hasard sur zéro ? *Pour un montant* (dépense annuelle) : comment modéliser une variable qui est **zéro avec une probabilité positive**, et **continue et positive** sinon ? La loi Gamma ne peut pas prendre la valeur 0 ; la loi normale est absurde. Deux familles de réponses existent : **séparer** le problème en deux (modèles à deux parties) ou le traiter d'un coup avec une loi adaptée (**Tweedie**).
+> 💡 **Intuition.** Parmi nos 2 000 clients, 13 % n'ont passé aucune commande dans l'année, donc dépensé 0 €. Ces zéros posent deux questions de nature différente. *Pour un comptage* (nombre de commandes) : ces zéros sont-ils **trop nombreux** pour la loi choisie ? Y a-t-il des clients « structurellement » inactifs, qui ne commanderont jamais, mélangés à des clients actifs qui, eux, peuvent aussi tomber par hasard sur zéro ? *Pour un montant* (dépense annuelle) : comment modéliser une variable qui est **zéro avec une probabilité positive**, et **continue et positive** sinon ? La loi Gamma ne peut pas prendre la valeur 0 ; la loi normale est absurde. Deux familles de réponses existent : **séparer** le problème en deux (modèles à deux parties) ou le traiter d'un coup avec une loi adaptée (**Tweedie**).
 
 ### 2.6.1 Les modèles à zéros en excès : ZIP et modèle de barrière
 
@@ -53,7 +53,7 @@ En 2.3.3 nous avions constaté que la binomiale négative reproduit déjà les 1
 
 ```python
 clients = pd.read_csv("donnees/clients.csv")
-clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Instagram", "Site"])
+clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])
 X = sm.add_constant(pd.get_dummies(clients[["age", "canal"]], drop_first=True, dtype=float))
 y_c = clients["nb_commandes_an"]
 infl = np.ones((len(clients), 1))
@@ -175,7 +175,7 @@ Pour $\mu=50$ : $\lambda=0{,}707$ commande en moyenne, $\alpha=1$ (les montants 
 ```r
 suppressPackageStartupMessages(library(mgcv))
 clients <- read.csv("donnees/clients.csv")
-clients$canal <- factor(clients$canal_acquisition, levels = c("Boutique", "Instagram", "Site"))
+clients$canal <- factor(clients$canal_acquisition, levels = c("Boutique", "Réseaux", "Site"))
 f <- depense_annuelle ~ age + canal + offre_bienvenue
 
 puissances <- c(1.2, 1.3, 1.4, 1.45, 1.5, 1.6, 1.7, 1.8)
@@ -212,7 +212,7 @@ offre_bienvenue  -0.0142     0.0435  -0.3260   0.7444
 part de zéros prédite par le modèle de Tweedie : 0.153 | observée : 0.13 
 ```
 
-La log-vraisemblance est maximale pour $p=1{,}45$ ($-12\,299{,}8$) et chute de 4,7 unités à $p=1{,}4$ et de 6,2 à $p=1{,}5$, puis nettement plus loin (de 192 unités à $p=1{,}2$ et de 380 à $p=1{,}8$) : la puissance est bien déterminée. `tw()` l'estime à $\hat p=1{,}447$, avec $\hat\phi=19{,}78$ : la variance de la dépense est environ $19{,}8\,\mu^{1{,}447}$, entre celle de Poisson ($p=1$) et celle de Gamma ($p=2$). Les coefficients se lisent comme des effets multiplicatifs sur la **dépense moyenne de tous les clients** (zéros compris) : Instagram, $e^{-0{,}555}=0{,}57$ (43 % de dépense en moins que la boutique, contre $-39\,\%$ parmi les seuls acheteurs en 2.3.4 : l'effet est plus fort car il inclut aussi une moindre probabilité d'acheter) ; Site, $e^{-0{,}151}=0{,}86$ ; âge, $+0{,}8\,\%$ par année ; offre, aucun effet détectable ($p=0{,}74$).
+La log-vraisemblance est maximale pour $p=1{,}45$ ($-12\,299{,}8$) et chute de 4,7 unités à $p=1{,}4$ et de 6,2 à $p=1{,}5$, puis nettement plus loin (de 192 unités à $p=1{,}2$ et de 380 à $p=1{,}8$) : la puissance est bien déterminée. `tw()` l'estime à $\hat p=1{,}447$, avec $\hat\phi=19{,}78$ : la variance de la dépense est environ $19{,}8\,\mu^{1{,}447}$, entre celle de Poisson ($p=1$) et celle de Gamma ($p=2$). Les coefficients se lisent comme des effets multiplicatifs sur la **dépense moyenne de tous les clients** (zéros compris) : Réseaux, $e^{-0{,}555}=0{,}57$ (43 % de dépense en moins que la boutique, contre $-39\,\%$ parmi les seuls acheteurs en 2.3.4 : l'effet est plus fort car il inclut aussi une moindre probabilité d'acheter) ; Site, $e^{-0{,}151}=0{,}86$ ; âge, $+0{,}8\,\%$ par année ; offre, aucun effet détectable ($p=0{,}74$).
 
 Le contrôle de la dernière ligne est instructif : le modèle de Tweedie prédit **15,3 % de zéros**, alors qu'on en observe **13,0 %**. L'écart est modeste, mais il est dû à la nature approximative du modèle (pitfall 4 plus bas) : le vrai nombre de commandes est surdispersé, pas simplement de Poisson.
 
@@ -251,12 +251,12 @@ print("part de zéros prédite par le modèle à deux parties :", round(float(1 
 ```
 <!--sortie-->
 ```text
-coefficients de Tweedie (p = 1,45) : {'Intercept': 5.4729, 'canal[T.Instagram]': -0.5553, 'canal[T.Site]': -0.151, 'age': 0.0081, 'offre_bienvenue': -0.0142}
+coefficients de Tweedie (p = 1,45) : {'Intercept': 5.4729, 'canal[T.Réseaux]': -0.5553, 'canal[T.Site]': -0.151, 'age': 0.0081, 'offre_bienvenue': -0.0142}
 
                   observée  Tweedie  deux parties
 canal                                            
 Boutique             316.3    316.7         317.2
-Instagram            182.5    182.8         183.0
+Réseaux            182.5    182.8         183.0
 Site                 272.9    272.3         271.7
 tous les clients     247.0    247.0         247.0
 
@@ -277,7 +277,7 @@ dixième
 part de zéros prédite par le modèle à deux parties : 0.13
 ```
 
-Les coefficients de `statsmodels` à $p=1{,}45$ (5,4729 ; $-0{,}5553$ ; $-0{,}151$ ; 0,0081 ; $-0{,}0142$) coïncident avec ceux de `mgcv` à trois ou quatre décimales : deux logiciels, un même modèle. Quant à la **comparaison** : les moyennes prédites par canal sont presque identiques pour les deux approches, et très proches de l'observé (boutique : 316,7 pour Tweedie, 317,2 pour deux parties, 316,3 observé ; Instagram 182,8, 183,0 et 182,5 ; site 272,3, 271,7 et 272,9), et les deux reproduisent exactement la moyenne globale (247,0 DT). Par dixième de dépense prédite, l'écart absolu moyen à l'observé est de 16,3 DT (Tweedie) et 16,5 DT (deux parties) : indiscernables. Les écarts dixième par dixième (par exemple 205 observé contre 244 prédits dans le cinquième dixième) sont de l'ordre de l'erreur d'échantillonnage d'une moyenne sur 200 clients (environ $297/\sqrt{200}\approx21$ DT). **La seule différence nette** est la part de zéros prédite : le modèle à deux parties retrouve exactement les 13,0 % (c'est garanti par construction : la logistique avec constante reproduit la proportion observée), alors que Tweedie en prédit 15,3 %. Le choix se fait donc sur des critères autres que l'ajustement de la moyenne : Tweedie est plus parcimonieux (un seul modèle) ; le modèle à deux parties permet de séparer ce qui joue sur la décision d'acheter de ce qui joue sur le montant.
+Les coefficients de `statsmodels` à $p=1{,}45$ (5,4729 ; $-0{,}5553$ ; $-0{,}151$ ; 0,0081 ; $-0{,}0142$) coïncident avec ceux de `mgcv` à trois ou quatre décimales : deux logiciels, un même modèle. Quant à la **comparaison** : les moyennes prédites par canal sont presque identiques pour les deux approches, et très proches de l'observé (boutique : 316,7 pour Tweedie, 317,2 pour deux parties, 316,3 observé ; Réseaux 182,8, 183,0 et 182,5 ; site 272,3, 271,7 et 272,9), et les deux reproduisent exactement la moyenne globale (247,0 €). Par dixième de dépense prédite, l'écart absolu moyen à l'observé est de 16,3 € (Tweedie) et 16,5 € (deux parties) : indiscernables. Les écarts dixième par dixième (par exemple 205 observé contre 244 prédits dans le cinquième dixième) sont de l'ordre de l'erreur d'échantillonnage d'une moyenne sur 200 clients (environ $297/\sqrt{200}\approx21$ €). **La seule différence nette** est la part de zéros prédite : le modèle à deux parties retrouve exactement les 13,0 % (c'est garanti par construction : la logistique avec constante reproduit la proportion observée), alors que Tweedie en prédit 15,3 %. Le choix se fait donc sur des critères autres que l'ajustement de la moyenne : Tweedie est plus parcimonieux (un seul modèle) ; le modèle à deux parties permet de séparer ce qui joue sur la décision d'acheter de ce qui joue sur le montant.
 
 ### 2.6.5 Comment choisir ?
 

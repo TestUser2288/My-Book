@@ -6,15 +6,15 @@ On note $\mathbf{A} \in \mathbb{R}^{n \times p}$ une matrice à $n$ lignes et $p
 
 #### Un exemple concret
 
-Yasmine a noté ses ventes des trois premiers mois pour trois produits (poteries, huile, bijoux). Chaque **ligne** est un mois, chaque **colonne** un produit :
+La gérante a noté ses ventes des trois premiers mois pour trois produits (poteries, huile, bijoux). Chaque **ligne** est un mois, chaque **colonne** un produit :
 
 $$\mathbf{V} = \begin{pmatrix} 10 & 40 & 20 \\ 12 & 35 & 25 \\ 15 & 50 & 18 \end{pmatrix} \begin{array}{l} \leftarrow \text{janvier} \\ \leftarrow \text{février} \\ \leftarrow \text{mars} \end{array}$$
 
-Les prix unitaires sont $\mathbf{p} = (45,\; 12,\; 30)$ dinars. Question : quel est le chiffre d'affaires de chaque mois ?
+Les prix unitaires sont $\mathbf{p} = (45,\; 12,\; 30)$ euros. Question : quel est le chiffre d'affaires de chaque mois ?
 
 #### Le produit matrice-vecteur
 
-Pour janvier, c'est un produit scalaire : $10 \times 45 + 40 \times 12 + 20 \times 30 = 450 + 480 + 600 = 1\,530$ DT. On fait de même pour février et mars. Calculer ces trois produits scalaires d'un coup, c'est ce qu'on appelle le **produit matrice-vecteur** $\mathbf{V}\mathbf{p}$ :
+Pour janvier, c'est un produit scalaire : $10 \times 45 + 40 \times 12 + 20 \times 30 = 450 + 480 + 600 = 1\,530$ €. On fait de même pour février et mars. Calculer ces trois produits scalaires d'un coup, c'est ce qu'on appelle le **produit matrice-vecteur** $\mathbf{V}\mathbf{p}$ :
 
 $$\mathbf{V}\mathbf{p} = \begin{pmatrix} 10\cdot 45 + 40\cdot 12 + 20\cdot 30 \\ 12\cdot 45 + 35\cdot 12 + 25\cdot 30 \\ 15\cdot 45 + 50\cdot 12 + 18\cdot 30 \end{pmatrix} = \begin{pmatrix} 1530 \\ 1710 \\ 1815 \end{pmatrix}.$$
 
@@ -47,7 +47,7 @@ L'opérateur `@` est le produit matriciel de Python. Il évite d'écrire une bou
 
 #### Le produit matrice-matrice
 
-Et si Yasmine veut comparer deux grilles de prix : les prix actuels et les prix augmentés de 10 % ? On met les deux grilles côte à côte dans une matrice $\mathbf{P}$ (une colonne par scénario) et on calcule $\mathbf{V}\mathbf{P}$.
+Et si la gérante veut comparer deux grilles de prix : les prix actuels et les prix augmentés de 10 % ? On met les deux grilles côte à côte dans une matrice $\mathbf{P}$ (une colonne par scénario) et on calcule $\mathbf{V}\mathbf{P}$.
 
 **Règle de calcul.** Le produit de $\mathbf{A} \in \mathbb{R}^{n\times p}$ par $\mathbf{B} \in \mathbb{R}^{p \times q}$ est la matrice $\mathbf{C} = \mathbf{A}\mathbf{B} \in \mathbb{R}^{n \times q}$ dont l'élément $(i, j)$ est le produit scalaire de la **ligne $i$** de $\mathbf{A}$ avec la **colonne $j$** de $\mathbf{B}$ :
 
@@ -136,10 +136,10 @@ print((A @ A_inv).round(6) + 0)
 
 #### Résoudre un système d'équations linéaires
 
-Voici l'utilité majeure de l'inverse. Yasmine a perdu sa liste de prix, mais retrouve deux factures :
+Voici l'utilité majeure de l'inverse. La gérante a perdu sa liste de prix, mais retrouve deux factures :
 
-- commande 1 : 2 poteries + 1 huile = 102 DT ;
-- commande 2 : 1 poterie + 3 huiles = 81 DT.
+- commande 1 : 2 poteries + 1 huile = 102 € ;
+- commande 2 : 1 poterie + 3 huiles = 81 €.
 
 Notons $x_1$ le prix d'une poterie et $x_2$ celui d'une huile. Le système s'écrit $\mathbf{M}\mathbf{x} = \mathbf{b}$ avec
 
@@ -149,7 +149,7 @@ $$\mathbf{M} = \begin{pmatrix}2&1\\1&3\end{pmatrix}, \quad \mathbf{x} = \begin{p
 >
 > $$\mathbf{x} = \mathbf{M}^{-1}\mathbf{b} = \frac15\begin{pmatrix}3\cdot 102 - 81\\ -102 + 2\cdot 81\end{pmatrix} = \frac15\begin{pmatrix}225\\60\end{pmatrix} = \begin{pmatrix}45\\12\end{pmatrix}.$$
 >
-> Une poterie coûte **45 DT**, une huile **12 DT**. Vérifions : $2 \times 45 + 12 = 102$ ✔ et $45 + 3\times 12 = 81$ ✔.
+> Une poterie coûte **45 €**, une huile **12 €**. Vérifions : $2 \times 45 + 12 = 102$ ✔ et $45 + 3\times 12 = 81$ ✔.
 
 ```python
 M = np.array([[2, 1], [1, 3]])
@@ -165,7 +165,7 @@ Prix retrouvés : [45. 12.]
 
 #### Quand le système n'a pas de solution unique : déterminant et rang
 
-Imaginons que la commande 2 soit en réalité « 4 poteries + 2 huiles = 204 DT » : c'est exactement le **double** de la commande 1. Elle n'apporte **aucune information nouvelle**. Il y a alors une infinité de couples de prix qui conviennent. Le déterminant le détecte : $\det\begin{pmatrix}2&1\\4&2\end{pmatrix} = 2\times 2 - 1\times 4 = 0$. On dit que la matrice est **singulière** (non inversible).
+Imaginons que la commande 2 soit en réalité « 4 poteries + 2 huiles = 204 € » : c'est exactement le **double** de la commande 1. Elle n'apporte **aucune information nouvelle**. Il y a alors une infinité de couples de prix qui conviennent. Le déterminant le détecte : $\det\begin{pmatrix}2&1\\4&2\end{pmatrix} = 2\times 2 - 1\times 4 = 0$. On dit que la matrice est **singulière** (non inversible).
 
 Une notion plus générale est le **rang** : le nombre de colonnes (ou de lignes) *linéairement indépendantes*, c'est-à-dire qui ne s'obtiennent pas comme combinaison des autres. Ici le rang vaut 1 au lieu de 2.
 
@@ -227,7 +227,7 @@ Elyes       0.73    0.73    0.70    0.68    1.00
 
 Lecture : la diagonale vaut 1 (chacun ressemble parfaitement à lui-même), la matrice est symétrique (la ressemblance d'Amel à Bilel est celle de Bilel à Amel), Amel et Bilel valent 1,00, et Chaima et Dorra, tous deux fans de bijoux, sont très proches. Elyes, qui achète un peu de tout, est moyennement proche de chacun (entre 0,68 et 0,73) sans avoir de « jumeau » parmi eux.
 
-Pour recommander un produit à Chaima, Yasmine pourrait regarder ce qu'achète son voisin le plus proche, ici Dorra. Avec une seule multiplication de matrices, nous avons comparé les cinq clients entre eux ; avec cinq mille clients, ce serait la même ligne de code.
+Pour recommander un produit à Chaima, la gérante pourrait regarder ce qu'achète son voisin le plus proche, ici Dorra. Avec une seule multiplication de matrices, nous avons comparé les cinq clients entre eux ; avec cinq mille clients, ce serait la même ligne de code.
 
 > ✅ **À retenir (matrices).**
 >

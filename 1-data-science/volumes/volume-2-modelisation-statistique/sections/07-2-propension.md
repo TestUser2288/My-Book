@@ -1,6 +1,6 @@
 ## 7.2 Scores de propension : comparer ce qui est comparable
 
-> 💡 **Intuition.** Yasmine n'a pas tiré au sort ; elle a **choisi** à qui envoyer l'offre. Mais en observant comment elle a choisi (engagement, âge, canal), on peut reconstituer, pour chaque client, la **probabilité** qu'il ait reçu l'offre : son *score de propension*. Deux clients qui avaient la **même** probabilité de recevoir l'offre, dont l'un l'a reçue et l'autre non, sont presque comme deux clients tirés au sort : la différence entre eux, c'est la chance. Le score de propension résume en **un seul nombre** tout ce qui a guidé le choix.
+> 💡 **Intuition.** la gérante n'a pas tiré au sort ; elle a **choisi** à qui envoyer l'offre. Mais en observant comment elle a choisi (engagement, âge, canal), on peut reconstituer, pour chaque client, la **probabilité** qu'il ait reçu l'offre : son *score de propension*. Deux clients qui avaient la **même** probabilité de recevoir l'offre, dont l'un l'a reçue et l'autre non, sont presque comme deux clients tirés au sort : la différence entre eux, c'est la chance. Le score de propension résume en **un seul nombre** tout ce qui a guidé le choix.
 
 Nous poursuivons l'étude de la section 7.1.9 : le fichier `ch07-observationnel.csv`, 4 000 clients, et le critère de la porte dérobée, satisfait par l'ensemble $S=\{\text{âge},\text{canal},\text{engagement}\}$. L'ajustement par régression y a donné une estimation proche de la vérité. Pourquoi aller plus loin ? Pour trois raisons : la régression suppose une **forme** particulière pour le lien entre covariables et résultat ; elle ne dit rien sur le **chevauchement** entre traités et non-traités (peut-on réellement comparer ces clients ?) ; et elle ne permet pas de cibler explicitement l'ATE ou l'ATT.
 
@@ -73,7 +73,7 @@ print(d.groupby("offre")["ps"].describe().round(3).to_string())
 <!--sortie-->
 ```text
 Intercept               -2.462
-C(canal)[T.Instagram]    0.454
+C(canal)[T.Réseaux]    0.454
 C(canal)[T.Site]        -0.060
 age                     -0.032
 engagement               0.063
@@ -85,7 +85,7 @@ offre
 1      1850.0  0.572  0.204  0.049  0.423  0.582  0.731  0.969
 ```
 
-Un coefficient positif sur l'engagement et sur Instagram, négatif sur l'âge : le modèle retrouve la manière dont Yasmine choisissait. L'AUC (aire sous la courbe ROC : la probabilité qu'un client avec offre ait un score plus élevé qu'un client sans offre tiré au hasard) mesure à quel point on peut *prédire* l'attribution. Contrairement à un projet de prédiction, **on ne cherche pas ici un score parfait** : un modèle d'attribution qui prédit parfaitement l'offre signalerait au contraire un **manque de chevauchement**.
+Un coefficient positif sur l'engagement et sur Réseaux, négatif sur l'âge : le modèle retrouve la manière dont la gérante choisissait. L'AUC (aire sous la courbe ROC : la probabilité qu'un client avec offre ait un score plus élevé qu'un client sans offre tiré au hasard) mesure à quel point on peut *prédire* l'attribution. Contrairement à un projet de prédiction, **on ne cherche pas ici un score parfait** : un modèle d'attribution qui prédit parfaitement l'offre signalerait au contraire un **manque de chevauchement**.
 
 ```python
 fig, ax = plt.subplots(figsize=(8.5, 3.6))
@@ -141,16 +141,16 @@ def apparier(df, calibre=0.2):
 att_appar, n_appar, idx_t, idx_c = apparier(d)
 print(f"{n_appar} traités appariés sur {int(d['offre'].sum())}")
 print(f"témoins distincts utilisés : {len(np.unique(idx_c))} (un même témoin sert en moyenne {len(idx_c) / len(np.unique(idx_c)):.1f} fois)")
-print(f"effet estimé par appariement (ATT) : {att_appar:.2f} DT   | ATT vrai : {att_vrai:.2f}")
+print(f"effet estimé par appariement (ATT) : {att_appar:.2f} €   | ATT vrai : {att_vrai:.2f}")
 ```
 <!--sortie-->
 ```text
 1843 traités appariés sur 1850
 témoins distincts utilisés : 814 (un même témoin sert en moyenne 2.3 fois)
-effet estimé par appariement (ATT) : 14.41 DT   | ATT vrai : 16.64
+effet estimé par appariement (ATT) : 14.41 €   | ATT vrai : 16.64
 ```
 
-Presque tous les traités (1 843 sur 1 850) ont trouvé un voisin acceptable, et l'estimation (14,4 DT) est du bon ordre de grandeur face à l'ATT vrai (16,6 DT), sans être exacte : combien faut-il s'en méfier ? C'est la question de l'incertitude.
+Presque tous les traités (1 843 sur 1 850) ont trouvé un voisin acceptable, et l'estimation (14,4 €) est du bon ordre de grandeur face à l'ATT vrai (16,6 €), sans être exacte : combien faut-il s'en méfier ? C'est la question de l'incertitude.
 
 Pour l'incertitude, la formule de la variance n'est pas simple (la procédure inclut l'estimation du score *et* l'appariement). On utilise donc le **bootstrap** (volume I, section 3.3.5) en **refaisant toute la procédure** sur chaque échantillon rééchantillonné : c'est la bonne façon de tenir compte de toutes les sources d'aléa. Nous réutiliserons cette réinitialisation de l'index (`reset_index(drop=True)`) à chaque bootstrap, pour que les lignes dupliquées par le tirage ne se mélangent pas.
 
@@ -173,7 +173,7 @@ print(f"erreur-type bootstrap : {boot.std():.2f}   IC 95 % (percentiles) : [{np.
 erreur-type bootstrap : 3.66   IC 95 % (percentiles) : [6.6 ; 20.2]
 ```
 
-L'intervalle de confiance, de 6,6 à 20,2 DT, contient la vérité (16,6) mais il est **large** : l'erreur-type de 3,7 DT est près de deux fois celle de la régression. C'est une caractéristique de l'appariement au plus proche voisin, qui ne compare chaque traité qu'à *un seul* témoin et gaspille donc de l'information.
+L'intervalle de confiance, de 6,6 à 20,2 €, contient la vérité (16,6) mais il est **large** : l'erreur-type de 3,7 € est près de deux fois celle de la régression. C'est une caractéristique de l'appariement au plus proche voisin, qui ne compare chaque traité qu'à *un seul* témoin et gaspille donc de l'information.
 
 Vérifions surtout que l'appariement a bien **rendu les groupes comparables**. On mesure la SMD de chaque covariable **avant** et **après** appariement (les témoins sont comptés autant de fois qu'ils sont utilisés).
 
@@ -189,7 +189,7 @@ def smd_pondere(x, T, w):
 
 covariables = pd.DataFrame({
     "âge": d["age"], "engagement": d["engagement"],
-    "canal = Instagram": (d["canal"] == "Instagram").astype(float),
+    "canal = Réseaux": (d["canal"] == "Réseaux").astype(float),
     "canal = Site": (d["canal"] == "Site").astype(float),
     "canal = Boutique": (d["canal"] == "Boutique").astype(float)})
 
@@ -205,25 +205,25 @@ print(pd.DataFrame({"SMD avant": avant, "SMD après appariement": apres_appar}).
                    SMD avant  SMD après appariement
 âge                   -0.336                  0.003
 engagement             0.915                  0.006
-canal = Instagram      0.306                 -0.013
+canal = Réseaux      0.306                 -0.013
 canal = Site          -0.204                  0.041
 canal = Boutique      -0.118                 -0.028
 ```
 
-Avant l'appariement, l'engagement présente une SMD de 0,92 (un écart considérable : les traités sont presque un écart-type plus engagés que les témoins), et l'âge et le canal Instagram des SMD de −0,34 et +0,31 ; après, toutes les SMD sont inférieures à 0,05 en valeur absolue. L'appariement a bien produit des groupes comparables sur ce que nous avons mesuré. Notez que ce diagnostic porte uniquement sur les covariables **observées** : il ne dit rien sur celles que nous aurions oublié de mesurer.
+Avant l'appariement, l'engagement présente une SMD de 0,92 (un écart considérable : les traités sont presque un écart-type plus engagés que les témoins), et l'âge et le canal Réseaux des SMD de −0,34 et +0,31 ; après, toutes les SMD sont inférieures à 0,05 en valeur absolue. L'appariement a bien produit des groupes comparables sur ce que nous avons mesuré. Notez que ce diagnostic porte uniquement sur les covariables **observées** : il ne dit rien sur celles que nous aurions oublié de mesurer.
 
 ### 7.2.4 La pondération par l'inverse du score (IPW)
 
 L'appariement jette des données (les traités sans voisin, les témoins jamais utilisés). Une autre façon de rendre les groupes comparables est de les **repondérer** : on donne plus de poids aux clients **peu probables** dans leur groupe (un client avec offre qui avait peu de chances de la recevoir « représente » beaucoup de clients semblables qui, eux, ne l'ont pas reçue). Ce procédé, la **pondération par l'inverse de la probabilité de traitement** (IPW), s'illustre à la main.
 
-Imaginons deux types de clients, 10 de chaque. Les clients de type A (jeunes, très engagés) reçoivent l'offre avec probabilité $0{,}8$ (8 sur 10) ; ceux de type B, avec probabilité $0{,}2$ (2 sur 10). L'effet réel de l'offre est de $+30$ DT dans les deux types. Les dépenses moyennes observées sont :
+Imaginons deux types de clients, 10 de chaque. Les clients de type A (jeunes, très engagés) reçoivent l'offre avec probabilité $0{,}8$ (8 sur 10) ; ceux de type B, avec probabilité $0{,}2$ (2 sur 10). L'effet réel de l'offre est de $+30$ € dans les deux types. Les dépenses moyennes observées sont :
 
 | | Type A ($e=0{,}8$) | Type B ($e=0{,}2$) |
 |---|---|---|
-| avec offre | 200 DT (8 clients) | 120 DT (2 clients) |
-| sans offre | 170 DT (2 clients) | 90 DT (8 clients) |
+| avec offre | 200 € (8 clients) | 120 € (2 clients) |
+| sans offre | 170 € (2 clients) | 90 € (8 clients) |
 
-La comparaison brute donne $(8\times200+2\times120)/10-(2\times170+8\times90)/10=184-106=78$ DT : à nouveau très loin des 30 réels, parce que les traités sont surtout de type A. Pondérons chaque client par $1/e$ pour les traités et $1/(1-e)$ pour les témoins :
+La comparaison brute donne $(8\times200+2\times120)/10-(2\times170+8\times90)/10=184-106=78$ € : à nouveau très loin des 30 réels, parce que les traités sont surtout de type A. Pondérons chaque client par $1/e$ pour les traités et $1/(1-e)$ pour les témoins :
 
 - traités de type A : poids $1/0{,}8=1{,}25$ ; traités de type B : poids $1/0{,}2=5$ ;
 - témoins de type A : poids $1/(1-0{,}8)=5$ ; témoins de type B : poids $1/(1-0{,}2)=1{,}25$.
@@ -258,7 +258,7 @@ type  offre  n  depense   e  poids  effectif_pondere
 différence brute : 78.0   |   après pondération : 160.0 - 130.0 = 30.0
 ```
 
-La pondération retrouve exactement 30 DT. Voici la justification générale.
+La pondération retrouve exactement 30 €. Voici la justification générale.
 
 > 📐 **Pourquoi l'IPW est sans biais.** Si l'ignorabilité tient avec $X$, alors
 > $$\mathbb E\!\left[\frac{T\,Y}{e(X)}\right]=\mathbb E\!\left[\frac{T\,Y(1)}{e(X)}\right]=\mathbb E\!\left[\mathbb E\!\left[\frac{T}{e(X)}\,\Big|\,X,Y(1)\right]Y(1)\right]=\mathbb E\big[Y(1)\big],$$
@@ -314,7 +314,7 @@ ATE par IPW avec poids tronqués à [1.06 ; 7.4] : 17.52
 
 Les poids sont inégaux (de 1 à près de 30, avec une médiane voisine de 1,6), mais pas dramatiquement : l'effectif effectif est d'environ 1 260 pour les 1 850 traités et 1 510 pour les 2 150 témoins, soit une perte d'information de l'ordre d'un quart à un tiers. Le bon chevauchement évite le pire ; si quelques poids dépassaient 50 ou 100, on tronquerait ou on restreindrait la population, au prix d'un léger biais pour gagner beaucoup de stabilité.
 
-Notez que **la troncature a fait passer l'estimation de 14,4 à 17,5 DT** : l'IPW est sensible à quelques poids élevés. C'est son talon d'Achille : un estimateur sans biais, mais **plus variable** que la régression. Mesurons cette variabilité avec le bootstrap, en réestimant le score à chaque rééchantillonnage.
+Notez que **la troncature a fait passer l'estimation de 14,4 à 17,5 €** : l'IPW est sensible à quelques poids élevés. C'est son talon d'Achille : un estimateur sans biais, mais **plus variable** que la régression. Mesurons cette variabilité avec le bootstrap, en réestimant le score à chaque rééchantillonnage.
 
 ```python
 def ipw_ate_att(df):
@@ -338,7 +338,7 @@ IPW ATE : erreur-type bootstrap 2.50   IC 95 % : [9.6 ; 19.1]   (vérité 15.5)
 IPW ATT : erreur-type bootstrap 3.37   IC 95 % : [4.7 ; 17.8]   (vérité 16.6)
 ```
 
-Les deux intervalles contiennent la vérité. Mais regardez les erreurs-types : 2,5 DT pour l'ATE et 3,4 DT pour l'ATT, plus que les 2,0 DT de la régression de 7.1.9. L'écart de 4,8 DT entre l'ATT estimé par IPW (11,8) et l'ATT vrai (16,6) représente environ 1,4 erreur-type : rien d'anormal, mais une bonne illustration de la précision limitée de la méthode. L'ATT est plus incertain que l'ATE ici, car il ne repose que sur les 1 850 traités et sur des témoins très inégalement pondérés.
+Les deux intervalles contiennent la vérité. Mais regardez les erreurs-types : 2,5 € pour l'ATE et 3,4 € pour l'ATT, plus que les 2,0 € de la régression de 7.1.9. L'écart de 4,8 € entre l'ATT estimé par IPW (11,8) et l'ATT vrai (16,6) représente environ 1,4 erreur-type : rien d'anormal, mais une bonne illustration de la précision limitée de la méthode. L'ATT est plus incertain que l'ATE ici, car il ne repose que sur les 1 850 traités et sur des témoins très inégalement pondérés.
 
 Le même diagnostic d'équilibre que pour l'appariement s'applique, et se représente par un **graphique de Love** : une ligne par covariable, la SMD avant (rond gris) et après pondération (rond bleu).
 
@@ -383,7 +383,7 @@ où $\hat\mu_t(x)$ est l'espérance estimée du résultat sous le traitement $t$
 Mettons cette promesse à l'épreuve avec une **expérience** : on estime l'ATE de quatre façons, en rendant volontairement mauvais l'un des deux modèles. Un « mauvais » modèle de résultat est ici un modèle qui ignore les covariables (une constante par groupe) ; un « mauvais » modèle d'attribution est un score constant (il ignore le ciblage).
 
 ```python
-X = np.column_stack([np.ones(len(d)), d["age"], (d["canal"] == "Instagram"), (d["canal"] == "Site"), d["engagement"]]).astype(float)
+X = np.column_stack([np.ones(len(d)), d["age"], (d["canal"] == "Réseaux"), (d["canal"] == "Site"), d["engagement"]]).astype(float)
 
 def mu_hat(X, Y, T, bon_modele):
     """Prédictions de E[Y | X, T=t] pour t = 0 et 1, par moindres carrés séparés dans chaque groupe."""
@@ -432,7 +432,7 @@ Lisons la table. Quand le modèle de résultat est faux, la **régression** éch
 
 ```python
 def aipw_complet(df):
-    Xb = np.column_stack([np.ones(len(df)), df["age"], (df["canal"] == "Instagram"), (df["canal"] == "Site"), df["engagement"]]).astype(float)
+    Xb = np.column_stack([np.ones(len(df)), df["age"], (df["canal"] == "Réseaux"), (df["canal"] == "Site"), df["engagement"]]).astype(float)
     Tb, Yb = df["offre"].to_numpy(), df["depense"].to_numpy()
     mu0, mu1 = mu_hat(Xb, Yb, Tb, True)
     eb = smf.logit("offre ~ age + C(canal) + engagement", data=df).fit(disp=0).predict(df).to_numpy()
@@ -487,12 +487,12 @@ def estimation_aipw_avec_engagement(bruit_sd, graine=5):
     df = d.copy()
     if bruit_sd is None:
         formule_ps = "offre ~ age + C(canal)"
-        cols = [np.ones(len(df)), df["age"], (df["canal"] == "Instagram"), (df["canal"] == "Site")]
+        cols = [np.ones(len(df)), df["age"], (df["canal"] == "Réseaux"), (df["canal"] == "Site")]
     else:
         r = np.random.default_rng(graine)
         df["eng_mesure"] = df["engagement"] + r.normal(0, bruit_sd, len(df))
         formule_ps = "offre ~ age + C(canal) + eng_mesure"
-        cols = [np.ones(len(df)), df["age"], (df["canal"] == "Instagram"), (df["canal"] == "Site"), df["eng_mesure"]]
+        cols = [np.ones(len(df)), df["age"], (df["canal"] == "Réseaux"), (df["canal"] == "Site"), df["eng_mesure"]]
     Xb = np.column_stack(cols).astype(float)
     Tb, Yb = df["offre"].to_numpy(), df["depense"].to_numpy()
     mu0, mu1 = mu_hat(Xb, Yb, Tb, True)
@@ -520,9 +520,9 @@ ATE vrai : 15.5
 écart-type de l'engagement lui-même : 15.5
 ```
 
-À mesure que l'engagement est de moins en moins bien mesuré, l'estimation, pourtant « doublement robuste », **dérive** vers la différence naïve. Les méthodes sophistiquées ne remplacent pas l'information manquante : un facteur de confusion mal mesuré laisse une **confusion résiduelle**. Les écarts-types de bruit (15, 30, 60) sont à comparer à l'écart-type de l'engagement lui-même (15,5, dernière ligne de la sortie) : avec un bruit de 15, la mesure contient autant de bruit que de signal, et l'estimation, pourtant « doublement robuste », est déjà à 32,5 DT, au milieu du chemin entre la vérité (15,5) et la différence naïve (50,5).
+À mesure que l'engagement est de moins en moins bien mesuré, l'estimation, pourtant « doublement robuste », **dérive** vers la différence naïve. Les méthodes sophistiquées ne remplacent pas l'information manquante : un facteur de confusion mal mesuré laisse une **confusion résiduelle**. Les écarts-types de bruit (15, 30, 60) sont à comparer à l'écart-type de l'engagement lui-même (15,5, dernière ligne de la sortie) : avec un bruit de 15, la mesure contient autant de bruit que de signal, et l'estimation, pourtant « doublement robuste », est déjà à 32,5 €, au milieu du chemin entre la vérité (15,5) et la différence naïve (50,5).
 
-Reste la question honnête : dans la vraie vie, comment sait-on que l'on a mesuré tous les facteurs de confusion importants ? **On ne le sait pas.** On peut seulement (1) s'appuyer sur la connaissance du processus d'attribution (« comment Yasmine a-t-elle décidé ? »), (2) faire des **analyses de sensibilité** (quelle intensité devrait avoir un facteur de confusion caché pour annuler le résultat ?), (3) chercher des situations qui contournent le problème : c'est le rôle des deux sections suivantes.
+Reste la question honnête : dans la vraie vie, comment sait-on que l'on a mesuré tous les facteurs de confusion importants ? **On ne le sait pas.** On peut seulement (1) s'appuyer sur la connaissance du processus d'attribution (« comment la gérante a-t-elle décidé ? »), (2) faire des **analyses de sensibilité** (quelle intensité devrait avoir un facteur de confusion caché pour annuler le résultat ?), (3) chercher des situations qui contournent le problème : c'est le rôle des deux sections suivantes.
 
 > ⚠️ **Les trois erreurs classiques avec les scores de propension.** (1) **Régler le score pour qu'il prédise bien** : le but est l'équilibre des covariables, pas l'AUC. (2) **Inclure des variables post-traitement** ou des variables qui ne sont causes que du traitement (cela gonfle la variance sans corriger le biais). (3) **Oublier de vérifier l'équilibre** après ajustement. Une analyse par score sans tableau d'équilibre est incomplète.
 

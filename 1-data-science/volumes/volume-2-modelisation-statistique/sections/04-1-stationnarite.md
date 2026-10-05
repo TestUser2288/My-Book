@@ -45,7 +45,7 @@ mois
 2016-06-01  1155.4            11      0      0
 ```
 
-Chaque ligne est un mois. Le chiffre d'affaires (`ca`) de janvier 2016 est de 620 DT. Les colonnes `promo` et `covid` sont des variables **explicatives** que nous utiliserons en 4.2.
+Chaque ligne est un mois. Le chiffre d'affaires (`ca`) de janvier 2016 est de 620 €. Les colonnes `promo` et `covid` sont des variables **explicatives** que nous utiliserons en 4.2.
 
 Pour mesurer à quel point l'ordre compte, calculons la **corrélation entre un mois et le suivant** (nous la définirons proprement en 4.1.4) sur la série, puis sur 1 000 mélanges aléatoires de la même série :
 
@@ -74,7 +74,7 @@ La série réelle a une corrélation de l'ordre de 0,48 entre un mois et le suiv
 
 ### 4.1.2 Première lecture : tendance, saison, bruit, et pourquoi on prend le logarithme
 
-Dessinons la série d'apprentissage, d'abord en dinars, puis en logarithme :
+Dessinons la série d'apprentissage, d'abord en euros, puis en logarithme :
 
 ```python
 BLEU, ORANGE, AQUA, VIOLET, ROUGE = "#2a78d6", "#eb6834", "#1baf7a", "#4a3aa7", "#e34948"
@@ -85,7 +85,7 @@ plt.rcParams.update({"figure.dpi": 100, "savefig.dpi": 200, "axes.spines.top": F
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 3.8))
 ca_train = v["ca"][:"2023-12"]
 ax1.plot(ca_train.index, ca_train, color=BLEU, lw=1.6)
-ax1.set_title("Chiffre d'affaires mensuel (DT)")
+ax1.set_title("Chiffre d'affaires mensuel (€)")
 ax2.plot(train.index, train, color=BLEU, lw=1.6)
 ax2.set_title("Logarithme du chiffre d'affaires")
 for ax in (ax1, ax2):
@@ -101,16 +101,16 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![Chiffre d'affaires mensuel de Dar Jasmin de 2016 à 2023 : en dinars (à gauche) l'amplitude des oscillations saisonnières grandit avec le niveau ; en logarithme (à droite), elle reste à peu près constante. La bande orange marque mars-juin 2020.](figures/ch04-serie.png)
+![Chiffre d'affaires mensuel de la boutique de 2016 à 2023 : en euros (à gauche) l'amplitude des oscillations saisonnières grandit avec le niveau ; en logarithme (à droite), elle reste à peu près constante. La bande orange marque mars-juin 2020.](figures/ch04-serie.png)
 
 On lit quatre choses :
 
-1. Une **tendance** : la série monte globalement, d'un peu plus de 1 000 DT par mois en 2016 à près de 2 000 DT en 2023.
+1. Une **tendance** : la série monte globalement, d'un peu plus de 1 000 € par mois en 2016 à près de 2 000 € en 2023.
 2. Une **saisonnalité** : chaque année se ressemble (creux en janvier, plateau haut l'été, pic en décembre).
 3. Un **accident** : le trou de mars à juin 2020.
 4. Du **bruit** : des écarts irréguliers autour de la tendance et de la saison.
 
-Observez aussi le panneau de gauche : plus la série monte, plus les oscillations saisonnières s'**élargissent** (l'écart entre le mois le plus haut et le mois le plus bas de l'année est d'environ 1 160 DT en 2017 et d'environ 1 970 DT en 2023). C'est un schéma **multiplicatif** : la saison *multiplie* le niveau au lieu de s'y *ajouter*. Le panneau de droite montre le remède : en **logarithme**, un produit devient une somme ($\log(T\times S\times R)=\log T+\log S+\log R$), et les oscillations ont une amplitude à peu près constante. Vérifions-le chiffre en main :
+Observez aussi le panneau de gauche : plus la série monte, plus les oscillations saisonnières s'**élargissent** (l'écart entre le mois le plus haut et le mois le plus bas de l'année est d'environ 1 160 € en 2017 et d'environ 1 970 € en 2023). C'est un schéma **multiplicatif** : la saison *multiplie* le niveau au lieu de s'y *ajouter*. Le panneau de droite montre le remède : en **logarithme**, un produit devient une somme ($\log(T\times S\times R)=\log T+\log S+\log R$), et les oscillations ont une amplitude à peu près constante. Vérifions-le chiffre en main :
 
 ```python
 g = pd.DataFrame({"annee": ca_train.index.year, "brut": ca_train.values, "log": train.values})
@@ -133,13 +133,13 @@ annee
 2023        1906.96           1968.6           1.00
 ```
 
-L'amplitude brute passe d'environ 1 160 DT (2017) à environ 1 970 DT (2023), en suivant la croissance du niveau moyen ; l'amplitude en logarithme, elle, reste comprise entre 0,9 et 1,2 pour toutes les années. À partir de maintenant, **nous modélisons le logarithme du chiffre d'affaires**.
+L'amplitude brute passe d'environ 1 160 € (2017) à environ 1 970 € (2023), en suivant la croissance du niveau moyen ; l'amplitude en logarithme, elle, reste comprise entre 0,9 et 1,2 pour toutes les années. À partir de maintenant, **nous modélisons le logarithme du chiffre d'affaires**.
 
 > 💡 **Lire une variation en logarithme.** Si $\log y$ augmente de $0{,}05$, alors $y$ est multiplié par $e^{0{,}05}\approx1{,}051$ : une hausse d'environ 5 %. Pour de petites variations, *différence de logarithmes ≈ variation relative*. C'est pourquoi les coefficients des modèles en log se lisent comme des pourcentages.
 
 ### 4.1.3 La stationnarité
 
-Pour estimer quelque chose à partir d'**une seule trajectoire** (nous n'avons qu'une seule histoire de Dar Jasmin, on ne peut pas rejouer 2016), il faut que le processus ait des règles qui ne changent pas dans le temps. C'est le sens de la stationnarité.
+Pour estimer quelque chose à partir d'**une seule trajectoire** (nous n'avons qu'une seule histoire de la boutique, on ne peut pas rejouer 2016), il faut que le processus ait des règles qui ne changent pas dans le temps. C'est le sens de la stationnarité.
 
 > 📐 **Définition (stationnarité faible).** Une série $(Y_t)$ est **stationnaire au second ordre** si
 > 1. $\mathbb E[Y_t]=\mu$ ne dépend pas de $t$ ;

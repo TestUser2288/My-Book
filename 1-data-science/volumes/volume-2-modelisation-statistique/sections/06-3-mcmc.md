@@ -24,7 +24,7 @@ Comment fabriquer une chaîne dont la loi stationnaire est une loi $\pi$ donnée
 
 L'équation dit : « *en régime stationnaire, le flux de $i$ vers $j$ égale le flux de $j$ vers $i$* ». Si les flux sont équilibrés pour chaque paire d'états, la population de chaque état est stable.
 
-**Exemple à la main : trois canaux.** Yasmine choisit chaque semaine un canal à mettre en avant parmi 1 = Boutique, 2 = Site, 3 = Instagram, et elle voudrait que ses choix, sur le long terme, suivent des poids $(2,5,3)$, c'est-à-dire la loi $\pi=(0{,}2;\,0{,}5;\,0{,}3)$. Elle applique la règle de Metropolis : **proposer** l'un des deux autres canaux au hasard (probabilité $\tfrac12$ chacun), puis **accepter** avec la probabilité $\alpha=\min\bigl(1,\ \pi_j/\pi_i\bigr)$, et sinon rester sur place. Construisons la matrice :
+**Exemple à la main : trois canaux.** la gérante choisit chaque semaine un canal à mettre en avant parmi 1 = Boutique, 2 = Site, 3 = Réseaux, et elle voudrait que ses choix, sur le long terme, suivent des poids $(2,5,3)$, c'est-à-dire la loi $\pi=(0{,}2;\,0{,}5;\,0{,}3)$. Elle applique la règle de Metropolis : **proposer** l'un des deux autres canaux au hasard (probabilité $\tfrac12$ chacun), puis **accepter** avec la probabilité $\alpha=\min\bigl(1,\ \pi_j/\pi_i\bigr)$, et sinon rester sur place. Construisons la matrice :
 
 - depuis 1 (poids 2) : vers 2, $\tfrac12\min(1,5/2)=\tfrac12$ ; vers 3, $\tfrac12\min(1,3/2)=\tfrac12$ ; rester : $0$ ;
 - depuis 2 (poids 5) : vers 1, $\tfrac12\cdot\tfrac25=0{,}2$ ; vers 3, $\tfrac12\cdot\tfrac35=0{,}3$ ; rester : $0{,}5$ ;
@@ -228,7 +228,7 @@ plt.close()
 ### 6.3.5 Application : la régression logistique bayésienne du rachat
 
 Passons au problème réel. Nous modélisons le rachat dans les 12 mois par
-$$y_i\sim\mathrm{Bernoulli}\bigl(\sigma(\eta_i)\bigr),\qquad \eta_i=\beta_0+\beta_1\,\text{offre}_i+\beta_2\,\text{Instagram}_i+\beta_3\,\text{Site}_i+\beta_4\,\text{âge}_i,$$
+$$y_i\sim\mathrm{Bernoulli}\bigl(\sigma(\eta_i)\bigr),\qquad \eta_i=\beta_0+\beta_1\,\text{offre}_i+\beta_2\,\text{Réseaux}_i+\beta_3\,\text{Site}_i+\beta_4\,\text{âge}_i,$$
 où $\sigma(u)=1/(1+e^{-u})$, la Boutique est le canal de référence et l'âge est **standardisé** (centré, divisé par son écart-type : une unité = un écart-type). (La régression logistique est étudiée au chapitre 2, section 2.2 ; ici, on s'intéresse à la façon de **l'estimer** par une méthode bayésienne.) A priori : $\beta_j\sim\mathcal N(0,\,2{,}5^2)$ pour tous les coefficients, un a priori « faiblement informatif » (6.1.6) : il écarte les rapports de cotes extrêmes ($e^{\pm 5}$) sans trop contraindre.
 
 ```python
@@ -238,7 +238,7 @@ clients = pd.read_csv("donnees/clients.csv")
 d = clients.copy()
 d["age_c"] = (d["age"] - d["age"].mean()) / d["age"].std()
 X = pd.get_dummies(d[["offre_bienvenue", "canal_acquisition", "age_c"]], columns=["canal_acquisition"], drop_first=True, dtype=float)
-X = X.rename(columns={"canal_acquisition_Instagram": "Instagram", "canal_acquisition_Site": "Site", "offre_bienvenue": "offre"})
+X = X.rename(columns={"canal_acquisition_Instagram": "Réseaux", "canal_acquisition_Site": "Site", "offre_bienvenue": "offre"})
 X = sm.add_constant(X)
 noms = list(X.columns)
 Xm, y = X.to_numpy(), d["rachat_12m"].to_numpy()
@@ -257,7 +257,7 @@ print("\nlog-posterior en l'EMV :", round(log_post(emv.params), 2))
 ```
 <!--sortie-->
 ```text
-colonnes : ['const', 'offre', 'age_c', 'Instagram', 'Site'] | n = 2000 | rachat moyen : 0.509
+colonnes : ['const', 'offre', 'age_c', 'Réseaux', 'Site'] | n = 2000 | rachat moyen : 0.509
 
 log-posterior en l'EMV : -1355.46
 ```
@@ -318,7 +318,7 @@ with pd.option_context("display.float_format", "{:.3f}".format, "display.width",
 const      0.034           0.100                 0.033                    0.098         -0.162           0.227 1280.705
 offre      0.493           0.091                 0.493                    0.089          0.316           0.663 1276.029
 age_c     -0.163           0.046                -0.163                    0.045         -0.256          -0.076 1114.281
-Instagram -0.463           0.116                -0.459                    0.113         -0.681          -0.232 1158.399
+Réseaux -0.463           0.116                -0.459                    0.113         -0.681          -0.232 1158.399
 Site      -0.168           0.120                -0.163                    0.118         -0.393           0.073 1205.256
 ```
 
@@ -374,7 +374,7 @@ plt.close()
 
 ![Pour chacun des cinq coefficients de la régression logistique du rachat, l'intervalle de crédibilité à 95 % obtenu par MCMC (bleu) et l'intervalle de confiance à 95 % du maximum de vraisemblance (orange). Les deux approches coïncident presque exactement.](figures/ch06-logit-bayes.png)
 
-> 🧪 **Que valent ces estimations ? Réponse de la simulation.** Les données étant simulées, nous connaissons les vrais paramètres du générateur : un effet de l'offre de **+0,55** sur le logit, un avantage de la Boutique de +0,3 par rapport aux deux autres canaux (donc −0,3 pour Instagram et pour le Site), un effet de l'âge de −0,015 par an. Notre estimation de l'offre (0,49) est **inférieure à 0,55** mais compatible avec elle (l'intervalle de crédibilité est d'environ ±0,17). L'effet de l'âge (−0,163 par écart-type, soit $-0{,}163/10{,}5\approx-0{,}0155$ par an) retrouve le −0,015 programmé, et les intervalles des canaux contiennent les valeurs programmées ($-0{,}3$ pour Instagram comme pour le Site). Mais il y a une raison **systématique**, et pas seulement le hasard, pour laquelle l'effet de l'offre est un peu sous-estimé : le générateur utilise deux facteurs latents (goût pour les produits, sensibilité au service) qui influencent aussi le rachat, et que notre modèle **n'observe pas**. Omettre des variables explicatives *atténue* les coefficients d'une régression logistique, même quand ces variables sont indépendantes de l'offre (c'est la « non-collapsibilité » du rapport de cotes). Vérifions-le sur un très grand échantillon simulé avec la même formule :
+> 🧪 **Que valent ces estimations ? Réponse de la simulation.** Les données étant simulées, nous connaissons les vrais paramètres du générateur : un effet de l'offre de **+0,55** sur le logit, un avantage de la Boutique de +0,3 par rapport aux deux autres canaux (donc −0,3 pour Réseaux et pour le Site), un effet de l'âge de −0,015 par an. Notre estimation de l'offre (0,49) est **inférieure à 0,55** mais compatible avec elle (l'intervalle de crédibilité est d'environ ±0,17). L'effet de l'âge (−0,163 par écart-type, soit $-0{,}163/10{,}5\approx-0{,}0155$ par an) retrouve le −0,015 programmé, et les intervalles des canaux contiennent les valeurs programmées ($-0{,}3$ pour Réseaux comme pour le Site). Mais il y a une raison **systématique**, et pas seulement le hasard, pour laquelle l'effet de l'offre est un peu sous-estimé : le générateur utilise deux facteurs latents (goût pour les produits, sensibilité au service) qui influencent aussi le rachat, et que notre modèle **n'observe pas**. Omettre des variables explicatives *atténue* les coefficients d'une régression logistique, même quand ces variables sont indépendantes de l'offre (c'est la « non-collapsibilité » du rapport de cotes). Vérifions-le sur un très grand échantillon simulé avec la même formule :
 
 ```python
 rng = np.random.default_rng(636)

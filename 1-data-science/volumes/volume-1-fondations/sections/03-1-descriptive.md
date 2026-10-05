@@ -6,7 +6,7 @@
 
 Deux mots que nous utiliserons constamment :
 
-- La **population** est l'ensemble complet qui nous intéresse (*toutes* les commandes passées et à venir de Dar Jasmin).
+- La **population** est l'ensemble complet qui nous intéresse (*toutes* les commandes passées et à venir de la boutique).
 - L'**échantillon** est la partie que l'on a effectivement observée (nos 400 commandes).
 
 On calcule des **statistiques** sur l'échantillon pour apprendre des choses sur les **paramètres** de la population, qui eux restent inconnus. (On notera $\bar x$ la moyenne de l'échantillon et $\mu$ celle de la population.)
@@ -15,9 +15,9 @@ Chaque colonne d'un tableau est une **variable**. Son type décide des calculs e
 
 | Type | Exemple | Résumés adaptés |
 |---|---|---|
-| **Quantitative continue** | montant (DT) | moyenne, médiane, écart-type, histogramme |
+| **Quantitative continue** | montant (€) | moyenne, médiane, écart-type, histogramme |
 | **Quantitative discrète** | nombre d'articles, délai en jours | idem, ou fréquences de chaque valeur |
-| **Qualitative nominale** | canal (Instagram / Site / Boutique) | effectifs, proportions, diagramme en barres |
+| **Qualitative nominale** | canal (Réseaux / Site / Boutique) | effectifs, proportions, diagramme en barres |
 | **Qualitative ordinale** | satisfaction (1 à 5) | effectifs, médiane, quantiles (la moyenne est discutable) |
 
 > ⚠️ **La moyenne d'une variable ordinale** (satisfaction de 1 à 5) est très répandue mais n'a pas de sens strict : l'écart entre 1 et 2 est-il le même qu'entre 4 et 5 ? On la calcule quand même par convention, mais en gardant ceci en tête.
@@ -33,8 +33,8 @@ from scipy import stats
 
 rng = np.random.default_rng(100)
 n = 400
-canal = rng.choice(["Instagram", "Site", "Boutique"], size=n, p=[0.4, 0.35, 0.25])
-base = {"Instagram": 3.7, "Site": 3.9, "Boutique": 4.1}
+canal = rng.choice(["Réseaux", "Site", "Boutique"], size=n, p=[0.4, 0.35, 0.25])
+base = {"Réseaux": 3.7, "Site": 3.9, "Boutique": 4.1}
 montant = np.round(np.exp(rng.normal([base[c] for c in canal], 0.55)), 1)
 livraison = np.where(canal == "Boutique", 0, np.round(rng.gamma(4, 0.9, size=n)) + 1).astype(int)
 satisfaction = np.clip(np.round(4.6 - 0.18 * livraison + rng.normal(0, 0.7, size=n)), 1, 5).astype(int)
@@ -50,8 +50,8 @@ print("dimensions :", df.shape)
        canal  montant  livraison  satisfaction
 0   Boutique     44.8          0             4
 1       Site     34.5          2             4
-2  Instagram     88.2          5             4
-3  Instagram     30.1          4             4
+2  Réseaux     88.2          5             4
+3  Réseaux     30.1          4             4
 4   Boutique    110.1          0             5
 5       Site     39.8          5             3
 6   Boutique     74.7          0             5
@@ -94,13 +94,13 @@ min       8.60       0.00          1.00
 max     255.70      13.00          5.00
 ```
 
-`describe()` donne d'un coup : effectif (`count`), moyenne (`mean`), écart-type (`std`), minimum, quartiles (25 %, 50 %, 75 %) et maximum. Aucune valeur manquante. Le montant moyen est d'environ 60 DT, mais le **maximum dépasse 250 DT** alors que la **médiane** (50 %) est d'environ 51 DT : la distribution est probablement **asymétrique**. Regardons cela de plus près.
+`describe()` donne d'un coup : effectif (`count`), moyenne (`mean`), écart-type (`std`), minimum, quartiles (25 %, 50 %, 75 %) et maximum. Aucune valeur manquante. Le montant moyen est d'environ 60 €, mais le **maximum dépasse 250 €** alors que la **médiane** (50 %) est d'environ 51 € : la distribution est probablement **asymétrique**. Regardons cela de plus près.
 
 ### 3.1.3 Mesures de position : où est le centre ?
 
 **La moyenne** $\bar x=\frac1n\sum x_i$ est le centre de gravité. **La médiane** est la valeur qui partage l'échantillon en deux moitiés égales : 50 % des commandes sont en dessous. **Le mode** est la valeur la plus fréquente.
 
-Voici un petit exemple à la main pour sentir la différence. Cinq commandes : $20,\ 25,\ 30,\ 35,\ 400$ DT (la dernière est un gros achat professionnel). La moyenne vaut $(20+25+30+35+400)/5=102$ DT : aucune commande n'est proche de ce chiffre ! La médiane (la valeur du milieu après tri) vaut 30 DT, bien plus représentative d'une commande « typique ».
+Voici un petit exemple à la main pour sentir la différence. Cinq commandes : $20,\ 25,\ 30,\ 35,\ 400$ € (la dernière est un gros achat professionnel). La moyenne vaut $(20+25+30+35+400)/5=102$ € : aucune commande n'est proche de ce chiffre ! La médiane (la valeur du milieu après tri) vaut 30 €, bien plus représentative d'une commande « typique ».
 
 > 💡 **Règle de base.** La moyenne est sensible aux valeurs extrêmes ; la médiane est **robuste**. Quand la distribution est asymétrique, la moyenne est tirée vers la queue longue : **moyenne > médiane** pour une asymétrie à droite (cas des montants, revenus, durées).
 
@@ -109,17 +109,17 @@ m = df["montant"]
 print("moyenne :", round(m.mean(), 2))
 print("médiane :", round(m.median(), 2))
 print("moyenne tronquée (10 % de chaque côté) :", round(stats.trim_mean(m, 0.10), 2))
-print("mode approximatif (classes de 10 DT) :", int(m.round(-1).mode()[0]), "DT")
+print("mode approximatif (classes de 10 €) :", int(m.round(-1).mode()[0]), "€")
 ```
 <!--sortie-->
 ```text
 moyenne : 60.25
 médiane : 51.0
 moyenne tronquée (10 % de chaque côté) : 54.9
-mode approximatif (classes de 10 DT) : 40 DT
+mode approximatif (classes de 10 €) : 40 €
 ```
 
-La moyenne (60 DT) dépasse nettement la médiane (51 DT) : quelques grosses commandes tirent la moyenne vers le haut. La **moyenne tronquée**, qui écarte les 10 % de valeurs les plus extrêmes de chaque côté, se situe entre les deux.
+La moyenne (60 €) dépasse nettement la médiane (51 €) : quelques grosses commandes tirent la moyenne vers le haut. La **moyenne tronquée**, qui écarte les 10 % de valeurs les plus extrêmes de chaque côté, se situe entre les deux.
 
 **Les quantiles** généralisent la médiane : le quantile à $q$ % est la valeur sous laquelle se trouvent $q$ % des observations. Les **quartiles** (25 %, 50 %, 75 %) découpent l'échantillon en quatre parts égales.
 
@@ -136,11 +136,11 @@ print(m.quantile([0.05, 0.25, 0.50, 0.75, 0.95]).round(1))
 Name: montant, dtype: float64
 ```
 
-On lit par exemple : « 95 % des commandes font moins de ~130 DT », une information très utile pour dimensionner un seuil de livraison gratuite.
+On lit par exemple : « 95 % des commandes font moins de ~130 € », une information très utile pour dimensionner un seuil de livraison gratuite.
 
 ### 3.1.4 Mesures de dispersion : de combien ça varie ?
 
-Deux boutiques dont le panier moyen est de 60 DT peuvent être très différentes si l'une a des paniers tous compris entre 55 et 65 et l'autre entre 5 et 300.
+Deux boutiques dont le panier moyen est de 60 € peuvent être très différentes si l'une a des paniers tous compris entre 55 et 65 et l'autre entre 5 et 300.
 
 - **L'étendue** : max − min. Simple, mais entièrement dictée par deux valeurs extrêmes.
 - **La variance** $s^2=\dfrac1{n-1}\sum(x_i-\bar x)^2$ et l'**écart-type** $s=\sqrt{s^2}$.
@@ -166,7 +166,7 @@ IQR                      : 41.6
 coefficient de variation : 0.63
 ```
 
-Un écart-type de 38 DT pour une moyenne de 60 DT : un coefficient de variation de 63 %, ce qui est **très dispersé** (typique des montants).
+Un écart-type de 38 € pour une moyenne de 60 € : un coefficient de variation de 63 %, ce qui est **très dispersé** (typique des montants).
 
 ### 3.1.5 La forme : histogrammes, asymétrie, boîtes à moustaches
 
@@ -174,7 +174,7 @@ Les nombres ne disent pas tout. **L'histogramme** découpe l'axe en classes et c
 
 ![À gauche : histogramme des 400 montants, avec la moyenne (orange) tirée vers la droite de la médiane (violet). À droite : boîtes à moustaches du montant selon le canal.](figures/ch03-distribution-montants.png)
 
-On lit sur l'histogramme une **asymétrie à droite** : beaucoup de petites commandes, quelques très grosses. Sur le boxplot, la boutique a des commandes plus élevées que le site, lui-même plus élevé qu'Instagram. (Est-ce une vraie différence ou du hasard d'échantillonnage ? C'est la question du 3.4.)
+On lit sur l'histogramme une **asymétrie à droite** : beaucoup de petites commandes, quelques très grosses. Sur le boxplot, la boutique a des commandes plus élevées que le site, lui-même plus élevé qu'Réseaux. (Est-ce une vraie différence ou du hasard d'échantillonnage ? C'est la question du 3.4.)
 
 L'**asymétrie** (*skewness*) se mesure par un nombre : nulle pour une courbe symétrique, positive à droite.
 
@@ -182,13 +182,13 @@ L'**asymétrie** (*skewness*) se mesure par un nombre : nulle pour une courbe sy
 print("asymétrie :", round(stats.skew(m), 2))
 q1, q3 = m.quantile([0.25, 0.75])
 borne_haute = q3 + 1.5 * (q3 - q1)
-print("seuil haut des valeurs atypiques :", round(borne_haute, 1), "DT")
+print("seuil haut des valeurs atypiques :", round(borne_haute, 1), "€")
 print("nombre de commandes au-dessus    :", int((m > borne_haute).sum()))
 ```
 <!--sortie-->
 ```text
 asymétrie : 1.75
-seuil haut des valeurs atypiques : 138.3 DT
+seuil haut des valeurs atypiques : 138.3 €
 nombre de commandes au-dessus    : 17
 ```
 
@@ -226,26 +226,26 @@ print(df.groupby("canal")["montant"].agg(["count", "mean", "median", "std"]).rou
 ```text
 canal
 Site         148
-Instagram    138
+Réseaux    138
 Boutique     114
 Name: count, dtype: int64
 
 canal
 Site         0.370
-Instagram    0.345
+Réseaux    0.345
 Boutique     0.285
 Name: proportion, dtype: float64
 
            count  mean  median   std
 canal                               
 Boutique     114  74.8    64.8  40.6
-Instagram    138  49.0    41.5  31.1
+Réseaux    138  49.0    41.5  31.1
 Site         148  59.5    49.5  38.3
 ```
 
-Les trois canaux apportent respectivement 138, 148 et 114 commandes (Instagram, Site, Boutique). Les paniers moyens sont d'environ 49, 60 et 75 DT : la boutique domine en valeur par commande. Mais attention :
+Les trois canaux apportent respectivement 138, 148 et 114 commandes (Réseaux, Site, Boutique). Les paniers moyens sont d'environ 49, 60 et 75 € : la boutique domine en valeur par commande. Mais attention :
 
-> ⚠️ **Une différence observée n'est pas forcément une différence réelle.** Avec 114 à 148 commandes par canal, le hasard seul peut créer des écarts de quelques dinars. Pour savoir si l'écart entre 49 et 75 DT est « assez grand » pour être crédible, il faut un **test** (3.4) ou un **intervalle de confiance** (3.3). La statistique descriptive décrit ; elle ne *conclut* pas.
+> ⚠️ **Une différence observée n'est pas forcément une différence réelle.** Avec 114 à 148 commandes par canal, le hasard seul peut créer des écarts de quelques euros. Pour savoir si l'écart entre 49 et 75 € est « assez grand » pour être crédible, il faut un **test** (3.4) ou un **intervalle de confiance** (3.3). La statistique descriptive décrit ; elle ne *conclut* pas.
 
 ### 3.1.7 Relier deux variables : corrélation, et pourquoi il faut toujours dessiner
 

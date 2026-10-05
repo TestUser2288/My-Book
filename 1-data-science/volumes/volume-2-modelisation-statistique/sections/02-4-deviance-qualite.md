@@ -50,7 +50,7 @@ print("déviance statsmodels  :", round(float(m4.deviance), 4), "| Pearson stats
 
 # Les trois modèles des sections 2.2 et 2.3, sur les vraies données
 clients = pd.read_csv("donnees/clients.csv")
-clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Instagram", "Site"])
+clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])
 logi = smf.glm("rachat_12m ~ offre_bienvenue + age + canal", clients, family=sm.families.Binomial()).fit()
 poi = smf.glm("nb_commandes_an ~ age + canal + offre_bienvenue", clients, family=sm.families.Poisson()).fit()
 acheteurs = clients[clients["depense_annuelle"] > 0]

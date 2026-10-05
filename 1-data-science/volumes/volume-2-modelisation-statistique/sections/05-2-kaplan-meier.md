@@ -188,7 +188,7 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![Courbe de Kaplan-Meier des 2 000 clients de Dar Jasmin, avec son intervalle de confiance à 95 %, et courbe du modèle exponentiel ajusté par maximum de vraisemblance.](figures/ch05-km-global.png)
+![Courbe de Kaplan-Meier des 2 000 clients de la boutique, avec son intervalle de confiance à 95 %, et courbe du modèle exponentiel ajusté par maximum de vraisemblance.](figures/ch05-km-global.png)
 
 La courbe exponentielle passe **sous** Kaplan-Meier pendant les 28 premiers mois environ (elle prévoit trop de départs précoces), croise la courbe vers 30 mois, puis reste **au-dessus** ensuite (elle prévoit trop peu de départs tardifs). Ce schéma est la signature d'un risque qui **augmente** avec l'ancienneté : un risque constant ne peut pas le reproduire. La section 5.4 le confirmera. C'est un avantage décisif de Kaplan-Meier : il ne parie sur aucune forme.
 
@@ -287,7 +287,7 @@ Call: survfit(formula = Surv(duree_mois, churn) ~ 1, data = clients)
 [1,] 2000    977   32.5    29.9    34.2
 ```
 
-La médiane est d'environ **32,5 mois** (IC95 : 29,9 à 34,2). La moitié des clients ont quitté Dar Jasmin au bout de deux ans et huit mois et demi. Notez que ce chiffre est bien supérieur à la moyenne « naïve » de 23 mois de la section 5.1.
+La médiane est d'environ **32,5 mois** (IC95 : 29,9 à 34,2). La moitié des clients ont quitté la boutique au bout de deux ans et huit mois et demi. Notez que ce chiffre est bien supérieur à la moyenne « naïve » de 23 mois de la section 5.1.
 
 **Et la durée moyenne ?** Nous savons que $E[T]=\int_0^\infty S(t)\,dt$. Mais Kaplan-Meier ne descend pas jusqu'à zéro : le dernier client est censuré, et la courbe s'arrête à 0,11 (dernier départ au mois 80,2). L'aire totale n'est pas définie ; elle dépend de ce que l'on suppose *au-delà* des données. On calcule donc la **durée moyenne restreinte** (en anglais *restricted mean survival time*, RMST) jusqu'à un horizon $\tau$ choisi :
 $$\mathrm{RMST}(\tau)=\int_0^{\tau}\hat S(t)\,dt.$$
@@ -312,11 +312,11 @@ for tau in (24, 36, 60):
 2000 clients, tau = 60 : 33.94 mois passés en moyenne dans les 60 premiers mois
 ```
 
-Sur 36 mois, un nouveau client passe en moyenne un peu plus de 26 mois dans la clientèle de Dar Jasmin, sur un maximum possible de 36. C'est une quantité très parlante pour décider (nous la retrouverons au 5.4 pour la valeur vie client), et elle ne dépend d'aucune hypothèse de forme.
+Sur 36 mois, un nouveau client passe en moyenne un peu plus de 26 mois dans la clientèle de la boutique, sur un maximum possible de 36. C'est une quantité très parlante pour décider (nous la retrouverons au 5.4 pour la valeur vie client), et elle ne dépend d'aucune hypothèse de forme.
 
 ### 5.2.5 Comparer des groupes : courbes et test du log-rank
 
-Yasmine a envoyé une **offre de bienvenue** à la moitié de ses clients, **tirée au hasard**. Cette offre prolonge-t-elle la relation ? Et le canal d'acquisition joue-t-il un rôle ? Traçons Kaplan-Meier par groupe, avec les bandes de confiance log-log.
+La gérante a envoyé une **offre de bienvenue** à la moitié de ses clients, **tirée au hasard**. Cette offre prolonge-t-elle la relation ? Et le canal d'acquisition joue-t-il un rôle ? Traçons Kaplan-Meier par groupe, avec les bandes de confiance log-log.
 
 ```python
 def courbe_groupe(y, d, masque):
@@ -335,7 +335,7 @@ for val, couleur, nom in [(0, VIOLET, "sans offre"), (1, AQUA, "avec offre")]:
 ax1.legend(handles=[Line2D([0], [0], color=AQUA, lw=2, label="avec offre"), Line2D([0], [0], color=VIOLET, lw=2, label="sans offre")],
            loc="lower left", frameon=False, fontsize=10)
 ax1.set_title("Selon l'offre de bienvenue (attribuée au hasard)")
-canaux = [("Boutique", AQUA), ("Site", BLEU), ("Instagram", ORANGE)]
+canaux = [("Boutique", AQUA), ("Site", BLEU), ("Réseaux", ORANGE)]
 for nom, couleur in canaux:
     t_, S_, b, h = courbe_groupe(y, d, (c["canal_acquisition"] == nom).to_numpy())
     x = np.concatenate([[0], t_])
@@ -360,7 +360,7 @@ figure enregistrée
 
 ![Courbes de Kaplan-Meier par groupe, avec bandes de confiance à 95 % : à gauche selon l'offre de bienvenue, à droite selon le canal d'acquisition.](figures/ch05-km-groupes.png)
 
-Les courbes avec et sans offre se séparent nettement et durablement ; à droite, Boutique est au-dessus de Site, lui-même au-dessus d'Instagram (les bandes de Boutique et de Site se chevauchent par endroits). Résumons chaque groupe (médiane de survie et durée moyenne restreinte à 36 mois) :
+Les courbes avec et sans offre se séparent nettement et durablement ; à droite, Boutique est au-dessus de Site, lui-même au-dessus d'Réseaux (les bandes de Boutique et de Site se chevauchent par endroits). Résumons chaque groupe (médiane de survie et durée moyenne restreinte à 36 mois) :
 
 ```python
 resume = []
@@ -378,7 +378,7 @@ print(pd.DataFrame(resume).to_string(index=False))
   offre_bienvenue         0      985      528            28.2         24.62
   offre_bienvenue         1     1015      449            36.6         27.69
 canal_acquisition  Boutique      504      212            41.2         29.10
-canal_acquisition Instagram      816      443            26.4         23.93
+canal_acquisition Réseaux      816      443            26.4         23.93
 canal_acquisition      Site      680      322            34.1         26.67
 ```
 
@@ -471,7 +471,7 @@ O3, E3, chi3, ddl3, p3 = logrank(y, d, c["canal_acquisition"])
 print(f"3 canaux : chi2 = {chi3:.1f} à {ddl3} ddl, p = {p3:.1e}")
 print(pd.DataFrame({"observés": O3.astype(int), "attendus": E3.round(1)}, index=np.unique(c["canal_acquisition"])).T.to_string())
 
-paires = [("Boutique", "Instagram"), ("Boutique", "Site"), ("Site", "Instagram")]
+paires = [("Boutique", "Réseaux"), ("Boutique", "Site"), ("Site", "Réseaux")]
 brutes = []
 for a, b in paires:
     m = c["canal_acquisition"].isin([a, b]).to_numpy()
@@ -487,16 +487,16 @@ print(pd.DataFrame({"comparaison": [f"{a} / {b}" for a, b in paires], "p brute":
 <!--sortie-->
 ```text
 3 canaux : chi2 = 55.0 à 2 ddl, p = 1.1e-12
-          Boutique  Instagram   Site
+          Boutique  Réseaux   Site
 observés     212.0      443.0  322.0
 attendus     296.5      342.4  338.1
          comparaison  p brute   p Holm
-Boutique / Instagram 5.27e-13 1.58e-12
+Boutique / Réseaux 5.27e-13 1.58e-12
      Boutique / Site 8.61e-04 8.61e-04
-    Site / Instagram 3.02e-05 6.05e-05
+    Site / Réseaux 3.02e-05 6.05e-05
 ```
 
-Les trois canaux diffèrent ($\chi^2_2=55{,}0$). Deux à deux, toutes les comparaisons restent significatives après correction de Holm : la plus nette oppose Boutique et Instagram (p de l'ordre de $10^{-12}$), la plus faible Boutique et Site (p $\approx9\times10^{-4}$). Les clients arrivés par la boutique restent le plus longtemps, ceux d'Instagram partent le plus vite : 212 départs observés en Boutique contre 296 attendus sous l'hypothèse « aucune différence », mais 443 contre 342 pour Instagram.
+Les trois canaux diffèrent ($\chi^2_2=55{,}0$). Deux à deux, toutes les comparaisons restent significatives après correction de Holm : la plus nette oppose Boutique et Réseaux (p de l'ordre de $10^{-12}$), la plus faible Boutique et Site (p $\approx9\times10^{-4}$). Les clients arrivés par la boutique restent le plus longtemps, ceux d'Réseaux partent le plus vite : 212 départs observés en Boutique contre 296 attendus sous l'hypothèse « aucune différence », mais 443 contre 342 pour Réseaux.
 
 **Autres pondérations.** Le log-rank donne le **même poids** à tous les instants ; il est le plus puissant quand les risques des groupes sont **proportionnels** (section 5.3). D'autres tests pondèrent davantage le début (Gehan-Breslow, Tarone-Ware, Fleming-Harrington) ; ils sont plus sensibles aux différences précoces et moins aux différences tardives :
 
@@ -527,7 +527,7 @@ Le dernier test (Fleming-Harrington, `rho = 1` dans R) donne le même $\chi^2$ d
 
 ### 5.2.6 Quand les clients entrent tard : la troncature à gauche
 
-Nous avons promis (5.1.4) de montrer comment traiter les **entrées tardives**. Imaginons que Yasmine n'ait enregistré les clients qu'à partir de leur **adhésion au programme de fidélité**, qui peut intervenir longtemps après le premier achat. On mesure la durée depuis le premier achat, mais un client n'apparaît dans la base que s'il était **encore client** à sa date d'adhésion. Les clients partis avant n'ont jamais été vus.
+Nous avons promis (5.1.4) de montrer comment traiter les **entrées tardives**. Imaginons que la gérante n'ait enregistré les clients qu'à partir de leur **adhésion au programme de fidélité**, qui peut intervenir longtemps après le premier achat. On mesure la durée depuis le premier achat, mais un client n'apparaît dans la base que s'il était **encore client** à sa date d'adhésion. Les clients partis avant n'ont jamais été vus.
 
 La règle est simple : **un client n'est dans l'ensemble à risque à l'instant $t$ que s'il est entré dans l'observation avant $t$ et n'en est pas encore sorti** :
 $$n_j=\#\{i:\ e_i<t_j\le y_i\}.$$

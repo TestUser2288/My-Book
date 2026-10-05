@@ -33,7 +33,7 @@ Ce dernier chapitre a deux rôles : **fixer l'essentiel** de chaque chapitre, et
 ### Régression linéaire (chapitre 1)
 
 1. Que sont les équations normales, et que représente géométriquement la solution des moindres carrés ?
-2. Dans une régression de $\ln(\text{panier})$ sur le canal, le coefficient de « Boutique » (par rapport à « Instagram ») vaut $0{,}22$. De combien de pourcents le panier est-il plus élevé en boutique ?
+2. Dans une régression de $\ln(\text{panier})$ sur le canal, le coefficient de « Boutique » (par rapport à « Réseaux ») vaut $0{,}22$. De combien de pourcents le panier est-il plus élevé en boutique ?
 3. Quelle est la différence entre un intervalle de confiance pour la **réponse moyenne** et un intervalle de **prédiction** ? Lequel est le plus large, et pourquoi ?
 4. Deux variables explicatives ont une corrélation de $0{,}95$. Quel est le facteur d'inflation de la variance (VIF) de chacune, et que cela signifie-t-il ?
 5. Pourquoi ne faut-il pas choisir le modèle qui a le plus grand $R^2$ ?
@@ -88,7 +88,7 @@ Ce dernier chapitre a deux rôles : **fixer l'essentiel** de chaque chapitre, et
 
 37. Faut-il ajuster sur une cause commune ? Sur un effet commun (collision) ? Pourquoi ?
 38. Pourquoi la randomisation permet-elle une lecture causale de l'écart de moyennes ?
-39. Une variable instrumentale (un rappel envoyé au hasard) augmente la dépense moyenne de $3$ DT et la probabilité d'ouvrir le courriel de $0{,}6$. Quel est l'estimateur de Wald ?
+39. Une variable instrumentale (un rappel envoyé au hasard) augmente la dépense moyenne de $3$ € et la probabilité d'ouvrir le courriel de $0{,}6$. Quel est l'estimateur de Wald ?
 40. Trois groupes de 10 observations : $SC_{\text{inter}}=24$ et $SC_{\text{intra}}=60$. Quelle est la statistique $F$ de l'ANOVA ?
 41. Combien d'essais faut-il pour un plan factoriel complet à trois facteurs à deux niveaux, et que calcule-t-on pour l'effet principal d'un facteur ?
 42. Un indice de Moran de $+0{,}4$ avec $n=50$ : que cela indique-t-il, et quelle est son espérance sous l'indépendance spatiale ?
@@ -139,7 +139,7 @@ print(f"Q31 posteriori Beta({a}, {b}), moyenne = {a / (a + b):.3f}, IC crédible
 print(f"Q33 n = (0,5 / 0,001)^2 = {(0.5 / 0.001) ** 2:,.0f}")
 
 # Q39 : Wald
-print(f"Q39 3 / 0,6 = {3 / 0.6:.1f} DT")
+print(f"Q39 3 / 0,6 = {3 / 0.6:.1f} €")
 
 # Q40 : F de l'ANOVA
 k, n = 3, 30
@@ -162,7 +162,7 @@ Q27 t = 5 : 3 à risque, S = 0.5333
 Q27 t = 7 : 2 à risque, S = 0.2667
 Q31 posteriori Beta(13, 9), moyenne = 0.591, IC crédible 95 % = [0.384 ; 0.782]
 Q33 n = (0,5 / 0,001)^2 = 250,000
-Q39 3 / 0,6 = 5.0 DT
+Q39 3 / 0,6 = 5.0 €
 Q40 F = 5.40, p = 0.0106
 Q42 E[I] = -1/(n-1) = -0.0204
 ```
@@ -171,7 +171,7 @@ Q42 E[I] = -1/(n-1) = -0.0204
 
 **1.** Les **équations normales** $\mathbf X^\top\mathbf X\,\boldsymbol\beta=\mathbf X^\top\mathbf y$ expriment que le résidu est **orthogonal** à toutes les colonnes de $\mathbf X$. Géométriquement, $\mathbf X\hat{\boldsymbol\beta}$ est la **projection orthogonale** de $\mathbf y$ sur le sous-espace engendré par les colonnes de $\mathbf X$. (1.1)
 
-**2.** $e^{0{,}22}-1\approx 24{,}6\ \%$ : en boutique, le panier est environ **un quart plus élevé**, toutes choses égales par ailleurs. Dans un modèle en logarithme, un coefficient $\beta$ se lit comme un effet **multiplicatif** $e^\beta$, et non comme une différence en dinars. (1.1)
+**2.** $e^{0{,}22}-1\approx 24{,}6\ \%$ : en boutique, le panier est environ **un quart plus élevé**, toutes choses égales par ailleurs. Dans un modèle en logarithme, un coefficient $\beta$ se lit comme un effet **multiplicatif** $e^\beta$, et non comme une différence en euros. (1.1)
 
 **3.** L'intervalle sur la **réponse moyenne** encadre la valeur moyenne de $y$ pour des valeurs données de $x$ ; l'intervalle de **prédiction** encadre une **nouvelle observation** individuelle. Le second est plus large : il ajoute la variance du bruit individuel $\sigma^2$ à l'incertitude sur la moyenne. (1.2)
 
@@ -195,7 +195,7 @@ Q42 E[I] = -1/(n-1) = -0.0204
 
 **13.** $2{,}4/4=60\ \%$ (la somme des valeurs propres d'une matrice de corrélation vaut le nombre de variables). (3.1)
 
-**14.** Quand les variables ont des **unités ou des échelles différentes** (dinars, âges, notes) : sans standardisation, la variable de plus grande variance domine l'ACP. Avec des variables de même nature et de même échelle, on peut travailler sur la matrice de covariance. (3.1)
+**14.** Quand les variables ont des **unités ou des échelles différentes** (euros, âges, notes) : sans standardisation, la variable de plus grande variance domine l'ACP. Avec des variables de même nature et de même échelle, on peut travailler sur la matrice de covariance. (3.1)
 
 **15.** L'ACP **résume** : elle cherche les combinaisons de variables de variance maximale, sans modèle. L'analyse factorielle **modélise** : elle suppose que les corrélations viennent de facteurs cachés, avec une part de bruit propre à chaque variable ($\Sigma=\Lambda\Lambda^\top+\Psi$). (3.2)
 
@@ -245,7 +245,7 @@ Q42 E[I] = -1/(n-1) = -0.0204
 
 **38.** Parce que, l'affectation étant faite au hasard, les groupes sont **comparables en moyenne sur tout**, y compris sur ce qu'on n'observe pas. L'écart de moyennes mesure alors uniquement l'effet du traitement : le **biais de sélection** est nul en espérance. (7.1)
 
-**39.** $3/0{,}6=5$ DT : l'effet du rappel sur la dépense (forme réduite) divisé par son effet sur l'ouverture du courriel (première étape). C'est l'effet moyen **pour les « complaisants »**, c'est-à-dire ceux dont le comportement change à cause du rappel. (7.4)
+**39.** $3/0{,}6=5$ € : l'effet du rappel sur la dépense (forme réduite) divisé par son effet sur l'ouverture du courriel (première étape). C'est l'effet moyen **pour les « complaisants »**, c'est-à-dire ceux dont le comportement change à cause du rappel. (7.4)
 
 **40.** $F=\dfrac{24/2}{60/27}=5{,}40$, avec 2 et 27 degrés de liberté ; la p-valeur est donnée par le code. (8.2)
 

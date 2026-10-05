@@ -4,7 +4,7 @@
 
 ### Énoncés
 
-**Exercice 1 ⭐ (autocorrélation à la main).** Six chiffres d'affaires hebdomadaires (en centaines de DT) : $8,\,6,\,9,\,5,\,7,\,4$. Calculez à la main les autocorrélations $r_1$ et $r_2$. Quel signe attendiez-vous pour $r_1$ en regardant la série, et pourquoi ?
+**Exercice 1 ⭐ (autocorrélation à la main).** Six chiffres d'affaires hebdomadaires (en centaines de €) : $8,\,6,\,9,\,5,\,7,\,4$. Calculez à la main les autocorrélations $r_1$ et $r_2$. Quel signe attendiez-vous pour $r_1$ en regardant la série, et pourquoi ?
 
 **Exercice 2 ⭐ (stationnaire ou non ?).** Pour chaque processus ($\varepsilon_t$ est un bruit blanc), dites s'il est stationnaire, et si non, quel remède appliquer : (a) $Y_t=5+\varepsilon_t$ ; (b) $Y_t=Y_{t-1}+\varepsilon_t$ ; (c) $Y_t=0{,}9\,Y_{t-1}+\varepsilon_t$ ; (d) $Y_t=2t+\varepsilon_t$ ; (e) $Y_t=1{,}1\,Y_{t-1}+\varepsilon_t$.
 
@@ -14,9 +14,9 @@
 
 **Exercice 5 ⭐⭐ (Ljung-Box à la main).** Sur $n=50$ résidus, on trouve $r_1=0{,}30$ et $r_2=0{,}20$. Calculez $Q(2)$ et sa p-valeur (indice : pour 2 degrés de liberté, $P(\chi^2_2>x)=e^{-x/2}$). Que concluez-vous ?
 
-**Exercice 6 ⭐⭐ (du logarithme aux dinars).** Un modèle prévoit $\log(\text{ca})=7{,}60$ pour décembre, avec une erreur type de prévision de $0{,}08$. Donnez la prévision **médiane** en dinars, la prévision de la **moyenne**, et l'intervalle de prévision à 95 %.
+**Exercice 6 ⭐⭐ (du logarithme aux euros).** Un modèle prévoit $\log(\text{ca})=7{,}60$ pour décembre, avec une erreur type de prévision de $0{,}08$. Donnez la prévision **médiane** en euros, la prévision de la **moyenne**, et l'intervalle de prévision à 95 %.
 
-**Exercice 7 ⭐⭐ (MASE et MAPE).** Sur l'apprentissage, le naïf saisonnier a une MAE de 150 DT. Le modèle A a une MAE de 120 DT sur le test et le modèle B de 160 DT. (a) Calculez les MASE. (b) Pourquoi le MAPE est-il dangereux quand une valeur réelle est nulle ? (c) Pourquoi favorise-t-il les prévisions trop basses ?
+**Exercice 7 ⭐⭐ (MASE et MAPE).** Sur l'apprentissage, le naïf saisonnier a une MAE de 150 €. Le modèle A a une MAE de 120 € sur le test et le modèle B de 160 €. (a) Calculez les MASE. (b) Pourquoi le MAPE est-il dangereux quand une valeur réelle est nulle ? (c) Pourquoi favorise-t-il les prévisions trop basses ?
 
 **Exercice 8 ⭐⭐ (identifier un modèle).** Trois séries de 300 points, $X$, $Y$ et $Z$, ont été simulées avec des modèles ARMA différents. Voici leurs autocorrélations et autocorrélations partielles. **Identifiez** pour chacune le modèle le plus probable (type et ordre), puis vérifiez avec les critères d'information.
 
@@ -163,7 +163,7 @@ print("Q(2) =", round(Q, 3), "| p-valeur =", round(np.exp(-Q / 2), 4), "| via sc
 Q(2) = 6.942 | p-valeur = 0.0311 | via scipy : 0.0311
 ```
 
-**Corrigé 6.** La **médiane** est $e^{7{,}60}\approx1\,998$ DT. La **moyenne** vaut $e^{7{,}60+0{,}08^2/2}=e^{7{,}6032}\approx2\,005$ DT (un facteur $e^{0{,}0032}\approx1{,}003$ : négligeable). L'intervalle à 95 % : $\exp(7{,}60\pm1{,}96\times0{,}08)=\exp(7{,}60\pm0{,}1568)=[1\,708\,;\,2\,337]$ DT : environ $\pm16\,\%$ autour de la médiane, de façon **asymétrique** en dinars (l'intervalle est un peu plus étendu vers le haut : $+339$ DT contre $-290$ DT).
+**Corrigé 6.** La **médiane** est $e^{7{,}60}\approx1\,998$ €. La **moyenne** vaut $e^{7{,}60+0{,}08^2/2}=e^{7{,}6032}\approx2\,005$ € (un facteur $e^{0{,}0032}\approx1{,}003$ : négligeable). L'intervalle à 95 % : $\exp(7{,}60\pm1{,}96\times0{,}08)=\exp(7{,}60\pm0{,}1568)=[1\,708\,;\,2\,337]$ € : environ $\pm16\,\%$ autour de la médiane, de façon **asymétrique** en euros (l'intervalle est un peu plus étendu vers le haut : $+339$ € contre $-290$ €).
 
 ```python
 m, s = 7.60, 0.08
@@ -358,7 +358,7 @@ Vous savez maintenant :
 - définir la **stationnarité**, mesurer la mémoire par l'**autocorrélation** et l'**autocorrélation partielle**, tester le bruit blanc (**Ljung-Box**) et la racine unitaire (**ADF**, **KPSS**) en connaissant leurs limites (peu de puissance, loi de Dickey-Fuller non normale) ;
 - distinguer **tendance déterministe** et **tendance stochastique**, et éviter la **sur-différenciation** ;
 - construire des modèles **AR, MA, ARMA, ARIMA, SARIMA** et **SARIMAX**, connaître leurs conditions de stationnarité et d'inversibilité, suivre la méthode de **Box-Jenkins** (identification, estimation, diagnostic, prévision) et lire un diagnostic de résidus ;
-- **prévoir** avec ses intervalles, passer du logarithme aux dinars, et **évaluer honnêtement** : découpage temporel, références simples, MAE, RMSE, MAPE, **MASE**, bootstrap par blocs, **validation à origine glissante**, combinaison de prévisions ;
+- **prévoir** avec ses intervalles, passer du logarithme aux euros, et **évaluer honnêtement** : découpage temporel, références simples, MAE, RMSE, MAPE, **MASE**, bootstrap par blocs, **validation à origine glissante**, combinaison de prévisions ;
 - comprendre qu'un seul jeu de test est **bruité** : le meilleur modèle en espérance ne gagne pas toujours (4.3.8) ;
 - (en option) modéliser **plusieurs séries** (VAR, causalité de Granger, **cointégration**, régression fallacieuse), la **volatilité** (GARCH), les **modèles d'espace d'états** et le **filtre de Kalman** (lissage exponentiel, données manquantes), et situer **Prophet** et les bibliothèques modernes.
 

@@ -1,4 +1,4 @@
-"""Jeu de données du chapitre 2 (section 2.5, GAM) : sessions de navigation sur le site de Dar Jasmin.
+"""Jeu de données du chapitre 2 (section 2.5, GAM) : sessions de navigation sur le site de la boutique.
 
     python3 build/donnees_ch02.py   -> écrit donnees/ch02-sessions.csv
 

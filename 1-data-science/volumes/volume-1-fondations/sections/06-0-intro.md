@@ -8,7 +8,7 @@
 
 Vous savez maintenant calculer (chapitres 1 à 3), programmer (chapitre 4) et interroger une base de données (chapitre 5). Reste une question que personne n'ose poser en cours, mais qui décide de la vie quotidienne d'un data scientist : **comment ne pas se perdre dans son propre travail ?**
 
-Voici la scène, que tout le monde a vécue au moins une fois. Yasmine ouvre le dossier de son analyse des ventes de Dar Jasmin :
+Voici la scène, que tout le monde a vécue au moins une fois. La gérante ouvre le dossier de son analyse des ventes de la boutique :
 
 ```text
 analyse.py
@@ -37,7 +37,7 @@ Ce chapitre vous donne **quatre outils** qui répondent à ces questions, et qui
 
 > 🛠️ **Comment travailler avec ce chapitre.** Contrairement aux précédents, les exemples de ce chapitre se tapent dans un **terminal** (aussi appelé *console* ou *shell*), pas dans Python. Sous Linux et macOS, ouvrez l'application « Terminal ». Sous Windows, installez **Git for Windows** (il fournit *Git Bash*, un terminal compatible avec tous nos exemples) ou, mieux, **WSL** (le sous-système Linux de Windows). Les lignes que vous devez taper sont celles des blocs de code ; les blocs gris qui suivent montrent ce que l'ordinateur répond.
 
-## L'atelier de Yasmine
+## L'atelier de la gérante
 
 Pour que les exemples soient concrets, nous préparons un petit **atelier** : un dossier de travail dans lequel nous copions le fichier de données du livre.
 

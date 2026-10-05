@@ -4,11 +4,11 @@
 
 > 🧭 **Chapitre complémentaire.** Ce chapitre est entièrement facultatif : les chapitres 1 à 6 se lisent et se comprennent sans lui. Mais si vous ne devez retenir qu'un chapitre « de métier » de ce volume, c'est peut-être celui-ci : c'est lui qui transforme un modèle statistique correct en **décision correcte**.
 
-Tout au long des chapitres précédents, nous avons posé des questions de **prédiction** et d'**association** : « les clients d'Instagram dépensent-ils moins ? », « quel est le lien entre l'âge et le rachat ? ». Les modèles linéaires et généralisés y répondent très bien. Mais la question que se pose réellement Yasmine, le plus souvent, est d'un autre genre :
+Tout au long des chapitres précédents, nous avons posé des questions de **prédiction** et d'**association** : « les clients d'Réseaux dépensent-ils moins ? », « quel est le lien entre l'âge et le rachat ? ». Les modèles linéaires et généralisés y répondent très bien. Mais la question que se pose réellement la gérante, le plus souvent, est d'un autre genre :
 
 - « Si j'envoie une offre de bienvenue à un client, **va-t-il** davantage racheter ? »
-- « Si je lance une campagne publicitaire à Sfax, **les commandes vont-elles** augmenter ? »
-- « Si mes clients suivent mon compte Instagram, **dépensent-ils plus à cause de cela**, ou est-ce simplement que ce sont déjà mes meilleurs clients qui me suivent ? »
+- « Si je lance une campagne publicitaire à Ville C, **les commandes vont-elles** augmenter ? »
+- « Si mes clients suivent mon compte Réseaux, **dépensent-ils plus à cause de cela**, ou est-ce simplement que ce sont déjà mes meilleurs clients qui me suivent ? »
 
 Ce sont des questions **causales** : elles portent sur ce qui se passerait si l'on **agissait**. Et la leçon la plus importante de ce chapitre est la suivante : **aucun modèle, même sophistiqué, ne répond à une question causale à partir des seules données. Il faut y ajouter des hypothèses sur la façon dont ces données ont été produites**. Le chapitre vous apprend à les formuler (avec des graphes), à les justifier (avec la randomisation, quand on le peut) et à les exploiter (quand on ne le peut pas).
 
@@ -25,9 +25,9 @@ Ce sont des questions **causales** : elles portent sur ce qui se passerait si l'
 > 📦 **Les données de ce chapitre.**
 >
 > - `donnees/clients.csv` (2 000 clients, présenté dans l'introduction du volume) : on y trouve la variable `offre_bienvenue`, **attribuée au hasard**. C'est une vraie expérience randomisée (section 7.1.4).
-> - `donnees/ch07-observationnel.csv` (4 000 clients) : une version **non randomisée** de la même histoire, où Yasmine a choisi à qui envoyer l'offre (section 7.1.9 et 7.2). Le fichier `ch07-observationnel-verite.csv` contient les « résultats potentiels » que personne ne peut observer en pratique ; nous ne l'ouvrirons que pour vérifier.
+> - `donnees/ch07-observationnel.csv` (4 000 clients) : une version **non randomisée** de la même histoire, où la gérante a choisi à qui envoyer l'offre (section 7.1.9 et 7.2). Le fichier `ch07-observationnel-verite.csv` contient les « résultats potentiels » que personne ne peut observer en pratique ; nous ne l'ouvrirons que pour vérifier.
 > - `donnees/ch07-panel-villes.csv` : 20 villes suivies pendant 24 mois autour d'une campagne publicitaire (section 7.3).
-> - `donnees/ch07-iv.csv` (5 000 clients) : une étude du lien entre le suivi du compte Instagram et la dépense (section 7.4).
+> - `donnees/ch07-iv.csv` (5 000 clients) : une étude du lien entre le suivi du compte Réseaux et la dépense (section 7.4).
 >
 > Les fichiers `ch07-*` sont produits par `build/sim_ch07.py`. Le code de chaque simulation est imprimé dans la section correspondante (7.3 pour le panel de villes, 7.4 pour l'instrument) et exécuté pour vérifier qu'il redonne exactement le fichier ; celui de l'étude observationnelle se trouve dans `build/sim_ch07.py` (fonction `observationnel`).
 

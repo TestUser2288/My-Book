@@ -39,7 +39,7 @@ Par le TCL, $S_n/\sqrt n\approx\mathcal N(0,1)$ : environ 68 % des marches finis
 >
 > $$P(X_{n+1}=j\mid X_n=i,\ X_{n-1},\dots,X_0)=P(X_{n+1}=j\mid X_n=i)=P_{ij}.$$
 
-Yasmine classe chaque mois ses clients en trois états : **Actif** (A : au moins 2 achats ce mois), **Occasionnel** (O : 1 achat) et **Inactif** (I : aucun achat). Elle a estimé les transitions d'un mois au suivant :
+La gérante classe chaque mois ses clients en trois états : **Actif** (A : au moins 2 achats ce mois), **Occasionnel** (O : 1 achat) et **Inactif** (I : aucun achat). Elle a estimé les transitions d'un mois au suivant :
 
 | de ↓ / vers → | Actif | Occasionnel | Inactif |
 |---|---:|---:|---:|
@@ -118,18 +118,18 @@ valeurs propres de P : [1.    0.673 0.327]
 
 À long terme, exactement **50 %** des clients sont Actifs, **25 %** Occasionnels et **25 %** Inactifs. Les deux autres valeurs propres (0,673 et 0,327, de module < 1) pilotent la **vitesse** de convergence : plus elles sont petites, plus vite le système oublie son passé.
 
-**Une application économique : la valeur à long terme d'un client.** Supposons qu'un client Actif rapporte en moyenne 30 DT par mois, un Occasionnel 10 DT, un Inactif 0 DT. À long terme, le revenu moyen mensuel par client est $\boldsymbol\pi\cdot\mathbf{v}$ :
+**Une application économique : la valeur à long terme d'un client.** Supposons qu'un client Actif rapporte en moyenne 30 € par mois, un Occasionnel 10 €, un Inactif 0 €. À long terme, le revenu moyen mensuel par client est $\boldsymbol\pi\cdot\mathbf{v}$ :
 
 ```python
 v = np.array([30, 10, 0])
-print("revenu mensuel moyen par client (long terme) :", round(pi @ v, 2), "DT")
+print("revenu mensuel moyen par client (long terme) :", round(pi @ v, 2), "€")
 ```
 <!--sortie-->
 ```text
-revenu mensuel moyen par client (long terme) : 17.5 DT
+revenu mensuel moyen par client (long terme) : 17.5 €
 ```
 
-Soit 17,5 DT par client et par mois. Cette quantité permet à Yasmine de **chiffrer** l'effet d'une campagne : si une relance fait passer la probabilité Inactif→Actif de 0,10 à 0,20, quel est le gain ? Il suffit de modifier $\mathbf{P}$ et de recalculer $\boldsymbol\pi$.
+Soit 17,5 € par client et par mois. Cette quantité permet à la gérante de **chiffrer** l'effet d'une campagne : si une relance fait passer la probabilité Inactif→Actif de 0,10 à 0,20, quel est le gain ? Il suffit de modifier $\mathbf{P}$ et de recalculer $\boldsymbol\pi$.
 
 ```python
 def revenu_long_terme(P, v):
@@ -141,16 +141,16 @@ def revenu_long_terme(P, v):
 P_relance = np.array([[0.80, 0.15, 0.05],
                       [0.30, 0.50, 0.20],
                       [0.20, 0.20, 0.60]])           # Inactif -> Actif passe de 0,10 à 0,20
-print("avant relance :", round(revenu_long_terme(P, v), 2), "DT")
-print("après relance :", round(revenu_long_terme(P_relance, v), 2), "DT")
+print("avant relance :", round(revenu_long_terme(P, v), 2), "€")
+print("après relance :", round(revenu_long_terme(P_relance, v), 2), "€")
 ```
 <!--sortie-->
 ```text
-avant relance : 17.5 DT
-après relance : 19.3 DT
+avant relance : 17.5 €
+après relance : 19.3 €
 ```
 
-La relance fait gagner environ 1,8 DT par client et par mois, soit +10 %. Avec 2 000 clients, cela représente environ 3 600 DT par mois, de quoi décider si la relance vaut son coût. C'est un modèle simple, mais l'idée (états, transitions, régime permanent) est utilisée en analyse de la fidélité, en marketing, et à la base de l'algorithme PageRank de Google (le web est une chaîne de Markov dont les états sont les pages).
+La relance fait gagner environ 1,8 € par client et par mois, soit +10 %. Avec 2 000 clients, cela représente environ 3 600 € par mois, de quoi décider si la relance vaut son coût. C'est un modèle simple, mais l'idée (états, transitions, régime permanent) est utilisée en analyse de la fidélité, en marketing, et à la base de l'algorithme PageRank de Google (le web est une chaîne de Markov dont les états sont les pages).
 
 ### 2.6.3 Le processus de Poisson : des arrivées au hasard
 

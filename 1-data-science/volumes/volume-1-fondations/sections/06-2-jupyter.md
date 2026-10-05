@@ -37,7 +37,7 @@ On peut aussi ouvrir des notebooks directement dans **VS Code** (extension Jupyt
 
 ### 6.2.2 Un notebook est un fichier texte (JSON)
 
-Il n'y a rien de magique dans un fichier `.ipynb` : c'est du **JSON**, un format texte qui décrit des données imbriquées (dictionnaires et listes), lisible par n'importe quel langage. Pour s'en convaincre, nous allons **fabriquer un notebook en Python** avec la bibliothèque `nbformat`, puis l'ouvrir comme un simple texte. Yasmine veut un petit carnet « Ventes de Dar Jasmin » en trois cellules : un titre, le chargement des données, un calcul par canal.
+Il n'y a rien de magique dans un fichier `.ipynb` : c'est du **JSON**, un format texte qui décrit des données imbriquées (dictionnaires et listes), lisible par n'importe quel langage. Pour s'en convaincre, nous allons **fabriquer un notebook en Python** avec la bibliothèque `nbformat`, puis l'ouvrir comme un simple texte. La gérante veut un petit carnet « Ventes de la boutique » en trois cellules : un titre, le chargement des données, un calcul par canal.
 
 ```python
 import json
@@ -47,7 +47,7 @@ from nbformat import v4 as nbf
 nb = nbf.new_notebook()
 nb.metadata["kernelspec"] = {"name": "python3", "display_name": "Python 3", "language": "python"}
 nb.cells = [
-    nbf.new_markdown_cell("# Ventes de Dar Jasmin\nMontant moyen des commandes, par canal.", id="titre"),
+    nbf.new_markdown_cell("# Ventes de la boutique\nMontant moyen des commandes, par canal.", id="titre"),
     nbf.new_code_cell("import pandas as pd\ndf = pd.read_csv('donnees/commandes.csv')\ndf.shape", id="chargement"),
     nbf.new_code_cell("df.groupby('canal')['montant'].mean().round(2)", id="par-canal"),
 ]
@@ -63,7 +63,7 @@ print(texte[:1100])
    "id": "titre",
    "metadata": {},
    "source": [
-    "# Ventes de Dar Jasmin\n",
+    "# Ventes de la boutique\n",
     "Montant moyen des commandes, par canal."
    ]
   },
@@ -123,7 +123,7 @@ for cellule in nb.cells:
 [2] df.groupby('canal')['montant'].mean().round(2)
      -> execute_result : canal
         Boutique     74.81
-        Instagram    49.01
+        Réseaux    49.01
         Site         59.50
         Name: montant, dtype: float64
 ```
@@ -136,7 +136,7 @@ Chaque cellule de code porte désormais son **numéro d'exécution** (`[1]`, `[2
 
 Dans un script Python ordinaire, l'ordre d'exécution est celui du fichier, de haut en bas, toujours. Dans un notebook, **vous choisissez l'ordre** : vous pouvez relancer la cellule 5 trois fois, sauter la cellule 3, retourner modifier la cellule 1 sans relancer les suivantes, ou même supprimer une cellule dont la variable continue d'exister en mémoire. Le noyau, lui, se souvient de tout.
 
-Pour voir ce phénomène sans notebook, **simulons** un noyau avec Python pur : un dictionnaire `memoire` joue la mémoire du noyau, et `executer` joue le rôle de `Maj + Entrée`. Trois cellules calculent le prix total d'une commande de Yasmine : trois paniers à 50 DT, avec TVA à 19 %.
+Pour voir ce phénomène sans notebook, **simulons** un noyau avec Python pur : un dictionnaire `memoire` joue la mémoire du noyau, et `executer` joue le rôle de `Maj + Entrée`. Trois cellules calculent le prix total d'une commande de la gérante : trois paniers à 50 €, avec TVA à 19 %.
 
 ```python
 memoire = {}
@@ -147,7 +147,7 @@ def executer(code):
 cellules = {
     "A": "prix_unitaire = 50",
     "B": "total = prix_unitaire * 3 * 1.19",
-    "C": "print('Total TTC :', round(total, 2), 'DT')",
+    "C": "print('Total TTC :', round(total, 2), '€')",
 }
 
 # Exécution normale : A, puis B, puis C
@@ -156,10 +156,10 @@ for nom in "ABC":
 ```
 <!--sortie-->
 ```text
-Total TTC : 178.5 DT
+Total TTC : 178.5 €
 ```
 
-Le total attendu est $50\times 3\times 1{,}19 = 178{,}5$ DT. Maintenant, Yasmine se rend compte que le prix unitaire est en fait de 80 DT. Elle retourne à la cellule A, corrige, la relance… puis relance la cellule C pour voir le résultat, **en oubliant de relancer B** :
+Le total attendu est $50\times 3\times 1{,}19 = 178{,}5$ €. Maintenant, la gérante se rend compte que le prix unitaire est en fait de 80 €. Elle retourne à la cellule A, corrige, la relance… puis relance la cellule C pour voir le résultat, **en oubliant de relancer B** :
 
 ```python
 cellules["A"] = "prix_unitaire = 80"   # on corrige la cellule A
@@ -168,10 +168,10 @@ executer(cellules["C"])                # on relance C (mais pas B !)
 ```
 <!--sortie-->
 ```text
-Total TTC : 178.5 DT
+Total TTC : 178.5 €
 ```
 
-Le total affiché est **toujours 178,5 DT** alors que le prix a changé : la variable `total` en mémoire date de l'ancienne exécution de B. Sur l'écran, la cellule A affiche `80`, la cellule C affiche un total faux, et rien ne signale l'incohérence. Pire : si Yasmine enregistre et envoie ce notebook, son collègue qui l'exécutera de haut en bas obtiendra un résultat **différent** du sien. Voici ce que donnerait une exécution propre, sur un noyau neuf :
+Le total affiché est **toujours 178,5 €** alors que le prix a changé : la variable `total` en mémoire date de l'ancienne exécution de B. Sur l'écran, la cellule A affiche `80`, la cellule C affiche un total faux, et rien ne signale l'incohérence. Pire : si la gérante enregistre et envoie ce notebook, son collègue qui l'exécutera de haut en bas obtiendra un résultat **différent** du sien. Voici ce que donnerait une exécution propre, sur un noyau neuf :
 
 ```python
 memoire = {}                           # noyau tout neuf
@@ -181,19 +181,19 @@ print("Vérification à la main :", 80 * 3 * 1.19)
 ```
 <!--sortie-->
 ```text
-Total TTC : 285.6 DT
+Total TTC : 285.6 €
 Vérification à la main : 285.59999999999997
 ```
 
-Le vrai total est **285,6 DT**, et non 178,5 DT : l'écart est considérable. (La ligne de vérification affiche `285.59999999999997` au lieu de `285.6` : c'est l'artefact de calcul en virgule flottante rencontré en 1.5, sans importance ici.)
+Le vrai total est **285,6 €**, et non 178,5 € : l'écart est considérable. (La ligne de vérification affiche `285.59999999999997` au lieu de `285.6` : c'est l'artefact de calcul en virgule flottante rencontré en 1.5, sans importance ici.)
 
-Un second exemple du même piège, encore plus traître : la **cellule supprimée**. Yasmine définit une remise dans une cellule, l'utilise plus bas, puis supprime la cellule de la remise « pour faire propre ». Tout continue de marcher (la variable vit toujours en mémoire)… jusqu'à ce que quelqu'un d'autre ouvre le notebook :
+Un second exemple du même piège, encore plus traître : la **cellule supprimée**. La gérante définit une remise dans une cellule, l'utilise plus bas, puis supprime la cellule de la remise « pour faire propre ». Tout continue de marcher (la variable vit toujours en mémoire)… jusqu'à ce que quelqu'un d'autre ouvre le notebook :
 
 ```python
 memoire = {}
 executer("remise = 0.10")                           # cellule D, qui sera supprimée plus tard
 executer("prix_remise = 80 * (1 - remise)")         # cellule E : utilise la variable de D
-print("prix remisé (noyau de Yasmine) :", memoire["prix_remise"])
+print("prix remisé (noyau de la gérante) :", memoire["prix_remise"])
 
 memoire = {}                                        # noyau neuf chez un collègue, sans la cellule D
 try:
@@ -203,7 +203,7 @@ except NameError as erreur:
 ```
 <!--sortie-->
 ```text
-prix remisé (noyau de Yasmine) : 72.0
+prix remisé (noyau de la gérante) : 72.0
 collègue : NameError : name 'remise' is not defined
 ```
 
@@ -234,7 +234,7 @@ def audit(carnet):
         problemes.append("une erreur est enregistrée dans les sorties")
     return problemes or ["OK : notebook exécuté dans l'ordre, sans erreur"]
 
-print("notebook de Yasmine :", audit(nb))
+print("notebook de la gérante :", audit(nb))
 
 # Un notebook « bidouillé » : les cellules ont été exécutées dans le désordre
 douteux = copy.deepcopy(nb)
@@ -244,7 +244,7 @@ print("notebook bidouillé  :", audit(douteux))
 ```
 <!--sortie-->
 ```text
-notebook de Yasmine : ["OK : notebook exécuté dans l'ordre, sans erreur"]
+notebook de la gérante : ["OK : notebook exécuté dans l'ordre, sans erreur"]
 notebook bidouillé  : ["numéros d'exécution [3, 1] : pas 1, 2, 3… (ordre ou noyau douteux)"]
 ```
 
@@ -257,7 +257,7 @@ Le premier notebook passe l'audit. Le second, dont nous avons truqué les numér
 3. **Un notebook, une question.** Un notebook de 200 cellules est ingérable ; découpez : `01-nettoyage.ipynb`, `02-exploration.ipynb`, `03-modele.ipynb`.
 4. **Sortez le code réutilisable dans des fichiers `.py`** (fonctions de nettoyage, de calcul) et importez-les : `from outils import nettoyer`. Ce code se teste (4.6), se versionne proprement avec Git, et sert à d'autres notebooks.
 5. **Écrivez du texte entre les cellules** : titres, hypothèses, interprétation. Le notebook est un récit, pas un brouillon.
-6. **Chemins relatifs** (`donnees/commandes.csv`), jamais `C:\Users\Yasmine\Bureau\…` : le notebook doit marcher sur une autre machine.
+6. **Chemins relatifs** (`donnees/commandes.csv`), jamais `C:\Users\la gérante\Bureau\…` : le notebook doit marcher sur une autre machine.
 7. **N'utilisez pas le notebook pour la production.** Une fois l'analyse stabilisée, un script `.py` lancé depuis la ligne de commande (6.3) est plus fiable qu'un carnet qu'on clique à la main.
 
 ### 6.2.6 Notebooks et Git : le problème des sorties
@@ -304,7 +304,7 @@ print(script)
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Ventes de Dar Jasmin
+# # Ventes de la boutique
 # Montant moyen des commandes, par canal.
 
 # In[1]:
@@ -329,7 +329,7 @@ print(rapport.replace("```", "~~~"))   # ~~~ à la place des accents graves, pou
 ```
 <!--sortie-->
 ```text
-# Ventes de Dar Jasmin
+# Ventes de la boutique
 Montant moyen des commandes, par canal.
 
 
@@ -356,7 +356,7 @@ df.groupby('canal')['montant'].mean().round(2)
 
     canal
     Boutique     74.81
-    Instagram    49.01
+    Réseaux    49.01
     Site         59.50
     Name: montant, dtype: float64
 ```
@@ -400,7 +400,7 @@ df.groupby('canal')['satisfaction'].mean().round(2)
 
     canal
     Boutique     4.49
-    Instagram    3.72
+    Réseaux    3.72
     Site         3.79
     Name: satisfaction, dtype: float64
 ```

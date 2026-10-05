@@ -1,5 +1,5 @@
 """Figures du chapitre 5. Exécution : python build/fig_ch05.py [nom ...]
-Lit donnees/dar_jasmin.db (créé par le code de la section 5.1.3)."""
+Lit donnees/boutique.db (créé par le code de la section 5.1.3)."""
 import os
 import sqlite3
 import sys
@@ -75,7 +75,7 @@ def schema_er():
 
 
 def ca_mensuel():
-    con = sqlite3.connect(os.path.join(RACINE, "donnees", "dar_jasmin.db"))
+    con = sqlite3.connect(os.path.join(RACINE, "donnees", "boutique.db"))
     df = pd.read_sql_query(
         "SELECT substr(date_commande, 1, 7) AS mois, SUM(montant) AS ca FROM commandes GROUP BY mois ORDER BY mois", con)
     df["moy3"] = df.ca.rolling(3).mean()
@@ -88,13 +88,13 @@ def ca_mensuel():
     ax.text(-0.3, 3250, "— moyenne mobile sur 3 mois", color=ORANGE, fontsize=9, ha="left", va="center")
     ax.set_xticks(x, [m[5:] for m in df.mois])
     ax.set_xlabel("mois de 2025")
-    ax.set_ylabel("chiffre d'affaires (DT)")
+    ax.set_ylabel("chiffre d'affaires (€)")
     ax.set_title("Chiffre d'affaires mensuel")
     ax.grid(axis="x", visible=False)
     ax = axes[1]
     ax.plot(x, df.cumul, color=VIOLET, marker="o", ms=4)
     ax.fill_between(x, df.cumul, color=VIOLET, alpha=0.1)
-    ax.text(0, 22500, f"total de l'année : {df.cumul.iloc[11]:,.0f} DT".replace(",", " "), color=VIOLET, fontsize=9.5, ha="left")
+    ax.text(0, 22500, f"total de l'année : {df.cumul.iloc[11]:,.0f} €".replace(",", " "), color=VIOLET, fontsize=9.5, ha="left")
     ax.set_xticks(x, [m[5:] for m in df.mois])
     ax.set_xlabel("mois de 2025")
     ax.set_title("Chiffre d'affaires cumulé depuis janvier")

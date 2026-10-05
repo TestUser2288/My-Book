@@ -27,7 +27,7 @@ fi
 
 total=$(( $(wc -l < "$fichier") - 1 ))
 echo "== Rapport sur $fichier ($total commandes) =="
-for canal in Boutique Instagram Site; do
+for canal in Boutique Réseaux Site; do
     n=$(grep -c "^$canal," "$fichier")
     part=$(awk -v n="$n" -v t="$total" 'BEGIN { printf "%.1f", 100 * n / t }')
     echo "  $canal : $n commandes ($part %)"
@@ -39,7 +39,7 @@ bash scripts/rapport.sh donnees/commandes.csv
 ```text
 == Rapport sur donnees/commandes.csv (400 commandes) ==
   Boutique : 114 commandes (28.5 %)
-  Instagram : 138 commandes (34.5 %)
+  Réseaux : 138 commandes (34.5 %)
   Site : 148 commandes (37.0 %)
 ```
 
@@ -75,7 +75,7 @@ code de sortie : 2
 
 ```bash
 mkdir -p donnees/par-canal
-for canal in Boutique Instagram Site; do
+for canal in Boutique Réseaux Site; do
     (head -n 1 donnees/commandes.csv; grep "^$canal," donnees/commandes.csv) > "donnees/par-canal/$canal.csv"
 done
 wc -l donnees/par-canal/*.csv
@@ -83,7 +83,7 @@ wc -l donnees/par-canal/*.csv
 <!--sortie-->
 ```text
  115 donnees/par-canal/Boutique.csv
- 139 donnees/par-canal/Instagram.csv
+ 139 donnees/par-canal/Réseaux.csv
  149 donnees/par-canal/Site.csv
  403 total
 ```
@@ -114,7 +114,7 @@ cat rapports/rapport.txt
 [3/3] terminé : rapport dans rapports/rapport.txt
 == Rapport sur donnees/commandes.csv (400 commandes) ==
   Boutique : 114 commandes (28.5 %)
-  Instagram : 138 commandes (34.5 %)
+  Réseaux : 138 commandes (34.5 %)
   Site : 148 commandes (37.0 %)
 400 lignes, 4 colonnes
       montant  livraison  satisfaction

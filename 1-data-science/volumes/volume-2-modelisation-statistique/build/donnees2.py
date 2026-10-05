@@ -1,4 +1,4 @@
-"""Jeux de données simulés du volume II : l'univers « Dar Jasmin 2016-2025 ».
+"""Jeux de données simulés du volume II : l'univers « La boutique 2016-2025 ».
 
 Un seul générateur, des graines fixes : tous les chapitres lisent les mêmes fichiers de donnees/.
     python3 build/donnees2.py        -> écrit donnees/clients.csv, enquete_satisfaction.csv, ventes_mensuelles.csv
@@ -6,23 +6,23 @@ Un seul générateur, des graines fixes : tous les chapitres lisent les mêmes f
 Tables
 ------
 clients.csv (2000 lignes, un client par ligne)
-    id_client, age, ville, canal_acquisition (Instagram/Site/Boutique), date_inscription,
+    id_client, age, ville, canal_acquisition (Réseaux/Site/Boutique), date_inscription,
     offre_bienvenue (0/1, ATTRIBUÉE AU HASARD : expérience randomisée),
-    nb_commandes_an (entier, surdispersé), panier_moyen (DT, 0 si aucune commande),
-    depense_annuelle (DT, 0 pour les clients sans commande : asymétrique, avec beaucoup de zéros),
+    nb_commandes_an (entier, surdispersé), panier_moyen (€, 0 si aucune commande),
+    depense_annuelle (€, 0 pour les clients sans commande : asymétrique, avec beaucoup de zéros),
     rachat_12m (0/1), duree_mois (durée observée de la relation), churn (1 = départ observé, 0 = censuré).
 enquete_satisfaction.csv (≈1200 répondants : 60 % des clients, tirés au hasard)
     id_client, q1..q8 (notes 1 à 5), dont q1-q4 mesurent la qualité des produits
     et q5-q8 la qualité du service/livraison (deux facteurs latents corrélés).
 ventes_mensuelles.csv (120 mois, janvier 2016 à décembre 2025)
-    mois (AAAA-MM-01), ca (DT), nb_commandes, promo (0/1), covid (0/1 : mars-juin 2020).
+    mois (AAAA-MM-01), ca (€), nb_commandes, promo (0/1), covid (0/1 : mars-juin 2020).
     Tendance + saisonnalité annuelle (pic en décembre) + bruit autocorrélé + choc de 2020.
 
 Vérité terrain (utile pour contrôler les modèles : ne PAS la révéler avant la fin de chaque étude)
-    panier : log(panier) = 4.00 + 0.008*(age-36) + {Boutique:+0.22, Site:+0.05, Instagram:-0.12} + 0.12*F1 + bruit(0.35)
+    panier : log(panier) = 4.00 + 0.008*(age-36) + {Boutique:+0.22, Site:+0.05, Réseaux:-0.12} + 0.12*F1 + bruit(0.35)
     nb_commandes_an ~ NegBin(moyenne exp(1.25 + 0.22*F1 + 0.10*F2 + {Site:+0.15, Boutique:+0.05} - 0.005*(age-36)), k=2)
     rachat_12m ~ Bernoulli(logit^-1(-0.35 + 0.45*F1 + 0.35*F2 - 0.015*(age-36) + 0.55*offre + {Boutique:+0.3}))
-    duree ~ Weibull(forme 1.35), échelle exp(3.6 + 0.30*F2 + 0.35*offre + {Boutique:+0.30, Instagram:-0.15} + 0.008*(age-36))
+    duree ~ Weibull(forme 1.35), échelle exp(3.6 + 0.30*F2 + 0.35*offre + {Boutique:+0.30, Réseaux:-0.15} + 0.008*(age-36))
 """
 import os
 
@@ -35,8 +35,8 @@ FIN = pd.Timestamp("2025-12-31")
 def clients(n=2000, seed=2016):
     rng = np.random.default_rng(seed)
     age = np.clip(np.round(rng.normal(36, 11, n)), 18, 75).astype(int)
-    ville = rng.choice(["Tunis", "Sousse", "Sfax", "Nabeul", "Bizerte", "Autre"], n, p=[0.30, 0.18, 0.15, 0.12, 0.10, 0.15])
-    canal = rng.choice(["Instagram", "Site", "Boutique"], n, p=[0.40, 0.35, 0.25])
+    ville = rng.choice(["Ville E", "Ville D", "Ville C", "Ville B", "Ville A", "Autre"], n, p=[0.30, 0.18, 0.15, 0.12, 0.10, 0.15])
+    canal = rng.choice(["Réseaux", "Site", "Boutique"], n, p=[0.40, 0.35, 0.25])
     jours = rng.integers(0, (pd.Timestamp("2025-06-30") - pd.Timestamp("2019-01-01")).days + 1, n)
     inscription = pd.Timestamp("2019-01-01") + pd.to_timedelta(jours, unit="D")
     offre = rng.integers(0, 2, n)
@@ -46,8 +46,8 @@ def clients(n=2000, seed=2016):
     F1 = z[:, 0]
     F2 = corr * z[:, 0] + np.sqrt(1 - corr**2) * z[:, 1]
     a = age - 36
-    eff_canal_panier = pd.Series(canal).map({"Boutique": 0.22, "Site": 0.05, "Instagram": -0.12}).to_numpy()
-    mu = 1.25 + 0.22 * F1 + 0.10 * F2 + pd.Series(canal).map({"Site": 0.15, "Boutique": 0.05, "Instagram": 0.0}).to_numpy() - 0.005 * a
+    eff_canal_panier = pd.Series(canal).map({"Boutique": 0.22, "Site": 0.05, "Réseaux": -0.12}).to_numpy()
+    mu = 1.25 + 0.22 * F1 + 0.10 * F2 + pd.Series(canal).map({"Site": 0.15, "Boutique": 0.05, "Réseaux": 0.0}).to_numpy() - 0.005 * a
     k = 2.0
     lam = rng.gamma(k, np.exp(mu) / k)
     nb = rng.poisson(lam)
@@ -57,7 +57,7 @@ def clients(n=2000, seed=2016):
     eta = -0.35 + 0.45 * F1 + 0.35 * F2 - 0.015 * a + 0.55 * offre + pd.Series(canal).map({"Boutique": 0.3}).fillna(0).to_numpy()
     rachat = rng.binomial(1, 1 / (1 + np.exp(-eta)))
     # survie : durée Weibull (mois), censure administrative au 31/12/2025 + quelques pertes de vue
-    echelle = np.exp(3.6 + 0.30 * F2 + 0.35 * offre + pd.Series(canal).map({"Boutique": 0.30, "Instagram": -0.15, "Site": 0.0}).to_numpy() + 0.008 * a)
+    echelle = np.exp(3.6 + 0.30 * F2 + 0.35 * offre + pd.Series(canal).map({"Boutique": 0.30, "Réseaux": -0.15, "Site": 0.0}).to_numpy() + 0.008 * a)
     t = echelle * rng.weibull(1.35, n)
     max_obs = (FIN - inscription).days / 30.4375
     perdu = rng.exponential(120, n)               # perte de vue très rare

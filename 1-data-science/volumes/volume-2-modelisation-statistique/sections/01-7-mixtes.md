@@ -6,7 +6,7 @@
 
 ### 1.7.1 Un jeu de données groupé : les points relais
 
-Dar Jasmin livre en partie via **30 points relais** (commerces partenaires où les clients viennent retirer leur colis). Pour chaque commande retirée, on dispose du **délai de livraison** (de 1 à 10 jours) et de la **note de satisfaction** (sur 20). Les relais sont de tailles très inégales (certains ont reçu 4 commandes, d'autres près de 60), et certains sont en zone **urbaine**. Les données sont simulées (graine fixe) selon un modèle que nous connaîtrons, comme d'habitude :
+La boutique livre en partie via **30 points relais** (commerces partenaires où les clients viennent retirer leur colis). Pour chaque commande retirée, on dispose du **délai de livraison** (de 1 à 10 jours) et de la **note de satisfaction** (sur 20). Les relais sont de tailles très inégales (certains ont reçu 4 commandes, d'autres près de 60), et certains sont en zone **urbaine**. Les données sont simulées (graine fixe) selon un modèle que nous connaîtrons, comme d'habitude :
 
 $$\text{note}_{ij}=12+1{,}2\,\text{urbain}_j+u_{0j}+(-0{,}7+u_{1j})(\text{délai}_{ij}-5)+\varepsilon_{ij},$$
 
@@ -114,12 +114,12 @@ les $u_j$ et les $\varepsilon_{ij}$ étant indépendants. Les $\boldsymbol\beta$
 > $$\rho=\frac{\tau^2}{\tau^2+\sigma^2}\qquad\text{(coefficient de corrélation intraclasse, ICC).}$$
 > Pour deux commandes de relais différents, la covariance est nulle. Le vecteur des commandes d'un relais de $n_j$ commandes a donc pour matrice de variance $\mathbf V_j=\sigma^2\mathbf I+\tau^2\mathbf 1\mathbf 1^\top$ (« symétrie composée »). Par conséquent, la **variance de la moyenne** de $n_j$ commandes est $\tau^2+\sigma^2/n_j$, et non $\sigma^2/n_j$ : *il y a un plancher*, $\tau^2$, que l'on ne peut jamais dépasser en ajoutant des commandes dans un même relais. L'**effectif effectif** d'un échantillon de $m$ commandes par groupe est $m/(1+(m-1)\rho)$ (« effet de plan »).
 
-**L'ICC répond à la question « les groupes comptent-ils ? ».** Comparons deux situations. D'abord un cas où la réponse est **non** : les clients de Dar Jasmin sont répartis en six **villes**. Le panier dépend-il de la ville, au-delà de l'âge et du canal ?
+**L'ICC répond à la question « les groupes comptent-ils ? ».** Comparons deux situations. D'abord un cas où la réponse est **non** : les clients de la boutique sont répartis en six **villes**. Le panier dépend-il de la ville, au-delà de l'âge et du canal ?
 
 ```python
 clients = pd.read_csv("donnees/clients.csv")
 cl = clients[clients["nb_commandes_an"] > 0].copy().reset_index(drop=True)
-cl["canal"] = pd.Categorical(cl["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+cl["canal"] = pd.Categorical(cl["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 cl["a"] = cl["age"] - 36
 cl["log_panier"] = np.log(cl["panier_moyen"])
 with warnings.catch_warnings():

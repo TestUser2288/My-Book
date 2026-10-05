@@ -15020,18 +15020,12 @@ df.shape
 ~~~
 
 
-
-
     (400, 4)
-
-
 
 
 ~~~python
 df.groupby('canal')['montant'].mean().round(2)
 ~~~
-
-
 
 
     canal
@@ -15074,8 +15068,6 @@ import pandas as pd
 df = pd.read_csv('commandes.csv')
 df.groupby('canal')['satisfaction'].mean().round(2)
 ~~~
-
-
 
 
     canal

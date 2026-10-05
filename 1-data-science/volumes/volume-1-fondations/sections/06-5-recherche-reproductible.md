@@ -131,21 +131,21 @@ marge = 1.96 * m.std() / np.sqrt(n)           # demi-largeur de l'intervalle de 
 par_canal = df.groupby("canal")["montant"].agg(["count", "mean"]).sort_index()
 
 print("---")
-print('title: "Les ventes de Dar Jasmin"')
+print('title: "Les ventes de la boutique"')
 print("lang: fr")
 print("---")
 print()
 print("## Résumé")
 print()
-print(f"Le fichier contient **{n} commandes**. Le montant moyen est de **{fr(m.mean())} DT** "
-      f"(intervalle de confiance à 95 % : de {fr(m.mean() - marge)} à {fr(m.mean() + marge)} DT), "
-      f"et la médiane de **{fr(m.median())} DT**.")
+print(f"Le fichier contient **{n} commandes**. Le montant moyen est de **{fr(m.mean())} €** "
+      f"(intervalle de confiance à 95 % : de {fr(m.mean() - marge)} à {fr(m.mean() + marge)} €), "
+      f"et la médiane de **{fr(m.median())} €**.")
 print()
 print("L'intervalle est calculé par $\\bar{x} \\pm 1{,}96\\,\\frac{s}{\\sqrt{n}}$.")
 print()
 print("## Par canal de vente")
 print()
-print("| Canal | Commandes | Montant moyen (DT) |")
+print("| Canal | Commandes | Montant moyen (€) |")
 print("|:------|----------:|-------------------:|")
 for canal, ligne in par_canal.iterrows():
     print(f"| {canal} | {int(ligne['count'])} | {fr(ligne['mean'])} |")
@@ -159,22 +159,22 @@ cat rapports/rapport-ventes.md
 <!--sortie-->
 ```text
 ---
-title: "Les ventes de Dar Jasmin"
+title: "Les ventes de la boutique"
 lang: fr
 ---
 
 ## Résumé
 
-Le fichier contient **400 commandes**. Le montant moyen est de **60,25 DT** (intervalle de confiance à 95 % : de 56,52 à 63,97 DT), et la médiane de **51,00 DT**.
+Le fichier contient **400 commandes**. Le montant moyen est de **60,25 €** (intervalle de confiance à 95 % : de 56,52 à 63,97 €), et la médiane de **51,00 €**.
 
 L'intervalle est calculé par $\bar{x} \pm 1{,}96\,\frac{s}{\sqrt{n}}$.
 
 ## Par canal de vente
 
-| Canal | Commandes | Montant moyen (DT) |
+| Canal | Commandes | Montant moyen (€) |
 |:------|----------:|-------------------:|
 | Boutique | 114 | 74,81 |
-| Instagram | 138 | 49,01 |
+| Réseaux | 138 | 49,01 |
 | Site | 148 | 59,50 |
 
 Le canal au panier moyen le plus élevé est **Boutique**.
@@ -193,18 +193,18 @@ head -c 5 rapports/rapport-ventes.pdf; echo
 [WARNING] Could not convert TeX math \bar{x} \pm 1{,}96\,\frac{s}{\sqrt{n}}, rendering as TeX
 Résumé
 
-Le fichier contient 400 commandes. Le montant moyen est de 60,25 DT
-(intervalle de confiance à 95 % : de 56,52 à 63,97 DT), et la médiane de
-51,00 DT.
+Le fichier contient 400 commandes. Le montant moyen est de 60,25 €
+(intervalle de confiance à 95 % : de 56,52 à 63,97 €), et la médiane de
+51,00 €.
 
 L’intervalle est calculé par $\bar{x} \pm 1{,}96\,\frac{s}{\sqrt{n}}$.
 
 Par canal de vente
 
-  Canal         Commandes   Montant moyen (DT)
+  Canal         Commandes   Montant moyen (€)
   ----------- ----------- --------------------
   Boutique            114                74,81
-  Instagram           138                49,01
+  Réseaux           138                49,01
 %PDF-
 ```
 
@@ -275,7 +275,7 @@ cd ~/atelier/etude-rmd
 cp ~/atelier/etude-ventes/donnees/commandes.csv .
 cat > rapport.Rmd <<'FIN'
 ---
-title: "Satisfaction des clients de Dar Jasmin"
+title: "Satisfaction des clients de la boutique"
 output: html_document
 ---
 
@@ -300,7 +300,7 @@ pandoc rapport.html -t plain
 commandes.csv
 rapport.Rmd
 rapport.html
-Satisfaction des clients de Dar Jasmin
+Satisfaction des clients de la boutique
 
 Voici le lien entre le délai de livraison et la note de satisfaction.
 
@@ -321,11 +321,11 @@ On y retrouve le même principe : le chiffre du texte (le code `r round(…)` é
 
 ~~~markdown
 ---
-title: "Les ventes de Dar Jasmin"
+title: "Les ventes de la boutique"
 format: html
 ---
 
-Le montant moyen est de `{python} round(moyenne, 2)` DT.
+Le montant moyen est de `{python} round(moyenne, 2)` €.
 
 ```{python}
 import pandas as pd

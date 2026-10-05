@@ -19,13 +19,13 @@ LIMIT 6;
  id_commande     canal  montant  moyenne_du_canal  ecart
            1  Boutique     44.8             74.81 -30.01
            2      Site     34.5             59.50 -25.00
-           3 Instagram     88.2             49.01  39.19
-           4 Instagram     30.1             49.01 -18.91
+           3 Réseaux     88.2             49.01  39.19
+           4 Réseaux     30.1             49.01 -18.91
            5  Boutique    110.1             74.81  35.29
            6      Site     39.8             59.50 -19.70
 ```
 
-Chaque commande est toujours là, et trois colonnes se sont ajoutées. Par exemple, la commande n° 1 (boutique, 44,80 DT) est 30,01 DT **en dessous** du panier moyen de la boutique (74,81 DT), alors que la commande n° 3 (Instagram, 88,20 DT) est 39,19 DT **au-dessus** de celui d'Instagram (49,01 DT). Une commande de 88 DT est « grosse » sur Instagram mais « moyenne » en boutique : l'écart à son propre canal est plus parlant que le montant brut.
+Chaque commande est toujours là, et trois colonnes se sont ajoutées. Par exemple, la commande n° 1 (boutique, 44,80 €) est 30,01 € **en dessous** du panier moyen de la boutique (74,81 €), alors que la commande n° 3 (Réseaux, 88,20 €) est 39,19 € **au-dessus** de celui d'Réseaux (49,01 €). Une commande de 88 € est « grosse » sur Réseaux mais « moyenne » en boutique : l'écart à son propre canal est plus parlant que le montant brut.
 
 La syntaxe est toujours : **`fonction(...) OVER ( PARTITION BY ... ORDER BY ... cadre )`**.
 
@@ -86,9 +86,9 @@ ORDER BY canal, rang;
  Boutique     1          243    2025-08-26    212.4
  Boutique     2          362    2025-12-16    208.8
  Boutique     3          115    2025-05-15    189.2
-Instagram     1          140    2025-06-10    166.1
-Instagram     2           59    2025-03-27    159.9
-Instagram     3          125    2025-05-23    127.3
+Réseaux     1          140    2025-06-10    166.1
+Réseaux     2           59    2025-03-27    159.9
+Réseaux     3          125    2025-05-23    127.3
      Site     1          157    2025-06-23    255.7
      Site     2           61    2025-03-28    243.8
      Site     3          208    2025-07-31    217.1
@@ -132,9 +132,9 @@ ORDER BY mois;
 
 La clause **`ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`** définit le cadre : « les deux lignes précédentes plus la ligne courante ». En janvier, il n'y a pas de ligne précédente : la « moyenne sur trois mois » n'utilise qu'une valeur (996), puis deux en février. Dans un rapport sérieux, on masquerait ces deux premières valeurs.
 
-![À gauche : chiffre d'affaires mensuel de Dar Jasmin en 2025 (barres) et sa moyenne mobile sur trois mois (courbe orange). À droite : chiffre d'affaires cumulé depuis janvier. Les données sont celles de la requête précédente.](figures/ch05-ca-mensuel.png)
+![À gauche : chiffre d'affaires mensuel de la boutique en 2025 (barres) et sa moyenne mobile sur trois mois (courbe orange). À droite : chiffre d'affaires cumulé depuis janvier. Les données sont celles de la requête précédente.](figures/ch05-ca-mensuel.png)
 
-Le graphique fait apparaître ce que les chiffres cachent : la moyenne mobile (courbe orange) gomme le creux d'octobre et la remontée de décembre, mais montre bien la **tendance** : une montée jusqu'à l'été, un repli à l'automne, puis un rebond de fin d'année. Le cumul atteint 24 099 DT en décembre (à l'arrondi près : chaque mois a été arrondi au dinar avant d'être additionné ; le vrai total est 24 098,30 DT, comme le montre le graphique de droite).
+Le graphique fait apparaître ce que les chiffres cachent : la moyenne mobile (courbe orange) gomme le creux d'octobre et la remontée de décembre, mais montre bien la **tendance** : une montée jusqu'à l'été, un repli à l'automne, puis un rebond de fin d'année. Le cumul atteint 24 099 € en décembre (à l'arrondi près : chaque mois a été arrondi au euro avant d'être additionné ; le vrai total est 24 098,30 €, comme le montre le graphique de droite).
 
 > ⚠️ **Piège des ex æquo avec `ORDER BY`.** Quand on écrit `SUM(...) OVER (ORDER BY ...)` **sans** préciser de cadre, le cadre par défaut est `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, et `RANGE` regroupe toutes les lignes **ex æquo** sur la colonne de tri : elles reçoivent le **même** cumul. Illustration sur les six premières commandes, dont deux (n° 2 et n° 3) sont du même jour :
 
@@ -295,7 +295,7 @@ ORDER BY quartile;
         4       16         33.0        122.0          1270.0            1.8                       153.0
 ```
 
-Le quartile 1 (les 17 plus gros clients) dépense **14 063 DT sur 24 098**, soit **58 %** du chiffre d'affaires, et ils sont revenus il y a 20 jours en moyenne. Le quartile 4 (16 clients) ne pèse que 5 % et n'est pas revenu depuis 153 jours en moyenne. On retrouve la fameuse loi de **Pareto** (« 80-20 », ici plutôt « 25-58 ») : une minorité de clients fait une majorité du chiffre d'affaires. Cette information change la stratégie : chouchouter le quartile 1, relancer le quartile 3, ne pas s'acharner sur le quartile 4.
+Le quartile 1 (les 17 plus gros clients) dépense **14 063 € sur 24 098**, soit **58 %** du chiffre d'affaires, et ils sont revenus il y a 20 jours en moyenne. Le quartile 4 (16 clients) ne pèse que 5 % et n'est pas revenu depuis 153 jours en moyenne. On retrouve la fameuse loi de **Pareto** (« 80-20 », ici plutôt « 25-58 ») : une minorité de clients fait une majorité du chiffre d'affaires. Cette information change la stratégie : chouchouter le quartile 1, relancer le quartile 3, ne pas s'acharner sur le quartile 4.
 
 ### 5.3.6 Les CTE récursives : des requêtes qui se rappellent elles-mêmes
 
@@ -323,7 +323,7 @@ SELECT i, i * i AS carre FROM n;
 
 La base procède ainsi : elle écrit la ligne `1` ; pour chaque ligne nouvellement produite, elle applique le pas (`1` donne `2`, `2` donne `3`...) jusqu'à ce que `WHERE i < 5` bloque la production.
 
-**Usage 1 : fabriquer un calendrier.** Une table de ventes ne contient que les jours où il y a eu des ventes : les jours **sans** vente n'apparaissent pas, ce qui fausse les moyennes quotidiennes. La parade classique : générer **tous les jours** de l'année avec une CTE récursive, puis les joindre aux commandes par un `LEFT JOIN` (5.2.5). Combien de jours Dar Jasmin n'a-t-il rien vendu, mois par mois ?
+**Usage 1 : fabriquer un calendrier.** Une table de ventes ne contient que les jours où il y a eu des ventes : les jours **sans** vente n'apparaissent pas, ce qui fausse les moyennes quotidiennes. La parade classique : générer **tous les jours** de l'année avec une CTE récursive, puis les joindre aux commandes par un `LEFT JOIN` (5.2.5). Combien de jours la boutique n'a-t-il rien vendu, mois par mois ?
 
 ```sql
 WITH RECURSIVE jours(d) AS (

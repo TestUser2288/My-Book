@@ -2,7 +2,7 @@
 
 > « La question n'est pas seulement *si* l'événement arrivera, mais *quand*, et ce que l'on peut dire des personnes qu'on n'a pas encore vues partir. »
 
-Yasmine a une inquiétude que tous les commerçants connaissent : **combien de temps un client reste-t-il fidèle ?** Elle sait que 49 % de ses 2 000 clients ont cessé d'acheter à la fin de 2025. Mais les autres ? Certains sont arrivés en 2019 et sont toujours là ; d'autres se sont inscrits il y a trois mois et n'ont tout simplement pas eu le temps de partir. Peut-on dire qu'ils « ne partiront jamais » ? Bien sûr que non : on ne sait pas encore. C'est un problème très particulier : **une partie de l'information est incomplète, et pourtant elle n'est pas sans valeur**, puisque savoir qu'un client est resté au moins 40 mois est un renseignement précieux.
+La gérante a une inquiétude que tous les commerçants connaissent : **combien de temps un client reste-t-il fidèle ?** Elle sait que 49 % de ses 2 000 clients ont cessé d'acheter à la fin de 2025. Mais les autres ? Certains sont arrivés en 2019 et sont toujours là ; d'autres se sont inscrits il y a trois mois et n'ont tout simplement pas eu le temps de partir. Peut-on dire qu'ils « ne partiront jamais » ? Bien sûr que non : on ne sait pas encore. C'est un problème très particulier : **une partie de l'information est incomplète, et pourtant elle n'est pas sans valeur**, puisque savoir qu'un client est resté au moins 40 mois est un renseignement précieux.
 
 L'**analyse de survie** (on dit aussi *analyse des durées*) est la branche de la statistique qui traite ce problème. Son nom vient de la médecine (durée de survie d'un patient), mais ses applications dépassent largement l'hôpital : durée de vie d'un client, d'un abonnement, d'une machine, délai avant un remboursement anticipé de crédit, durée d'un chômage, temps avant le premier sinistre d'une assurance…
 
@@ -19,7 +19,7 @@ L'**analyse de survie** (on dit aussi *analyse des durées*) est la branche de l
 
 ## Les données de ce chapitre
 
-Nous utilisons le fichier `donnees/clients.csv`, déjà présenté en début de volume : 2 000 clients de Dar Jasmin inscrits entre janvier 2019 et juin 2025, observés jusqu'au **31 décembre 2025**. Quatre colonnes comptent ici :
+Nous utilisons le fichier `donnees/clients.csv`, déjà présenté en début de volume : 2 000 clients de la boutique inscrits entre janvier 2019 et juin 2025, observés jusqu'au **31 décembre 2025**. Quatre colonnes comptent ici :
 
 | Colonne | Signification |
 |---|---|
@@ -28,6 +28,6 @@ Nous utilisons le fichier `donnees/clients.csv`, déjà présenté en début de 
 | `offre_bienvenue` | 1 si le client a reçu une offre de bienvenue, 0 sinon, **attribuée au hasard** |
 | `canal_acquisition`, `age` | canal par lequel le client est arrivé, âge à l'inscription |
 
-> 📦 **Des données simulées.** Comme dans tout le volume, ces données sont **simulées** avec une graine fixe : nous connaissons donc la loi qui les a engendrées. Nous ne la révélerons qu'à la fin du chapitre (section 5.4.7), pour pouvoir vérifier ce que les méthodes retrouvent, et ce qu'elles retrouvent mal. Faites comme si Yasmine ne la connaissait pas.
+> 📦 **Des données simulées.** Comme dans tout le volume, ces données sont **simulées** avec une graine fixe : nous connaissons donc la loi qui les a engendrées. Nous ne la révélerons qu'à la fin du chapitre (section 5.4.7), pour pouvoir vérifier ce que les méthodes retrouvent, et ce qu'elles retrouvent mal. Faites comme si la gérante ne la connaissait pas.
 
 > 🛠️ **Les outils.** Nous écrivons à la main les estimateurs importants (Kaplan-Meier, log-rank, vraisemblance de Cox, maximum de vraisemblance paramétrique) pour comprendre ce qu'ils calculent, puis nous les comparons aux bibliothèques : `statsmodels` (`SurvfuncRight`, `survdiff`, `PHReg`), `lifelines`, et le paquet R `survival`, qui est la référence de la discipline. Chaque fois qu'une comparaison est faite, elle est **exécutée**.

@@ -4,13 +4,13 @@
 
 ### Énoncés
 
-**Exercice 1 ⭐ (moindres carrés à la main).** Trois commandes ont $x$ articles et un montant $y$ en DT : $(1,\,2),\ (2,\,3),\ (4,\,7)$. (a) Écrivez $\mathbf X$ et $\mathbf y$, calculez $\mathbf X^\top\mathbf X$ et $\mathbf X^\top\mathbf y$, puis $\hat{\boldsymbol\beta}=(\hat\beta_0,\hat\beta_1)$. (b) Calculez les valeurs ajustées et les résidus, et vérifiez que $\mathbf X^\top\hat{\boldsymbol\varepsilon}=\mathbf 0$. (c) Calculez le $R^2$. (d) Quel montant prévoit-on pour 3 articles ?
+**Exercice 1 ⭐ (moindres carrés à la main).** Trois commandes ont $x$ articles et un montant $y$ en € : $(1,\,2),\ (2,\,3),\ (4,\,7)$. (a) Écrivez $\mathbf X$ et $\mathbf y$, calculez $\mathbf X^\top\mathbf X$ et $\mathbf X^\top\mathbf y$, puis $\hat{\boldsymbol\beta}=(\hat\beta_0,\hat\beta_1)$. (b) Calculez les valeurs ajustées et les résidus, et vérifiez que $\mathbf X^\top\hat{\boldsymbol\varepsilon}=\mathbf 0$. (c) Calculez le $R^2$. (d) Quel montant prévoit-on pour 3 articles ?
 
-**Exercice 2 ⭐ (lire un modèle en log).** Le modèle `log_panier ~ a + C(canal)` du 1.1.7 donne : constante $4{,}2206$, Site $-0{,}1571$, Instagram $-0{,}3368$, âge centré $0{,}0092$ par année. (a) Exprimez **exactement** (en pourcentage) l'effet du Site et d'Instagram par rapport à la boutique. (b) Quel effet pour 10 années d'âge de plus ? (c) Quel est le panier **médian** prédit d'une cliente de 46 ans acquise par le Site ? (d) Pourquoi dit-on « médian » et non « moyen » ?
+**Exercice 2 ⭐ (lire un modèle en log).** Le modèle `log_panier ~ a + C(canal)` du 1.1.7 donne : constante $4{,}2206$, Site $-0{,}1571$, Réseaux $-0{,}3368$, âge centré $0{,}0092$ par année. (a) Exprimez **exactement** (en pourcentage) l'effet du Site et d'Réseaux par rapport à la boutique. (b) Quel effet pour 10 années d'âge de plus ? (c) Quel est le panier **médian** prédit d'une cliente de 46 ans acquise par le Site ? (d) Pourquoi dit-on « médian » et non « moyen » ?
 
 **Exercice 3 ⭐⭐ (régression simple).** Dans la régression simple $y=\beta_0+\beta_1x+\varepsilon$, démontrez que $\hat\beta_1=r\,\dfrac{s_y}{s_x}$ et que $R^2=r^2$, où $r$ est le coefficient de corrélation de Pearson entre $x$ et $y$. Vérifiez-le sur les quatre commandes du 1.1.1 ($x=1,2,3,4$ ; $y=22,41,66,79$).
 
-**Exercice 4 ⭐⭐ (test et intervalle à la main).** Pour Instagram, `statsmodels` donne le coefficient $-0{,}3368$ et son erreur standard $0{,}0225$, avec $n-p=1736$ degrés de liberté (quantile de Student à 97,5 % : $1{,}961$). (a) Calculez la statistique $t$ et dites si l'on rejette $H_0:\beta=0$ à 5 %. (b) Donnez l'intervalle de confiance à 95 % de $\beta$, puis de l'effet multiplicatif $e^\beta$ exprimé en pourcentage. (c) Pour l'âge : coefficient $0{,}0092$, erreur standard $0{,}00085$ : quelle est la statistique $t$ ?
+**Exercice 4 ⭐⭐ (test et intervalle à la main).** Pour Réseaux, `statsmodels` donne le coefficient $-0{,}3368$ et son erreur standard $0{,}0225$, avec $n-p=1736$ degrés de liberté (quantile de Student à 97,5 % : $1{,}961$). (a) Calculez la statistique $t$ et dites si l'on rejette $H_0:\beta=0$ à 5 %. (b) Donnez l'intervalle de confiance à 95 % de $\beta$, puis de l'effet multiplicatif $e^\beta$ exprimé en pourcentage. (c) Pour l'âge : coefficient $0{,}0092$, erreur standard $0{,}00085$ : quelle est la statistique $t$ ?
 
 **Exercice 5 ⭐⭐ (test $F$).** Le modèle réduit `log_panier ~ a` a une somme des carrés résiduelle $\text{SCR}_0=269{,}94$ ; le modèle complet `log_panier ~ a + C(canal)` a $\text{SCR}_1=238{,}30$, avec $n-p_1=1736$. (a) Calculez la statistique $F$ du test « le canal est inutile ». Combien y a-t-il de contraintes $q$ ? (b) La valeur critique de $F_{2,\,1736}$ à 5 % est environ 3,0 : concluez. (c) Si $\text{SCR}_1$ valait 269,70 au lieu de 238,30 (le canal améliorait à peine l'ajustement), que vaudrait $F$ ? Que concluriez-vous ?
 
@@ -20,7 +20,7 @@
 
 **Exercice 8 ⭐⭐ (multicolinéarité).** (a) Une variable explicative $x_j$ est expliquée à 99,5 % par les autres ($R_j^2=0{,}995$) : donnez son VIF et le facteur par lequel son erreur standard est multipliée. (b) Avec deux variables explicatives de corrélation 0,9, que vaut leur VIF ? (c) **Code.** Les huit questions de l'enquête de satisfaction (`q1` à `q8`) sont-elles gravement colinéaires entre elles ? Calculez leurs VIF.
 
-**Exercice 9 ⭐⭐ (prédire une moyenne en dinars).** Avec le modèle `log_panier ~ a + C(canal)` : (a) donnez, pour un client **Instagram de 25 ans**, le panier médian prédit ; (b) calculez une prédiction du panier **moyen** avec la correction de Duan ; (c) comparez à la moyenne observée des clients Instagram âgés de 23 à 27 ans. Laquelle des deux prédictions est la plus proche, et pourquoi ?
+**Exercice 9 ⭐⭐ (prédire une moyenne en euros).** Avec le modèle `log_panier ~ a + C(canal)` : (a) donnez, pour un client **Réseaux de 25 ans**, le panier médian prédit ; (b) calculez une prédiction du panier **moyen** avec la correction de Duan ; (c) comparez à la moyenne observée des clients Réseaux âgés de 23 à 27 ans. Laquelle des deux prédictions est la plus proche, et pourquoi ?
 
 **Exercice 10 ⭐⭐⭐ (régression sur les ventes mensuelles).** Avec `donnees/ventes_mensuelles.csv` (120 mois), ajustez `log(ca) ~ t + C(mois) + promo + covid`, où `t` est le numéro du mois (0 à 119), `mois` le mois civil (1 à 12), `promo` indique un mois de promotion et `covid` les mois de mars à juin 2020. (a) Quelle est la croissance annuelle estimée ? (b) Quel est l'effet estimé de décembre par rapport à janvier (en facteur multiplicatif) ? (c) Quel est l'effet du confinement de 2020 sur les ventes, en pourcentage ? (d) Que disent le $R^2$ et le test de Durbin-Watson sur ce modèle ? Reste-t-il de la structure dans les résidus ?
 
@@ -32,7 +32,7 @@
 
 ### Corrigés
 
-**Corrigé 1.** (a) $\mathbf X=\begin{pmatrix}1&1\\1&2\\1&4\end{pmatrix}$, $\mathbf y=(2,3,7)^\top$. $\mathbf X^\top\mathbf X=\begin{pmatrix}3&7\\7&21\end{pmatrix}$ (déterminant $63-49=14$), $\mathbf X^\top\mathbf y=(12,\ 2+6+28)^\top=(12,\,36)^\top$. Donc $\hat{\boldsymbol\beta}=\frac1{14}\begin{pmatrix}21&-7\\-7&3\end{pmatrix}\begin{pmatrix}12\\36\end{pmatrix}=\frac1{14}\begin{pmatrix}252-252\\-84+108\end{pmatrix}=\begin{pmatrix}0\\12/7\end{pmatrix}$ : la droite passe **exactement par l'origine** : $\hat y=\frac{12}7x\approx1{,}714\,x$. (b) Ajustées : $\frac{12}7,\ \frac{24}7,\ \frac{48}7$ ; résidus : $\frac27,\ -\frac37,\ \frac17$ (soit $0{,}286;\ -0{,}429;\ 0{,}143$). Somme : $0$ ✓. $\sum x_i\hat\varepsilon_i=\frac27-\frac67+\frac47=0$ ✓. (c) $\text{SCR}=\frac{4+9+1}{49}=\frac27$ ; $\bar y=4$, $\text{SCT}=4+1+9=14$ ; $R^2=1-\frac{2/7}{14}=\frac{48}{49}\approx0{,}980$. (d) $\hat y(3)=\frac{36}7\approx5{,}14$ DT.
+**Corrigé 1.** (a) $\mathbf X=\begin{pmatrix}1&1\\1&2\\1&4\end{pmatrix}$, $\mathbf y=(2,3,7)^\top$. $\mathbf X^\top\mathbf X=\begin{pmatrix}3&7\\7&21\end{pmatrix}$ (déterminant $63-49=14$), $\mathbf X^\top\mathbf y=(12,\ 2+6+28)^\top=(12,\,36)^\top$. Donc $\hat{\boldsymbol\beta}=\frac1{14}\begin{pmatrix}21&-7\\-7&3\end{pmatrix}\begin{pmatrix}12\\36\end{pmatrix}=\frac1{14}\begin{pmatrix}252-252\\-84+108\end{pmatrix}=\begin{pmatrix}0\\12/7\end{pmatrix}$ : la droite passe **exactement par l'origine** : $\hat y=\frac{12}7x\approx1{,}714\,x$. (b) Ajustées : $\frac{12}7,\ \frac{24}7,\ \frac{48}7$ ; résidus : $\frac27,\ -\frac37,\ \frac17$ (soit $0{,}286;\ -0{,}429;\ 0{,}143$). Somme : $0$ ✓. $\sum x_i\hat\varepsilon_i=\frac27-\frac67+\frac47=0$ ✓. (c) $\text{SCR}=\frac{4+9+1}{49}=\frac27$ ; $\bar y=4$, $\text{SCT}=4+1+9=14$ ; $R^2=1-\frac{2/7}{14}=\frac{48}{49}\approx0{,}980$. (d) $\hat y(3)=\frac{36}7\approx5{,}14$ €.
 
 ```python
 import numpy as np
@@ -58,20 +58,20 @@ résidus = [ 0.2857 -0.4286  0.1429] | X'e = [-0.  0.]
 SCR = 0.2857 | R² = 0.9796 | prévision en x = 3 : 5.1429
 ```
 
-**Corrigé 2.** (a) Site : $e^{-0{,}1571}-1=-14{,}5\,\%$ ; Instagram : $e^{-0{,}3368}-1=-28{,}6\,\%$ (et non −15,7 % et −33,7 % : l'approximation $100\beta$ est mauvaise pour de grands coefficients, 1.1.8). (b) $e^{10\times0{,}0092}-1=+9{,}6\,\%$. (c) Pour 46 ans, $a=10$ : $\hat\mu=4{,}2206-0{,}1571+10\times0{,}0092=4{,}1555$, donc $e^{4{,}1555}\approx63{,}8$ DT. (d) Parce que $e^{\hat\mu}$ est la prédiction de la **médiane** de $y$ : pour la moyenne il faudrait la correction $e^{s^2/2}$ ou celle de Duan (1.1.8, et exercice 9).
+**Corrigé 2.** (a) Site : $e^{-0{,}1571}-1=-14{,}5\,\%$ ; Réseaux : $e^{-0{,}3368}-1=-28{,}6\,\%$ (et non −15,7 % et −33,7 % : l'approximation $100\beta$ est mauvaise pour de grands coefficients, 1.1.8). (b) $e^{10\times0{,}0092}-1=+9{,}6\,\%$. (c) Pour 46 ans, $a=10$ : $\hat\mu=4{,}2206-0{,}1571+10\times0{,}0092=4{,}1555$, donc $e^{4{,}1555}\approx63{,}8$ €. (d) Parce que $e^{\hat\mu}$ est la prédiction de la **médiane** de $y$ : pour la moyenne il faudrait la correction $e^{s^2/2}$ ou celle de Duan (1.1.8, et exercice 9).
 
 ```python
-for nom, b in [("Site", -0.1571), ("Instagram", -0.3368)]:
+for nom, b in [("Site", -0.1571), ("Réseaux", -0.3368)]:
     print(f"{nom:10s}: {100 * (np.exp(b) - 1):+.1f} %")
 print(f"10 ans d'âge : {100 * (np.exp(10 * 0.0092) - 1):+.1f} %")
-print(f"panier médian prédit, 46 ans, Site : {np.exp(4.2206 - 0.1571 + 10 * 0.0092):.1f} DT")
+print(f"panier médian prédit, 46 ans, Site : {np.exp(4.2206 - 0.1571 + 10 * 0.0092):.1f} €")
 ```
 <!--sortie-->
 ```text
 Site      : -14.5 %
-Instagram : -28.6 %
+Réseaux : -28.6 %
 10 ans d'âge : +9.6 %
-panier médian prédit, 46 ans, Site : 63.8 DT
+panier médian prédit, 46 ans, Site : 63.8 €
 ```
 
 **Corrigé 3.** On sait (1.1.1, équations normales) que $\hat\beta_1=\dfrac{S_{xy}}{S_{xx}}$ avec $S_{xy}=\sum(x_i-\bar x)(y_i-\bar y)$ et $S_{xx}=\sum(x_i-\bar x)^2$. Or $r=\dfrac{S_{xy}}{\sqrt{S_{xx}S_{yy}}}$ et $\dfrac{s_y}{s_x}=\sqrt{S_{yy}/S_{xx}}$, donc $r\dfrac{s_y}{s_x}=\dfrac{S_{xy}}{\sqrt{S_{xx}S_{yy}}}\sqrt{\dfrac{S_{yy}}{S_{xx}}}=\dfrac{S_{xy}}{S_{xx}}=\hat\beta_1$. Pour le $R^2$ : $\hat y_i-\bar y=\hat\beta_1(x_i-\bar x)$, donc $\text{SCE}=\hat\beta_1^2S_{xx}=\dfrac{S_{xy}^2}{S_{xx}}$ et $R^2=\dfrac{\text{SCE}}{\text{SCT}}=\dfrac{S_{xy}^2}{S_{xx}S_{yy}}=r^2$. $\square$
@@ -190,30 +190,30 @@ Les VIF des huit questions restent **modestes** (inférieurs à 2) : les questio
 ```python
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy()
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36
 df["log_panier"] = np.log(df["panier_moyen"])
 m = smf.ols("log_panier ~ a + C(canal)", data=df).fit()
-profil = pd.DataFrame({"a": [25 - 36], "canal": pd.Categorical(["Instagram"], categories=["Boutique", "Site", "Instagram"])})
+profil = pd.DataFrame({"a": [25 - 36], "canal": pd.Categorical(["Réseaux"], categories=["Boutique", "Site", "Réseaux"])})
 mu = float(m.predict(profil).iloc[0])
 duan = float(np.exp(m.resid).mean())
-obs = df[(df["canal"] == "Instagram") & (df["age"].between(23, 27))]["panier_moyen"]
-print(f"(a) panier médian prédit      : {np.exp(mu):.2f} DT")
-print(f"(b) panier moyen prédit (Duan) : {np.exp(mu) * duan:.2f} DT   [facteur de Duan = {duan:.4f} ; facteur exp(s²/2) = {np.exp(m.scale / 2):.4f}]")
-print(f"(c) moyenne observée (Instagram, 23-27 ans, n = {len(obs)}) : {obs.mean():.2f} DT (erreur standard de cette moyenne : {obs.std() / np.sqrt(len(obs)):.2f}) | médiane observée : {obs.median():.2f} DT")
+obs = df[(df["canal"] == "Réseaux") & (df["age"].between(23, 27))]["panier_moyen"]
+print(f"(a) panier médian prédit      : {np.exp(mu):.2f} €")
+print(f"(b) panier moyen prédit (Duan) : {np.exp(mu) * duan:.2f} €   [facteur de Duan = {duan:.4f} ; facteur exp(s²/2) = {np.exp(m.scale / 2):.4f}]")
+print(f"(c) moyenne observée (Réseaux, 23-27 ans, n = {len(obs)}) : {obs.mean():.2f} € (erreur standard de cette moyenne : {obs.std() / np.sqrt(len(obs)):.2f}) | médiane observée : {obs.median():.2f} €")
 # Test décisif : sur TOUS les clients, quelle prédiction reproduit la moyenne observée ?
 mediane_pred = np.exp(m.fittedvalues)
 print(f"tous les clients (n = {len(df)}) : moyenne observée = {df['panier_moyen'].mean():.2f} | moyenne de exp(mu) = {mediane_pred.mean():.2f} | moyenne de exp(mu) x Duan = {(mediane_pred * duan).mean():.2f}")
 ```
 <!--sortie-->
 ```text
-(a) panier médian prédit      : 43.95 DT
-(b) panier moyen prédit (Duan) : 47.10 DT   [facteur de Duan = 1.0718 ; facteur exp(s²/2) = 1.0710]
-(c) moyenne observée (Instagram, 23-27 ans, n = 86) : 44.49 DT (erreur standard de cette moyenne : 1.40) | médiane observée : 42.69 DT
+(a) panier médian prédit      : 43.95 €
+(b) panier moyen prédit (Duan) : 47.10 €   [facteur de Duan = 1.0718 ; facteur exp(s²/2) = 1.0710]
+(c) moyenne observée (Réseaux, 23-27 ans, n = 86) : 44.49 € (erreur standard de cette moyenne : 1.40) | médiane observée : 42.69 €
 tous les clients (n = 1740) : moyenne observée = 61.23 | moyenne de exp(mu) = 57.12 | moyenne de exp(mu) x Duan = 61.22
 ```
 
-Sur ce petit groupe (86 clients), **la moyenne observée (44,49) tombe plus près de la prédiction médiane (43,95) que de la prédiction corrigée (47,10)** : ce n'est pas une contradiction de la théorie, mais du bruit d'échantillonnage. L'erreur standard de cette moyenne observée est de 1,40 DT (écart-type des paniers d'environ 13 DT, divisé par $\sqrt{86}$) : la prédiction corrigée (47,10) est à 1,9 erreur standard de la moyenne observée, la prédiction médiane à 0,4 : sur un groupe aussi petit, ces deux écarts sont tous deux plausibles par hasard. Pour **départager** vraiment, il faut un grand échantillon : sur les 1 740 clients, la moyenne observée est de 61,23 DT ; la moyenne des prédictions $e^{\hat\mu}$ (la médiane de chacun) n'en donne que 57,12 DT, soit un défaut de 7 %, alors que les prédictions corrigées $e^{\hat\mu}\times$Duan redonnent 61,22 DT. C'est la confirmation de la théorie du 1.1.8 : la rétro-transformation **naïve vise la médiane, pas la moyenne**, et sous-estime systématiquement le panier moyen ; la correction de Duan la rétablit. (En attendant, retenez qu'une comparaison sur 86 observations ne départage pas des écarts de 7 %.)
+Sur ce petit groupe (86 clients), **la moyenne observée (44,49) tombe plus près de la prédiction médiane (43,95) que de la prédiction corrigée (47,10)** : ce n'est pas une contradiction de la théorie, mais du bruit d'échantillonnage. L'erreur standard de cette moyenne observée est de 1,40 € (écart-type des paniers d'environ 13 €, divisé par $\sqrt{86}$) : la prédiction corrigée (47,10) est à 1,9 erreur standard de la moyenne observée, la prédiction médiane à 0,4 : sur un groupe aussi petit, ces deux écarts sont tous deux plausibles par hasard. Pour **départager** vraiment, il faut un grand échantillon : sur les 1 740 clients, la moyenne observée est de 61,23 € ; la moyenne des prédictions $e^{\hat\mu}$ (la médiane de chacun) n'en donne que 57,12 €, soit un défaut de 7 %, alors que les prédictions corrigées $e^{\hat\mu}\times$Duan redonnent 61,22 €. C'est la confirmation de la théorie du 1.1.8 : la rétro-transformation **naïve vise la médiane, pas la moyenne**, et sous-estime systématiquement le panier moyen ; la correction de Duan la rétablit. (En attendant, retenez qu'une comparaison sur 86 observations ne départage pas des écarts de 7 %.)
 
 **Corrigé 10.**
 

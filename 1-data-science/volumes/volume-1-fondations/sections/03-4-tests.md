@@ -4,8 +4,8 @@
 
 ### 3.4.1 Le vocabulaire et la méthode
 
-- **Hypothèse nulle $H_0$** : l'état de référence, « pas d'effet, pas de différence ». Par exemple : « le panier moyen vaut 55 DT ».
-- **Hypothèse alternative $H_1$** : ce que l'on cherche à montrer. « Le panier moyen est différent de 55 DT » (test **bilatéral**), ou « supérieur à 55 DT » (test **unilatéral**).
+- **Hypothèse nulle $H_0$** : l'état de référence, « pas d'effet, pas de différence ». Par exemple : « le panier moyen vaut 55 € ».
+- **Hypothèse alternative $H_1$** : ce que l'on cherche à montrer. « Le panier moyen est différent de 55 € » (test **bilatéral**), ou « supérieur à 55 € » (test **unilatéral**).
 - **Statistique de test** $T$ : un nombre calculé sur l'échantillon qui mesure l'écart entre les données et ce que prédit $H_0$.
 - **Niveau de signification $\alpha$** (souvent 5 %) : le risque que l'on accepte de se tromper en rejetant $H_0$ alors qu'elle est vraie.
 - **p-valeur** : la probabilité, **si $H_0$ est vraie**, d'obtenir un résultat **au moins aussi extrême** que celui observé. Petite p-valeur = les données sont surprenantes sous $H_0$.
@@ -29,7 +29,7 @@ On **fixe** $\alpha$ à l'avance, et on cherche à garder $\beta$ petit (c'est l
 
 ### 3.4.2 Test de Student sur une moyenne
 
-> 🛠️ **Question de Yasmine.** Son objectif de panier moyen était de 55 DT. Les 400 commandes confirment-elles que le panier moyen **diffère** de 55 DT ?
+> 🛠️ **Question de la gérante.** Son objectif de panier moyen était de 55 €. Les 400 commandes confirment-elles que le panier moyen **diffère** de 55 € ?
 
 1. $H_0:\mu=55$ ; $H_1:\mu\neq55$.
 2. $\alpha=0{,}05$.
@@ -63,7 +63,7 @@ valeur critique à 5 % : 1.966
 scipy     : t = 2.76   p = 0.0061
 ```
 
-5. **Conclusion.** $p=0{,}006<0{,}05$ : on rejette $H_0$. Le panier moyen est significativement supérieur à 55 DT (il est en fait de 60,25 ; l'IC à 95 % du 3.3.3 était [56,5 ; 64,0], qui n'inclut pas 55 : **un test bilatéral à 5 % et un IC à 95 % disent la même chose**).
+5. **Conclusion.** $p=0{,}006<0{,}05$ : on rejette $H_0$. Le panier moyen est significativement supérieur à 55 € (il est en fait de 60,25 ; l'IC à 95 % du 3.3.3 était [56,5 ; 64,0], qui n'inclut pas 55 : **un test bilatéral à 5 % et un IC à 95 % disent la même chose**).
 
 ![Statistique de test sous H₀. Gauche : la valeur observée (2,76) tombe dans la zone de rejet (queues orange, 5 % au total). Droite : une valeur de 1,10 tomberait dans la zone de non-rejet.](figures/ch03-test-rejet.png)
 
@@ -71,7 +71,7 @@ scipy     : t = 2.76   p = 0.0061
 
 ### 3.4.3 Comparer deux groupes : le test de Welch
 
-> 🛠️ **Question de Yasmine.** Les clients de la **boutique** dépensent-ils plus que ceux d'**Instagram** ? Les moyennes observées sont 74,8 et 49,0 DT, soit un écart de 25,8 DT. Cet écart est-il crédible ou dû au hasard ?
+> 🛠️ **Question de la gérante.** Les clients de la **boutique** dépensent-ils plus que ceux d'**Réseaux** ? Les moyennes observées sont 74,8 et 49,0 €, soit un écart de 25,8 €. Cet écart est-il crédible ou dû au hasard ?
 
 On teste $H_0:\mu_B=\mu_I$ contre $H_1:\mu_B\neq\mu_I$. On compare la différence des moyennes à son erreur-type. Comme les deux échantillons sont indépendants, les variances **s'additionnent** (2.3.3) :
 
@@ -81,11 +81,11 @@ C'est le **test de Welch**, qui n'exige pas que les deux groupes aient la même 
 
 ```python
 b = df.loc[df["canal"] == "Boutique", "montant"]
-i = df.loc[df["canal"] == "Instagram", "montant"]
+i = df.loc[df["canal"] == "Réseaux", "montant"]
 
 diff = b.mean() - i.mean()
 se_diff = np.sqrt(b.var(ddof=1) / len(b) + i.var(ddof=1) / len(i))
-print("différence des moyennes :", round(diff, 2), "DT")
+print("différence des moyennes :", round(diff, 2), "€")
 print("erreur-type de la différence :", round(se_diff, 2))
 print("t à la main :", round(diff / se_diff, 3))
 
@@ -94,7 +94,7 @@ print("scipy (Welch) : t =", round(res.statistic, 3), "  p =", res.pvalue, "  dd
 ```
 <!--sortie-->
 ```text
-différence des moyennes : 25.8 DT
+différence des moyennes : 25.8 €
 erreur-type de la différence : 4.64
 t à la main : 5.565
 scipy (Welch) : t = 5.565   p = 8.016365853327231e-08   ddl = 208.4
@@ -106,18 +106,18 @@ La statistique est $t\approx5{,}56$ et la p-valeur est de l'ordre de $10^{-7}$ :
 
 ```python
 t_c = stats.t.ppf(0.975, res.df)
-print(f"IC95 % de la différence : [{diff - t_c * se_diff:.1f} ; {diff + t_c * se_diff:.1f}] DT")
+print(f"IC95 % de la différence : [{diff - t_c * se_diff:.1f} ; {diff + t_c * se_diff:.1f}] €")
 
 s_pooled = np.sqrt(((len(b) - 1) * b.var(ddof=1) + (len(i) - 1) * i.var(ddof=1)) / (len(b) + len(i) - 2))
 print("d de Cohen :", round(diff / s_pooled, 2))
 ```
 <!--sortie-->
 ```text
-IC95 % de la différence : [16.7 ; 34.9] DT
+IC95 % de la différence : [16.7 ; 34.9] €
 d de Cohen : 0.72
 ```
 
-Le client de la boutique dépense en moyenne entre 17 et 35 DT de plus (IC à 95 %). Le **d de Cohen** (la différence en nombre d'écarts-types) vaut environ 0,7 : un effet « moyen à grand » selon les conventions usuelles (0,2 petit, 0,5 moyen, 0,8 grand).
+Le client de la boutique dépense en moyenne entre 17 et 35 € de plus (IC à 95 %). Le **d de Cohen** (la différence en nombre d'écarts-types) vaut environ 0,7 : un effet « moyen à grand » selon les conventions usuelles (0,2 petit, 0,5 moyen, 0,8 grand).
 
 > 🧪 **Et la distribution asymétrique ?** Le test de Student suppose des moyennes à peu près normales (ce que le TCL assure pour des groupes de plus d'une centaine d'observations) ; il reste correct ici. Pour de petits groupes très asymétriques, on teste plutôt $\log(\text{montant})$, ou on utilise un test non paramétrique (➕ 3.7). Vérifions que la conclusion tient sur l'échelle logarithmique :
 
@@ -125,15 +125,15 @@ Le client de la boutique dépense en moyenne entre 17 et 35 DT de plus (IC à 95
 res_log = stats.ttest_ind(np.log(b), np.log(i), equal_var=False)
 print("test sur log(montant) : t =", round(res_log.statistic, 2), "  p =", res_log.pvalue)
 res_si = stats.ttest_ind(df.loc[df["canal"] == "Site", "montant"], i, equal_var=False)
-print("Site contre Instagram  : t =", round(res_si.statistic, 2), "  p =", round(res_si.pvalue, 4))
+print("Site contre Réseaux  : t =", round(res_si.statistic, 2), "  p =", round(res_si.pvalue, 4))
 ```
 <!--sortie-->
 ```text
 test sur log(montant) : t = 6.46   p = 5.400582683884821e-10
-Site contre Instagram  : t = 2.55   p = 0.0113
+Site contre Réseaux  : t = 2.55   p = 0.0113
 ```
 
-Même conclusion. Pour Site contre Instagram, $p\approx0{,}011$ : l'écart (10,5 DT) est aussi significatif au seuil de 5 %, mais bien moins fortement.
+Même conclusion. Pour Site contre Réseaux, $p\approx0{,}011$ : l'écart (10,5 €) est aussi significatif au seuil de 5 %, mais bien moins fortement.
 
 **Le test apparié.** Quand les deux séries concernent **les mêmes individus** (avant/après), on ne compare pas deux groupes indépendants : on calcule la **différence pour chaque individu** et on teste que sa moyenne est nulle. Exemple : 8 colis dont on a mesuré le délai avant et après un changement de transporteur.
 
@@ -165,7 +165,7 @@ print("(à tort, test non apparié : p =", round(stats.ttest_ind(avant, apres).p
 
 ### 3.4.4 Test sur une proportion
 
-> 🛠️ **Question de Yasmine.** Historiquement, le taux de conversion était de 18 %. Sur les 1 000 dernières visites, 205 ont acheté (20,5 %). Y a-t-il une amélioration réelle ?
+> 🛠️ **Question de la gérante.** Historiquement, le taux de conversion était de 18 %. Sur les 1 000 dernières visites, 205 ont acheté (20,5 %). Y a-t-il une amélioration réelle ?
 
 $H_0:p=0{,}18$ contre $H_1:p\neq0{,}18$. Sous $H_0$, l'erreur-type est $\sqrt{p_0(1-p_0)/n}$ (on utilise la valeur de $H_0$, pas l'estimation) et la statistique
 
@@ -189,7 +189,7 @@ Les deux p-valeurs (0,040 et 0,044) sont **juste en dessous** de 0,05. On rejett
 
 ### 3.4.5 Le test A/B : comparer deux proportions
 
-C'est le test le plus utilisé en pratique dans le web et le marketing. Yasmine essaie deux versions de sa page produit. La version A (1 000 visiteurs) donne 120 achats (12 %), la version B (1 000 visiteurs) donne 150 achats (15 %). B est-elle meilleure ?
+C'est le test le plus utilisé en pratique dans le web et le marketing. La gérante essaie deux versions de sa page produit. La version A (1 000 visiteurs) donne 120 achats (12 %), la version B (1 000 visiteurs) donne 150 achats (15 %). B est-elle meilleure ?
 
 $H_0:p_A=p_B$. Sous $H_0$, les deux groupes ont le même taux, estimé en **regroupant** les données : $\hat p=\frac{120+150}{2000}=0{,}135$. L'erreur-type de la différence est $\sqrt{\hat p(1-\hat p)\bigl(\frac1{n_A}+\frac1{n_B}\bigr)}$ et
 
@@ -217,7 +217,7 @@ $p\approx0{,}0496$ : **tout juste** sous le seuil de 5 %, et l'intervalle de la 
 
 ### 3.4.6 Le test du khi-deux : deux variables qualitatives sont-elles liées ?
 
-> 🛠️ **Question de Yasmine.** La proportion de clients **satisfaits** (note ≥ 4) dépend-elle du canal de vente ?
+> 🛠️ **Question de la gérante.** La proportion de clients **satisfaits** (note ≥ 4) dépend-elle du canal de vente ?
 
 On range les données dans un **tableau de contingence** :
 
@@ -233,13 +233,13 @@ print(pd.crosstab(df["canal"], df["satisfait"], normalize="index").round(3))
 satisfait  False  True 
 canal                  
 Boutique       5    109
-Instagram     51     87
+Réseaux     51     87
 Site          45    103
 
 satisfait  False  True 
 canal                  
 Boutique   0.044  0.956
-Instagram  0.370  0.630
+Réseaux  0.370  0.630
 Site       0.304  0.696
 ```
 
@@ -270,14 +270,14 @@ effectifs attendus sous H0 :
 satisfait  False  True 
 canal                  
 Boutique    28.8   85.2
-Instagram   34.8  103.2
+Réseaux   34.8  103.2
 Site        37.4  110.6
 
 khi-deux = 38.40   ddl = 2   p-valeur = 4.60e-09
 V de Cramér : 0.31
 ```
 
-Dans la boutique, il y a **109 satisfaits sur 114** (96 %), alors que l'on en attendrait environ 85 si le canal n'avait aucun effet (soit 24 de plus) ; sur Instagram, 63 % seulement (87 sur 138). La statistique est $\chi^2\approx38$ pour 2 degrés de liberté : $p\approx5\times10^{-9}$. On rejette l'indépendance. Le **V de Cramér** (0 = indépendance, 1 = lien parfait) vaut 0,31 : un lien d'intensité moyenne. (Attention : la boutique n'a pas de délai de livraison, ce qui explique sans doute en grande partie l'écart ; l'association n'est pas une causalité.)
+Dans la boutique, il y a **109 satisfaits sur 114** (96 %), alors que l'on en attendrait environ 85 si le canal n'avait aucun effet (soit 24 de plus) ; sur Réseaux, 63 % seulement (87 sur 138). La statistique est $\chi^2\approx38$ pour 2 degrés de liberté : $p\approx5\times10^{-9}$. On rejette l'indépendance. Le **V de Cramér** (0 = indépendance, 1 = lien parfait) vaut 0,31 : un lien d'intensité moyenne. (Attention : la boutique n'a pas de délai de livraison, ce qui explique sans doute en grande partie l'écart ; l'association n'est pas une causalité.)
 
 > ⚠️ **Condition de validité.** L'approximation du khi-deux est fiable si **tous les effectifs attendus sont au moins 5**. Sinon, on utilise le test exact de Fisher (`scipy.stats.fisher_exact` pour un tableau 2×2).
 

@@ -1,6 +1,6 @@
 ## 2.2 Régression logistique
 
-> 💡 **Intuition.** Yasmine envoie un bon de bienvenue à la moitié de ses nouveaux clients, tirés au sort. Douze mois plus tard, elle observe pour chaque client un seul bit d'information : a-t-il **racheté** (1) ou non (0) ? Elle veut savoir de combien l'offre augmente les chances de rachat, et comment les autres caractéristiques (âge, canal d'acquisition, satisfaction) y contribuent. La régression logistique modélise la **probabilité** de racheter, mais pas directement : elle modélise une transformation de cette probabilité, la **cote**, qui vit sur toute la droite réelle et qui se prête à un modèle linéaire.
+> 💡 **Intuition.** la gérante envoie un bon de bienvenue à la moitié de ses nouveaux clients, tirés au sort. Douze mois plus tard, elle observe pour chaque client un seul bit d'information : a-t-il **racheté** (1) ou non (0) ? Elle veut savoir de combien l'offre augmente les chances de rachat, et comment les autres caractéristiques (âge, canal d'acquisition, satisfaction) y contribuent. La régression logistique modélise la **probabilité** de racheter, mais pas directement : elle modélise une transformation de cette probabilité, la **cote**, qui vit sur toute la droite réelle et qui se prête à un modèle linéaire.
 
 ### 2.2.1 De la probabilité à la cote
 
@@ -18,7 +18,7 @@ from scipy import stats
 from scipy.special import expit
 
 clients = pd.read_csv("donnees/clients.csv")
-clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Instagram", "Site"])  # référence : Boutique
+clients["canal"] = pd.Categorical(clients["canal_acquisition"], categories=["Boutique", "Réseaux", "Site"])  # référence : Boutique
 
 p = np.array([0.05, 0.10, 0.25, 0.50, 0.60, 0.75, 0.90, 0.95])
 tab = pd.DataFrame({"probabilité p": p, "cote p/(1-p)": p / (1 - p), "logit = log(cote)": np.log(p / (1 - p))})
@@ -133,7 +133,7 @@ print("log-vraisemblance :", round(modele.llf, 2), "| déviance :", round(modele
                          coef    std err          z      P>|z|      [0.025      0.975]
 --------------------------------------------------------------------------------------
 Intercept              0.5885      0.185      3.175      0.001       0.225       0.952
-canal[T.Instagram]    -0.4630      0.116     -4.008      0.000      -0.689      -0.237
+canal[T.Réseaux]    -0.4630      0.116     -4.008      0.000      -0.689      -0.237
 canal[T.Site]         -0.1677      0.120     -1.402      0.161      -0.402       0.067
 offre_bienvenue        0.4933      0.091      5.423      0.000       0.315       0.672
 age                   -0.0155      0.004     -3.562      0.000      -0.024      -0.007
@@ -145,7 +145,7 @@ log-vraisemblance : -1355.42 | déviance : 2710.83 | AIC : 2720.83 | n = 2000
 Lecture ligne à ligne (les coefficients sont des log-cotes) :
 
 - `offre_bienvenue` : $+0{,}493$ (erreur-type 0,091, $z=5{,}42$) : l'offre augmente nettement la cote de rachat.
-- `canal[T.Instagram]` : $-0{,}463$ ($z=-4{,}01$) : à âge et offre fixés, les clients acquis par Instagram rachètent moins que ceux de la boutique.
+- `canal[T.Réseaux]` : $-0{,}463$ ($z=-4{,}01$) : à âge et offre fixés, les clients acquis par Réseaux rachètent moins que ceux de la boutique.
 - `canal[T.Site]` : $-0{,}168$ ($p=0{,}161$) : on ne peut pas distinguer le site de la boutique.
 - `age` : $-0{,}0155$ par année ($z=-3{,}56$) : les clients plus âgés rachètent un peu moins.
 - `Intercept` : $0{,}5885$ est le logit d'un client de la boutique, sans offre, **d'âge 0** : une extrapolation sans signification (on gagnerait à *centrer* l'âge, par exemple en soustrayant 36).
@@ -165,7 +165,7 @@ print("OR pour +10 ans d'âge :", round(float(np.exp(10 * modele.params["age"]))
 ```text
                        OR  IC95 bas  IC95 haut  p-valeur
 Intercept           1.801     1.253      2.590     0.001
-canal[T.Instagram]  0.629     0.502      0.789     0.000
+canal[T.Réseaux]  0.629     0.502      0.789     0.000
 canal[T.Site]       0.846     0.669      1.069     0.161
 offre_bienvenue     1.638     1.370      1.957     0.000
 age                 0.985     0.976      0.993     0.000
@@ -176,7 +176,7 @@ OR pour +10 ans d'âge : 0.856
 Les rapports de cotes se lisent directement :
 
 - **Offre** : OR $=1{,}64$, intervalle à 95 % de 1,37 à 1,96. L'offre multiplie la cote de rachat par un facteur compris, avec 95 % de confiance, entre 1,4 et 2,0.
-- **Instagram** par rapport à la boutique : OR $=0{,}63$ (de 0,50 à 0,79) : la cote de rachat est environ **37 % plus basse**.
+- **Réseaux** par rapport à la boutique : OR $=0{,}63$ (de 0,50 à 0,79) : la cote de rachat est environ **37 % plus basse**.
 - **Site** par rapport à la boutique : OR $=0{,}85$, intervalle de 0,67 à 1,07 : l'intervalle contient 1, aucun effet net n'est démontré.
 - **Âge** : OR $=0{,}985$ par année ; pour **dix ans** de plus, $e^{10\hat\beta}=0{,}856$ : la cote est réduite d'environ 14 %.
 
@@ -204,7 +204,7 @@ print("écart maximal sur les erreurs-types :", f"{np.max(np.abs(np.sqrt(np.diag
 ```text
                     coef (IRLS main)  coef (statsmodels)  se (IRLS main)  se (statsmodels)
 Intercept                   0.588499            0.588499        0.185372          0.185372
-canal[T.Instagram]         -0.462955           -0.462955        0.115509          0.115509
+canal[T.Réseaux]         -0.462955           -0.462955        0.115509          0.115509
 canal[T.Site]              -0.167719           -0.167719        0.119619          0.119619
 offre_bienvenue             0.493258            0.493258        0.090953          0.090953
 age                        -0.015498           -0.015498        0.004351          0.004351
@@ -236,16 +236,16 @@ Les sommes de résidus sont nulles (à la précision de l'arrondi) et la somme d
 
 ### 2.2.6 Probabilités et effets marginaux
 
-Un rapport de cotes dit « de combien la cote est multipliée » ; mais Yasmine veut savoir *de combien de points de pourcentage* l'offre augmente la probabilité de rachat. Deux façons de répondre.
+Un rapport de cotes dit « de combien la cote est multipliée » ; mais la gérante veut savoir *de combien de points de pourcentage* l'offre augmente la probabilité de rachat. Deux façons de répondre.
 
-**Pour un profil donné.** Prenons un client de 36 ans acquis par Instagram, avec ou sans l'offre.
+**Pour un profil donné.** Prenons un client de 36 ans acquis par Réseaux, avec ou sans l'offre.
 
 ```python
 profil = pd.DataFrame({"offre_bienvenue": [0, 1], "age": [36, 36],
-                       "canal": pd.Categorical(["Instagram", "Instagram"], categories=["Boutique", "Instagram", "Site"])})
+                       "canal": pd.Categorical(["Réseaux", "Réseaux"], categories=["Boutique", "Réseaux", "Site"])})
 p_profil = modele.predict(profil)
 b = modele.params
-a_la_main = expit(b["Intercept"] + b["canal[T.Instagram]"] + 36 * b["age"] + b["offre_bienvenue"] * np.array([0, 1]))
+a_la_main = expit(b["Intercept"] + b["canal[T.Réseaux]"] + 36 * b["age"] + b["offre_bienvenue"] * np.array([0, 1]))
 print("probabilités prédites (sans offre, avec offre) :", p_profil.round(4).to_numpy(), "| à la main :", a_la_main.round(4))
 print("gain en points de pourcentage pour ce profil   :", round(100 * float(p_profil.iloc[1] - p_profil.iloc[0]), 2))
 ```
@@ -280,13 +280,13 @@ différence brute des taux de rachat      : 12.17 points
 effet marginal moyen d'un an de plus     : -0.376 point  (soit -3.76 points pour 10 ans)
 
                      dy/dx  Std. Err.       z  Pr(>|z|)  Conf. Int. Low  Cont. Int. Hi.
-canal[T.Instagram] -0.1126     0.0277 -4.0625    0.0000         -0.1669         -0.0583
+canal[T.Réseaux] -0.1126     0.0277 -4.0625    0.0000         -0.1669         -0.0583
 canal[T.Site]      -0.0405     0.0287 -1.4108    0.1583         -0.0967          0.0158
 offre_bienvenue     0.1207     0.0220  5.4768    0.0000          0.0775          0.1640
 age                -0.0038     0.0010 -3.6063    0.0003         -0.0058         -0.0017
 ```
 
-Pour ce profil (Instagram, 36 ans), l'offre fait passer la probabilité de rachat de 39,4 % à 51,5 %, soit un gain de **12,2 points** (le calcul à la main coïncide avec `predict`). En moyenne sur les 2 000 clients, l'effet marginal de l'offre est de **12,07 points**, très proche de la différence brute des taux (12,17 points) : c'est normal puisque l'offre a été tirée au sort. La fonction `get_margeff` de `statsmodels` donne le même chiffre (0,1207) avec un intervalle de confiance de **7,8 à 16,4 points**. Pour l'âge, un an de plus réduit la probabilité de rachat d'environ **0,38 point** en moyenne (0,0038 dans le tableau de `statsmodels`), soit environ 3,8 points pour dix ans. Notez que ces effets, exprimés en points, sont **moyens** : ils varient d'un client à l'autre (2.2.2).
+Pour ce profil (Réseaux, 36 ans), l'offre fait passer la probabilité de rachat de 39,4 % à 51,5 %, soit un gain de **12,2 points** (le calcul à la main coïncide avec `predict`). En moyenne sur les 2 000 clients, l'effet marginal de l'offre est de **12,07 points**, très proche de la différence brute des taux (12,17 points) : c'est normal puisque l'offre a été tirée au sort. La fonction `get_margeff` de `statsmodels` donne le même chiffre (0,1207) avec un intervalle de confiance de **7,8 à 16,4 points**. Pour l'âge, un an de plus réduit la probabilité de rachat d'environ **0,38 point** en moyenne (0,0038 dans le tableau de `statsmodels`), soit environ 3,8 points pour dix ans. Notez que ces effets, exprimés en points, sont **moyens** : ils varient d'un client à l'autre (2.2.2).
 
 > 💡 **Pourquoi la différence brute et l'effet du modèle sont proches.** Quand le traitement est attribué au hasard, il est (en moyenne) indépendant de l'âge et du canal : ajuster pour ces variables précise l'estimation, mais ne la déplace pas beaucoup. Dans une étude **observationnelle** (où les clients choisissent), les deux chiffres pourraient être très différents ; c'est le sujet du chapitre 7 (inférence causale).
 
@@ -315,7 +315,7 @@ print("OR de l'offre, sur ces mêmes répondants : sans les notes =", round(floa
 ```text
                      coef     OR  IC95 bas  IC95 haut      p
 Intercept          -3.626  0.027     0.010      0.069  0.000
-canal[T.Instagram] -0.474  0.622     0.458      0.845  0.002
+canal[T.Réseaux] -0.474  0.622     0.458      0.845  0.002
 canal[T.Site]      -0.244  0.783     0.570      1.075  0.131
 offre_bienvenue     0.607  1.834     1.442      2.334  0.000
 age                -0.018  0.983     0.971      0.994  0.003

@@ -2,7 +2,7 @@
 
 > 💡 **Intuition.** Un programme est une **recette de cuisine** écrite pour un exécutant très docile mais totalement dépourvu de bon sens : il fait *exactement* ce que vous écrivez, à une vitesse folle, sans jamais se fatiguer, et sans jamais deviner ce que vous vouliez dire. Apprendre à programmer, c'est apprendre à écrire des recettes sans ambiguïté. Python est un excellent choix pour cela : ses recettes se lisent presque comme des phrases.
 
-Dans cette section, nous partons de zéro et nous terminons par un **programme complet** : la caisse de la boutique de Yasmine. Chaque notion suit le même rythme que dans le reste du livre : une image, un exemple fait à la main, puis le code et sa sortie réelle.
+Dans cette section, nous partons de zéro et nous terminons par un **programme complet** : la caisse de la boutique de la gérante. Chaque notion suit le même rythme que dans le reste du livre : une image, un exemple fait à la main, puis le code et sa sortie réelle.
 
 > 🧭 **Section à lire dans l'ordre.** Si vous programmez déjà, lisez seulement les titres et les encadrés ⚠️, puis passez au programme final (4.1.10) pour vérifier que tout vous semble familier.
 
@@ -19,12 +19,12 @@ Il y a trois façons d'exécuter du code Python :
 Le tout premier programme du monde informatique :
 
 ```python
-print("Bonjour Dar Jasmin !")
+print("Bonjour la boutique !")
 print(2 + 3 * 4)
 ```
 <!--sortie-->
 ```text
-Bonjour Dar Jasmin !
+Bonjour la boutique !
 14
 ```
 
@@ -45,7 +45,7 @@ Les quatre types de base :
 | Texte | `str` | `"bol"` | noms, étiquettes |
 | Booléen | `bool` | `True`, `False` | vrai ou faux |
 
-**Exemple à la main.** Yasmine vend 3 bols à 12,5 DT hors taxe. Le total HT est $3\times12{,}5=37{,}5$ DT. Avec 19 % de TVA : $37{,}5\times1{,}19=44{,}625$ DT, soit 44,63 DT si l'on arrondit « comme à l'école » (la moitié vers le haut). Faisons-le faire à Python :
+**Exemple à la main.** la gérante vend 3 bols à 12,5 € hors taxe. Le total HT est $3\times12{,}5=37{,}5$ €. Avec 19 % de TVA : $37{,}5\times1{,}19=44{,}625$ €, soit 44,63 € si l'on arrondit « comme à l'école » (la moitié vers le haut). Faisons-le faire à Python :
 
 ```python
 quantite = 3
@@ -119,16 +119,16 @@ Pour **insérer des valeurs dans une phrase**, la méthode moderne est la **f-st
 
 ```python
 produit, quantite, prix = "bol", 3, 12.5
-print(f"{quantite} x {produit} à {prix} DT")
-print(f"total : {quantite * prix:.2f} DT")      # .2f : 2 décimales
+print(f"{quantite} x {produit} à {prix} €")
+print(f"total : {quantite * prix:.2f} €")      # .2f : 2 décimales
 print(f"part de TVA : {0.19:.0%}")              # .0% : pourcentage
 print(f"{'produit':<10}|{'prix':>8}")           # < aligne à gauche, > à droite
 print(f"{produit:<10}|{prix:>8.2f}")
 ```
 <!--sortie-->
 ```text
-3 x bol à 12.5 DT
-total : 37.50 DT
+3 x bol à 12.5 €
+total : 37.50 €
 part de TVA : 19%
 produit   |    prix
 bol       |   12.50
@@ -181,17 +181,17 @@ catalogue["bol"] = 13.0               # modification
 print(catalogue)
 print(catalogue.get("lampe", "inconnu"))   # .get évite l'erreur si la clé n'existe pas
 for nom, prix in catalogue.items():
-    print(f"  {nom:<8} {prix:>6.2f} DT")
+    print(f"  {nom:<8} {prix:>6.2f} €")
 ```
 <!--sortie-->
 ```text
 8.0
 {'bol': 13.0, 'tasse': 8.0, 'plateau': 45.0, 'bougie': 15.9}
 inconnu
-  bol       13.00 DT
-  tasse      8.00 DT
-  plateau   45.00 DT
-  bougie    15.90 DT
+  bol       13.00 €
+  tasse      8.00 €
+  plateau   45.00 €
+  bougie    15.90 €
 ```
 
 **Les ensembles** oublient l'ordre et éliminent les doublons : exactement ce qu'il faut pour compter des clients **distincts**.
@@ -216,7 +216,7 @@ Un programme doit pouvoir **choisir**. L'instruction `if` exécute un bloc seule
 
 Comparaisons : `==` (égal), `!=` (différent), `<`, `<=`, `>`, `>=`. Combinaisons : `and`, `or`, `not`.
 
-**Exemple à la main.** Règle de livraison de Dar Jasmin : *gratuite à partir de 100 DT, sinon 7 DT ; et pour un retrait en boutique, toujours 0.* Pour un panier de 80 DT livré : 7 DT. Pour 120 DT livré : 0. Pour 80 DT en retrait : 0.
+**Exemple à la main.** Règle de livraison de la boutique : *gratuite à partir de 100 €, sinon 7 € ; et pour un retrait en boutique, toujours 0.* Pour un panier de 80 € livré : 7 €. Pour 120 € livré : 0. Pour 80 € en retrait : 0.
 
 ```python
 def frais_livraison(total, retrait_boutique):
@@ -245,33 +245,33 @@ Une **boucle** répète un bloc. Deux formes :
 - `for élément in collection:` : une fois pour chaque élément (on sait combien).
 - `while condition:` : tant que la condition est vraie (on ne sait pas combien).
 
-**Exemple à la main.** Yasmine place 1 000 DT à 5 % par an, intérêts composés. Au bout d'un an : $1000\times1{,}05=1050$. Deux ans : $1050\times1{,}05=1102{,}5$. Combien d'années pour **doubler** ? C'est une question « jusqu'à ce que » : une boucle `while`.
+**Exemple à la main.** la gérante place 1 000 € à 5 % par an, intérêts composés. Au bout d'un an : $1000\times1{,}05=1050$. Deux ans : $1050\times1{,}05=1102{,}5$. Combien d'années pour **doubler** ? C'est une question « jusqu'à ce que » : une boucle `while`.
 
 ```python
 capital, annees = 1000.0, 0
 while capital < 2000:
     capital = capital * 1.05
     annees += 1                       # raccourci pour annees = annees + 1
-    print(f"année {annees:2d} : {capital:8.2f} DT")
+    print(f"année {annees:2d} : {capital:8.2f} €")
 print("doublé en", annees, "ans")
 ```
 <!--sortie-->
 ```text
-année  1 :  1050.00 DT
-année  2 :  1102.50 DT
-année  3 :  1157.62 DT
-année  4 :  1215.51 DT
-année  5 :  1276.28 DT
-année  6 :  1340.10 DT
-année  7 :  1407.10 DT
-année  8 :  1477.46 DT
-année  9 :  1551.33 DT
-année 10 :  1628.89 DT
-année 11 :  1710.34 DT
-année 12 :  1795.86 DT
-année 13 :  1885.65 DT
-année 14 :  1979.93 DT
-année 15 :  2078.93 DT
+année  1 :  1050.00 €
+année  2 :  1102.50 €
+année  3 :  1157.62 €
+année  4 :  1215.51 €
+année  5 :  1276.28 €
+année  6 :  1340.10 €
+année  7 :  1407.10 €
+année  8 :  1477.46 €
+année  9 :  1551.33 €
+année 10 :  1628.89 €
+année 11 :  1710.34 €
+année 12 :  1795.86 €
+année 13 :  1885.65 €
+année 14 :  1979.93 €
+année 15 :  2078.93 €
 doublé en 15 ans
 ```
 
@@ -496,35 +496,35 @@ par_canal = {}
 for l in lignes:
     par_canal.setdefault(l["canal"], []).append(float(l["montant"]))
 for canal, valeurs in par_canal.items():
-    print(f"  {canal:<10} n = {len(valeurs):3d}   moyenne = {sum(valeurs) / len(valeurs):6.2f} DT")
+    print(f"  {canal:<10} n = {len(valeurs):3d}   moyenne = {sum(valeurs) / len(valeurs):6.2f} €")
 ```
 <!--sortie-->
 ```text
 montant moyen : 60.25
-répartition   : {'Boutique': 114, 'Site': 148, 'Instagram': 138}
-  Boutique   n = 114   moyenne =  74.81 DT
-  Site       n = 148   moyenne =  59.50 DT
-  Instagram  n = 138   moyenne =  49.01 DT
+répartition   : {'Boutique': 114, 'Site': 148, 'Réseaux': 138}
+  Boutique   n = 114   moyenne =  74.81 €
+  Site       n = 148   moyenne =  59.50 €
+  Réseaux  n = 138   moyenne =  49.01 €
 ```
 
-On retrouve le montant moyen de 60,25 DT calculé au chapitre 3. Nous avons tout fait à la main, avec des boucles et des dictionnaires : c'est précisément le travail que pandas fera en **une ligne** à la section 4.4. Savoir le faire « à la main » vous permet de comprendre ce que pandas fait pour vous.
+On retrouve le montant moyen de 60,25 € calculé au chapitre 3. Nous avons tout fait à la main, avec des boucles et des dictionnaires : c'est précisément le travail que pandas fera en **une ligne** à la section 4.4. Savoir le faire « à la main » vous permet de comprendre ce que pandas fait pour vous.
 
 ### 4.1.10 Un programme complet : la caisse de la boutique
 
-Rassemblons tout. Yasmine veut un petit programme qui, pour un panier, **édite un ticket de caisse** avec les règles suivantes :
+Rassemblons tout. La gérante veut un petit programme qui, pour un panier, **édite un ticket de caisse** avec les règles suivantes :
 
 - les prix du catalogue sont **hors taxe** ;
-- une **remise fidélité de 10 %** s'applique si le sous-total HT dépasse 100 DT ;
+- une **remise fidélité de 10 %** s'applique si le sous-total HT dépasse 100 € ;
 - la **TVA de 19 %** s'applique sur le montant après remise ;
 - le ticket affiche chaque ligne, le sous-total, la remise, la TVA et le total TTC.
 
 **Calcul à la main** pour le panier « 2 bols, 1 plateau, 3 bougies » (prix HT : bol 12,5 ; plateau 45 ; bougie 15,9) :
 
 - bols : $2\times12{,}5=25{,}00$ ; plateau : $45{,}00$ ; bougies : $3\times15{,}9=47{,}70$ ;
-- sous-total HT : $25+45+47{,}7=117{,}70$ DT ;
-- le sous-total dépasse 100 DT, donc remise de $10\%$ : $11{,}77$ DT, soit $105{,}93$ DT après remise ;
-- TVA : $105{,}93\times0{,}19=20{,}1267\approx20{,}13$ DT ;
-- total TTC : $105{,}93+20{,}13=126{,}06$ DT.
+- sous-total HT : $25+45+47{,}7=117{,}70$ € ;
+- le sous-total dépasse 100 €, donc remise de $10\%$ : $11{,}77$ €, soit $105{,}93$ € après remise ;
+- TVA : $105{,}93\times0{,}19=20{,}1267\approx20{,}13$ € ;
+- total TTC : $105{,}93+20{,}13=126{,}06$ €.
 
 Le programme, découpé en petites fonctions faciles à tester :
 
@@ -574,14 +574,14 @@ TVA 19 %               20.13
 TOTAL TTC             126.06
 ```
 
-Le ticket affiche 117,70 DT de sous-total, 11,77 de remise, 20,13 de TVA et 126,06 DT au total : **exactement** nos valeurs à la main. Testons aussi les cas limites avec `assert`, une instruction qui ne dit rien quand la condition est vraie et **arrête** le programme avec une erreur quand elle est fausse :
+Le ticket affiche 117,70 € de sous-total, 11,77 de remise, 20,13 de TVA et 126,06 € au total : **exactement** nos valeurs à la main. Testons aussi les cas limites avec `assert`, une instruction qui ne dit rien quand la condition est vraie et **arrête** le programme avec une erreur quand elle est fausse :
 
 ```python
 # Cas 1 : petit panier, pas de remise. 2 tasses = 16,00 HT ; TVA = 3,04 ; TTC = 19,04
 assert ticket([("tasse", 2)])[1] == 19.04
 # Cas 2 : panier vide
 assert ticket([])[1] == 0.0
-# Cas 3 : juste au seuil (100 DT pile) : la remise ne s'applique PAS (condition « > »)
+# Cas 3 : juste au seuil (100 € pile) : la remise ne s'applique PAS (condition « > »)
 assert remise(100) == 0.0
 # Cas 4 : le panier précédent
 assert ticket([("bol", 2), ("plateau", 1), ("bougie", 3)])[1] == 126.06

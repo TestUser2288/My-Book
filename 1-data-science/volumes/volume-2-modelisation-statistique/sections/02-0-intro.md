@@ -3,7 +3,7 @@
 > « La régression linéaire répond à la question : *de combien la moyenne change-t-elle ?*
 > Les modèles linéaires généralisés répondent à la même question, **pour des données qui ne sont pas des mesures continues et symétriques**. »
 
-Au chapitre 1, nous avons appris à expliquer une variable **continue** (le montant d'une commande, une durée) par d'autres variables, avec une droite, un plan, un hyperplan. Mais regardez les questions que Yasmine se pose vraiment :
+Au chapitre 1, nous avons appris à expliquer une variable **continue** (le montant d'une commande, une durée) par d'autres variables, avec une droite, un plan, un hyperplan. Mais regardez les questions que la gérante se pose vraiment :
 
 - « *Ce client va-t-il racheter dans les douze mois ?* » : la réponse est **oui ou non** (0 ou 1) ;
 - « *Combien de commandes va-t-il passer cette année ?* » : la réponse est un **nombre entier** (0, 1, 2, 3…) ;
@@ -22,7 +22,7 @@ Les **modèles linéaires généralisés** (*generalized linear models*, GLM) co
 - ➕ **Pour aller plus loin** : les modèles additifs généralisés, GAM (2.5) ; les modèles à excès de zéros, surdispersés, et la loi de Tweedie (2.6).
 - **2.7 Exercices corrigés**.
 
-> 💡 **Le fil conducteur : 2 000 clients de Dar Jasmin.** Nous travaillons sur le fichier `donnees/clients.csv` : un client par ligne, avec son âge, sa ville, son canal d'acquisition, sa dépense annuelle, s'il a racheté, combien de commandes il a passées. Une colonne est particulière : `offre_bienvenue` (0 ou 1) a été **attribuée au hasard** (Yasmine a tiré à pile ou face l'envoi d'un bon de bienvenue). Nous y reviendrons : un tirage au hasard permet de répondre à « *l'offre fait-elle racheter ?* » sans arrière-pensée.
+> 💡 **Le fil conducteur : 2 000 clients de la boutique.** Nous travaillons sur le fichier `donnees/clients.csv` : un client par ligne, avec son âge, sa ville, son canal d'acquisition, sa dépense annuelle, s'il a racheté, combien de commandes il a passées. Une colonne est particulière : `offre_bienvenue` (0 ou 1) a été **attribuée au hasard** (la gérante a tiré à pile ou face l'envoi d'un bon de bienvenue). Nous y reviendrons : un tirage au hasard permet de répondre à « *l'offre fait-elle racheter ?* » sans arrière-pensée.
 
 > 📦 **Les données sont simulées.** Comme dans le volume I, le jeu de données est fabriqué par un programme (graine fixe), ce qui permet à chacun de retrouver les mêmes nombres. Il a un avantage pédagogique énorme : **nous connaissons la vérité**. À la fin du chapitre, nous la dévoilerons, pour voir ce que nos modèles ont retrouvé, et ce qu'ils ont manqué. Un fichier complémentaire (`donnees/ch02-sessions.csv`, section 2.5) est également simulé ; le jeu `donnees/enquete_satisfaction.csv` (notes de 1 à 5 de 1 200 répondants) sert à la section 2.2.
 

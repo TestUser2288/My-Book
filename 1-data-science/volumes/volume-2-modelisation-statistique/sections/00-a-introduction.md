@@ -7,7 +7,7 @@
 
 Le volume I vous a donné les gestes de base : **calculer** (mathématiques), **raisonner sous incertitude** (probabilités), **tirer des conclusions honnêtes d'un échantillon** (statistique), **coder** (Python, R), **interroger des données** (SQL) et **travailler proprement** (Git, notebooks, projet reproductible).
 
-À la fin de ce volume, vous saviez répondre à des questions du type : « Les paniers Instagram sont-ils plus petits que ceux de la boutique ? » (un test de Welch), ou « Chaque jour de retard fait-il baisser la satisfaction, et de combien ? » (une pente, avec son intervalle de confiance). Ce sont des questions à **une ou deux variables**.
+À la fin de ce volume, vous saviez répondre à des questions du type : « Les paniers Réseaux sont-ils plus petits que ceux de la boutique ? » (un test de Welch), ou « Chaque jour de retard fait-il baisser la satisfaction, et de combien ? » (une pente, avec son intervalle de confiance). Ce sont des questions à **une ou deux variables**.
 
 La vraie vie en pose d'autres :
 
@@ -55,7 +55,7 @@ Le volume contient six chapitres principaux, qui forment trois blocs, et trois c
 
  ➕ Chapitre 7 : Inférence causale   ➕ Chapitre 8 : Plans d'expériences   ➕ Chapitre 9 : Statistique spatiale
 
-                        Projet du volume : une étude de modélisation complète pour Dar Jasmin
+                        Projet du volume : une étude de modélisation complète pour la boutique
 ```
 
 | Chapitre | Question centrale | Vous saurez… |

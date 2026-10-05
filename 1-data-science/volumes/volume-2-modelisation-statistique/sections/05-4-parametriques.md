@@ -1,6 +1,6 @@
 ## 5.4 Modèles de durée paramétriques
 
-> 💡 **Intuition.** Le modèle de Cox est élégant parce qu'il ne dit rien sur la forme du risque de base. Mais ce silence a un prix : on ne peut rien dire **au-delà** de ce qu'on a observé. Yasmine voudrait savoir combien un client rapporte *au total*, y compris pendant les années à venir que personne n'a encore vécues. Pour extrapoler, il faut **parier sur une forme** de loi. Les modèles paramétriques font ce pari : ils décrivent la durée par une loi connue (exponentielle, Weibull, log-normale…) dont les paramètres dépendent des caractéristiques du client. En échange du pari, on obtient des courbes lisses, des durées moyennes, des extrapolations, et des estimations plus précises *si la forme est bonne*.
+> 💡 **Intuition.** Le modèle de Cox est élégant parce qu'il ne dit rien sur la forme du risque de base. Mais ce silence a un prix : on ne peut rien dire **au-delà** de ce qu'on a observé. La gérante voudrait savoir combien un client rapporte *au total*, y compris pendant les années à venir que personne n'a encore vécues. Pour extrapoler, il faut **parier sur une forme** de loi. Les modèles paramétriques font ce pari : ils décrivent la durée par une loi connue (exponentielle, Weibull, log-normale…) dont les paramètres dépendent des caractéristiques du client. En échange du pari, on obtient des courbes lisses, des durées moyennes, des extrapolations, et des estimations plus précises *si la forme est bonne*.
 
 ### 5.4.1 Le modèle à temps de vie accéléré
 
@@ -147,7 +147,7 @@ lifelines : rho = ln k = 0.2794 (à la main : -ln sigma = 0.2794) ; log-vraisemb
 Les trois sources donnent les mêmes coefficients, la même échelle et la même log-vraisemblance. Lecture :
 
 - **Offre de bienvenue** : facteur d'accélération $e^{0{,}313}\approx1{,}37$ : la durée de vie d'un client qui l'a reçue est **37 % plus longue** (à âge et canal égaux).
-- **Canal** : par rapport à la boutique, un client arrivé par Instagram a une durée de vie **38 % plus courte** ($e^{-0{,}48}\approx0{,}62$) et un client arrivé par le site, **22 % plus courte** ($e^{-0{,}245}\approx0{,}78$).
+- **Canal** : par rapport à la boutique, un client arrivé par Réseaux a une durée de vie **38 % plus courte** ($e^{-0{,}48}\approx0{,}62$) et un client arrivé par le site, **22 % plus courte** ($e^{-0{,}245}\approx0{,}78$).
 - **Âge** : chaque année en plus allonge la durée d'environ 1 %.
 - **Forme** : $k\approx1{,}32>1$ : le risque **augmente** avec l'ancienneté, ce qui confirme ce que montrait la comparaison de Kaplan-Meier et de l'exponentielle (5.2.2).
 
@@ -281,13 +281,13 @@ figure enregistrée
 
 ### 5.4.5 Extrapoler et chiffrer : la valeur vie client
 
-Yasmine veut savoir **ce que rapporte un client en moyenne sur toute sa vie**. Pour cela, il lui faut la survie *au-delà* de la fenêtre observée (84 mois au plus). Seul un modèle paramétrique peut fournir cette extrapolation.
+La gérante veut savoir **ce que rapporte un client en moyenne sur toute sa vie**. Pour cela, il lui faut la survie *au-delà* de la fenêtre observée (84 mois au plus). Seul un modèle paramétrique peut fournir cette extrapolation.
 
 La **durée de vie moyenne** d'un client de profil $x$ dans un modèle de Weibull est $E[T\mid x]=\lambda(x)\,\Gamma(1+1/k)$ (section 5.1.3). La **valeur vie client** actualisée (en anglais *customer lifetime value*, CLV) combine cette survie avec un revenu :
 $$\mathrm{CLV}(x)=m\sum_{t=0}^{T_{\max}}\frac{S(t\mid x)}{(1+r)^{t}}$$
 où $m$ est la **marge mensuelle** par client encore actif, $r$ le taux d'actualisation mensuel (un euro dans un an vaut moins qu'un euro aujourd'hui), et $S(t\mid x)$ la probabilité d'être encore client au mois $t$.
 
-> 🧭 **Des hypothèses, pas des données.** Nous n'avons dans nos fichiers **ni marge ni coût**. Les trois chiffres ci-dessous sont des hypothèses que Yasmine devrait remplacer par les siens : une marge de **6 DT par mois** et par client actif, un taux d'actualisation de **1 % par mois** (environ 13 % par an) et un horizon de 20 ans (240 mois). Le but est de montrer la **mécanique** du calcul, pas de chiffrer vraiment la boutique.
+> 🧭 **Des hypothèses, pas des données.** Nous n'avons dans nos fichiers **ni marge ni coût**. Les trois chiffres ci-dessous sont des hypothèses que la gérante devrait remplacer par les siens : une marge de **6 € par mois** et par client actif, un taux d'actualisation de **1 % par mois** (environ 13 % par an) et un horizon de 20 ans (240 mois). Le but est de montrer la **mécanique** du calcul, pas de chiffrer vraiment la boutique.
 
 ```python
 m_mensuelle, taux, horizon = 6.0, 0.01, 240
@@ -302,56 +302,56 @@ def S_groupe(masque):
 groupes = {"tous les clients": np.ones(len(c), bool),
            "sans offre": (c["offre_bienvenue"] == 0).to_numpy(), "avec offre": (c["offre_bienvenue"] == 1).to_numpy(),
            "Boutique": (c["canal_acquisition"] == "Boutique").to_numpy(), "Site": (c["canal_acquisition"] == "Site").to_numpy(),
-           "Instagram": (c["canal_acquisition"] == "Instagram").to_numpy()}
+           "Réseaux": (c["canal_acquisition"] == "Réseaux").to_numpy()}
 lignes = []
 for nom, masque in groupes.items():
     S = S_groupe(masque)
     clv = m_mensuelle * np.sum(S / (1 + taux) ** mois)
     apres_84 = m_mensuelle * np.sum(S[84:] / (1 + taux) ** mois[84:])
     lignes.append({"groupe": nom, "clients": int(masque.sum()), "durée moyenne (mois)": np.mean(lam[masque]) * Gamma(1 + 1 / k_hat),
-                   "survie à 36 mois": S[36], "CLV (DT)": clv, "part de la CLV après 84 mois (%)": 100 * apres_84 / clv})
+                   "survie à 36 mois": S[36], "CLV (€)": clv, "part de la CLV après 84 mois (%)": 100 * apres_84 / clv})
 print(pd.DataFrame(lignes).round(3).to_string(index=False))
 ```
 <!--sortie-->
 ```text
-          groupe  clients  durée moyenne (mois)  survie à 36 mois  CLV (DT)  part de la CLV après 84 mois (%)
+          groupe  clients  durée moyenne (mois)  survie à 36 mois  CLV (€)  part de la CLV après 84 mois (%)
 tous les clients     2000                41.339             0.453   186.096                             3.741
       sans offre      985                35.167             0.384   165.806                             2.156
       avec offre     1015                47.329             0.521   205.785                             4.981
         Boutique      504                53.159             0.574   223.468                             6.364
             Site      680                42.068             0.471   189.751                             3.545
-       Instagram      816                33.431             0.364   159.967                             1.672
+       Réseaux      816                33.431             0.364   159.967                             1.672
 ```
 
 Quelques vérifications de bon sens. La survie moyenne à 36 mois du modèle (0,453) retrouve **exactement** la valeur de Kaplan-Meier de la section 5.2 (0,453), ce qui confirme que le modèle colle aux données observées. La durée moyenne d'un client est de **41 mois**, tandis que la durée moyenne *restreinte* à 60 mois de Kaplan-Meier valait 34 mois : l'écart (7 mois) est la part de la vie *au-delà de 60 mois*, que Kaplan-Meier ne peut pas chiffrer et que le modèle extrapole. Et la durée moyenne **exponentielle** de la section 5.1.5 (48 mois) était trop optimiste.
 
-**L'offre de bienvenue en valait-elle la peine ?** Elle augmente la CLV de 166 à 206 DT par client, soit un gain de **40 DT** d'actualisé. Si l'offre coûte, par hypothèse, 10 DT par client, le gain net est de 30 DT par client. Comme l'offre est randomisée, cette différence est une estimation de **l'effet causal** de l'offre sur la valeur. Voyons si le résultat dépend des hypothèses :
+**L'offre de bienvenue en valait-elle la peine ?** Elle augmente la CLV de 166 à 206 € par client, soit un gain de **40 €** d'actualisé. Si l'offre coûte, par hypothèse, 10 € par client, le gain net est de 30 € par client. Comme l'offre est randomisée, cette différence est une estimation de **l'effet causal** de l'offre sur la valeur. Voyons si le résultat dépend des hypothèses :
 
 ```python
 S0, S1 = S_groupe(groupes["sans offre"]), S_groupe(groupes["avec offre"])
 cout_offre = 10.0
-print(f"CLV sans offre : {m_mensuelle * np.sum(S0 / (1 + taux) ** mois):.1f} DT | avec offre : {m_mensuelle * np.sum(S1 / (1 + taux) ** mois):.1f} DT\n")
-print("gain net par client (CLV avec offre - CLV sans offre - coût de 10 DT), selon les hypothèses :")
+print(f"CLV sans offre : {m_mensuelle * np.sum(S0 / (1 + taux) ** mois):.1f} € | avec offre : {m_mensuelle * np.sum(S1 / (1 + taux) ** mois):.1f} €\n")
+print("gain net par client (CLV avec offre - CLV sans offre - coût de 10 €), selon les hypothèses :")
 resultats = pd.DataFrame(index=[f"taux {100 * r:.1f} %/mois" for r in (0.005, 0.01, 0.02)],
-                         columns=[f"marge {m} DT/mois" for m in (3, 6, 9)], dtype=float)
+                         columns=[f"marge {m} €/mois" for m in (3, 6, 9)], dtype=float)
 for r in (0.005, 0.01, 0.02):
     for m in (3, 6, 9):
         v = (1 + r) ** (-mois)
-        resultats.loc[f"taux {100 * r:.1f} %/mois", f"marge {m} DT/mois"] = m * np.sum((S1 - S0) * v) - cout_offre
+        resultats.loc[f"taux {100 * r:.1f} %/mois", f"marge {m} €/mois"] = m * np.sum((S1 - S0) * v) - cout_offre
 print(resultats.round(1).to_string())
 ```
 <!--sortie-->
 ```text
-CLV sans offre : 165.8 DT | avec offre : 205.8 DT
+CLV sans offre : 165.8 € | avec offre : 205.8 €
 
-gain net par client (CLV avec offre - CLV sans offre - coût de 10 DT), selon les hypothèses :
-                 marge 3 DT/mois  marge 6 DT/mois  marge 9 DT/mois
+gain net par client (CLV avec offre - CLV sans offre - coût de 10 €), selon les hypothèses :
+                 marge 3 €/mois  marge 6 €/mois  marge 9 €/mois
 taux 0.5 %/mois             16.5             42.9             69.4
 taux 1.0 %/mois             10.0             30.0             50.0
 taux 2.0 %/mois              2.4             14.7             27.1
 ```
 
-Le gain net reste **positif dans les neuf cas testés**, mais son ordre de grandeur varie d'un facteur 30 : de 69 DT par client (marge de 9 DT, actualisation faible) à seulement 2,4 DT (marge de 3 DT, actualisation de 2 % par mois), c'est-à-dire presque rien. La conclusion « l'offre est rentable » est donc **robuste** ; la conclusion « elle rapporte 30 DT par client » ne l'est pas. Voilà exactement le genre d'information utile : on peut dire à Yasmine que l'offre ne perd pas d'argent dans ce domaine d'hypothèses, et lui demander sa vraie marge pour chiffrer le gain.
+Le gain net reste **positif dans les neuf cas testés**, mais son ordre de grandeur varie d'un facteur 30 : de 69 € par client (marge de 9 €, actualisation faible) à seulement 2,4 € (marge de 3 €, actualisation de 2 % par mois), c'est-à-dire presque rien. La conclusion « l'offre est rentable » est donc **robuste** ; la conclusion « elle rapporte 30 € par client » ne l'est pas. Voilà exactement le genre d'information utile : on peut dire à la gérante que l'offre ne perd pas d'argent dans ce domaine d'hypothèses, et lui demander sa vraie marge pour chiffrer le gain.
 
 > ⚠️ **Les limites de l'extrapolation.** La CLV dépend de la survie *au-delà* des données, donc de la forme de loi supposée. La dernière colonne du premier tableau chiffre cette dépendance : la part de la valeur située **après 84 mois** n'est que d'environ 4 % pour l'ensemble des clients (6 % pour la boutique), parce que l'**actualisation** écrase les mois lointains et que beaucoup de clients sont déjà partis. La CLV est donc peu sensible à l'extrapolation. Ce n'est pas le cas de la **durée moyenne**, qui n'est pas actualisée : c'est elle qui réclame de l'extrapolation (7 mois de plus que la RMST à 60 mois). Deux lois qui s'ajustent presque aussi bien sur 84 mois peuvent extrapoler très différemment : la figure du 5.4.4 le montre, avec une Weibull qui passe sous Kaplan-Meier à partir de 55 mois et des lois log-logistique et log-normale qui restent au-dessus. Le bon réflexe : refaire le calcul avec une autre loi (log-logistique) et comparer ; et ne jamais interpréter une CLV comme une certitude.
 
@@ -391,7 +391,7 @@ Un client dont la note de service est **un écart-type au-dessus de la moyenne**
 ### 5.4.7 Révéler la vérité
 
 Comme les données sont simulées, nous pouvons maintenant comparer nos estimations à la loi qui les a engendrées (documentée en tête de `build/donnees2.py`). Les durées sont de loi de **Weibull de forme 1,35**, avec
-$$\ln T=3{,}6+0{,}30\,F_2+0{,}35\,\mathrm{offre}+\big\{\text{Boutique }{+}0{,}30,\ \text{Site }0,\ \text{Instagram }{-}0{,}15\big\}+0{,}008\,(\mathrm{âge}-36)+\sigma W,$$
+$$\ln T=3{,}6+0{,}30\,F_2+0{,}35\,\mathrm{offre}+\big\{\text{Boutique }{+}0{,}30,\ \text{Site }0,\ \text{Réseaux }{-}0{,}15\big\}+0{,}008\,(\mathrm{âge}-36)+\sigma W,$$
 où $F_2$ est un **facteur de sensibilité au service** (loi normale centrée réduite) **que le fichier ne contient pas**, et où $\sigma=1/1{,}35\approx0{,}74$. On peut même reconstruire ce facteur manquant avec le générateur de données, et ajuster le modèle « oracle » qui le connaît :
 
 ```python
@@ -403,7 +403,7 @@ oracle = ajuster("weibull", y, d, np.column_stack([Xc, F2]))
 se_o = np.sqrt(np.diag(oracle["cov"]))
 
 # Valeurs vraies, exprimées dans la même paramétrisation que notre modèle (âge centré en 36 dans le générateur,
-# référence = Boutique, donc Instagram = -0.15 - 0.30 et Site = 0 - 0.30)
+# référence = Boutique, donc Réseaux = -0.15 - 0.30 et Site = 0 - 0.30)
 vrai = {"(constante)": 3.6 + 0.30 - 0.008 * 36, "offre_bienvenue": 0.35, "age": 0.008,
         "canal_acquisition_Instagram": -0.15 - 0.30, "canal_acquisition_Site": 0.0 - 0.30}
 lignes = []

@@ -174,9 +174,9 @@ un quadrillage de 10 points par axe aurait demandé 10 000 000 000 évaluations
 
 En 6.1.4, nous avons montré que l'offre de bienvenue augmente la probabilité de rachat d'environ 12 points. Mais elle **coûte** quelque chose : la remise accordée. Faut-il l'offrir à tous les futurs clients ?
 
-Posons les hypothèses de l'étude (inventées pour l'exercice, à remplacer par les vraies valeurs de Dar Jasmin) :
-- la marge de Yasmine est de **30 %** du panier ;
-- l'offre coûte **1,50 DT par client** (la remise, quel que soit le client) ;
+Posons les hypothèses de l'étude (inventées pour l'exercice, à remplacer par les vraies valeurs de la boutique) :
+- la marge de la gérante est de **30 %** du panier ;
+- l'offre coûte **1,50 € par client** (la remise, quel que soit le client) ;
 - un client qui rachète génère un panier tiré au hasard parmi les paniers des acheteurs observés (la distribution empirique, qui est notre meilleure image de la loi des paniers).
 
 Le gain net **par client** de la politique « envoyer l'offre » vaut donc
@@ -202,23 +202,23 @@ m_boot = marge * np.array([rng.choice(paniers, len(paniers)).mean() for _ in ran
 m = rng.choice(m_boot, S)                                  # on en tire S valeurs
 G = (theta1 - theta0) * m - cout                           # gain net par client, S scénarios
 
-print(f"marge moyenne par rachat : {marge * paniers.mean():.2f} DT (panier moyen des acheteurs : {paniers.mean():.2f} DT)")
-print(f"gain net moyen par client : {G.mean():+.3f} DT")
-print(f"intervalle à 90 %         : [{np.percentile(G, 5):+.3f} ; {np.percentile(G, 95):+.3f}] DT")
+print(f"marge moyenne par rachat : {marge * paniers.mean():.2f} € (panier moyen des acheteurs : {paniers.mean():.2f} €)")
+print(f"gain net moyen par client : {G.mean():+.3f} €")
+print(f"intervalle à 90 %         : [{np.percentile(G, 5):+.3f} ; {np.percentile(G, 95):+.3f}] €")
 print(f"P(l'offre est rentable)   : {(G > 0).mean():.3f}")
-print(f"pour 5 000 nouveaux clients : gain attendu {5000 * G.mean():+.0f} DT ; "
-      f"dans 95 % des scénarios le gain dépasse {5000 * np.percentile(G, 5):+.0f} DT")
+print(f"pour 5 000 nouveaux clients : gain attendu {5000 * G.mean():+.0f} € ; "
+      f"dans 95 % des scénarios le gain dépasse {5000 * np.percentile(G, 5):+.0f} €")
 ```
 <!--sortie-->
 ```text
-marge moyenne par rachat : 18.37 DT (panier moyen des acheteurs : 61.23 DT)
-gain net moyen par client : +0.731 DT
-intervalle à 90 %         : [+0.062 ; +1.400] DT
+marge moyenne par rachat : 18.37 € (panier moyen des acheteurs : 61.23 €)
+gain net moyen par client : +0.731 €
+intervalle à 90 %         : [+0.062 ; +1.400] €
 P(l'offre est rentable)   : 0.964
-pour 5 000 nouveaux clients : gain attendu +3656 DT ; dans 95 % des scénarios le gain dépasse +312 DT
+pour 5 000 nouveaux clients : gain attendu +3656 € ; dans 95 % des scénarios le gain dépasse +312 €
 ```
 
-C'est le genre de réponse qu'attend vraiment une décisionnaire : pas « l'effet est significatif » mais « *l'offre est très probablement rentable (environ 96 % de chances), le gain attendu est de 0,73 DT par client, soit 3 700 DT pour 5 000 clients, et dans 95 % des scénarios on gagne au moins 300 DT* ». Remarquez que le gain par client reste **modeste** et que l'intervalle à 90 % ([+0,06 ; +1,40] DT) s'approche de zéro : l'offre n'est pas une mine d'or, et un coût de 2 DT (au lieu de 1,50) la rendrait douteuse. Les chiffres de coût et de marge étant inventés, la bonne pratique est de refaire le calcul pour plusieurs valeurs. Observez aussi que **toutes** les sources d'incertitude (les deux taux, la marge) sont propagées d'un seul mouvement, simplement en les simulant ensemble.
+C'est le genre de réponse qu'attend vraiment une décisionnaire : pas « l'effet est significatif » mais « *l'offre est très probablement rentable (environ 96 % de chances), le gain attendu est de 0,73 € par client, soit 3 700 € pour 5 000 clients, et dans 95 % des scénarios on gagne au moins 300 €* ». Remarquez que le gain par client reste **modeste** et que l'intervalle à 90 % ([+0,06 ; +1,40] €) s'approche de zéro : l'offre n'est pas une mine d'or, et un coût de 2 € (au lieu de 1,50) la rendrait douteuse. Les chiffres de coût et de marge étant inventés, la bonne pratique est de refaire le calcul pour plusieurs valeurs. Observez aussi que **toutes** les sources d'incertitude (les deux taux, la marge) sont propagées d'un seul mouvement, simplement en les simulant ensemble.
 
 > 🧪 **Point de rigueur.** Le calcul suppose que l'effet de l'offre sur le rachat se traduit, pour chaque client qui rachète en plus, par un panier « moyen ». Dans les données simulées, l'offre agit sur la *probabilité* de rachat (c'est vrai par construction) ; une vraie étude vérifierait aussi si les clients « incités » dépensent autant que les autres. Un modèle ne répond qu'à la question qu'on lui a posée.
 
@@ -441,13 +441,13 @@ def mediane_ponderee(x, w):
 
 med_bayes = np.array([mediane_ponderee(boutique, rng.dirichlet(np.ones(n_b))) for _ in range(B)])
 
-print(f"{n_b} acheteurs de la boutique ; médiane observée : {np.median(boutique):.2f} DT")
+print(f"{n_b} acheteurs de la boutique ; médiane observée : {np.median(boutique):.2f} €")
 print(f"bootstrap classique : IC95 [{np.percentile(med_boot, 2.5):.2f} ; {np.percentile(med_boot, 97.5):.2f}]  (écart-type {med_boot.std():.2f})")
 print(f"bootstrap bayésien  : IC95 [{np.percentile(med_bayes, 2.5):.2f} ; {np.percentile(med_bayes, 97.5):.2f}]  (écart-type {med_bayes.std():.2f})")
 ```
 <!--sortie-->
 ```text
-449 acheteurs de la boutique ; médiane observée : 67.92 DT
+449 acheteurs de la boutique ; médiane observée : 67.92 €
 bootstrap classique : IC95 [64.62 ; 70.61]  (écart-type 1.56)
 bootstrap bayésien  : IC95 [64.66 ; 70.61]  (écart-type 1.55)
 ```

@@ -23,7 +23,7 @@ plt.rcParams.update(STYLE)
 
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy().reset_index(drop=True)
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36
 df["log_panier"] = np.log(df["panier_moyen"])
 m_propre = smf.ols("log_panier ~ a + C(canal)", data=df).fit()
@@ -35,13 +35,13 @@ print(m_propre.params.round(4).to_string())
 1740 clients | coefficients du modèle sur les données propres :
 Intercept                4.2206
 C(canal)[T.Site]        -0.1571
-C(canal)[T.Instagram]   -0.3368
+C(canal)[T.Réseaux]   -0.3368
 a                        0.0092
 ```
 
 ### 1.6.1 La fragilité des moindres carrés
 
-Reprenons l'exemple du volume I (3.1.3) : cinq commandes de 20, 25, 30, 35 et 400 DT. La **moyenne** (102 DT) est entraînée par la dernière valeur ; la **médiane** (30 DT) ne bouge pas. On dit que la médiane a un **point de rupture** de 50 % (il faut corrompre la moitié des données pour la faire dériver à l'infini) alors que celui de la moyenne est de **0 %** (une seule valeur suffit). Les moindres carrés, qui généralisent la moyenne, héritent de cette fragilité.
+Reprenons l'exemple du volume I (3.1.3) : cinq commandes de 20, 25, 30, 35 et 400 €. La **moyenne** (102 €) est entraînée par la dernière valeur ; la **médiane** (30 €) ne bouge pas. On dit que la médiane a un **point de rupture** de 50 % (il faut corrompre la moitié des données pour la faire dériver à l'infini) alors que celui de la moyenne est de **0 %** (une seule valeur suffit). Les moindres carrés, qui généralisent la moyenne, héritent de cette fragilité.
 
 > 📐 **Pourquoi ? La fonction d'influence.** Un estimateur $\hat\theta$ minimise $\sum_i\rho(e_i)$. Son équation d'estimation est $\sum_i\psi(e_i)\,\mathbf x_i=\mathbf 0$ où $\psi=\rho'$ (comme les équations normales du 1.1.3, qui correspondent à $\rho(e)=e^2/2$ et $\psi(e)=e$). La fonction $\psi$ mesure **l'influence** d'un résidu sur l'estimation. Pour les moindres carrés, $\psi(e)=e$ n'est **pas bornée** : plus un point est extrême, plus il tire. Un estimateur robuste choisit un $\rho$ dont la dérivée $\psi$ est **bornée** : au-delà d'un seuil, un résidu de plus en plus grand n'a pas plus d'influence.
 
@@ -117,7 +117,7 @@ print(f"part des clients dont le poids est inférieur à 1 : {np.mean(w_main < 1
                           MCO  Huber (à la main)  RLM statsmodels
 Intercept              4.2206             4.2171           4.2172
 C(canal)[T.Site]      -0.1571            -0.1602          -0.1602
-C(canal)[T.Instagram] -0.3368            -0.3331          -0.3332
+C(canal)[T.Réseaux] -0.3368            -0.3331          -0.3332
 a                      0.0092             0.0090           0.0090
 échelle robuste s : 0.3667 | écart-type résiduel des MCO : 0.3705
 part des clients dont le poids est inférieur à 1 : 18.1%
@@ -127,7 +127,7 @@ Sur des données **propres**, Huber et les moindres carrés donnent presque les 
 
 ### 1.6.3 Une contamination : les erreurs de saisie
 
-Corrompons maintenant les données, comme le ferait un export mal formaté. Dans **6 %** des clients tirés au hasard, la virgule du panier est mal placée : le panier est **multiplié par 10** (54 DT devient 540 DT). Nous gardons la version propre (`df`) et fabriquons une copie contaminée (`dfc`).
+Corrompons maintenant les données, comme le ferait un export mal formaté. Dans **6 %** des clients tirés au hasard, la virgule du panier est mal placée : le panier est **multiplié par 10** (54 € devient 540 €). Nous gardons la version propre (`df`) et fabriquons une copie contaminée (`dfc`).
 
 ```python
 rng = np.random.default_rng(77)
@@ -145,7 +145,7 @@ tab_se = pd.DataFrame({"MCO données propres": m_propre.bse, "MCO contaminé": m
 print("Coefficients :"); print(tab.round(4).to_string())
 print("\nErreurs standard :"); print(tab_se.round(4).to_string())
 print(f"\nécart-type résiduel : MCO propre = {np.sqrt(m_propre.scale):.3f} | MCO contaminé = {np.sqrt(m_mco_c.scale):.3f} | échelle robuste de Huber = {rlm_c.scale:.3f}")
-print(f"panier médian prédit pour un client Boutique de 36 ans : propre = {np.exp(m_propre.params['Intercept']):.1f} DT | MCO contaminé = {np.exp(m_mco_c.params['Intercept']):.1f} DT | Huber contaminé = {np.exp(rlm_c.params['Intercept']):.1f} DT")
+print(f"panier médian prédit pour un client Boutique de 36 ans : propre = {np.exp(m_propre.params['Intercept']):.1f} € | MCO contaminé = {np.exp(m_mco_c.params['Intercept']):.1f} € | Huber contaminé = {np.exp(rlm_c.params['Intercept']):.1f} €")
 poids = rlm_c.weights
 print(f"poids de Huber moyen : clients corrompus = {poids[contamine].mean():.2f} | clients intacts = {poids[~contamine].mean():.2f}")
 ```
@@ -156,22 +156,22 @@ Coefficients :
                        MCO données propres  MCO contaminé  Huber contaminé
 Intercept                           4.2206         4.3898           4.2628
 C(canal)[T.Site]                   -0.1571        -0.1853          -0.1573
-C(canal)[T.Instagram]              -0.3368        -0.3919          -0.3527
+C(canal)[T.Réseaux]              -0.3368        -0.3919          -0.3527
 a                                   0.0092         0.0088           0.0091
 
 Erreurs standard :
                        MCO données propres  MCO contaminé  Huber contaminé
 Intercept                           0.0175         0.0314           0.0201
 C(canal)[T.Site]                    0.0231         0.0414           0.0265
-C(canal)[T.Instagram]               0.0225         0.0403           0.0258
+C(canal)[T.Réseaux]               0.0225         0.0403           0.0258
 a                                   0.0008         0.0015           0.0010
 
 écart-type résiduel : MCO propre = 0.370 | MCO contaminé = 0.665 | échelle robuste de Huber = 0.402
-panier médian prédit pour un client Boutique de 36 ans : propre = 68.1 DT | MCO contaminé = 80.6 DT | Huber contaminé = 71.0 DT
+panier médian prédit pour un client Boutique de 36 ans : propre = 68.1 € | MCO contaminé = 80.6 € | Huber contaminé = 71.0 €
 poids de Huber moyen : clients corrompus = 0.24 | clients intacts = 0.97
 ```
 
-Les conséquences pour les moindres carrés sont de deux types. (1) Un **biais** : la constante est tirée vers le haut (de 4,22 à 4,39, soit +18 % sur le panier médian prédit : 80,6 DT au lieu de 68,1 DT ; en moyenne on attendrait $0{,}06\times\ln10\approx0{,}14$, le reste vient de la répartition aléatoire des erreurs entre les canaux), les effets du Site et d'Instagram sont gonflés, et les erreurs standard grossissent ; (2) surtout, l'**écart-type résiduel** passe de 0,37 à 0,665 : les moindres carrés *attribuent à tort un bruit énorme* à tout le modèle, donc des intervalles de confiance beaucoup trop larges, des prévisions moins précises, et des effets réels (le canal, l'âge) qui deviennent plus difficiles à détecter. Huber, lui, **donne un poids faible aux clients corrompus** (0,24 en moyenne, contre 0,97 aux clients intacts) : sa constante (4,26) et son effet d'Instagram (−0,353) restent proches de ceux des données propres (4,22 et −0,337), alors que ceux des moindres carrés dérivent (4,39 et −0,392) ; son échelle (0,40) est proche de l'écart-type propre (0,37) alors que celui des moindres carrés double (0,665). Ses erreurs standard (0,020 pour la constante) sont proches de celles des données propres (0,017) et loin de celles des moindres carrés contaminés (0,031).
+Les conséquences pour les moindres carrés sont de deux types. (1) Un **biais** : la constante est tirée vers le haut (de 4,22 à 4,39, soit +18 % sur le panier médian prédit : 80,6 € au lieu de 68,1 € ; en moyenne on attendrait $0{,}06\times\ln10\approx0{,}14$, le reste vient de la répartition aléatoire des erreurs entre les canaux), les effets du Site et d'Réseaux sont gonflés, et les erreurs standard grossissent ; (2) surtout, l'**écart-type résiduel** passe de 0,37 à 0,665 : les moindres carrés *attribuent à tort un bruit énorme* à tout le modèle, donc des intervalles de confiance beaucoup trop larges, des prévisions moins précises, et des effets réels (le canal, l'âge) qui deviennent plus difficiles à détecter. Huber, lui, **donne un poids faible aux clients corrompus** (0,24 en moyenne, contre 0,97 aux clients intacts) : sa constante (4,26) et son effet d'Réseaux (−0,353) restent proches de ceux des données propres (4,22 et −0,337), alors que ceux des moindres carrés dérivent (4,39 et −0,392) ; son échelle (0,40) est proche de l'écart-type propre (0,37) alors que celui des moindres carrés double (0,665). Ses erreurs standard (0,020 pour la constante) sont proches de celles des données propres (0,017) et loin de celles des moindres carrés contaminés (0,031).
 
 Visualisons-le sur un modèle simple (le log-panier selon l'âge seul, pour pouvoir tracer les droites) :
 
@@ -225,7 +225,7 @@ print(f"levier maximal : {m_mco_l.get_influence().hat_matrix_diag.max():.3f} (le
                        MCO propre  MCO âges corrompus  Huber âges corrompus
 Intercept                  4.2206              4.2156                4.2126
 C(canal)[T.Site]          -0.1571             -0.1575               -0.1603
-C(canal)[T.Instagram]     -0.3368             -0.3349               -0.3338
+C(canal)[T.Réseaux]     -0.3368             -0.3349               -0.3338
 a                          0.0092              0.0008                0.0009
 coefficient de l'âge : propre = 0.0092 | MCO corrompu = 0.0008 | Huber corrompu = 0.0009
 levier maximal : 0.126 (levier moyen = 0.0023)
@@ -239,7 +239,7 @@ Les deux méthodes sont mises en échec : le coefficient de l'âge est **écras�
 
 Une approche voisine consiste à modéliser non plus la **moyenne** conditionnelle mais la **médiane** conditionnelle, en minimisant la **somme des valeurs absolues** des résidus (perte $\rho(e)=|e|$, dont l'influence $\psi=\operatorname{signe}(e)$ est bornée) : c'est la **régression médiane** (LAD, *least absolute deviations*), robuste aux aberrations verticales. Elle se généralise à un **quantile** quelconque $\tau\in(0,1)$ avec la perte asymétrique $\rho_\tau(e)=e\,(\tau-\mathbb 1_{e<0})$ : on modélise alors le $\tau$-ième quantile de la réponse, ce qui décrit **toute la distribution** et non son seul centre.
 
-Voyons-le sur les paniers. Dans le modèle en **dinars**, que dit le canal Instagram sur les paniers faibles, moyens et élevés ? Et dans le modèle en **log** ?
+Voyons-le sur les paniers. Dans le modèle en **euros**, que dit le canal Réseaux sur les paniers faibles, moyens et élevés ? Et dans le modèle en **log** ?
 
 ```python
 taus = [0.1, 0.25, 0.5, 0.75, 0.9]
@@ -247,21 +247,21 @@ res_niveau, res_log = [], []
 for tau in taus:
     qn = smf.quantreg("panier_moyen ~ a + C(canal)", data=df).fit(q=tau)
     ql = smf.quantreg("log_panier ~ a + C(canal)", data=df).fit(q=tau)
-    res_niveau.append((tau, qn.params["C(canal)[T.Instagram]"], *qn.conf_int().loc["C(canal)[T.Instagram]"]))
-    res_log.append((tau, ql.params["C(canal)[T.Instagram]"], *ql.conf_int().loc["C(canal)[T.Instagram]"]))
+    res_niveau.append((tau, qn.params["C(canal)[T.Réseaux]"], *qn.conf_int().loc["C(canal)[T.Réseaux]"]))
+    res_log.append((tau, ql.params["C(canal)[T.Réseaux]"], *ql.conf_int().loc["C(canal)[T.Réseaux]"]))
 rn = pd.DataFrame(res_niveau, columns=["tau", "coef", "bas", "haut"]).set_index("tau")
 rl = pd.DataFrame(res_log, columns=["tau", "coef", "bas", "haut"]).set_index("tau")
 mco_n = smf.ols("panier_moyen ~ a + C(canal)", data=df).fit()
-print("Effet d'Instagram (par rapport à la Boutique) sur le panier en DT, par quantile :")
+print("Effet d'Réseaux (par rapport à la Boutique) sur le panier en €, par quantile :")
 print(rn.round(2).to_string())
-print(f"(MCO, effet sur la moyenne : {mco_n.params['C(canal)[T.Instagram]']:.2f} DT)")
-print("\nEffet d'Instagram sur le log du panier, par quantile :")
+print(f"(MCO, effet sur la moyenne : {mco_n.params['C(canal)[T.Réseaux]']:.2f} €)")
+print("\nEffet d'Réseaux sur le log du panier, par quantile :")
 print(rl.round(3).to_string())
-print(f"(MCO, effet sur la moyenne du log : {m_propre.params['C(canal)[T.Instagram]']:.3f})")
+print(f"(MCO, effet sur la moyenne du log : {m_propre.params['C(canal)[T.Réseaux]']:.3f})")
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.5, 4.0))
-for ax, r, ref, titre, yl in [(ax1, rn, mco_n.params["C(canal)[T.Instagram]"], "Panier en DT", "effet d'Instagram (DT)"),
-                              (ax2, rl, m_propre.params["C(canal)[T.Instagram]"], "Log du panier", "effet d'Instagram (log)")]:
+for ax, r, ref, titre, yl in [(ax1, rn, mco_n.params["C(canal)[T.Réseaux]"], "Panier en €", "effet d'Réseaux (€)"),
+                              (ax2, rl, m_propre.params["C(canal)[T.Réseaux]"], "Log du panier", "effet d'Réseaux (log)")]:
     ax.fill_between(r.index, r["bas"], r["haut"], color=BLEU, alpha=0.2)
     ax.plot(r.index, r["coef"], "o-", color=BLEU, lw=2, label="régression quantile")
     ax.axhline(ref, color=ORANGE, lw=1.8, ls="--", label="moindres carrés (moyenne)")
@@ -273,7 +273,7 @@ print("figure enregistrée")
 ```
 <!--sortie-->
 ```text
-Effet d'Instagram (par rapport à la Boutique) sur le panier en DT, par quantile :
+Effet d'Réseaux (par rapport à la Boutique) sur le panier en €, par quantile :
        coef    bas   haut
 tau                      
 0.10 -13.50 -16.18 -10.82
@@ -281,9 +281,9 @@ tau
 0.50 -18.27 -21.44 -15.09
 0.75 -24.22 -28.42 -20.02
 0.90 -33.87 -40.70 -27.04
-(MCO, effet sur la moyenne : -20.81 DT)
+(MCO, effet sur la moyenne : -20.81 €)
 
-Effet d'Instagram sur le log du panier, par quantile :
+Effet d'Réseaux sur le log du panier, par quantile :
        coef    bas   haut
 tau                      
 0.10 -0.373 -0.448 -0.298
@@ -295,9 +295,9 @@ tau
 figure enregistrée
 ```
 
-![Effet du canal Instagram selon le quantile du panier. À gauche (en dinars) : l'effet est faible pour les petits paniers et de plus en plus négatif pour les grands. À droite (en log) : l'effet est à peu près constant, autour de −0,34, avec une bande de confiance qui contient la valeur des moindres carrés. Les bandes bleues sont les intervalles de confiance à 95 %.](figures/ch01-regression-quantile.png)
+![Effet du canal Réseaux selon le quantile du panier. À gauche (en euros) : l'effet est faible pour les petits paniers et de plus en plus négatif pour les grands. À droite (en log) : l'effet est à peu près constant, autour de −0,34, avec une bande de confiance qui contient la valeur des moindres carrés. Les bandes bleues sont les intervalles de confiance à 95 %.](figures/ch01-regression-quantile.png)
 
-Lisons la figure. En **dinars** (à gauche), l'effet d'Instagram n'est pas le même sur les petits et les grands paniers : le déficit est de 13,5 DT pour les petits paniers (quantile 10 %) et de 33,9 DT pour les gros (quantile 90 %), à comparer aux 20,8 DT de l'effet moyen des moindres carrés. La moyenne (moindres carrés) ne voit qu'un effet moyen. En **log** (à droite), l'effet varie peu le long de la distribution (de −0,31 à −0,37, des intervalles de confiance qui se chevauchent largement et contiennent la valeur des moindres carrés, −0,337) : on peut le considérer comme **constant**. Les deux lectures sont **cohérentes** : un effet **multiplicatif** constant ($-29$ % du panier, quel que soit son niveau) se traduit en dinars par un effet **proportionnel** au niveau (un gros panier perd plus de dinars qu'un petit). C'est exactement ce que le modèle simulé a programmé, et c'est une raison de plus de préférer le log : l'effet s'y résume par un **seul nombre**.
+Lisons la figure. En **euros** (à gauche), l'effet d'Réseaux n'est pas le même sur les petits et les grands paniers : le déficit est de 13,5 € pour les petits paniers (quantile 10 %) et de 33,9 € pour les gros (quantile 90 %), à comparer aux 20,8 € de l'effet moyen des moindres carrés. La moyenne (moindres carrés) ne voit qu'un effet moyen. En **log** (à droite), l'effet varie peu le long de la distribution (de −0,31 à −0,37, des intervalles de confiance qui se chevauchent largement et contiennent la valeur des moindres carrés, −0,337) : on peut le considérer comme **constant**. Les deux lectures sont **cohérentes** : un effet **multiplicatif** constant ($-29$ % du panier, quel que soit son niveau) se traduit en euros par un effet **proportionnel** au niveau (un gros panier perd plus de euros qu'un petit). C'est exactement ce que le modèle simulé a programmé, et c'est une raison de plus de préférer le log : l'effet s'y résume par un **seul nombre**.
 
 > ✅ **À retenir (1.6).**
 > - Les moindres carrés ont un **point de rupture de 0 %** : une seule aberration peut les fausser, car leur fonction d'influence $\psi(e)=e$ n'est pas bornée.

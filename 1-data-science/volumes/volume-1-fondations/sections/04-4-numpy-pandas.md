@@ -5,13 +5,13 @@
 > - **NumPy** ajoute un nouveau type d'objet, le **tableau** (`ndarray`), qui permet de calculer sur *toute une colonne de nombres d'un seul coup*, à vitesse quasi native ;
 > - **pandas** pose par-dessus un **tableau étiqueté** (le `DataFrame`) : des colonnes qui ont un nom et un type, des lignes qui ont une étiquette, des dates, des valeurs manquantes… bref, un tableur programmable, sans souris et sans limite de taille.
 >
-> Yasmine a l'habitude d'Excel. Tout ce que nous allons faire ici, elle pourrait le faire à la main dans une feuille de calcul, mais pour 400 lignes ce serait pénible, et pour 400 000 lignes ce serait impossible. Surtout, **le code est rejouable** : on corrige une erreur, on relance, on retrouve toutes les analyses mises à jour.
+> La gérante a l'habitude d'Excel. Tout ce que nous allons faire ici, elle pourrait le faire à la main dans une feuille de calcul, mais pour 400 lignes ce serait pénible, et pour 400 000 lignes ce serait impossible. Surtout, **le code est rejouable** : on corrige une erreur, on relance, on retrouve toutes les analyses mises à jour.
 
-> 🧭 **Comment lire cette section.** Elle est longue parce que pandas est *l'*outil que vous utiliserez tous les jours. Les trois premières parties (4.4.1 à 4.4.4) concernent NumPy ; la suite concerne pandas. Chaque notion est introduite par un **petit exemple à la main**, puis appliquée aux 400 commandes de Dar Jasmin. Si vous êtes pressé(e), lisez au moins 4.4.5 à 4.4.9, puis la petite application de 4.4.13.
+> 🧭 **Comment lire cette section.** Elle est longue parce que pandas est *l'*outil que vous utiliserez tous les jours. Les trois premières parties (4.4.1 à 4.4.4) concernent NumPy ; la suite concerne pandas. Chaque notion est introduite par un **petit exemple à la main**, puis appliquée aux 400 commandes de la boutique. Si vous êtes pressé(e), lisez au moins 4.4.5 à 4.4.9, puis la petite application de 4.4.13.
 
 ### 4.4.1 NumPy : pourquoi un tableau n'est pas une liste
 
-Yasmine veut afficher les prix TTC de cinq articles à partir de leurs prix hors taxe (TVA à 19 %). Avec une **liste** Python classique, on écrit une boucle :
+La gérante veut afficher les prix TTC de cinq articles à partir de leurs prix hors taxe (TVA à 19 %). Avec une **liste** Python classique, on écrit une boucle :
 
 ```python
 import numpy as np
@@ -98,11 +98,11 @@ print(np.full((2, 3), 7))             # un tableau 2×3 rempli de 7
  [7 7 7]]
 ```
 
-Un tableau a trois caractéristiques à toujours avoir en tête : sa **forme** (`shape`), son nombre de dimensions (`ndim`) et son type (`dtype`). Prenons les ventes hebdomadaires (en DT) des trois canaux de Dar Jasmin sur quatre semaines : une **matrice** de 3 lignes (canaux) et 4 colonnes (semaines), exactement comme celles du chapitre 1.
+Un tableau a trois caractéristiques à toujours avoir en tête : sa **forme** (`shape`), son nombre de dimensions (`ndim`) et son type (`dtype`). Prenons les ventes hebdomadaires (en €) des trois canaux de la boutique sur quatre semaines : une **matrice** de 3 lignes (canaux) et 4 colonnes (semaines), exactement comme celles du chapitre 1.
 
 | | Sem. 1 | Sem. 2 | Sem. 3 | Sem. 4 |
 |---|---|---|---|---|
-| Instagram | 120 | 150 | 90 | 140 |
+| Réseaux | 120 | 150 | 90 | 140 |
 | Site | 90 | 100 | 120 | 70 |
 | Boutique | 60 | 50 | 90 | 105 |
 
@@ -120,7 +120,7 @@ print(A.shape, A.ndim, A.dtype, A.size)
 **Indexation.** On désigne un élément par `A[ligne, colonne]`, en comptant **à partir de 0** (comme partout en Python). Quelques exemples à vérifier *sur le tableau ci-dessus* avant de regarder la sortie :
 
 - `A[1, 2]` : ligne 1 (le Site), colonne 2 (semaine 3) → **120** ;
-- `A[0]` : toute la ligne 0 (Instagram) ;
+- `A[0]` : toute la ligne 0 (Réseaux) ;
 - `A[:, 3]` : toute la colonne 3 (semaine 4) ; le « `:` » signifie « tout » ;
 - `A[0:2, 1:3]` : lignes 0 et 1, colonnes 1 et 2 (la borne de fin est **exclue**).
 
@@ -146,7 +146,7 @@ print(A[-1, -1])      # les indices négatifs partent de la fin : dernière lign
 ```python
 masque = A > 100
 print(masque)
-print(A[masque])                 # les ventes strictement supérieures à 100 DT
+print(A[masque])                 # les ventes strictement supérieures à 100 €
 print("combien ?", masque.sum()) # True compte pour 1 : on compte donc les cases vraies
 print(np.where(A > 100, "bien", "—"))   # np.where(condition, si_vrai, si_faux)
 ```
@@ -162,7 +162,7 @@ combien ? 5
  ['—' '—' '—' 'bien']]
 ```
 
-Dans le masque, on compte 5 cases vraies : 120, 150 et 140 (Instagram), 120 (Site, semaine 3) et 105 (Boutique, semaine 4). Notez que le 100 du Site (semaine 2) n'est **pas** compté : la condition est « strictement supérieur à 100 ». La somme d'un masque est une astuce très utile : elle **compte** les `True`.
+Dans le masque, on compte 5 cases vraies : 120, 150 et 140 (Réseaux), 120 (Site, semaine 3) et 105 (Boutique, semaine 4). Notez que le 100 du Site (semaine 2) n'est **pas** compté : la condition est « strictement supérieur à 100 ». La somme d'un masque est une astuce très utile : elle **compte** les `True`.
 
 Pour combiner deux conditions, on utilise `&` (et), `|` (ou) et `~` (non), **avec des parenthèses** :
 
@@ -178,7 +178,7 @@ print(A[(A > 80) & (A < 130)])      # entre 80 et 130 exclus
 
 ```python
 C = A.copy()
-fenetre = C[0, :]      # une vue sur la ligne d'Instagram
+fenetre = C[0, :]      # une vue sur la ligne d'Réseaux
 fenetre[0] = 999
 print(C[0, 0], "<- modifié par la vue ;  A[0, 0] =", A[0, 0], "(intact, car C est une copie)")
 ```
@@ -203,7 +203,7 @@ print(np.array([1, 2, 3]).astype(float)) # conversion explicite
 
 Que se passe-t-il si l'on fait `A - m` où $A$ est une matrice $3\times 4$ et $m$ un vecteur de 4 nombres ? Mathématiquement, la soustraction n'est pas définie (les formes diffèrent) ; NumPy, lui, **étire** le plus petit tableau pour qu'il s'adapte : c'est le **broadcasting** (« diffusion »).
 
-Reprenons l'exemple de Yasmine. Elle veut savoir, pour chaque semaine, **de combien chaque canal s'écarte de la moyenne de cette semaine**. Moyenne de la semaine 1 : $(120+90+60)/3=90$. Semaine 2 : $(150+100+50)/3=100$. Semaine 3 : $(90+120+90)/3=100$. Semaine 4 : $(140+70+105)/3=105$. Donc $m=(90,\,100,\,100,\,105)$ et, par exemple, Instagram en semaine 1 s'écarte de $120-90=+30$.
+Reprenons l'exemple de la gérante. Elle veut savoir, pour chaque semaine, **de combien chaque canal s'écarte de la moyenne de cette semaine**. Moyenne de la semaine 1 : $(120+90+60)/3=90$. Semaine 2 : $(150+100+50)/3=100$. Semaine 3 : $(90+120+90)/3=100$. Semaine 4 : $(140+70+105)/3=105$. Donc $m=(90,\,100,\,100,\,105)$ et, par exemple, Réseaux en semaine 1 s'écarte de $120-90=+30$.
 
 ![Le broadcasting : le vecteur m (4 nombres) est « étiré » sur les trois lignes de A, puis la soustraction se fait case par case.](figures/ch04-broadcasting.png)
 
@@ -220,7 +220,7 @@ moyennes par semaine : [ 90. 100. 100. 105.]
  [-30. -50. -10.   0.]]
 ```
 
-Le résultat reproduit les valeurs du dessin : `30` pour Instagram en semaine 1, `-35` pour le Site en semaine 4, etc.
+Le résultat reproduit les valeurs du dessin : `30` pour Réseaux en semaine 1, `-35` pour le Site en semaine 4, etc.
 
 > 📐 **La règle du broadcasting.** NumPy compare les formes **en partant de la droite**. Deux dimensions sont compatibles si elles sont **égales** ou si l'une des deux vaut **1** (elle est alors étirée). Une dimension manquante à gauche est comptée comme 1.
 >
@@ -243,7 +243,7 @@ print(A - moy_canal)
  [-16.25 -26.25  13.75  28.75]]
 ```
 
-À la main : la moyenne d'Instagram est $(120+150+90+140)/4=125$, donc la première ligne devient $(-5,\ 25,\ -35,\ 15)$. Et si on oublie `keepdims` ? Un message d'erreur clair nous rappelle la règle :
+À la main : la moyenne d'Réseaux est $(120+150+90+140)/4=125$, donc la première ligne devient $(-5,\ 25,\ -35,\ 15)$. Et si on oublie `keepdims` ? Un message d'erreur clair nous rappelle la règle :
 
 ```python
 try:
@@ -283,7 +283,7 @@ par canal      : [500 380 305]
 meilleure case : 150 en ligne 0 , colonne 1
 ```
 
-Vérification à la main : Instagram $120+150+90+140=500$, Site $90+100+120+70=380$, Boutique $60+50+90+105=305$, soit $1\,185$ DT au total, ce qui est aussi la somme des totaux par semaine ($270+300+300+315$).
+Vérification à la main : Réseaux $120+150+90+140=500$, Site $90+100+120+70=380$, Boutique $60+50+90+105=305$, soit $1\,185$ € au total, ce qui est aussi la somme des totaux par semaine ($270+300+300+315$).
 
 Autres opérations fréquentes :
 
@@ -356,14 +356,14 @@ import pandas as pd
 pd.set_option("display.width", 110)          # pour que les tableaux larges ne soient pas coupés à l'affichage
 pd.set_option("display.max_columns", 20)
 
-ventes = pd.Series([500, 380, 305], index=["Instagram", "Site", "Boutique"], name="ventes")
+ventes = pd.Series([500, 380, 305], index=["Réseaux", "Site", "Boutique"], name="ventes")
 print(ventes)
 print()
 print("accès par étiquette :", ventes["Site"], "| par position :", ventes.iloc[2])
 ```
 <!--sortie-->
 ```text
-Instagram    500
+Réseaux    500
 Site         380
 Boutique     305
 Name: ventes, dtype: int64
@@ -375,7 +375,7 @@ Un `DataFrame` s'obtient, par exemple, à partir d'un dictionnaire « nom de col
 
 ```python
 mini = pd.DataFrame({
-    "canal": ["Instagram", "Site", "Boutique"],
+    "canal": ["Réseaux", "Site", "Boutique"],
     "ventes": [500, 380, 305],
     "ouvert_le_dimanche": [True, True, False],
 })
@@ -386,7 +386,7 @@ print(mini.dtypes)
 <!--sortie-->
 ```text
        canal  ventes  ouvert_le_dimanche
-0  Instagram     500                True
+0  Réseaux     500                True
 1       Site     380                True
 2   Boutique     305               False
 
@@ -415,8 +415,8 @@ df.info()
        canal  montant  livraison  satisfaction
 0   Boutique     44.8          0             4
 1       Site     34.5          2             4
-2  Instagram     88.2          5             4
-3  Instagram     30.1          4             4
+2  Réseaux     88.2          5             4
+3  Réseaux     30.1          4             4
 4   Boutique    110.1          0             5
 
 <class 'pandas.DataFrame'>
@@ -451,10 +451,10 @@ print(df.dtypes)
 ```text
    id_commande      canal  montant  livraison  satisfaction       date  id_client
 0            1       Site     49.9          8             2 2026-01-05        100
-1            2  Instagram     21.5          3             4 2026-01-05         46
+1            2  Réseaux     21.5          3             4 2026-01-05         46
 2            3   Boutique     34.2          0             4 2026-01-05         26
 3            4       Site    103.0          3             5 2026-01-05         97
-4            5  Instagram     26.7          4             4 2026-01-06        105
+4            5  Réseaux     26.7          4             4 2026-01-06        105
 5            6   Boutique     37.4          0             4 2026-01-06        120
 
 id_commande              int64
@@ -488,7 +488,7 @@ std         115.61    38.02       2.56          0.80                  NaN      3
 
 canal
 Site         148
-Instagram    138
+Réseaux    138
 Boutique     114
 Name: count, dtype: int64
 ```
@@ -505,10 +505,10 @@ print(petit)
 ```text
    id_commande      canal  montant
 0            1       Site     49.9
-1            2  Instagram     21.5
+1            2  Réseaux     21.5
 2            3   Boutique     34.2
 3            4       Site    103.0
-4            5  Instagram     26.7
+4            5  Réseaux     26.7
 ```
 
 | Je veux… | J'écris | Remarque |
@@ -528,10 +528,10 @@ print(petit.loc[1:3, ["canal", "montant"]])      # lignes d'étiquettes 1 à 3 I
 ```text
 [49.9, 21.5, 34.2, 103.0, 26.7]
        canal  montant
-1  Instagram     21.5
+1  Réseaux     21.5
 2   Boutique     34.2
        canal  montant
-1  Instagram     21.5
+1  Réseaux     21.5
 2   Boutique     34.2
 3       Site    103.0
 ```
@@ -541,8 +541,8 @@ print(petit.loc[1:3, ["canal", "montant"]])      # lignes d'étiquettes 1 à 3 I
 **Filtrer avec des conditions.** Les opérateurs `&`, `|`, `~` demandent **des parenthèses** autour de chaque condition (car `&` s'évalue avant `>`) :
 
 ```python
-gros_insta = df[(df["canal"] == "Instagram") & (df["montant"] > 100)]
-print("commandes Instagram de plus de 100 DT :", len(gros_insta))
+gros_insta = df[(df["canal"] == "Réseaux") & (df["montant"] > 100)]
+print("commandes Réseaux de plus de 100 € :", len(gros_insta))
 
 # trois autres formes pratiques
 print(df["canal"].isin(["Site", "Boutique"]).sum())
@@ -551,7 +551,7 @@ print(df.query("canal == 'Site' and livraison >= 7").shape[0])
 ```
 <!--sortie-->
 ```text
-commandes Instagram de plus de 100 DT : 11
+commandes Réseaux de plus de 100 € : 11
 262
 153
 21
@@ -570,9 +570,9 @@ print(df.nsmallest(3, "montant")[["id_commande", "canal", "montant"]])
 102          103  Site    243.8
 198          199  Site    217.1
      id_commande      canal  montant
-289          290  Instagram      8.6
-366          367  Instagram     10.3
-326          327  Instagram     10.7
+289          290  Réseaux      8.6
+366          367  Réseaux     10.3
+326          327  Réseaux     10.7
 ```
 
 ### 4.4.7 Créer et transformer des colonnes
@@ -589,14 +589,14 @@ print(df[["canal", "canal_court", "montant", "gros_panier", "livraison_rapide"]]
 ```text
        canal canal_court  montant gros_panier  livraison_rapide
 0       Site         SIT     49.9         non             False
-1  Instagram         INS     21.5         non              True
+1  Réseaux         INS     21.5         non              True
 2   Boutique         BOU     34.2         non              True
 3       Site         SIT    103.0         oui              True
 ```
 
 Le préfixe `.str` donne accès à toutes les méthodes de texte (`upper`, `lower`, `contains`, `replace`, `split`…) appliquées à **chaque élément** de la colonne.
 
-**Découper une variable continue en classes.** `pd.cut` fabrique des classes de bornes choisies, `pd.qcut` des classes d'effectifs égaux (par quantiles). Par exemple, quatre tranches de panier : « petit » (moins de 30 DT), « moyen » (30 à 60), « grand » (60 à 100) et « très grand » (plus de 100) :
+**Découper une variable continue en classes.** `pd.cut` fabrique des classes de bornes choisies, `pd.qcut` des classes d'effectifs égaux (par quantiles). Par exemple, quatre tranches de panier : « petit » (moins de 30 €), « moyen » (30 à 60), « grand » (60 à 100) et « très grand » (plus de 100) :
 
 ```python
 bornes = [0, 30, 60, 100, np.inf]
@@ -730,17 +730,17 @@ Faisons-le **à la main** sur six commandes :
 
 | Commande | Canal | Montant |
 |---|---|---|
-| 1 | Instagram | 20 |
+| 1 | Réseaux | 20 |
 | 2 | Site | 30 |
-| 3 | Instagram | 40 |
+| 3 | Réseaux | 40 |
 | 4 | Site | 50 |
 | 5 | Boutique | 100 |
 | 6 | Site | 70 |
 
-Groupes : Instagram $\{20,40\}$, Site $\{30,50,70\}$, Boutique $\{100\}$. Moyennes : $30$, $50$ et $100$. Comptes : $2$, $3$, $1$. Voici le même calcul en code (pandas range les groupes par ordre alphabétique) :
+Groupes : Réseaux $\{20,40\}$, Site $\{30,50,70\}$, Boutique $\{100\}$. Moyennes : $30$, $50$ et $100$. Comptes : $2$, $3$, $1$. Voici le même calcul en code (pandas range les groupes par ordre alphabétique) :
 
 ```python
-six = pd.DataFrame({"canal": ["Instagram", "Site", "Instagram", "Site", "Boutique", "Site"],
+six = pd.DataFrame({"canal": ["Réseaux", "Site", "Réseaux", "Site", "Boutique", "Site"],
                     "montant": [20, 30, 40, 50, 100, 70]})
 print(six.groupby("canal")["montant"].agg(["mean", "count"]))
 ```
@@ -749,7 +749,7 @@ print(six.groupby("canal")["montant"].agg(["mean", "count"]))
             mean  count
 canal                  
 Boutique   100.0      1
-Instagram   30.0      2
+Réseaux   30.0      2
 Site        50.0      3
 ```
 
@@ -771,7 +771,7 @@ print(resume.sort_values("ca", ascending=False))
 canal                                                                  
 Site             148  8806.5         59.50          49.50          3.79
 Boutique         114  8528.3         74.81          64.85          4.49
-Instagram        138  6763.5         49.01          41.50          3.72
+Réseaux        138  6763.5         49.01          41.50          3.72
 ```
 
 On peut regrouper selon **plusieurs** critères, ou demander une répartition en proportions :
@@ -786,17 +786,17 @@ print(pd.crosstab(df["canal"], df["tranche"], normalize="index").round(2))   # p
 gros_panier  non  oui
 canal                
 Boutique      87   27
-Instagram    127   11
+Réseaux    127   11
 Site         134   14
 
 tranche    petit  moyen  grand  très grand
 canal                                     
 Boutique    0.07   0.37   0.32        0.24
-Instagram   0.32   0.38   0.22        0.08
+Réseaux   0.32   0.38   0.22        0.08
 Site        0.16   0.44   0.30        0.09
 ```
 
-`crosstab` (tableau croisé) est un raccourci pour compter les effectifs de deux variables qualitatives ; avec `normalize="index"` chaque ligne est ramenée à 1, ce qui répond à « *parmi* les commandes Instagram, quelle part de petits paniers ? ». Pour des tableaux de synthèse à deux entrées sur une variable numérique, on a `pivot_table` :
+`crosstab` (tableau croisé) est un raccourci pour compter les effectifs de deux variables qualitatives ; avec `normalize="index"` chaque ligne est ramenée à 1, ce qui répond à « *parmi* les commandes Réseaux, quelle part de petits paniers ? ». Pour des tableaux de synthèse à deux entrées sur une variable numérique, on a `pivot_table` :
 
 ```python
 print(df.pivot_table(index="canal", columns="gros_panier", values="satisfaction", aggfunc="mean").round(2))
@@ -806,7 +806,7 @@ print(df.pivot_table(index="canal", columns="gros_panier", values="satisfaction"
 gros_panier   non   oui
 canal                  
 Boutique     4.49  4.48
-Instagram    3.72  3.64
+Réseaux    3.72  3.64
 Site         3.80  3.71
 ```
 
@@ -821,7 +821,7 @@ print("moyenne des écarts nulle dans chaque canal :", bool(np.allclose(df.group
 ```text
        canal  montant  ecart_moy_canal
 0       Site     49.9             -9.6
-1  Instagram     21.5            -27.5
+1  Réseaux     21.5            -27.5
 2   Boutique     34.2            -40.6
 3       Site    103.0             43.5
 moyenne des écarts nulle dans chaque canal : True
@@ -839,7 +839,7 @@ Créons la table des clients : 125 clients, chacun avec une ville. (Les clients 
 rng_c = np.random.default_rng(11)
 clients = pd.DataFrame({
     "id_client": np.arange(1, 126),
-    "ville": rng_c.choice(["Tunis", "Sfax", "Sousse", "Nabeul", "Bizerte"], size=125, p=[0.4, 0.2, 0.2, 0.1, 0.1]),
+    "ville": rng_c.choice(["Ville H", "Ville F", "Ville G", "Ville E", "Ville B"], size=125, p=[0.4, 0.2, 0.2, 0.1, 0.1]),
 })
 print(clients.head(3))
 print("clients :", len(clients), "| commandes :", len(df))
@@ -847,9 +847,9 @@ print("clients :", len(clients), "| commandes :", len(df))
 <!--sortie-->
 ```text
    id_client   ville
-0          1   Tunis
-1          2    Sfax
-2          3  Sousse
+0          1   Ville H
+1          2    Ville F
+2          3  Ville G
 clients : 125 | commandes : 400
 ```
 
@@ -857,7 +857,7 @@ Voici d'abord un exemple minuscule pour comprendre les types de jointure. Deux c
 
 ```python
 cmd = pd.DataFrame({"id_client": [1, 9], "montant": [50, 80]})
-fiche = pd.DataFrame({"id_client": [1, 2], "ville": ["Tunis", "Sfax"]})
+fiche = pd.DataFrame({"id_client": [1, 2], "ville": ["Ville H", "Ville F"]})
 for how in ["inner", "left", "outer"]:
     print(f"--- how='{how}'")
     print(cmd.merge(fiche, on="id_client", how=how))
@@ -866,15 +866,15 @@ for how in ["inner", "left", "outer"]:
 ```text
 --- how='inner'
    id_client  montant  ville
-0          1       50  Tunis
+0          1       50  Ville H
 --- how='left'
    id_client  montant  ville
-0          1       50  Tunis
+0          1       50  Ville H
 1          9       80    NaN
 --- how='outer'
    id_client  montant  ville
-0          1     50.0  Tunis
-1          2      NaN   Sfax
+0          1     50.0  Ville H
+1          2      NaN   Ville F
 2          9     80.0    NaN
 ```
 
@@ -900,11 +900,11 @@ commandes sans ville connue    : 0
 
          count  mean
 ville               
-Tunis      176  59.6
-Sousse      92  59.7
-Sfax        71  63.6
-Nabeul      42  56.0
-Bizerte     19  65.5
+Ville H      176  59.6
+Ville G      92  59.7
+Ville F        71  63.6
+Ville E      42  56.0
+Ville B     19  65.5
 ```
 
 Quels sont les clients qui n'ont **jamais** commandé ? `indicator=True` ajoute une colonne `_merge` qui dit d'où vient chaque ligne (`both` : présent des deux côtés ; `left_only` : seulement dans la table de gauche) :
@@ -929,7 +929,7 @@ Onze clients n'ont jamais commandé : les cinq prévus (121 à 125) et six clien
 > ⚠️ **Le piège n°1 des jointures : l'explosion du nombre de lignes.** Si la clé est **dupliquée** dans la table de droite, chaque ligne de gauche est recopiée autant de fois. Imaginez que la fiche du client 1 ait été saisie deux fois : sa commande apparaîtrait en double, et le chiffre d'affaires serait faux sans qu'aucune erreur ne soit signalée. Le paramètre **`validate`** déclenche une erreur dans ce cas : `"m:1"` signifie « plusieurs lignes à gauche pour une seule à droite ».
 
 ```python
-fiche_doublon = pd.DataFrame({"id_client": [1, 1], "ville": ["Tunis", "Tunis"]})
+fiche_doublon = pd.DataFrame({"id_client": [1, 1], "ville": ["Ville H", "Ville H"]})
 print("sans validate :", len(cmd.merge(fiche_doublon, on="id_client", how="left")), "lignes au lieu de 2")
 try:
     cmd.merge(fiche_doublon, on="id_client", how="left", validate="m:1")
@@ -973,7 +973,7 @@ print(dfm["satisfaction"].isna().groupby(dfm["canal"]).sum())
 30 notes manquantes sur 400
 canal
 Boutique      7
-Instagram    10
+Réseaux    10
 Site         13
 Name: satisfaction, dtype: int64
 ```
@@ -1105,16 +1105,16 @@ print(pd.Series([10, 20, 30, 40]).rolling(2).mean().tolist())
 [nan, 15.0, 25.0, 35.0]
 ```
 
-### 4.4.13 🛠️ Petite application : le rapport hebdomadaire de Yasmine
+### 4.4.13 🛠️ Petite application : le rapport hebdomadaire de la gérante
 
-Rassemblons tout ce que nous venons d'apprendre dans une vraie **mini-application** : un petit programme qui produit, pour une semaine donnée, le rapport que Yasmine lit chaque lundi. D'abord le **tableau de bord hebdomadaire** : une ligne par semaine.
+Rassemblons tout ce que nous venons d'apprendre dans une vraie **mini-application** : un petit programme qui produit, pour une semaine donnée, le rapport que la gérante lit chaque lundi. D'abord le **tableau de bord hebdomadaire** : une ligne par semaine.
 
 ```python
 hebdo = df.groupby("semaine").agg(
     commandes=("montant", "count"),
     ca=("montant", "sum"),
     panier_moyen=("montant", "mean"),
-    part_instagram=("canal", lambda s: (s == "Instagram").mean()),
+    part_instagram=("canal", lambda s: (s == "Réseaux").mean()),
 ).round(2)
 hebdo["ca_lisse"] = hebdo["ca"].rolling(4).mean().round(1)       # moyenne mobile sur 4 semaines
 print(hebdo.head(6))
@@ -1139,7 +1139,7 @@ semaine
 2026-05-18         27  1585.4         58.72            0.37    1433.7
 ```
 
-(La fonction anonyme `lambda s: (s == "Instagram").mean()` calcule, dans chaque semaine, la proportion de commandes Instagram, grâce à l'astuce « moyenne d'un masque » vue en 4.4.4.) Puis une **fonction** qui rédige le rapport d'une semaine :
+(La fonction anonyme `lambda s: (s == "Réseaux").mean()` calcule, dans chaque semaine, la proportion de commandes Réseaux, grâce à l'astuce « moyenne d'un masque » vue en 4.4.4.) Puis une **fonction** qui rédige le rapport d'une semaine :
 
 ```python
 def rapport_hebdo(df, debut):
@@ -1154,12 +1154,12 @@ def rapport_hebdo(df, debut):
     top = sem.groupby("id_client")["montant"].sum().nlargest(3)
 
     lignes = [f"Semaine du {debut:%d/%m/%Y}",
-              f"  commandes : {len(sem)}   |   panier moyen : {sem['montant'].mean():.2f} DT",
-              f"  chiffre d'affaires : {ca:.2f} DT"]
+              f"  commandes : {len(sem)}   |   panier moyen : {sem['montant'].mean():.2f} €",
+              f"  chiffre d'affaires : {ca:.2f} €"]
     if ca_prec > 0:
         lignes[-1] += f"  ({(ca / ca_prec - 1) * 100:+.1f} % vs semaine précédente)"
-    lignes.append("  par canal : " + ", ".join(f"{c} {v:.0f} DT" for c, v in par_canal.items()))
-    lignes.append("  meilleurs clients : " + ", ".join(f"n°{i} ({v:.0f} DT)" for i, v in top.items()))
+    lignes.append("  par canal : " + ", ".join(f"{c} {v:.0f} €" for c, v in par_canal.items()))
+    lignes.append("  meilleurs clients : " + ", ".join(f"n°{i} ({v:.0f} €)" for i, v in top.items()))
     note = sem["satisfaction"].mean()
     lignes.append(f"  satisfaction moyenne : {note:.2f}/5" + ("   ⚠ à surveiller" if note < 3.5 else ""))
     return "\n".join(lignes)
@@ -1177,24 +1177,24 @@ print(hebdo.loc["2026-03-02", ["commandes", "ca"]].tolist())
 <!--sortie-->
 ```text
 Semaine du 02/03/2026
-  commandes : 23   |   panier moyen : 72.96 DT
-  chiffre d'affaires : 1678.00 DT  (+59.4 % vs semaine précédente)
-  par canal : Site 707 DT, Boutique 502 DT, Instagram 469 DT
-  meilleurs clients : n°42 (189 DT), n°7 (170 DT), n°83 (160 DT)
+  commandes : 23   |   panier moyen : 72.96 €
+  chiffre d'affaires : 1678.00 €  (+59.4 % vs semaine précédente)
+  par canal : Site 707 €, Boutique 502 €, Réseaux 469 €
+  meilleurs clients : n°42 (189 €), n°7 (170 €), n°83 (160 €)
   satisfaction moyenne : 3.78/5
 
 Semaine du 18/05/2026
-  commandes : 27   |   panier moyen : 58.72 DT
-  chiffre d'affaires : 1585.40 DT  (+21.4 % vs semaine précédente)
-  par canal : Site 682 DT, Instagram 465 DT, Boutique 438 DT
-  meilleurs clients : n°9 (256 DT), n°22 (237 DT), n°93 (146 DT)
+  commandes : 27   |   panier moyen : 58.72 €
+  chiffre d'affaires : 1585.40 €  (+21.4 % vs semaine précédente)
+  par canal : Site 682 €, Réseaux 465 €, Boutique 438 €
+  meilleurs clients : n°9 (256 €), n°22 (237 €), n°93 (146 €)
   satisfaction moyenne : 3.85/5
 
 Aucune commande la semaine du 06/01/2025.
 [23.0, 1678.0]
 ```
 
-Le contrôle croisé final confirme que le rapport et le tableau hebdomadaire disent la même chose (23 commandes et 1 678 DT pour la semaine du 2 mars). Ce petit programme utilise presque tout : filtrage, `groupby`, tri, dates, formatage. Il est surtout **réutilisable** : la semaine prochaine, Yasmine changera la date et obtiendra le nouveau rapport sans rien refaire. C'est ce qui sépare une analyse « à la souris » d'une analyse reproductible.
+Le contrôle croisé final confirme que le rapport et le tableau hebdomadaire disent la même chose (23 commandes et 1 678 € pour la semaine du 2 mars). Ce petit programme utilise presque tout : filtrage, `groupby`, tri, dates, formatage. Il est surtout **réutilisable** : la semaine prochaine, la gérante changera la date et obtiendra le nouveau rapport sans rien refaire. C'est ce qui sépare une analyse « à la souris » d'une analyse reproductible.
 
 > ✅ **À retenir (pandas).**
 >

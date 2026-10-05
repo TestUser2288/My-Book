@@ -244,9 +244,9 @@ print([factorielle(n) for n in range(7)])
 
 > 📐 **Preuve (par récurrence).** *Terminaison* : à chaque appel, $n$ diminue de 1 et reste un entier $\ge0$ : on atteint forcément le cas de base. *Correction* : `factorielle(0)` renvoie $1=0!$ (base). Si `factorielle(n-1)` renvoie $(n-1)!$ (hypothèse), alors `factorielle(n)` renvoie $n\times(n-1)!=n!$. $\blacksquare$ C'est la même récurrence qu'en mathématiques : écrire une fonction récursive *est* écrire une preuve par récurrence.
 
-**Une application naturelle : parcourir un arbre.** Le catalogue de Dar Jasmin est organisé en catégories contenant des sous-catégories contenant des produits (prix, stock). On veut la **valeur totale du stock**. La difficulté : on ne sait pas combien de niveaux il y a. La récursion le fait tout naturellement : *la valeur d'une catégorie est la somme des valeurs de ses éléments, la valeur d'un produit est prix × stock.*
+**Une application naturelle : parcourir un arbre.** Le catalogue de la boutique est organisé en catégories contenant des sous-catégories contenant des produits (prix, stock). On veut la **valeur totale du stock**. La difficulté : on ne sait pas combien de niveaux il y a. La récursion le fait tout naturellement : *la valeur d'une catégorie est la somme des valeurs de ses éléments, la valeur d'un produit est prix × stock.*
 
-**À la main** : bol bleu $12{,}5\times10=125$ ; bol vert $12{,}5\times4=50$ ; tasse $8\times20=160$ ; bougie $15{,}9\times6=95{,}4$ ; plateau $45\times2=90$. Total : $520{,}4$ DT.
+**À la main** : bol bleu $12{,}5\times10=125$ ; bol vert $12{,}5\times4=50$ ; tasse $8\times20=160$ ; bougie $15{,}9\times6=95{,}4$ ; plateau $45\times2=90$. Total : $520{,}4$ €.
 
 ```python
 catalogue = {
@@ -263,15 +263,15 @@ def valeur_stock(noeud):
         return prix * stock
     return sum(valeur_stock(enfant) for enfant in noeud.values())   # une catégorie
 
-print("valeur totale :", round(valeur_stock(catalogue), 2), "DT")
+print("valeur totale :", round(valeur_stock(catalogue), 2), "€")
 for categorie, contenu in catalogue.items():
-    print(f"  {categorie:<10} {valeur_stock(contenu):8.2f} DT")
+    print(f"  {categorie:<10} {valeur_stock(contenu):8.2f} €")
 ```
 <!--sortie-->
 ```text
-valeur totale : 520.4 DT
-  Vaisselle    335.00 DT
-  Déco         185.40 DT
+valeur totale : 520.4 €
+  Vaisselle    335.00 €
+  Déco         185.40 €
 ```
 
 **Le danger : la récursion naïve peut être catastrophique.** Les nombres de Fibonacci ($F_0=0$, $F_1=1$, $F_n=F_{n-1}+F_{n-2}$) se codent en deux lignes récursives, mais le programme refait **sans cesse les mêmes calculs** : pour calculer `fib(5)`, on calcule deux fois `fib(3)`, trois fois `fib(2)`, etc. Comptons les appels :
@@ -381,7 +381,7 @@ recherche absente (linéaire / dichotomique) : 400 / 8
 
 Le pire cas observé respecte bien la borne (au plus 9 comparaisons pour 400 éléments, et 8 pour une valeur absente comme 1,0, contre 400 pour la recherche linéaire de cette même valeur). Pour **un million** d'éléments : $\lfloor\log_2 10^6\rfloor+1=20$ comparaisons seulement. C'est le pouvoir du logarithme : chaque doublement de la taille ne coûte qu'**une** comparaison de plus.
 
-**Application : le seuil de livraison gratuite.** Yasmine veut offrir la livraison à partir d'un seuil tel qu'environ **30 %** des commandes y aient droit. Une liste triée permet de répondre à « quelle part des commandes dépasse $s$ DT ? » avec le module `bisect`, qui contient la recherche dichotomique toute faite :
+**Application : le seuil de livraison gratuite.** la gérante veut offrir la livraison à partir d'un seuil tel qu'environ **30 %** des commandes y aient droit. Une liste triée permet de répondre à « quelle part des commandes dépasse $s$ € ? » avec le module `bisect`, qui contient la recherche dichotomique toute faite :
 
 ```python
 import bisect
@@ -392,22 +392,22 @@ def part_au_dessus(seuil):
     return 1 - bisect.bisect_left(triee, seuil) / len(triee)
 
 for seuil in (50, 60, 70, 80, 90, 100):
-    print(f"seuil {seuil:3d} DT : {part_au_dessus(seuil):6.1%} des commandes y ont droit")
+    print(f"seuil {seuil:3d} € : {part_au_dessus(seuil):6.1%} des commandes y ont droit")
 
-print("quantile 70 % (numpy) :", round(float(np.quantile(montants, 0.70)), 1), "DT")
+print("quantile 70 % (numpy) :", round(float(np.quantile(montants, 0.70)), 1), "€")
 ```
 <!--sortie-->
 ```text
-seuil  50 DT :  51.2% des commandes y ont droit
-seuil  60 DT :  41.0% des commandes y ont droit
-seuil  70 DT :  29.2% des commandes y ont droit
-seuil  80 DT :  21.8% des commandes y ont droit
-seuil  90 DT :  17.2% des commandes y ont droit
-seuil 100 DT :  13.0% des commandes y ont droit
-quantile 70 % (numpy) : 68.9 DT
+seuil  50 € :  51.2% des commandes y ont droit
+seuil  60 € :  41.0% des commandes y ont droit
+seuil  70 € :  29.2% des commandes y ont droit
+seuil  80 € :  21.8% des commandes y ont droit
+seuil  90 € :  17.2% des commandes y ont droit
+seuil 100 € :  13.0% des commandes y ont droit
+quantile 70 % (numpy) : 68.9 €
 ```
 
-Le tableau montre qu'un seuil de **70 DT** concerne 29,2 % des commandes, soit à peu près les 30 % visés ; le quantile à 70 % calculé par NumPy (68,9 DT) pointe au même endroit, puisque par définition 30 % des commandes lui sont supérieures. Nous avons retrouvé par un algorithme de recherche ce que les quantiles du 3.1.3 donnaient directement, un bon moyen de comprendre ce que « quantile » veut dire : *la position dans la liste triée*.
+Le tableau montre qu'un seuil de **70 €** concerne 29,2 % des commandes, soit à peu près les 30 % visés ; le quantile à 70 % calculé par NumPy (68,9 €) pointe au même endroit, puisque par définition 30 % des commandes lui sont supérieures. Nous avons retrouvé par un algorithme de recherche ce que les quantiles du 3.1.3 donnaient directement, un bon moyen de comprendre ce que « quantile » veut dire : *la position dans la liste triée*.
 
 ### 4.3.6 Trier
 
@@ -504,7 +504,7 @@ Le tri par insertion fait de l'ordre de $n^2/4$ comparaisons en moyenne (41 010 
 > 💡 **Un tri est dit stable** s'il laisse dans leur ordre d'origine les éléments « égaux » au regard du critère de tri. C'est ce que garantit `sorted` de Python, et cela permet d'enchaîner des tris successifs : trier d'abord par montant, puis par canal, donne les commandes **rangées par canal et, à l'intérieur de chaque canal, par montant croissant**.
 
 ```python
-commandes = [("Site", 40.1), ("Boutique", 65.8), ("Site", 19.6), ("Boutique", 17.4), ("Instagram", 30.1)]
+commandes = [("Site", 40.1), ("Boutique", 65.8), ("Site", 19.6), ("Boutique", 17.4), ("Réseaux", 30.1)]
 par_montant = sorted(commandes, key=lambda c: c[1])
 par_canal_puis_montant = sorted(par_montant, key=lambda c: c[0])   # stable : conserve l'ordre par montant
 for c in par_canal_puis_montant:
@@ -514,14 +514,14 @@ for c in par_canal_puis_montant:
 ```text
 ('Boutique', 17.4)
 ('Boutique', 65.8)
-('Instagram', 30.1)
+('Réseaux', 30.1)
 ('Site', 19.6)
 ('Site', 40.1)
 ```
 
 ### 4.3.7 Une dernière application : les « top k »
 
-Question de Yasmine : « Quelles sont mes **cinq plus grosses commandes** ? » On pourrait trier les 400 montants puis prendre les cinq derniers (coût de l'ordre de $n\log n$). Mais c'est du gaspillage : on n'a pas besoin que *tout* soit trié. Une structure appelée **tas** (*heap*) maintient efficacement les $k$ plus grands vus jusqu'ici, avec un coût de l'ordre de $n\log k$. Le module `heapq` la fournit :
+Question de la gérante : « Quelles sont mes **cinq plus grosses commandes** ? » On pourrait trier les 400 montants puis prendre les cinq derniers (coût de l'ordre de $n\log n$). Mais c'est du gaspillage : on n'a pas besoin que *tout* soit trié. Une structure appelée **tas** (*heap*) maintient efficacement les $k$ plus grands vus jusqu'ici, avec un coût de l'ordre de $n\log k$. Le module `heapq` la fournit :
 
 ```python
 import heapq
@@ -533,15 +533,15 @@ print("5 plus grosses commandes (tri)    :", sorted(montants, reverse=True)[:5])
 # top 3 avec leur canal : on classe les lignes selon une clé
 top3_lignes = heapq.nlargest(3, lignes, key=lambda l: float(l["montant"]))
 for l in top3_lignes:
-    print(f"  {l['canal']:<10} {l['montant']:>6} DT   livraison {l['livraison']} j   satisfaction {l['satisfaction']}/5")
+    print(f"  {l['canal']:<10} {l['montant']:>6} €   livraison {l['livraison']} j   satisfaction {l['satisfaction']}/5")
 ```
 <!--sortie-->
 ```text
 5 plus grosses commandes (heapq)  : [255.7, 243.8, 217.1, 212.4, 208.8]
 5 plus grosses commandes (tri)    : [255.7, 243.8, 217.1, 212.4, 208.8]
-  Site        255.7 DT   livraison 4 j   satisfaction 3/5
-  Site        243.8 DT   livraison 5 j   satisfaction 3/5
-  Site        217.1 DT   livraison 7 j   satisfaction 4/5
+  Site        255.7 €   livraison 4 j   satisfaction 3/5
+  Site        243.8 €   livraison 5 j   satisfaction 3/5
+  Site        217.1 €   livraison 7 j   satisfaction 4/5
 ```
 
 Les deux listes sont identiques, la version `heapq` coûtant moins cher quand $k\ll n$ (pensez aux *dix* meilleurs clients sur *dix millions*). Ce réflexe, **ne pas faire plus de travail que nécessaire**, est l'une des habitudes les plus rentables de la programmation scientifique.

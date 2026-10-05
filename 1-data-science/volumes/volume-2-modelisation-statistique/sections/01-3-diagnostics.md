@@ -2,7 +2,7 @@
 
 > 💡 **Intuition.** Un logiciel produit un tableau de coefficients quoi qu'on lui donne, même si le modèle est absurde. Les p-valeurs et les intervalles du 1.2 ne valent **que si les hypothèses H1 à H5 sont à peu près vraies**. Faire des diagnostics, c'est la visite médicale du modèle : on regarde ce qui reste *après* l'ajustement (les résidus), parce que les erreurs d'un modèle bien spécifié ne doivent contenir **aucune structure**. Si l'on voit une courbe, un entonnoir ou un point isolé dans les résidus, c'est que le modèle a raté quelque chose.
 
-Voici la préparation (mêmes données qu'en 1.1 et 1.2). Nous chargeons en plus les **ventes mensuelles** de Dar Jasmin, qui nous serviront de deuxième terrain d'observation :
+Voici la préparation (mêmes données qu'en 1.1 et 1.2). Nous chargeons en plus les **ventes mensuelles** de la boutique, qui nous serviront de deuxième terrain d'observation :
 
 ```python
 import numpy as np
@@ -23,11 +23,11 @@ plt.rcParams.update(STYLE)
 
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy()
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36
 df["log_panier"] = np.log(df["panier_moyen"])
 
-m_niv = smf.ols("panier_moyen ~ a + C(canal)", data=df).fit()      # panier en DT : modèle « niveau »
+m_niv = smf.ols("panier_moyen ~ a + C(canal)", data=df).fit()      # panier en € : modèle « niveau »
 m2 = smf.ols("log_panier ~ a + C(canal)", data=df).fit()           # log du panier : le modèle de 1.1 et 1.2
 
 ventes = pd.read_csv("donnees/ventes_mensuelles.csv", parse_dates=["mois"])
@@ -88,7 +88,7 @@ Trois graphiques suffisent à repérer l'essentiel :
 2. **Diagramme quantile-quantile (Q-Q) des résidus standardisés** : les points doivent suivre la diagonale si les erreurs sont normales (H5). Une queue relevée indique une asymétrie ou des valeurs extrêmes.
 3. **Échelle-position** ($\sqrt{|r_i|}$ contre valeurs ajustées) : une tendance croissante confirme une variance non constante.
 
-Mettons en concurrence **deux modèles pour le même phénomène** : le panier en dinars (`m_niv`) et son logarithme (`m2`). Le premier est celui que l'on écrirait « naturellement » ; le second celui que nous avons choisi en 1.1.7 parce que le panier est asymétrique. Les diagnostics vont nous dire si ce choix était justifié.
+Mettons en concurrence **deux modèles pour le même phénomène** : le panier en euros (`m_niv`) et son logarithme (`m2`). Le premier est celui que l'on écrirait « naturellement » ; le second celui que nous avons choisi en 1.1.7 parce que le panier est asymétrique. Les diagnostics vont nous dire si ce choix était justifié.
 
 ```python
 def diagnostics(modele, axes, titre):
@@ -111,7 +111,7 @@ def diagnostics(modele, axes, titre):
     ax3.set_xlabel("valeurs ajustées"); ax3.set_ylabel("racine de |résidu standardisé|"); ax3.set_title(titre + " : échelle-position", fontsize=10)
 
 fig, axes = plt.subplots(2, 3, figsize=(12.5, 7.2))
-diagnostics(m_niv, axes[0], "panier en DT")
+diagnostics(m_niv, axes[0], "panier en €")
 diagnostics(m2, axes[1], "log du panier")
 plt.tight_layout()
 plt.savefig("figures/ch01-diagnostics-niveau-log.png", dpi=200, bbox_inches="tight")
@@ -122,9 +122,9 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![Diagnostics comparés. Ligne du haut : modèle sur le panier en DT (résidus asymétriques, dispersion croissante, queue lourde à droite). Ligne du bas : modèle sur le log du panier (nuage homogène, points alignés sur la diagonale). La courbe orange est un lissage local.](figures/ch01-diagnostics-niveau-log.png)
+![Diagnostics comparés. Ligne du haut : modèle sur le panier en € (résidus asymétriques, dispersion croissante, queue lourde à droite). Ligne du bas : modèle sur le log du panier (nuage homogène, points alignés sur la diagonale). La courbe orange est un lissage local.](figures/ch01-diagnostics-niveau-log.png)
 
-La différence est nette. Pour le panier en dinars (ligne du haut), les résidus sont très **asymétriques** : une nuée de points très hauts (jusqu'à 7 écarts-types), mais aucun point aussi bas, et le diagramme Q-Q montre une **queue droite très relevée** et une queue gauche trop courte. La dispersion augmente aussi avec la valeur ajustée : le lissage de l'échelle-position monte de 0,6 à 0,85 environ (l'entonnoir est modeste à l'œil, mais le test de Breusch-Pagan, ci-dessous, ne s'y trompe pas). Pour le log du panier (ligne du bas), le nuage est homogène, le lissage orange reste plat, et les points suivent la diagonale. La transformation logarithmique n'était donc pas un détail esthétique : elle rend le modèle **valide**.
+La différence est nette. Pour le panier en euros (ligne du haut), les résidus sont très **asymétriques** : une nuée de points très hauts (jusqu'à 7 écarts-types), mais aucun point aussi bas, et le diagramme Q-Q montre une **queue droite très relevée** et une queue gauche trop courte. La dispersion augmente aussi avec la valeur ajustée : le lissage de l'échelle-position monte de 0,6 à 0,85 environ (l'entonnoir est modeste à l'œil, mais le test de Breusch-Pagan, ci-dessous, ne s'y trompe pas). Pour le log du panier (ligne du bas), le nuage est homogène, le lissage orange reste plat, et les points suivent la diagonale. La transformation logarithmique n'était donc pas un détail esthétique : elle rend le modèle **valide**.
 
 > 💡 **Pourquoi le log résout le problème.** Quand les effets sont **multiplicatifs** ($y=\mu\cdot\eta$ avec $\eta$ un facteur aléatoire autour de 1), l'écart-type de $y$ est proportionnel à sa moyenne $\mu$ : les gros paniers fluctuent plus que les petits, exactement l'entonnoir observé. En passant au logarithme, $\log y=\log\mu+\log\eta$ : le bruit devient **additif** et de variance constante.
 
@@ -142,28 +142,28 @@ def breusch_pagan_main(modele):
     LM = len(e2) * aux.rsquared
     return LM, stats.chi2.sf(LM, Xm.shape[1] - 1)
 
-for nom, m in [("panier en DT", m_niv), ("log du panier", m2)]:
+for nom, m in [("panier en €", m_niv), ("log du panier", m2)]:
     LM, p = breusch_pagan_main(m)
     LM_sm, p_sm = sm.stats.diagnostic.het_breuschpagan(m.resid, m.model.exog)[:2]
     print(f"{nom:14s} LM (main) = {LM:6.2f}  p = {p:.2e} | statsmodels : LM = {LM_sm:6.2f}  p = {p_sm:.2e}")
 ```
 <!--sortie-->
 ```text
-panier en DT   LM (main) =  35.90  p = 7.86e-08 | statsmodels : LM =  35.90  p = 7.86e-08
+panier en €   LM (main) =  35.90  p = 7.86e-08 | statsmodels : LM =  35.90  p = 7.86e-08
 log du panier  LM (main) =   1.92  p = 5.90e-01 | statsmodels : LM =   1.92  p = 5.90e-01
 ```
 
 **Normalité des erreurs.** Le test de Shapiro-Wilk et celui de Jarque-Bera (fondé sur l'asymétrie et l'aplatissement, volume I, section 3.7.5) comparent les résidus à une loi normale. Avec un grand $n$, ils détectent des écarts minuscules sans importance pratique : le diagramme Q-Q reste l'outil principal.
 
 ```python
-for nom, m in [("panier en DT", m_niv), ("log du panier", m2)]:
+for nom, m in [("panier en €", m_niv), ("log du panier", m2)]:
     r = m.resid
     jb, pjb, sk, ku = sm.stats.jarque_bera(r)
     print(f"{nom:14s} asymétrie = {sk:5.2f} | aplatissement (excès) = {ku-3:5.2f} | Shapiro p = {stats.shapiro(r).pvalue:.2e} | Jarque-Bera p = {pjb:.2e}")
 ```
 <!--sortie-->
 ```text
-panier en DT   asymétrie =  1.40 | aplatissement (excès) =  3.84 | Shapiro p = 1.25e-29 | Jarque-Bera p = 0.00e+00
+panier en €   asymétrie =  1.40 | aplatissement (excès) =  3.84 | Shapiro p = 1.25e-29 | Jarque-Bera p = 0.00e+00
 log du panier  asymétrie =  0.11 | aplatissement (excès) = -0.06 | Shapiro p = 2.34e-01 | Jarque-Bera p = 1.63e-01
 ```
 
@@ -274,7 +274,7 @@ figure enregistrée
 
 Remarquez la leçon, qui surprend toujours : **le point influent a un résidu petit**. Comme la droite est tirée vers lui, son résidu brut est modeste (voyez la ligne des résidus), alors qu'il est très loin de ce que la tendance des cinq autres points prévoyait. C'est son **levier** (proche de 0,9, très au-dessus de la moyenne $p/n\approx0{,}33$) et sa **distance de Cook** qui le trahissent. Un diagnostic fondé sur les seuls résidus l'aurait laissé passer. Et la formule de Cook, retrouvée ici par réajustement sans chaque point, confirme le raccourci.
 
-**Sur les clients de Dar Jasmin.** Appliquons ces outils au modèle `m2`. Avec 1 740 clients, un seul client ne pèse presque rien :
+**Sur les clients de la boutique.** Appliquons ces outils au modèle `m2`. Avec 1 740 clients, un seul client ne pèse presque rien :
 
 ```python
 infl = m2.get_influence()
@@ -300,9 +300,9 @@ nombre de clients au-dessus de 4/n : 84 sur 1740 (4.8 %)
       age      canal  panier  résidu stud. ext.  levier    Cook
 864    43       Site  245.06             3.7254  0.0019  0.0067
 747    48   Boutique   25.53            -2.9552  0.0030  0.0066
-1060   66  Instagram  131.04             1.9415  0.0061  0.0058
+1060   66  Réseaux  131.04             1.9415  0.0061  0.0058
 140    50       Site  189.89             2.8562  0.0027  0.0055
-439    22  Instagram  124.39             2.8921  0.0025  0.0052
+439    22  Réseaux  124.39             2.8921  0.0025  0.0052
 
       student_resid  unadj_p  bonf(p)
 1001         3.7254   0.0002   0.3502
@@ -315,7 +315,7 @@ Aucun client n'a un levier ou une distance de Cook préoccupants : le plus grand
 - Le seuil « $D_i>4/n$ » est une **règle de dépistage**, pas un test : avec $n$ grand elle signale toujours quelques points (ici environ 5 % des clients), simplement parce que certains points sont toujours un peu plus éloignés que d'autres. Ce qui compte est qu'**aucun** ne soit isolé du lot. Regardez les valeurs, pas seulement le seuil.
 - Le test des résidus studentisés externes, ajusté pour le nombre de tests (correction de **Bonferroni**, volume I, section 3.5.5), est un vrai test de « valeur aberrante » : la plus grande valeur absolue (environ 3,73) a une p-valeur brute de 0,0002, mais parmi 1 740 observations on s'attend à de telles valeurs : une fois la correction de Bonferroni appliquée, la p-valeur ajustée est de 0,35, rien de significatif.
 
-> 🛠️ **Que faire d'une observation influente ?** Ne la supprimez **pas** automatiquement. (1) Vérifiez qu'il ne s'agit pas d'une **erreur de saisie** (un panier de 5 000 DT au lieu de 50). (2) Si elle est authentique, regardez comment les conclusions changent **avec et sans** elle, et rapportez les deux. (3) Si elle représente un phénomène réel mais rare, envisagez une méthode **robuste** (section 1.6). Retirer un point « parce qu'il gêne » est l'une des formes les plus courantes de falsification involontaire.
+> 🛠️ **Que faire d'une observation influente ?** Ne la supprimez **pas** automatiquement. (1) Vérifiez qu'il ne s'agit pas d'une **erreur de saisie** (un panier de 5 000 € au lieu de 50). (2) Si elle est authentique, regardez comment les conclusions changent **avec et sans** elle, et rapportez les deux. (3) Si elle représente un phénomène réel mais rare, envisagez une méthode **robuste** (section 1.6). Retirer un point « parce qu'il gêne » est l'une des formes les plus courantes de falsification involontaire.
 
 ### 1.3.5 La multicolinéarité : quand deux variables disent la même chose
 
@@ -346,13 +346,13 @@ print("R² de m2 :", round(m2.rsquared, 4), "| R² avec age_mois :", round(mc.rs
 ```text
 corrélation âge (années) / âge (mois) : 0.9997
                        m2 : coef  m2 : se  avec age_mois : coef  avec age_mois : se
-C(canal)[T.Instagram]    -0.3368   0.0225               -0.3377              0.0225
+C(canal)[T.Réseaux]    -0.3368   0.0225               -0.3377              0.0225
 C(canal)[T.Site]         -0.1571   0.0231               -0.1580              0.0231
 Intercept                 4.2206   0.0175                3.2552              1.2998
 a                         0.0092   0.0008               -0.0176              0.0361
 age_mois                     NaN      NaN                0.0022              0.0030
 
-VIF : {'Intercept': 1.0, 'C(canal)[T.Site]': 1.5, 'C(canal)[T.Instagram]': 1.5, 'a': 1828.5, 'age_mois': 1828.6}
+VIF : {'Intercept': 1.0, 'C(canal)[T.Site]': 1.5, 'C(canal)[T.Réseaux]': 1.5, 'a': 1828.5, 'age_mois': 1828.6}
 R² de m2 : 0.1657 | R² avec age_mois : 0.166  (prédictions aussi bonnes)
 ```
 
@@ -406,11 +406,11 @@ print(pd.DataFrame({"se classique": m_niv.bse, "se robuste (HC3)": m_hc3.bse, "s
                        se classique  se robuste (HC3)  se bootstrap
 Intercept                     1.149             1.306         1.274
 C(canal)[T.Site]              1.518             1.688         1.659
-C(canal)[T.Instagram]         1.478             1.511         1.522
+C(canal)[T.Réseaux]         1.478             1.511         1.522
 a                             0.055             0.055         0.055
 ```
 
-Les erreurs standard robustes sont plus proches du bootstrap que les erreurs classiques pour la constante, le coefficient du Site et celui d'Instagram : la formule classique **sous-estimait** l'incertitude de ces coefficients (de 12 % environ pour la constante et le Site). Pour le coefficient de l'âge, tout concorde. L'écart n'est pas énorme, mais il va dans le sens qu'annonce la théorie. Dans les modèles où l'hétéroscédasticité est plus forte, il peut être considérable.
+Les erreurs standard robustes sont plus proches du bootstrap que les erreurs classiques pour la constante, le coefficient du Site et celui d'Réseaux : la formule classique **sous-estimait** l'incertitude de ces coefficients (de 12 % environ pour la constante et le Site). Pour le coefficient de l'âge, tout concorde. L'écart n'est pas énorme, mais il va dans le sens qu'annonce la théorie. Dans les modèles où l'hétéroscédasticité est plus forte, il peut être considérable.
 
 ### 1.3.7 Courbure et variables manquantes : lire les graphiques de résidus partiels
 

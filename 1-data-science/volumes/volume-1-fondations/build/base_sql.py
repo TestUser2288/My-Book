@@ -1,4 +1,4 @@
-"""Base SQLite de Dar Jasmin (chapitre 5) : identique au code imprimé en 5.1.3.
+"""Base SQLite de la boutique (chapitre 5) : identique au code imprimé en 5.1.3.
 Usage : from base_sql import construire ; con = construire()   (lit donnees/commandes.csv)"""
 import sqlite3
 
@@ -11,17 +11,17 @@ def construire(chemin_csv="donnees/commandes.csv"):
     cmd = pd.read_csv(chemin_csv)                       # les 400 commandes du chapitre 3
     n = len(cmd)
 
-    # ---- catalogue : 4 catégories, 16 produits (prix en DT) --------------------------
+    # ---- catalogue : 4 catégories, 16 produits (prix en €) --------------------------
     categories = ["Poterie", "Textile", "Bijoux", "Cosmétiques"]
     produits = [
-        ("Tajine décoratif", 1, 45), ("Bol en céramique de Nabeul", 1, 18),
-        ("Vase peint à la main", 1, 65), ("Plat à couscous", 1, 38),
-        ("Foutah en coton", 2, 28), ("Margoum (petit tapis)", 2, 120),
+        ("Plat décoratif", 1, 45), ("Bol en céramique", 1, 18),
+        ("Vase peint à la main", 1, 65), ("Grand plat de service", 1, 38),
+        ("Plaid en coton", 2, 28), ("Petit tapis", 2, 120),
         ("Écharpe en soie", 2, 55), ("Pochette brodée", 2, 22),
-        ("Bague en argent", 3, 48), ("Pendentif khamsa", 3, 35),
-        ("Bracelet de perles", 3, 15), ("Boucles d'oreilles filigrane", 3, 42),
-        ("Savon à l'huile d'olive", 4, 6), ("Eau de jasmin", 4, 14),
-        ("Huile de nigelle", 4, 24), ("Bougie parfumée au jasmin", 4, 20),
+        ("Bague en argent", 3, 48), ("Pendentif", 3, 35),
+        ("Bracelet de perles", 3, 15), ("Boucles d'oreilles", 3, 42),
+        ("Savon à l'huile d'olive", 4, 6), ("Eau parfumée", 4, 14),
+        ("Huile de soin", 4, 24), ("Bougie parfumée", 4, 20),
     ]
     prix = np.array([p[2] for p in produits], dtype=float)
 
@@ -32,13 +32,13 @@ def construire(chemin_csv="donnees/commandes.csv"):
     dates = np.sort(rng.choice(jours, size=n, p=p_jour / p_jour.sum()))   # id croissant = chronologique
 
     # ---- clients : 80 inscrits (dont 8 qui n'ont jamais commandé) ---------------------
-    prenoms = ["Amel", "Sami", "Ines", "Walid", "Rim", "Hatem", "Salma", "Karim", "Nour", "Fares",
-               "Mariem", "Oussama", "Lina", "Aymen", "Sarra", "Yassine", "Dorra", "Bilel", "Emna", "Zied"]
-    noms = ["Ben Salah", "Trabelsi", "Gharbi", "Jlassi", "Mansour", "Chaabane", "Hamdi", "Ayari",
-            "Bouazizi", "Khelifi", "Dridi", "Mejri", "Sassi", "Zouari", "Ben Ammar", "Lahmar"]
-    villes = ["Tunis", "La Marsa", "Ariana", "Sfax", "Sousse", "Nabeul", "Bizerte", "Monastir"]
+    prenoms = ["Alex", "Sam", "Léa", "Noé", "Mia", "Hugo", "Zoé", "Eli", "Lou", "Jules",
+               "Nina", "Théo", "Lina", "Adam", "Inès", "Yann", "Elsa", "Luc", "Anna", "Paul"]
+    noms = ["Martin", "Bernard", "Dubois", "Moreau", "Laurent", "Simon", "Michel", "Lefebvre",
+            "Garcia", "Roux", "Fontaine", "Girard", "Faure", "Blanc", "Morin", "Lambert"]
+    villes = ["Ville H", "Ville C", "Ville A", "Ville F", "Ville G", "Ville E", "Ville B", "Ville D"]
     ville = rng.choice(villes, size=80, p=[0.22, 0.12, 0.10, 0.14, 0.12, 0.10, 0.10, 0.10])
-    local = np.isin(ville, ["Tunis", "La Marsa", "Ariana"])            # le magasin est à Tunis
+    local = np.isin(ville, ["Ville H", "Ville C", "Ville A"])            # le magasin est situé en Ville H
     poids = rng.gamma(1.5, 1.0, size=80)                               # quelques clients plus fidèles
     poids[rng.choice(80, size=8, replace=False)] = 0                   # inscrits dormants à vie
     client = np.empty(n, dtype=int)
@@ -54,7 +54,7 @@ def construire(chemin_csv="donnees/commandes.csv"):
     clients = []
     for rang, k in enumerate(ordre):
         pren, nom = rng.choice(prenoms), rng.choice(noms)
-        tel = None if rng.random() < 0.2 else f"{rng.choice([20, 22, 24, 50, 52, 55, 98, 99])}{rng.integers(100000, 999999)}"
+        tel = None if rng.random() < 0.2 else f"{rng.choice([1, 2, 3, 4, 5, 6, 7, 9])}{rng.integers(100000, 999999)}"
         parrain = int(rng.integers(1, rang + 1)) if rang >= 3 and rng.random() < 0.35 else None
         clients.append((rang + 1, pren, nom, ville[k], str(inscr[k])[:10], tel, parrain))
 
@@ -93,7 +93,7 @@ def construire(chemin_csv="donnees/commandes.csv"):
         id_commande INTEGER PRIMARY KEY,
         id_client INTEGER NOT NULL REFERENCES clients(id_client),
         date_commande TEXT NOT NULL,
-        canal TEXT NOT NULL CHECK (canal IN ('Instagram', 'Site', 'Boutique')),
+        canal TEXT NOT NULL CHECK (canal IN ('Réseaux', 'Site', 'Boutique')),
         montant REAL NOT NULL, delai_livraison INTEGER NOT NULL,
         satisfaction INTEGER CHECK (satisfaction BETWEEN 1 AND 5));
     CREATE TABLE lignes_commande (

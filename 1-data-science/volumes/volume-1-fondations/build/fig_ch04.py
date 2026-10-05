@@ -69,9 +69,9 @@ def anatomie():
     fig.patch.set_edgecolor(ORANGE)
     fig.patch.set_linewidth(3)
     ax = fig.add_axes([0.25, 0.2, 0.5, 0.58])
-    ax.plot(semaines, insta, color=BLEU, marker="o", ms=4, label="Instagram")
+    ax.plot(semaines, insta, color=BLEU, marker="o", ms=4, label="Réseaux")
     ax.plot(semaines, site, color=VIOLET, marker="s", ms=4, label="Site")
-    ax.set_title("Ventes hebdomadaires (DT)")
+    ax.set_title("Ventes hebdomadaires (€)")
     ax.set_xlabel("semaine")
     ax.set_ylabel("ventes")
     ax.legend(loc="upper left")
@@ -100,7 +100,7 @@ def anatomie():
 
 def axe_tronque():
     df = commandes()
-    ordre = ["Instagram", "Site"]
+    ordre = ["Réseaux", "Site"]
     moy = df.groupby("canal")["satisfaction"].mean().reindex(ordre)
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.7), gridspec_kw={"wspace": 0.3})
     for ax, (ymin, ymax, titre, col) in zip(axes, [(3.70, 3.80, "Axe tronqué : l'écart paraît énorme", ROUGE),

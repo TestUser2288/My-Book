@@ -20,12 +20,12 @@ Le symbole $\propto$ se lit « proportionnel à » : le dénominateur $p(y)=\int
 
 ### 6.1.2 Un exemple minuscule, calculé à la main
 
-Yasmine envoie une offre de bienvenue à **10 nouveaux clients**. Sept d'entre eux repassent commande dans l'année. Appelons $\theta$ la probabilité qu'un client avec offre rachète. Que sait-on de $\theta$ ?
+La gérante envoie une offre de bienvenue à **10 nouveaux clients**. Sept d'entre eux repassent commande dans l'année. Appelons $\theta$ la probabilité qu'un client avec offre rachète. Que sait-on de $\theta$ ?
 
 **Vraisemblance.** Si les clients sont indépendants, le nombre $y$ de rachats suit une loi binomiale $\mathrm{Bin}(10,\theta)$ (volume I, section 2.2) :
 $$p(y=7\mid\theta)=\binom{10}{7}\theta^{7}(1-\theta)^{3}.$$
 
-**A priori.** Yasmine n'a aucune idée précise : elle juge que toutes les valeurs de $\theta$ entre 0 et 1 sont également plausibles ($p(\theta)=1$ sur $[0,1]$).
+**A priori.** la gérante n'a aucune idée précise : elle juge que toutes les valeurs de $\theta$ entre 0 et 1 sont également plausibles ($p(\theta)=1$ sur $[0,1]$).
 
 Pour calculer à la main sans intégrale, regardons seulement **onze valeurs** possibles : $\theta\in\{0;\,0{,}1;\,0{,}2;\dots;1\}$, chacune avec la probabilité *a priori* $1/11$. C'est l'**approximation sur grille**. Il suffit de multiplier, puis de diviser par la somme.
 
@@ -235,7 +235,7 @@ Les deux intervalles sont **presque identiques** (à la troisième décimale). C
 | Peut-on dire « $P(\delta>0)=\dots$ » ? | non | **oui** |
 | Dépend d'un a priori ? | non | oui (mais l'effet s'efface quand $n$ grandit) |
 
-> 💡 **Ce que Yasmine veut entendre.** « L'offre est presque certainement utile, et le gain est de l'ordre de 12 points de pourcentage de rachat (entre 8 et 16 avec 95 % de probabilité). » C'est une phrase bayésienne. Elle est parfaitement naturelle, et la plupart des gens interprètent d'ailleurs *intuitivement* les intervalles de confiance de cette façon (à tort, nous l'avons vu au volume I, section 3.3.2).
+> 💡 **Ce que la gérante veut entendre.** « L'offre est presque certainement utile, et le gain est de l'ordre de 12 points de pourcentage de rachat (entre 8 et 16 avec 95 % de probabilité). » C'est une phrase bayésienne. Elle est parfaitement naturelle, et la plupart des gens interprètent d'ailleurs *intuitivement* les intervalles de confiance de cette façon (à tort, nous l'avons vu au volume I, section 3.3.2).
 
 ### 6.1.5 Intervalle de crédibilité : équi-queue ou HPD ?
 
@@ -434,21 +434,21 @@ ly = np.log(acheteurs["panier_moyen"])
 mu_n, tau_n = normal_normal(4.0, 0.5, 0.35, ly.mean(), len(ly))
 print(f"{len(ly)} acheteurs de la boutique : moyenne du log-panier = {ly.mean():.4f}")
 print(f"a posteriori de mu : N({mu_n:.4f}, {tau_n:.4f}²) | IC95 [{mu_n - 1.96 * tau_n:.4f} ; {mu_n + 1.96 * tau_n:.4f}]")
-print(f"soit un panier « typique » (médiane) de {np.exp(mu_n):.1f} DT, IC95 [{np.exp(mu_n - 1.96 * tau_n):.1f} ; {np.exp(mu_n + 1.96 * tau_n):.1f}] DT")
+print(f"soit un panier « typique » (médiane) de {np.exp(mu_n):.1f} €, IC95 [{np.exp(mu_n - 1.96 * tau_n):.1f} ; {np.exp(mu_n + 1.96 * tau_n):.1f}] €")
 ```
 <!--sortie-->
 ```text
 exemple à la main : mu_n = 4.364, tau_n = 0.149   (poids des données : 0.911)
 449 acheteurs de la boutique : moyenne du log-panier = 4.2183
 a posteriori de mu : N(4.2181, 0.0165²) | IC95 [4.1857 ; 4.2504]
-soit un panier « typique » (médiane) de 67.9 DT, IC95 [65.7 ; 70.1] DT
+soit un panier « typique » (médiane) de 67.9 €, IC95 [65.7 ; 70.1] €
 ```
 
-Le panier « typique » (médiane, puisque $\mu$ est le logarithme) d'un acheteur de la boutique est d'environ 68 DT, avec une incertitude d'environ $\pm2$ DT. Les données étant simulées, nous connaissons la vérité : le générateur a programmé un log-panier moyen de $4{,}00+0{,}22=4{,}22$ pour la boutique, soit $e^{4{,}22}\approx68{,}0$ DT. L'intervalle de crédibilité contient bien cette valeur.
+Le panier « typique » (médiane, puisque $\mu$ est le logarithme) d'un acheteur de la boutique est d'environ 68 €, avec une incertitude d'environ $\pm2$ €. Les données étant simulées, nous connaissons la vérité : le générateur a programmé un log-panier moyen de $4{,}00+0{,}22=4{,}22$ pour la boutique, soit $e^{4{,}22}\approx68{,}0$ €. L'intervalle de crédibilité contient bien cette valeur.
 
 ### 6.1.9 La loi prédictive : prédire du nouveau
 
-Un estimateur de $\theta$ n'est pas un but en soi. Yasmine veut des **prédictions** : « *sur les 100 prochains clients avec offre, combien rachèteront ?* » Deux façons de répondre :
+Un estimateur de $\theta$ n'est pas un but en soi. La gérante veut des **prédictions** : « *sur les 100 prochains clients avec offre, combien rachèteront ?* » Deux façons de répondre :
 
 - **Plug-in** : on remplace $\theta$ par son estimation $\hat\theta=0{,}5695$ et on prend $\mathrm{Bin}(100,\hat\theta)$. Cela **ignore** l'incertitude sur $\theta$.
 - **Prédictive a posteriori** : on **moyenne** la loi binomiale sur toutes les valeurs plausibles de $\theta$, pondérées par leur probabilité a posteriori :

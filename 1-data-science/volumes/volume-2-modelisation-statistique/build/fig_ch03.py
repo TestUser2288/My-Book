@@ -73,7 +73,7 @@ def acp_2d():
     ax.annotate("axe 2 : 10 %", (m[0] + 1.9 * V[0, 1], m[1] + 1.9 * V[1, 1]), xytext=(6, 4),
                 textcoords="offset points", color=VIOLET, fontsize=9)
     ax.set_xlabel("nombre de commandes dans l'année")
-    ax.set_ylabel("panier moyen (dizaines de DT)")
+    ax.set_ylabel("panier moyen (dizaines de €)")
     ax.set_xlim(2.8, 9.2); ax.set_ylim(1.8, 8.6); ax.set_aspect("equal")
     ax.set_title("Cinq clientes et leurs axes principaux")
     style.save(fig, "ch03-acp-2d.png")
@@ -351,7 +351,7 @@ def ca_carte():
         # étiquettes : on alterne au-dessus / au-dessous en suivant l'ordre des abscisses
         for rang, (nom, x, y, coul, marque) in enumerate(sorted(pts, key=lambda t: t[1])):
             dy = 11 if rang % 2 == 0 else -17
-            decal = {"Boutique": (0, 12), "Autre": (-6, 12), "Nabeul": (-34, 0), "Sfax": (22, 9), "Site": (20, -15)} if cn == "ville" else {}
+            decal = {"Boutique": (0, 12), "Autre": (-6, 12), "Ville B": (-34, 0), "Ville C": (22, 9), "Site": (20, -15)} if cn == "ville" else {}
             ax.annotate(nom, (x, y), xytext=decal.get(nom, (0, dy)), textcoords="offset points", ha="center", color=coul,
                         fontsize=9, fontweight="bold" if marque == "o" else "normal", bbox=boite, zorder=4)
         ax.axhline(0, color=style.AXE, lw=0.8); ax.axvline(0, color=style.AXE, lw=0.8)

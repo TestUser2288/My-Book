@@ -3,7 +3,7 @@
 > « Les probabilités vont de la **cause** vers les **données**.
 > La statistique fait le chemin inverse : des **données** vers la cause. »
 
-Au chapitre 2, nous *connaissions* la loi (par exemple « le taux de conversion est 20,5 % ») et nous calculions la probabilité d'observer certaines données. Dans la vie réelle, c'est l'inverse : on **observe** des données (400 commandes) et on veut deviner la loi (« quel est le vrai panier moyen ? Le canal Instagram est-il vraiment moins rentable que la boutique ? »). C'est le travail de la **statistique**.
+Au chapitre 2, nous *connaissions* la loi (par exemple « le taux de conversion est 20,5 % ») et nous calculions la probabilité d'observer certaines données. Dans la vie réelle, c'est l'inverse : on **observe** des données (400 commandes) et on veut deviner la loi (« quel est le vrai panier moyen ? Le canal Réseaux est-il vraiment moins rentable que la boutique ? »). C'est le travail de la **statistique**.
 
 ## Le chemin de ce chapitre
 
@@ -15,6 +15,6 @@ Au chapitre 2, nous *connaissions* la loi (par exemple « le taux de conversion 
 - ➕ **Pour aller plus loin** : les sondages (comment échantillonner), et les méthodes non paramétriques (quand on ne veut pas supposer de loi).
 - **3.8 Exercices corrigés**.
 
-> 💡 **Le fil conducteur : un jeu de 400 commandes.** Tout au long du chapitre nous travaillons sur un même tableau de 400 commandes de Dar Jasmin (canal, montant, délai de livraison, satisfaction). Il est **simulé** (graine fixe) pour que vous puissiez reproduire chaque calcul, et vous verrez qu'on y retrouve des phénomènes tout à fait réalistes : montants asymétriques, différences entre canaux, lien entre délai et satisfaction.
+> 💡 **Le fil conducteur : un jeu de 400 commandes.** Tout au long du chapitre nous travaillons sur un même tableau de 400 commandes de la boutique (canal, montant, délai de livraison, satisfaction). Il est **simulé** (graine fixe) pour que vous puissiez reproduire chaque calcul, et vous verrez qu'on y retrouve des phénomènes tout à fait réalistes : montants asymétriques, différences entre canaux, lien entre délai et satisfaction.
 
 > 🛠️ **Outils.** Nous utilisons `pandas` pour les tableaux (étudié en détail à la section 4.4 : ici on n'utilise que les gestes de base, expliqués au passage) et `scipy.stats` pour les calculs statistiques.

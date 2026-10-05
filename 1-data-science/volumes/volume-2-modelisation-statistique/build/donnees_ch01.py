@@ -1,4 +1,4 @@
-"""Jeu de données hiérarchique du chapitre 1 (section 1.7) : les points relais de Dar Jasmin.
+"""Jeu de données hiérarchique du chapitre 1 (section 1.7) : les points relais de la boutique.
 Le même code figure dans le livre (1.7.1). Usage : python3 build/donnees_ch01.py  -> donnees/ch01-relais.csv
 
 30 points relais (urbain ou non) ; pour chaque commande retirée en relais : délai de livraison (jours) et note de

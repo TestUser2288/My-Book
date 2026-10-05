@@ -1,20 +1,20 @@
-# Projet du volume : l'étude la boutique 2025
+# Projet du volume : l'étude Dar Jasmin 2025
 
 > « Un projet de data science, ce n'est pas un modèle. C'est une **question**, des données, une réponse honnête… et un message que quelqu'un pourra lire. »
 
 Six chapitres : des maths, des probabilités, de la statistique, du Python, du SQL, des outils. Chaque brique a été vue séparément, sur de petits exemples. Ce projet les **assemble** dans une seule étude de bout en bout, comme on le ferait dans un vrai travail : on reçoit une demande floue, on va chercher les données, on les contrôle, on les explore, on répond avec rigueur, et on rédige un rapport qu'une personne non spécialiste peut lire.
 
-> 🧭 **Comment lire ce projet.** Il n'introduit **aucune notion nouvelle** : chaque étape renvoie à la section du livre qui l'explique. Si vous bloquez sur une étape, c'est le signal d'aller relire cette section, pas de tout recommencer. Le meilleur usage : lire d'abord le cahier des charges (P.1), **fermer le livre**, essayer de répondre à la gérante avec vos propres moyens, puis comparer.
+> 🧭 **Comment lire ce projet.** Il n'introduit **aucune notion nouvelle** : chaque étape renvoie à la section du livre qui l'explique. Si vous bloquez sur une étape, c'est le signal d'aller relire cette section, pas de tout recommencer. Le meilleur usage : lire d'abord le cahier des charges (P.1), **fermer le livre**, essayer de répondre à Yasmine avec vos propres moyens, puis comparer.
 
 ## P.1 Le cahier des charges
 
-Fin décembre 2025. La gérante, la propriétaire de la boutique, vous envoie ce message :
+Fin décembre 2025. Yasmine, la propriétaire de Dar Jasmin, vous envoie ce message :
 
 > *« Bonjour ! L'année est finie et j'ai un peu le vertige : des commandes partout, trois canaux de vente, et aucune idée de ce qui marche vraiment. Quatre questions me trottent dans la tête pendant les fêtes :*
 >
 > *1. Comment s'est passée mon année 2025 ? (chiffre d'affaires, rythme, canaux)*
 >
-> *2. Réseaux me prend beaucoup de temps. Est-ce que ces clients dépensent vraiment moins que ceux de la boutique, ou est-ce une impression ?*
+> *2. Instagram me prend beaucoup de temps. Est-ce que ces clients dépensent vraiment moins que ceux de la boutique, ou est-ce une impression ?*
 >
 > *3. Je soupçonne que les retards de livraison font baisser la satisfaction. Est-ce vrai, et de combien ?*
 >
@@ -37,14 +37,14 @@ Transformer ce message en travail demande une **méthode**. La nôtre tient en s
 
 ## P.2 Étape 1 : charger et contrôler les données
 
-La base de la boutique a été construite au chapitre 5 (section 5.1.3) ; elle est fournie avec le livre dans `donnees/boutique.db`. Commençons par ouvrir la connexion et regarder ce qu'elle contient.
+La base de Dar Jasmin a été construite au chapitre 5 (section 5.1.3) ; elle est fournie avec le livre dans `donnees/dar_jasmin.db`. Commençons par ouvrir la connexion et regarder ce qu'elle contient.
 
 ```python
 import sqlite3
 import numpy as np
 import pandas as pd
 
-con = sqlite3.connect("donnees/boutique.db")
+con = sqlite3.connect("donnees/dar_jasmin.db")
 for table in ["categories", "produits", "clients", "commandes", "lignes_commande"]:
     n = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
     print(f"{table:16s} {n:4d} lignes")
@@ -201,7 +201,7 @@ print(categories.to_string(index=False))
     canal  commandes     ca  part_ca_pct  panier_moyen
      Site        148 8806.5         36.5         59.50
  Boutique        114 8528.3         35.4         74.81
-Réseaux        138 6763.5         28.1         49.01
+Instagram        138 6763.5         28.1         49.01
 
   categorie  articles      ca
      Bijoux       200 7006.20
@@ -219,7 +219,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 BLEU, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
-couleur = {"Boutique": AQUA, "Site": BLEU, "Réseaux": ORANGE}
+couleur = {"Boutique": AQUA, "Site": BLEU, "Instagram": ORANGE}
 noms_mois = ["jan", "fév", "mar", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"]
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2), gridspec_kw={"width_ratios": [1.25, 1]})
@@ -227,12 +227,12 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2), gridspec_kw={"width_rati
 # Panneau de gauche : CA mensuel empilé par canal
 ca = df.pivot_table(index="mois", columns="canal", values="montant", aggfunc="sum").reindex(range(1, 13)).fillna(0)
 bas = np.zeros(12)
-for canal in ["Boutique", "Site", "Réseaux"]:
+for canal in ["Boutique", "Site", "Instagram"]:
     ax1.bar(range(1, 13), ca[canal], bottom=bas, color=couleur[canal], width=0.75, label=canal)
     bas += ca[canal].to_numpy()
 ax1.set_xticks(range(1, 13))
 ax1.set_xticklabels(noms_mois, fontsize=8)
-ax1.set_ylabel("chiffre d'affaires (€)")
+ax1.set_ylabel("chiffre d'affaires (DT)")
 ax1.set_title("Chiffre d'affaires mensuel, par canal")
 ax1.legend(frameon=False, ncol=3, loc="upper left", fontsize=8)
 ax1.grid(axis="x", visible=False)
@@ -263,27 +263,27 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![À gauche : chiffre d'affaires mensuel de la boutique en 2025, empilé par canal. À droite : satisfaction moyenne des commandes livrées selon le délai, avec intervalle de confiance à 95 %.](figures/ch07-projet-vue-d-ensemble.png)
+![À gauche : chiffre d'affaires mensuel de Dar Jasmin en 2025, empilé par canal. À droite : satisfaction moyenne des commandes livrées selon le délai, avec intervalle de confiance à 95 %.](figures/ch07-projet-vue-d-ensemble.png)
 
 **Ce que montrent ces chiffres pour la question 1.** (Les nombres ci-dessous sont lus dans les sorties précédentes.)
 
-- Le chiffre d'affaires de l'année est de **24 098,30 €** pour 400 commandes (panier moyen **60,25 €**), que reconnaîtront les lecteurs du chapitre 3.
-- L'activité est **très saisonnière** : le creux est en janvier (996 €) et le pic en décembre (3 325 €), soit **un facteur 3,3** entre les deux. L'été est un plateau élevé (mai à août), suivi d'une chute en septembre-octobre, puis d'un rebond à l'approche des fêtes.
-- **Aucun canal ne domine.** La boutique et le site pèsent chacun environ un tiers du chiffre d'affaires ; Réseaux, avec un nombre de commandes comparable (138, contre 148 pour le site et 114 en boutique), pèse moins (28 %) : ses paniers sont plus petits. C'est précisément le point de la question 2.
+- Le chiffre d'affaires de l'année est de **24 098,30 DT** pour 400 commandes (panier moyen **60,25 DT**), que reconnaîtront les lecteurs du chapitre 3.
+- L'activité est **très saisonnière** : le creux est en janvier (996 DT) et le pic en décembre (3 325 DT), soit **un facteur 3,3** entre les deux. L'été est un plateau élevé (mai à août), suivi d'une chute en septembre-octobre, puis d'un rebond à l'approche des fêtes.
+- **Aucun canal ne domine.** La boutique et le site pèsent chacun environ un tiers du chiffre d'affaires ; Instagram, avec un nombre de commandes comparable (138, contre 148 pour le site et 114 en boutique), pèse moins (28 %) : ses paniers sont plus petits. C'est précisément le point de la question 2.
 
 Une remarque sur le graphique de droite : le dernier palier (9 jours et plus) a un intervalle de confiance **très large**, parce qu'il ne contient que quelques commandes. Un point isolé ne prouve rien ; c'est la **tendance d'ensemble** des cinq paliers qui est convaincante. Nous la chiffrons à l'étape 4.
 
-## P.4 Étape 3 : Réseaux dépense-t-il vraiment moins ? (question 2)
+## P.4 Étape 3 : Instagram dépense-t-il vraiment moins ? (question 2)
 
-Reformulons la question de façon testable. La gérante voit que les paniers Réseaux *semblent* plus petits. Ce qu'elle veut savoir : **cette différence observée dans nos 400 commandes reflète-t-elle une différence réelle entre les clientèles, ou pourrait-elle être due au hasard de l'échantillonnage ?** C'est exactement le cadre du chapitre 3 : un test de comparaison de deux moyennes (Welch, section 3.4), accompagné d'un **intervalle de confiance** (3.3) et d'une mesure de **taille d'effet**, car « significatif » ne veut pas dire « important » (3.5).
+Reformulons la question de façon testable. Yasmine voit que les paniers Instagram *semblent* plus petits. Ce qu'elle veut savoir : **cette différence observée dans nos 400 commandes reflète-t-elle une différence réelle entre les clientèles, ou pourrait-elle être due au hasard de l'échantillonnage ?** C'est exactement le cadre du chapitre 3 : un test de comparaison de deux moyennes (Welch, section 3.4), accompagné d'un **intervalle de confiance** (3.3) et d'une mesure de **taille d'effet**, car « significatif » ne veut pas dire « important » (3.5).
 
-Nous avons **trois comparaisons** à faire (Boutique–Réseaux, Boutique–Site, Site–Réseaux). Selon la section 3.5, tester trois fois augmente le risque d'une fausse alerte : nous corrigerons les p-valeurs avec la méthode de **Holm**.
+Nous avons **trois comparaisons** à faire (Boutique–Instagram, Boutique–Site, Site–Instagram). Selon la section 3.5, tester trois fois augmente le risque d'une fausse alerte : nous corrigerons les p-valeurs avec la méthode de **Holm**.
 
 ```python
 from scipy import stats
 
 paniers = {c: g["montant"].to_numpy() for c, g in df.groupby("canal")}
-paires = [("Boutique", "Réseaux"), ("Boutique", "Site"), ("Site", "Réseaux")]
+paires = [("Boutique", "Instagram"), ("Boutique", "Site"), ("Site", "Instagram")]
 
 lignes = []
 for a, b in paires:
@@ -313,41 +313,41 @@ with pd.option_context("display.float_format", "{:.4g}".format, "display.width",
 <!--sortie-->
 ```text
          comparaison  ecart_DT  ic95_bas  ic95_haut   p_brute  d_de_Cohen    p_holm
-Boutique - Réseaux      25.8     16.66      34.94 8.016e-08      0.7222 2.405e-07
+Boutique - Instagram      25.8     16.66      34.94 8.016e-08      0.7222 2.405e-07
      Boutique - Site     15.31     5.571      25.04  0.002188      0.3889  0.004377
-    Site - Réseaux     10.49     2.393      18.59    0.0113      0.2996    0.0113
+    Site - Instagram     10.49     2.393      18.59    0.0113      0.2996    0.0113
 ```
 
 > 📐 **Lire le tableau.** `ecart_DT` est la différence de paniers moyens ; `ic95_bas` et `ic95_haut` encadrent la différence **réelle** avec 95 % de confiance (au sens du 3.3 : la *méthode* encadre la vérité dans 95 % des cas). Le **d de Cohen** exprime l'écart en nombre d'écarts-types : environ 0,2 est « petit », 0,5 « moyen », 0,8 « grand ». Enfin `p_holm` est la p-valeur **après** correction des comparaisons multiples : c'est elle que l'on compare à 0,05.
 
-Les trois écarts sont tous significatifs, même après correction. Mais les p-valeurs ne disent pas à quel point ces écarts comptent : le tableau montre qu'ils sont **de tailles très différentes**. L'écart entre la boutique et Réseaux est d'environ 26 € par commande (un d de Cohen de plus de 0,7 : une différence franchement visible), alors que l'écart Site–Réseaux est de l'ordre de 10 € (un d autour de 0,3, plutôt petit).
+Les trois écarts sont tous significatifs, même après correction. Mais les p-valeurs ne disent pas à quel point ces écarts comptent : le tableau montre qu'ils sont **de tailles très différentes**. L'écart entre la boutique et Instagram est d'environ 26 DT par commande (un d de Cohen de plus de 0,7 : une différence franchement visible), alors que l'écart Site–Instagram est de l'ordre de 10 DT (un d autour de 0,3, plutôt petit).
 
 Les montants sont **asymétriques** (3.1.3 : la moyenne est tirée par quelques gros paniers). Vérifions que la conclusion ne dépend pas de ce choix en comparant aussi les **médianes**, avec un **bootstrap** (3.3.5) :
 
 ```python
 rng = np.random.default_rng(42)
 B = 5000
-x, y = paniers["Boutique"], paniers["Réseaux"]
+x, y = paniers["Boutique"], paniers["Instagram"]
 diffs = np.empty(B)
 for k in range(B):
     diffs[k] = np.median(rng.choice(x, len(x))) - np.median(rng.choice(y, len(y)))
 bas, haut = np.percentile(diffs, [2.5, 97.5])
-print(f"médiane Boutique : {np.median(x):.2f} €   médiane Réseaux : {np.median(y):.2f} €")
-print(f"écart de médianes : {np.median(x) - np.median(y):.2f} €   IC95 bootstrap : [{bas:.1f} ; {haut:.1f}]")
+print(f"médiane Boutique : {np.median(x):.2f} DT   médiane Instagram : {np.median(y):.2f} DT")
+print(f"écart de médianes : {np.median(x) - np.median(y):.2f} DT   IC95 bootstrap : [{bas:.1f} ; {haut:.1f}]")
 ```
 <!--sortie-->
 ```text
-médiane Boutique : 64.85 €   médiane Réseaux : 41.50 €
-écart de médianes : 23.35 €   IC95 bootstrap : [14.6 ; 31.6]
+médiane Boutique : 64.85 DT   médiane Instagram : 41.50 DT
+écart de médianes : 23.35 DT   IC95 bootstrap : [14.6 ; 31.6]
 ```
 
 L'écart de médianes est du même ordre que l'écart de moyennes, et son intervalle exclut nettement zéro : la conclusion est **robuste**.
 
-> ⚠️ **Ce que ces tests ne disent pas.** Ils établissent que les paniers Réseaux sont plus petits ; ils n'expliquent **pas pourquoi** (produits moins chers ? clientèle plus jeune ? achats d'impulsion ?). Et surtout, un panier plus petit ne signifie pas un canal moins rentable : nous n'avons ni les coûts, ni le temps passé, ni la marge. Dire « Réseaux dépense moins par commande » est un fait ; dire « Réseaux ne vaut pas le coup » serait une conclusion que ces données **ne permettent pas** de tirer.
+> ⚠️ **Ce que ces tests ne disent pas.** Ils établissent que les paniers Instagram sont plus petits ; ils n'expliquent **pas pourquoi** (produits moins chers ? clientèle plus jeune ? achats d'impulsion ?). Et surtout, un panier plus petit ne signifie pas un canal moins rentable : nous n'avons ni les coûts, ni le temps passé, ni la marge. Dire « Instagram dépense moins par commande » est un fait ; dire « Instagram ne vaut pas le coup » serait une conclusion que ces données **ne permettent pas** de tirer.
 
 ## P.5 Étape 4 : les retards font-ils baisser la satisfaction ? (question 3)
 
-Ici, il ne s'agit plus de comparer des groupes mais de **relier deux variables** : le délai de livraison (en jours) et la satisfaction (de 1 à 5). Un détail essentiel : la boutique a un délai nul par construction (le client repart avec sa commande). Si nous l'incluions, nous mélangerions deux effets : « le client a-t-il attendu ? » et « le client est-il venu en boutique ? ». Pour isoler l'effet du **délai**, nous nous limitons aux commandes **livrées** (Site et Réseaux).
+Ici, il ne s'agit plus de comparer des groupes mais de **relier deux variables** : le délai de livraison (en jours) et la satisfaction (de 1 à 5). Un détail essentiel : la boutique a un délai nul par construction (le client repart avec sa commande). Si nous l'incluions, nous mélangerions deux effets : « le client a-t-il attendu ? » et « le client est-il venu en boutique ? ». Pour isoler l'effet du **délai**, nous nous limitons aux commandes **livrées** (Site et Instagram).
 
 ```python
 livre = df[df["canal"] != "Boutique"].copy()
@@ -364,7 +364,7 @@ print(f"corrélation de Spearman : {r_spearman.statistic:.3f}  (p = {r_spearman.
 286 commandes livrées
            count  mean  median  max
 canal                              
-Réseaux    138  4.49     4.0    9
+Instagram    138  4.49     4.0    9
 Site         148  4.70     4.0   13
 
 corrélation de Pearson  : -0.407
@@ -402,7 +402,7 @@ droite des moindres carrés : satisfaction = 4.58 + (-0.180) x délai
 IC95 bootstrap de la pente : [-0.228 ; -0.129]
 ```
 
-Chaque jour de livraison supplémentaire est associé à une baisse de satisfaction d'environ **0,18 point** (sur une échelle de 5), et l'intervalle de confiance, qui ne contient pas zéro, exclut un effet nul. Pour parler en termes concrets, comparons des **groupes de délais** (puis la même pente, canal par canal, pour vérifier que l'effet n'est pas un simple artefact du mélange Site/Réseaux) :
+Chaque jour de livraison supplémentaire est associé à une baisse de satisfaction d'environ **0,18 point** (sur une échelle de 5), et l'intervalle de confiance, qui ne contient pas zéro, exclut un effet nul. Pour parler en termes concrets, comparons des **groupes de délais** (puis la même pente, canal par canal, pour vérifier que l'effet n'est pas un simple artefact du mélange Site/Instagram) :
 
 ```python
 livre["groupe"] = pd.cut(livre["delai_livraison"], bins=[0, 3, 6, 100], labels=["1-3 jours", "4-6 jours", "7 jours et +"])
@@ -420,13 +420,13 @@ groupe
 4-6 jours           156     3.76
 7 jours et +         42     3.17
 
-Réseaux  pente = -0.182 point/jour   (r = -0.38, 138 commandes)
+Instagram  pente = -0.182 point/jour   (r = -0.38, 138 commandes)
 Site       pente = -0.181 point/jour   (r = -0.44, 148 commandes)
 ```
 
 Les trois groupes sont nettement ordonnés : plus le délai est long, plus la satisfaction moyenne est basse, avec un écart d'**environ 0,9 point** entre les livraisons rapides (1 à 3 jours) et les livraisons lentes (7 jours et plus). Et la pente est du même ordre dans les deux canaux : le phénomène n'est pas un effet de mélange.
 
-Une dernière question de la gérante, naturelle : « *si je ramenais tous mes délais de plus de 5 jours à 5 jours, que gagnerais-je ?* » Le calcul est facile avec la droite, et il faut l'énoncer avec **prudence** :
+Une dernière question de Yasmine, naturelle : « *si je ramenais tous mes délais de plus de 5 jours à 5 jours, que gagnerais-je ?* » Le calcul est facile avec la droite, et il faut l'énoncer avec **prudence** :
 
 ```python
 longs = livre[livre["delai_livraison"] > 5]
@@ -509,11 +509,11 @@ print(f"\n(par ailleurs, {jamais} clients inscrits n'ont jamais commandé : une 
 ```text
 5 clients précieux à relancer :
        client    ville  commandes  ca_2025 derniere_commande  jours_depuis
-   Amel Ayari   Ville E          5    393.0        2025-07-26           158
-   Lina Sassi  Ville B          4    297.8        2025-08-17           136
-  Hatem Ayari Ville C          6    294.9        2025-09-24            98
-Oussama Hamdi Ville C          6    284.0        2025-08-30           123
-  Walid Ayari   Ville G          7    270.3        2025-09-26            96
+   Amel Ayari   Nabeul          5    393.0        2025-07-26           158
+   Lina Sassi  Bizerte          4    297.8        2025-08-17           136
+  Hatem Ayari La Marsa          6    294.9        2025-09-24            98
+Oussama Hamdi La Marsa          6    284.0        2025-08-30           123
+  Walid Ayari   Sousse          7    270.3        2025-09-26            96
 
 (par ailleurs, 14 clients inscrits n'ont jamais commandé : une campagne différente, de première commande)
 ```
@@ -522,7 +522,7 @@ Oussama Hamdi Ville C          6    284.0        2025-08-30           123
 
 ## P.7 Étape 6 : rédiger le rapport
 
-Tout le travail précédent n'a de valeur que s'il se transforme en **message clair**. Un rapport pour la gérante tient sur une page, ne contient aucun jargon, donne les chiffres clés, formule des recommandations et **annonce ses limites**.
+Tout le travail précédent n'a de valeur que s'il se transforme en **message clair**. Un rapport pour Yasmine tient sur une page, ne contient aucun jargon, donne les chiffres clés, formule des recommandations et **annonce ses limites**.
 
 Une bonne pratique, héritée du chapitre 6 (recherche reproductible) : **ne jamais recopier un chiffre à la main** dans un rapport. On génère le texte à partir des résultats déjà calculés. Si les données changent demain, le rapport se met à jour tout seul.
 
@@ -538,7 +538,7 @@ def fr(x, decimales=2):
 ca_total = total.loc[0, "chiffre_affaires"]
 mois_pic = mensuel.loc[mensuel["ca"].idxmax()]
 mois_creux = mensuel.loc[mensuel["ca"].idxmin()]
-t_bi = tab.iloc[0]       # Boutique - Réseaux
+t_bi = tab.iloc[0]       # Boutique - Instagram
 groupes = livre.groupby("groupe", observed=True)["satisfaction"].mean()
 top_quartile_part = concentration.loc[0, "part_ca_pct"]
 
@@ -546,14 +546,14 @@ rapport = f"""RAPPORT 2025 : DAR JASMIN
 {"=" * 60}
 
 1. L'année en bref
-   - Chiffre d'affaires : {fr(ca_total)} € pour {int(total.loc[0, 'commandes'])} commandes
-     (panier moyen : {fr(total.loc[0, 'panier_moyen'])} €).
-   - Un rythme très saisonnier : creux en {mois_fr[int(mois_creux['mois']) - 1]} ({fr(mois_creux['ca'], 0)} €),
-     pic en {mois_fr[int(mois_pic['mois']) - 1]} ({fr(mois_pic['ca'], 0)} €).
+   - Chiffre d'affaires : {fr(ca_total)} DT pour {int(total.loc[0, 'commandes'])} commandes
+     (panier moyen : {fr(total.loc[0, 'panier_moyen'])} DT).
+   - Un rythme très saisonnier : creux en {mois_fr[int(mois_creux['mois']) - 1]} ({fr(mois_creux['ca'], 0)} DT),
+     pic en {mois_fr[int(mois_pic['mois']) - 1]} ({fr(mois_pic['ca'], 0)} DT).
 
-2. Réseaux dépense-t-il moins ?
-   - Oui : un panier Réseaux est inférieur de {fr(t_bi['ecart_DT'], 1)} € à un panier en boutique
-     (intervalle de confiance à 95 % : de {fr(t_bi['ic95_bas'], 1)} à {fr(t_bi['ic95_haut'], 1)} €).
+2. Instagram dépense-t-il moins ?
+   - Oui : un panier Instagram est inférieur de {fr(t_bi['ecart_DT'], 1)} DT à un panier en boutique
+     (intervalle de confiance à 95 % : de {fr(t_bi['ic95_bas'], 1)} à {fr(t_bi['ic95_haut'], 1)} DT).
    - Cet écart n'est pas dû au hasard (p corrigée < 0,001) et il est franc (d de Cohen = {fr(t_bi['d_de_Cohen'])}).
    - Attention : nous ne connaissons ni les marges, ni le temps passé. Un panier plus petit
      ne veut pas dire un canal moins rentable.
@@ -579,14 +579,14 @@ RAPPORT 2025 : DAR JASMIN
 ============================================================
 
 1. L'année en bref
-   - Chiffre d'affaires : 24 098,30 € pour 400 commandes
-     (panier moyen : 60,25 €).
-   - Un rythme très saisonnier : creux en janvier (996 €),
-     pic en décembre (3 325 €).
+   - Chiffre d'affaires : 24 098,30 DT pour 400 commandes
+     (panier moyen : 60,25 DT).
+   - Un rythme très saisonnier : creux en janvier (996 DT),
+     pic en décembre (3 325 DT).
 
-2. Réseaux dépense-t-il moins ?
-   - Oui : un panier Réseaux est inférieur de 25,8 € à un panier en boutique
-     (intervalle de confiance à 95 % : de 16,7 à 34,9 €).
+2. Instagram dépense-t-il moins ?
+   - Oui : un panier Instagram est inférieur de 25,8 DT à un panier en boutique
+     (intervalle de confiance à 95 % : de 16,7 à 34,9 DT).
    - Cet écart n'est pas dû au hasard (p corrigée < 0,001) et il est franc (d de Cohen = 0,72).
    - Attention : nous ne connaissons ni les marges, ni le temps passé. Un panier plus petit
      ne veut pas dire un canal moins rentable.
@@ -605,7 +605,7 @@ RAPPORT 2025 : DAR JASMIN
 Limites : une seule année de données ; pas de coûts ; association n'est pas causalité.
 ```
 
-> 🛠️ **Relisez ce rapport comme la gérante.** Y a-t-il un mot qu'elle ne comprendrait pas (« d de Cohen », « bootstrap ») ? Dans le rapport final, on garde le **chiffre** et on cache la **méthode** : l'annexe technique, c'est le reste de ce projet, rangé dans le dépôt. Dans la version ci-dessus, le « d de Cohen » est volontairement conservé pour que vous voyiez d'où vient chaque chiffre ; dans le document remis à la gérante, on écrirait simplement « un écart net ».
+> 🛠️ **Relisez ce rapport comme Yasmine.** Y a-t-il un mot qu'elle ne comprendrait pas (« d de Cohen », « bootstrap ») ? Dans le rapport final, on garde le **chiffre** et on cache la **méthode** : l'annexe technique, c'est le reste de ce projet, rangé dans le dépôt. Dans la version ci-dessus, le « d de Cohen » est volontairement conservé pour que vous voyiez d'où vient chaque chiffre ; dans le document remis à Yasmine, on écrirait simplement « un écart net ».
 
 ## P.8 Rendre le projet reproductible
 
@@ -627,7 +627,7 @@ etude-dar-jasmin-2025/
 ├── README.md              <- la question, comment relancer, les versions
 ├── requirements.txt
 ├── donnees/
-│   └── boutique.db
+│   └── dar_jasmin.db
 ├── sql/                   <- chaque requête dans son fichier : 01_ca_mensuel.sql, ...
 ├── analyse/
 │   ├── 01_controles.py
@@ -643,8 +643,216 @@ etude-dar-jasmin-2025/
 Une étude honnête se termine par ses **limites** :
 
 - **Une seule année** : impossible de distinguer une vraie saisonnalité d'un phénomène propre à 2025.
-- **Pas de coûts** : nous avons parlé de chiffre d'affaires, jamais de **bénéfice**. Réseaux pourrait être très rentable si l'on dépense peu pour y vendre.
+- **Pas de coûts** : nous avons parlé de chiffre d'affaires, jamais de **bénéfice**. Instagram pourrait être très rentable si l'on dépense peu pour y vendre.
 - **Pas de causalité** : les relations constatées sont des **associations** ; pour savoir si réduire les délais *améliorerait* les notes, il faudrait une expérience (volume II, chapitre 7 facultatif sur l'inférence causale, et chapitre 8 sur les plans d'expériences).
 - **Variables simples** : nous n'avons pas pris en compte, par exemple, la ville de livraison, le type de produit ou le client lui-même (un client très exigeant note toujours bas). Les modèles du volume II (régression multiple, modèles mixtes) permettent de **tenir compte de plusieurs facteurs à la fois**.
 
-> ✅ **À retenir.** Ce que vous venez de faire, de la question de la gérante au rapport, est le **cycle de base de la data science** : *poser la question → contrôler les données → décrire → comparer ou relier avec rigueur → conclure avec prudence → rendre reproductible*. Les volumes suivants ajouteront des outils (régression, apprentissage automatique, séries temporelles…), mais ce cycle ne changera pas.
+> ✅ **À retenir.** Ce que vous venez de faire, de la question de Yasmine au rapport, est le **cycle de base de la data science** : *poser la question → contrôler les données → décrire → comparer ou relier avec rigueur → conclure avec prudence → rendre reproductible*. Les volumes suivants ajouteront des outils (régression, apprentissage automatique, séries temporelles…), mais ce cycle ne changera pas.
+
+
+# Points clés et auto-évaluation
+
+> « On ne sait vraiment une chose que lorsqu'on peut l'expliquer à quelqu'un d'autre sans regarder ses notes. »
+
+Ce dernier chapitre court a deux rôles. Le premier : **fixer l'essentiel** de chaque chapitre en quelques lignes, pour pouvoir y revenir. Le second : vous donner un moyen **honnête** de savoir si le volume a fait son travail, avec trente questions, leurs réponses, et une grille d'auto-évaluation.
+
+## Les points clés, chapitre par chapitre
+
+| Chapitre | Ce que vous devez emporter |
+|--|----------|
+| **1. Mathématiques** | Un vecteur est une liste de nombres *et* une flèche ; une matrice **transforme** l'espace. Les valeurs propres disent de combien une direction est étirée, la SVD en donne la meilleure approximation. La dérivée mesure un taux de variation, le **gradient** pointe vers la plus forte montée : on **descend** dans l'opposé pour optimiser. Les ordinateurs calculent avec des approximations (`0,1 + 0,2 ≠ 0,3`) : on compare avec une tolérance. |
+| **2. Probabilités** | Une probabilité mesure l'incertitude ; la **formule de Bayes** met à jour une croyance quand on observe un fait (et une alerte rare est souvent une fausse alerte). Les **lois** (Bernoulli, binomiale, Poisson, normale…) sont des modèles ; l'espérance et la variance les résument. La **loi des grands nombres** dit que la moyenne converge ; le **théorème central limite** dit comment elle fluctue (en $\sigma/\sqrt n$). |
+| **3. Statistique** | **Dessiner avant de calculer.** Un estimateur se juge à son biais et à sa variance. Un **intervalle de confiance** quantifie l'incertitude ; une **p-valeur** n'est *pas* la probabilité que l'hypothèse soit vraie ; « significatif » n'est pas « important ». Tester plusieurs fois impose de **corriger** (Bonferroni, Holm, Benjamini-Hochberg). Le bootstrap et les tests de permutation fonctionnent sans hypothèse de loi. |
+| **4. Programmation** | Python pour tout faire, R pour comparer. Une **bonne structure de données** (dictionnaire, ensemble) vaut mieux qu'un calcul plus rapide. **Vectorisez** avec NumPy et pandas au lieu de boucler. Un graphique répond à **une question** et ne ment pas (axes honnêtes). Un test automatique est un filet de sécurité. |
+| **5. SQL** | Une base **relationnelle** sépare l'information en tables reliées par des clés. `WHERE` filtre les lignes, `HAVING` filtre les groupes. `LEFT JOIN` garde les lignes sans correspondance, `NULL` se teste avec `IS NULL`. Les **fonctions fenêtres** calculent sans écraser les lignes ; les **CTE** donnent un nom à chaque étape. Normaliser évite la redondance et les incohérences. |
+| **6. Outils** | **Git** garde l'historique et permet d'essayer sans risque (branches). Un **notebook** mélange code et texte, mais cache un état : *Restart & Run All* avant de partager. La **ligne de commande** assemble de petits outils ; un **environnement virtuel** et un `requirements.txt` rendent l'analyse reproductible. |
+| **Projet** | Le cycle complet : **question → contrôle des données → description → comparaison ou liaison rigoureuse → conclusion prudente → reproductibilité**. |
+
+> 💡 **Trois idées qui traversent tout le volume.**
+>
+> 1. **Les données varient** : un chiffre calculé sur un échantillon est une estimation, jamais la vérité (chapitres 2 et 3).
+> 2. **Un calcul juste n'est pas une conclusion juste** : il faut vérifier les hypothèses, dessiner, contrôler les données, distinguer association et causalité (chapitres 3 à 5 et projet).
+> 3. **Ce qui n'est pas reproductible n'existe pas** : graines fixées, code versionné, environnement décrit (chapitres 4 à 6).
+
+## Trente questions pour s'auto-évaluer
+
+**Mode d'emploi.** Répondez **à voix haute ou par écrit** avant de regarder le corrigé, en une ou deux phrases. Si vous ne savez pas, notez la section indiquée et allez la relire : ce n'est pas un échec, c'est le but de l'exercice. Vingt-cinq bonnes réponses sur trente signalent un volume bien assimilé.
+
+### Mathématiques (chapitre 1)
+
+1. Que signifie l'égalité $A\mathbf v=\lambda\mathbf v$ ?
+2. Dans quelle direction faut-il se déplacer pour **faire diminuer** le plus vite possible une fonction ?
+3. Pourquoi `0.1 + 0.2 == 0.3` vaut-il `False` en Python, et comment comparer proprement deux nombres décimaux ?
+4. Yasmine veut présenter 3 produits choisis parmi 8 dans une vitrine, sans tenir compte de l'ordre. Combien de vitrines possibles ?
+
+### Probabilités (chapitre 2)
+
+5. Une maladie touche 1 % de la population. Un test la détecte dans 90 % des cas, mais donne un faux positif chez 5 % des personnes saines. Vous êtes positif : quelle est la probabilité d'être malade ?
+6. Quelle différence entre la loi des grands nombres et le théorème central limite ?
+7. Les montants de commandes ont un écart-type de 38 DT. Quel est l'écart-type de la **moyenne** de 400 commandes ?
+8. Quelle loi pour (a) le nombre de commandes reçues en une heure ; (b) le fait qu'une commande soit retournée ou non ?
+
+### Statistique (chapitre 3)
+
+9. Pourquoi divise-t-on par $n-1$ et non par $n$ pour estimer une variance ?
+10. Que signifie « intervalle de confiance à 95 % » ? Que ne signifie-t-il **pas** ?
+11. Qu'est-ce qu'une p-valeur ? Citez une mauvaise interprétation fréquente.
+12. On réalise 20 tests indépendants au seuil de 5 %, alors qu'**aucun** effet n'existe. Combien de faux positifs attend-on, et quelle est la probabilité d'en obtenir **au moins un** ?
+13. Quand préférer la médiane à la moyenne ?
+14. Un test donne $p = 10^{-9}$ pour une différence de 0,3 DT entre deux paniers moyens. Doit-on s'en réjouir ?
+
+### Programmation (chapitre 4)
+
+15. Pourquoi tester l'appartenance d'un élément est-il bien plus rapide dans un `set` ou un `dict` que dans une `list` de grande taille ?
+16. Pourquoi `df["montant"].sum()` est-il préférable à une boucle `for` sur les lignes ?
+17. Que renvoie `df.groupby("canal")["montant"].mean()` : quel type, et quel index ?
+18. Citez deux manières de rendre un graphique en barres trompeur.
+19. Combien de comparaisons, au maximum, la recherche dichotomique effectue-t-elle sur une liste triée d'un million d'éléments ?
+20. À quoi sert un test unitaire, et pourquoi vaut-il mieux que « j'ai regardé, ça avait l'air bon » ?
+
+### SQL (chapitre 5)
+
+21. Quelle est la différence entre une clé primaire et une clé étrangère ?
+22. Quelle différence entre `WHERE` et `HAVING` ?
+23. Vous voulez la liste de **tous** les clients avec leur nombre de commandes, y compris ceux qui n'ont jamais commandé. Quelle jointure ?
+24. Pourquoi `WHERE telephone = NULL` ne renvoie-t-il jamais rien, et que faut-il écrire ?
+25. En quoi une fonction fenêtre (`OVER`) diffère-t-elle d'un `GROUP BY` ?
+26. Pourquoi normaliser une base (jusqu'à la 3FN) ?
+
+### Outils (chapitre 6)
+
+27. Quelle différence entre `git add` et `git commit` ?
+28. Pourquoi un notebook peut-il donner des résultats différents selon qui l'exécute, et comment s'en protéger ?
+29. À quoi sert un fichier `requirements.txt` ?
+30. Quelle commande compte rapidement le nombre de lignes d'un fichier CSV, et pourquoi faut-il en retrancher une ?
+
+## Vérifier les réponses chiffrées
+
+Pour les questions numériques, plutôt que de se fier à sa mémoire, **calculons**. Le code ci-dessous vérifie les réponses des questions 3, 4, 5, 7, 12 et 19.
+
+```python
+import math
+
+# Q3 : arithmétique des flottants
+print("Q3  0.1 + 0.2 == 0.3 :", 0.1 + 0.2 == 0.3, "| avec tolérance :", math.isclose(0.1 + 0.2, 0.3))
+
+# Q4 : combinaisons
+print("Q4  C(8,3) =", math.comb(8, 3))
+
+# Q5 : formule de Bayes
+prevalence, sensibilite, faux_positifs = 0.01, 0.90, 0.05
+p_positif = sensibilite * prevalence + faux_positifs * (1 - prevalence)
+print(f"Q5  P(malade | test positif) = {sensibilite * prevalence / p_positif:.4f}")
+
+# Q7 : écart-type d'une moyenne
+print(f"Q7  38 / sqrt(400) = {38 / math.sqrt(400):.2f} DT")
+
+# Q12 : tests multiples
+print(f"Q12 faux positifs attendus : {20 * 0.05:.0f} ; P(au moins un) = {1 - 0.95 ** 20:.4f}")
+
+# Q19 : recherche dichotomique
+print("Q19 comparaisons max pour 1 000 000 éléments :", math.ceil(math.log2(1_000_000 + 1)))
+```
+<!--sortie-->
+```text
+Q3  0.1 + 0.2 == 0.3 : False | avec tolérance : True
+Q4  C(8,3) = 56
+Q5  P(malade | test positif) = 0.1538
+Q7  38 / sqrt(400) = 1.90 DT
+Q12 faux positifs attendus : 1 ; P(au moins un) = 0.6415
+Q19 comparaisons max pour 1 000 000 éléments : 20
+```
+
+## Corrigé
+
+**1.** $\mathbf v$ est un **vecteur propre** de $A$ : la matrice ne change pas sa direction, elle l'étire (ou le comprime) d'un facteur $\lambda$, la **valeur propre**. (1.1.3)
+
+**2.** Dans la direction **opposée au gradient**, qui pointe vers la plus forte montée. C'est le principe de la descente de gradient. (1.2 et 1.3)
+
+**3.** Les nombres décimaux sont stockés en binaire, et $0{,}1$ n'a pas d'écriture binaire finie : on ne stocke qu'une **approximation**. On compare avec une tolérance (`math.isclose`, `np.isclose`), jamais avec `==`. (1.5)
+
+**4.** $\binom{8}{3}=\dfrac{8!}{3!\,5!}=56$ vitrines. L'ordre ne comptant pas, on divise les $8\times7\times6=336$ arrangements par les $3!=6$ façons de les ranger. (1.6)
+
+**5.** Environ **15,4 %**, loin des 90 % que l'on devine. Sur 1 000 personnes, 10 sont malades (9 détectées) et 990 sont saines (environ 49,5 faux positifs) : seulement $9$ positifs sur $58{,}5$ environ sont vraiment malades. C'est ce qui arrive quand la maladie est rare. (2.1)
+
+**6.** La loi des grands nombres dit que la **moyenne d'échantillon converge** vers l'espérance quand $n$ grandit ; le théorème central limite décrit **comment elle fluctue** autour de celle-ci : approximativement selon une loi normale d'écart-type $\sigma/\sqrt n$, quelle que soit la loi d'origine. (2.4)
+
+**7.** $38/\sqrt{400}=38/20=1{,}9$ DT : la moyenne est bien plus stable que chaque commande. C'est la raison pour laquelle on moyenne. (2.4)
+
+**8.** (a) Une loi de **Poisson** (événements rares et indépendants dans un intervalle de temps) ; (b) une loi de **Bernoulli** (deux issues), ou binomiale si l'on compte le nombre de retours sur $n$ commandes. (2.2)
+
+**9.** Parce que l'on mesure les écarts à la moyenne **de l'échantillon**, qui est elle-même ajustée aux données : les écarts sont un peu trop petits. Diviser par $n-1$ corrige ce biais et rend l'estimateur **sans biais**. (3.2)
+
+**10.** La **méthode** produit un intervalle qui contient la vraie valeur dans 95 % des échantillons possibles. Ce n'est **pas** « 95 % de chances que la vraie valeur soit dans cet intervalle-ci » : une fois calculé, l'intervalle contient la vraie valeur ou ne la contient pas. (3.3.2)
+
+**11.** La probabilité d'observer un résultat **au moins aussi extrême** que le nôtre, *si l'hypothèse nulle était vraie*. Mauvaise interprétation fréquente : « c'est la probabilité que l'hypothèse nulle soit vraie ». (3.5.1 et 3.5.2)
+
+**12.** On attend $20\times0{,}05=1$ faux positif, et la probabilité d'au moins un est $1-0{,}95^{20}\approx64\,\%$ : d'où la nécessité de corriger les tests multiples. (3.5.5)
+
+**13.** Quand la distribution est **asymétrique** ou contient des **valeurs extrêmes** (montants, revenus, durées) : la médiane est robuste, la moyenne est tirée par la queue. (3.1.3)
+
+**14.** Pas vraiment : avec assez de données, même une différence minuscule devient « significative ». 0,3 DT sur un panier de 60 DT n'a **aucune importance pratique**. Il faut toujours regarder la **taille de l'effet** et l'intervalle de confiance, pas seulement la p-valeur. (3.5.3)
+
+**15.** Un `set` ou un `dict` utilise une **table de hachage** : il calcule directement où se trouve l'élément (coût quasi constant). Une liste doit être **parcourue** élément par élément (coût proportionnel à sa taille). (4.3.2 et 4.8)
+
+**16.** La somme vectorisée s'exécute en **code compilé** sur un tableau contigu, sans le surcoût de l'interpréteur Python à chaque ligne : elle est en général beaucoup plus rapide (au moins plusieurs fois, souvent bien davantage selon la taille du tableau), et plus courte à écrire. (4.4 et 4.8)
+
+**17.** Une **Series** pandas dont l'index est le canal (Boutique, Instagram, Site) et dont les valeurs sont les montants moyens. (4.4)
+
+**18.** Par exemple : **tronquer l'axe vertical** (un écart réel de 2 % peut sembler un rapport de 5 à 1), utiliser un **camembert en 3D** (la perspective déforme les aires) ou un **double axe vertical** (on rend « visible » n'importe quelle corrélation en choisissant les échelles). Une barre doit toujours partir de zéro. (4.5.6)
+
+**19.** **20** comparaisons au plus ($2^{20}=1\,048\,576>10^6$) : chaque comparaison divise l'intervalle de recherche par deux. Chercher dans une liste non triée en demanderait jusqu'à un million. (4.3.5)
+
+**20.** Un test unitaire **vérifie automatiquement** qu'une fonction renvoie le résultat attendu sur des cas connus. Rejoué à chaque modification, il détecte immédiatement une régression ; un coup d'œil, lui, oublie les cas limites et ne se rejoue pas. (4.6)
+
+**21.** La **clé primaire** identifie de façon unique chaque ligne d'une table. Une **clé étrangère** est une colonne qui référence la clé primaire d'une autre table : c'est elle qui crée le lien entre les tables. (5.1)
+
+**22.** `WHERE` filtre les **lignes** avant le regroupement ; `HAVING` filtre les **groupes** après l'agrégation (par exemple « les clients avec plus de 5 commandes »). (5.2.4)
+
+**23.** Un **`LEFT JOIN`** de `clients` vers `commandes` : il garde tous les clients, avec `NULL` (ou 0 après `COUNT` sur la colonne de droite) pour ceux qui n'ont pas de commande. Un `INNER JOIN` les ferait disparaître. (5.2.5)
+
+**24.** Parce que `NULL` signifie « inconnu » : comparer quoi que ce soit à `NULL` donne « inconnu », jamais « vrai ». Il faut écrire `WHERE telephone IS NULL`. (5.2.7)
+
+**25.** `GROUP BY` **réduit** plusieurs lignes à une seule par groupe ; une fonction fenêtre **conserve toutes les lignes** et ajoute une colonne calculée sur une « fenêtre » de lignes voisines (classement, cumul, ligne précédente). (5.3.1)
+
+**26.** Pour **éviter la redondance** (la même information écrite à plusieurs endroits) et donc les **anomalies** de mise à jour, d'insertion et de suppression : chaque fait est stocké **une seule fois**. (5.4)
+
+**27.** `git add` **prépare** les modifications (zone d'index) ; `git commit` **enregistre** ce qui a été préparé dans l'historique, avec un message. Cela permet de composer des commits cohérents. (6.1.3)
+
+**28.** Parce que l'on peut exécuter les cellules **dans le désordre** et que le noyau garde en mémoire des variables qui n'existent plus dans le fichier : c'est l'**état caché**. Protection : *Restart & Run All* avant de partager ou d'en tirer un résultat. (6.2.3)
+
+**29.** Il **liste les bibliothèques et leurs versions** nécessaires, pour que n'importe qui puisse recréer le même environnement (`pip install -r requirements.txt`). (6.3.6)
+
+**30.** `wc -l fichier.csv`. Il faut retrancher **1** : la première ligne est l'en-tête (les noms de colonnes), pas une observation. (6.3)
+
+## Votre grille d'auto-évaluation
+
+Pour chaque ligne, cochez mentalement : **je sais l'expliquer** / **je sais le faire** / **à revoir**. Les sections à relire sont indiquées.
+
+| Compétence | Où la retravailler |
+|---|---|
+| Manipuler des vecteurs et des matrices, interpréter valeurs propres et SVD | 1.1 |
+| Dériver, calculer un gradient, faire une descente de gradient | 1.2, 1.3 |
+| Calculer avec des probabilités conditionnelles et appliquer Bayes | 2.1 |
+| Choisir une loi et en calculer espérance et variance | 2.2, 2.3 |
+| Expliquer la loi des grands nombres et le théorème central limite | 2.4 |
+| Décrire un jeu de données (position, dispersion, forme) et le tracer | 3.1 |
+| Estimer un paramètre, construire et interpréter un intervalle de confiance | 3.2, 3.3 |
+| Mener un test, lire une p-valeur, corriger les tests multiples | 3.4, 3.5 |
+| Écrire un programme Python avec fonctions, boucles, dictionnaires | 4.1, 4.3 |
+| Manipuler un tableau avec pandas (filtrer, regrouper, joindre) | 4.4 |
+| Produire un graphique honnête et lisible | 4.5 |
+| Écrire des requêtes SQL avec jointures et agrégations | 5.2 |
+| Utiliser fonctions fenêtres et CTE | 5.3 |
+| Concevoir un schéma normalisé | 5.1, 5.4 |
+| Versionner un projet avec Git | 6.1 |
+| Utiliser notebooks, ligne de commande et environnements virtuels | 6.2, 6.3 |
+| Mener un petit projet de bout en bout | Projet du volume |
+
+## Et maintenant ?
+
+Le volume I vous a donné le **socle**. Il ne contient volontairement aucun modèle « à la mode » : ceux-ci demandent justement les bases que vous venez d'acquérir. Dans le **volume II : Modélisation statistique**, vous apprendrez à **modéliser** : la régression linéaire (la droite des moindres carrés de ce projet, généralisée à plusieurs variables), les modèles linéaires généralisés, les séries temporelles (la saisonnalité de Dar Jasmin, enfin traitée proprement), l'analyse de survie et la statistique bayésienne.
+
+> 💡 **Un conseil pour la suite.** Ne passez pas au volume II en vous reprochant de ne pas tout retenir du volume I : personne ne retient tout. Retenez **où chercher**. Gardez ce livre à portée de main, et revenez-y chaque fois qu'une notion (une p-valeur, une jointure, un gradient) revient dans un contexte nouveau. C'est ainsi, en revenant, que les fondations deviennent solides.
+
+> ✅ **À retenir, tout simplement.** La data science est un artisanat : des mathématiques simples, du code propre, beaucoup de bon sens, et la méthode. Vous avez désormais les gestes. Il ne reste qu'à les répéter.

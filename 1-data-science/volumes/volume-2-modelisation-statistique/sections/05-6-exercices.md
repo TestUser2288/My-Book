@@ -2,7 +2,7 @@
 
 Les exercices sont classés par difficulté : ⭐ (application directe), ⭐⭐ (demande de réfléchir), ⭐⭐⭐ (synthèse). **Cherchez d'abord seul(e)**, à la main quand c'est demandé, avant de lire le corrigé. Les fonctions écrites dans le chapitre (`kaplan_meier`, `logrank`, `cox_ph`, `test_ph`, `ajuster`, `incidence_cumulee`…) sont réutilisées dans les corrigés.
 
-**Exercice 1 ⭐ (censure et Kaplan-Meier à la main).** Yasmine suit six clients : $(4;\text{parti})$, $(7;\text{censuré})$, $(9;\text{parti})$, $(12;\text{parti})$, $(15;\text{censuré})$, $(20;\text{censuré})$ (durées en mois). (a) Calculez la moyenne de toutes les durées, puis celle des seuls clients partis. (b) Calculez la courbe de Kaplan-Meier à la main. (c) Donnez la médiane de survie. (d) Calculez la durée moyenne restreinte jusqu'à 20 mois.
+**Exercice 1 ⭐ (censure et Kaplan-Meier à la main).** la gérante suit six clients : $(4;\text{parti})$, $(7;\text{censuré})$, $(9;\text{parti})$, $(12;\text{parti})$, $(15;\text{censuré})$, $(20;\text{censuré})$ (durées en mois). (a) Calculez la moyenne de toutes les durées, puis celle des seuls clients partis. (b) Calculez la courbe de Kaplan-Meier à la main. (c) Donnez la médiane de survie. (d) Calculez la durée moyenne restreinte jusqu'à 20 mois.
 
 **Exercice 2 ⭐ (relations entre les fonctions).** Un client a, à l'âge $t$ de la relation (en mois), un risque instantané $h(t)=0{,}0008\,t$. (a) Déduisez $H(t)$ et $S(t)$. (b) Calculez $S(24)$ et la médiane. (c) De quelle loi de Weibull s'agit-il ? Donnez sa durée moyenne.
 
@@ -14,7 +14,7 @@ Les exercices sont classés par difficulté : ⭐ (application directe), ⭐⭐ 
 
 **Exercice 6 ⭐⭐ (durée moyenne restreinte).** Les courbes de survie de deux campagnes sont des escaliers. Campagne A : $S=1$ jusqu'à 6 mois, $0{,}8$ sur $[6,12[$, $0{,}5$ sur $[12,18[$, $0{,}3$ ensuite. Campagne B : $S=1$ jusqu'à 9 mois, $0{,}9$ sur $[9,15[$, $0{,}7$ sur $[15,21[$, $0{,}6$ ensuite. Calculez la durée moyenne restreinte à 24 mois de chaque campagne et leur différence. Que signifie ce nombre ?
 
-**Exercice 7 ⭐⭐ (lire une sortie de Cox).** Un modèle de Cox donne : offre de bienvenue $\hat\beta=-0{,}40$ (ET $0{,}065$), âge $\hat\beta=-0{,}0136$ (ET $0{,}0030$), canal Instagram (contre Boutique) $\hat\beta=0{,}635$ (ET $0{,}084$). (a) Donnez pour chaque variable le rapport de risques, son IC95 et le $z$ de Wald. (b) Quel est l'effet de dix années d'âge de plus ? (c) Quel est le rapport de risques d'un client Instagram *avec* offre contre un client Boutique *sans* offre, à âge égal ? (d) La survie à 24 mois d'un client de référence est de 0,80 : quelle est celle du même client avec l'offre ? (e) Un AFT Weibull donne $\hat\gamma_{\text{offre}}=0{,}35$ avec $\hat\sigma=0{,}74$ : quel rapport de risques équivalent ?
+**Exercice 7 ⭐⭐ (lire une sortie de Cox).** Un modèle de Cox donne : offre de bienvenue $\hat\beta=-0{,}40$ (ET $0{,}065$), âge $\hat\beta=-0{,}0136$ (ET $0{,}0030$), canal Réseaux (contre Boutique) $\hat\beta=0{,}635$ (ET $0{,}084$). (a) Donnez pour chaque variable le rapport de risques, son IC95 et le $z$ de Wald. (b) Quel est l'effet de dix années d'âge de plus ? (c) Quel est le rapport de risques d'un client Réseaux *avec* offre contre un client Boutique *sans* offre, à âge égal ? (d) La survie à 24 mois d'un client de référence est de 0,80 : quelle est celle du même client avec l'offre ? (e) Un AFT Weibull donne $\hat\gamma_{\text{offre}}=0{,}35$ avec $\hat\sigma=0{,}74$ : quel rapport de risques équivalent ?
 
 **Exercice 8 ⭐⭐ (le biais d'immortalité).** Simulez 2 000 clients dont les durées sont exponentielles de taux 2 % par mois (graine 8), censurées uniformément entre 18 et 48 mois. Un cadeau est remis au mois 6 à la moitié des clients encore présents. Estimez l'effet du cadeau (qui n'en a aucun) (a) en traitant « a reçu le cadeau » comme une variable fixe, (b) correctement, avec une variable dépendant du temps. Commentez.
 
@@ -22,7 +22,7 @@ Les exercices sont classés par difficulté : ⭐ (application directe), ⭐⭐ 
 
 **Exercice 10 ⭐⭐⭐ (log-rank et Cox).** (a) Montrez que le score du modèle de Cox à une variable binaire en $\beta=0$ vaut $O_1-E_1$. (b) Vérifiez numériquement, sur les 2 000 clients (variable `offre_bienvenue`), que la statistique de score $U^2/I$ est très proche du $\chi^2$ du log-rank. Pourquoi n'est-elle pas *exactement* égale ?
 
-**Exercice 11 ⭐⭐⭐ (décider : le seuil de rentabilité).** Reprenez les survies moyennes avec et sans offre du 5.4.5. L'offre de bienvenue coûte maintenant 25 DT par client. À partir de quelle **marge mensuelle** par client actif est-elle rentable, pour un taux d'actualisation de 1 % par mois ? Et pour 2 % ?
+**Exercice 11 ⭐⭐⭐ (décider : le seuil de rentabilité).** Reprenez les survies moyennes avec et sans offre du 5.4.5. L'offre de bienvenue coûte maintenant 25 € par client. À partir de quelle **marge mensuelle** par client actif est-elle rentable, pour un taux d'actualisation de 1 % par mois ? Et pour 2 % ?
 
 **Exercice 12 ⭐⭐⭐ (risques concurrents à la main).** Huit clients, durées et causes de sortie (0 = censuré, 1 = départ volontaire, 2 = fermeture forcée) : $(1;1)$, $(2;2)$, $(3;1)$, $(4;0)$, $(5;2)$, $(6;1)$, $(7;0)$, $(9;2)$. Calculez à la main les incidences cumulées $\hat F_1$ et $\hat F_2$ (estimateur d'Aalen-Johansen) et la survie totale. Vérifiez que $\hat S+\hat F_1+\hat F_2=1$. Comparez $\hat F_1$ à « $1-\mathrm{KM}$ » où la cause 2 est traitée comme une censure.
 
@@ -135,7 +135,7 @@ statsmodels : chi2 = 0.035, p = 0.852
 
 Le groupe A a 3 départs pour 2,77 attendus : $\chi^2\approx0{,}03$, $p\approx0{,}85$. Avec dix clients, on ne peut rien conclure ; c'est tout à fait normal, et c'est la raison pour laquelle on ne compare pas des groupes aussi petits.
 
-**Corrigé 6.** $\mathrm{RMST}_A(24)=6\times1+6\times0{,}8+6\times0{,}5+6\times0{,}3=6+4{,}8+3+1{,}8=15{,}6$ mois ; $\mathrm{RMST}_B(24)=9\times1+6\times0{,}9+6\times0{,}7+3\times0{,}6=9+5{,}4+4{,}2+1{,}8=20{,}4$ mois. La différence est de **4,8 mois** : en moyenne, sur les 24 premiers mois, un client de la campagne B reste 4,8 mois de plus dans la clientèle qu'un client de la campagne A. Contrairement au rapport de risques, cette quantité s'interprète sans hypothèse de proportionnalité et se lit directement en unités de temps (ou, multipliée par la marge mensuelle, en dinars).
+**Corrigé 6.** $\mathrm{RMST}_A(24)=6\times1+6\times0{,}8+6\times0{,}5+6\times0{,}3=6+4{,}8+3+1{,}8=15{,}6$ mois ; $\mathrm{RMST}_B(24)=9\times1+6\times0{,}9+6\times0{,}7+3\times0{,}6=9+5{,}4+4{,}2+1{,}8=20{,}4$ mois. La différence est de **4,8 mois** : en moyenne, sur les 24 premiers mois, un client de la campagne B reste 4,8 mois de plus dans la clientèle qu'un client de la campagne A. Contrairement au rapport de risques, cette quantité s'interprète sans hypothèse de proportionnalité et se lit directement en unités de temps (ou, multipliée par la marge mensuelle, en euros).
 
 ```python
 tjA, SA = np.array([6, 12, 18.]), np.array([0.8, 0.5, 0.3])
@@ -147,12 +147,12 @@ print("RMST(24) A :", round(rmst(tjA, SA, 24), 2), "| B :", round(rmst(tjB, SB, 
 RMST(24) A : 15.6 | B : 20.4 | différence : 4.8
 ```
 
-**Corrigé 7.** (a) $\mathrm{HR}=e^{\hat\beta}$, IC $=e^{\hat\beta\pm1{,}96\,se}$, $z=\hat\beta/se$ : offre $0{,}670$ ($[0{,}590\ ;\ 0{,}761]$, $z=-6{,}15$) ; âge $0{,}986$ ($[0{,}981\ ;\ 0{,}992]$, $z=-4{,}53$) ; Instagram $1{,}887$ ($[1{,}60\ ;\ 2{,}22]$, $z=7{,}56$). (b) $e^{10\times(-0{,}0136)}\approx0{,}873$ : dix ans de plus réduisent le risque d'environ 13 %. (c) Les effets se multiplient : $e^{-0{,}40+0{,}635}=e^{0{,}235}\approx1{,}26$ (le canal Instagram l'emporte sur l'offre). (d) $S(t\mid x)=S_0(t)^{\exp(x^\top\beta)}$ : $0{,}80^{0{,}670}\approx0{,}861$. (e) $\hat\beta=-\hat\gamma/\hat\sigma=-0{,}35/0{,}74\approx-0{,}473$, soit $\mathrm{HR}=e^{-0{,}473}\approx0{,}623$.
+**Corrigé 7.** (a) $\mathrm{HR}=e^{\hat\beta}$, IC $=e^{\hat\beta\pm1{,}96\,se}$, $z=\hat\beta/se$ : offre $0{,}670$ ($[0{,}590\ ;\ 0{,}761]$, $z=-6{,}15$) ; âge $0{,}986$ ($[0{,}981\ ;\ 0{,}992]$, $z=-4{,}53$) ; Réseaux $1{,}887$ ($[1{,}60\ ;\ 2{,}22]$, $z=7{,}56$). (b) $e^{10\times(-0{,}0136)}\approx0{,}873$ : dix ans de plus réduisent le risque d'environ 13 %. (c) Les effets se multiplient : $e^{-0{,}40+0{,}635}=e^{0{,}235}\approx1{,}26$ (le canal Réseaux l'emporte sur l'offre). (d) $S(t\mid x)=S_0(t)^{\exp(x^\top\beta)}$ : $0{,}80^{0{,}670}\approx0{,}861$. (e) $\hat\beta=-\hat\gamma/\hat\sigma=-0{,}35/0{,}74\approx-0{,}473$, soit $\mathrm{HR}=e^{-0{,}473}\approx0{,}623$.
 
 ```python
 b = np.array([-0.40, -0.0136, 0.635]); se_ = np.array([0.065, 0.0030, 0.084])
-print(pd.DataFrame({"HR": np.exp(b), "IC bas": np.exp(b - 1.96 * se_), "IC haut": np.exp(b + 1.96 * se_), "z": b / se_}, index=["offre", "age", "Instagram"]).round(3).to_string())
-print("+10 ans :", round(np.exp(10 * b[1]), 3), "| Instagram avec offre / Boutique sans offre :", round(np.exp(b[0] + b[2]), 3))
+print(pd.DataFrame({"HR": np.exp(b), "IC bas": np.exp(b - 1.96 * se_), "IC haut": np.exp(b + 1.96 * se_), "z": b / se_}, index=["offre", "age", "Réseaux"]).round(3).to_string())
+print("+10 ans :", round(np.exp(10 * b[1]), 3), "| Réseaux avec offre / Boutique sans offre :", round(np.exp(b[0] + b[2]), 3))
 print("S(24) avec offre :", round(0.80 ** np.exp(b[0]), 3), "| HR depuis AFT :", round(np.exp(-0.35 / 0.74), 3))
 ```
 <!--sortie-->
@@ -160,8 +160,8 @@ print("S(24) avec offre :", round(0.80 ** np.exp(b[0]), 3), "| HR depuis AFT :",
               HR  IC bas  IC haut      z
 offre      0.670   0.590    0.761 -6.154
 age        0.986   0.981    0.992 -4.533
-Instagram  1.887   1.601    2.225  7.560
-+10 ans : 0.873 | Instagram avec offre / Boutique sans offre : 1.265
+Réseaux  1.887   1.601    2.225  7.560
++10 ans : 0.873 | Réseaux avec offre / Boutique sans offre : 1.265
 S(24) avec offre : 0.861 | HR depuis AFT : 0.623
 ```
 
@@ -236,15 +236,15 @@ cout = 25.0
 for r in (0.01, 0.02):
     v = (1 + r) ** (-mois)                                # `mois`, S0 et S1 viennent du 5.4.5
     delta = np.sum((S1 - S0) * v)
-    print(f"taux {100 * r:.0f} %/mois : gain en mois de présence actualisés = {delta:.3f} -> marge de rentabilité m* = {cout / delta:.2f} DT/mois")
+    print(f"taux {100 * r:.0f} %/mois : gain en mois de présence actualisés = {delta:.3f} -> marge de rentabilité m* = {cout / delta:.2f} €/mois")
 ```
 <!--sortie-->
 ```text
-taux 1 %/mois : gain en mois de présence actualisés = 6.663 -> marge de rentabilité m* = 3.75 DT/mois
-taux 2 %/mois : gain en mois de présence actualisés = 4.124 -> marge de rentabilité m* = 6.06 DT/mois
+taux 1 %/mois : gain en mois de présence actualisés = 6.663 -> marge de rentabilité m* = 3.75 €/mois
+taux 2 %/mois : gain en mois de présence actualisés = 4.124 -> marge de rentabilité m* = 6.06 €/mois
 ```
 
-Avec une actualisation de 1 % par mois, l'offre devient rentable dès que la marge mensuelle par client actif dépasse environ **3,75 DT** ; avec 2 %, il faut environ **6 DT**. L'offre est donc beaucoup moins coûteuse à justifier si la marge est élevée : c'est la lecture pratique du tableau de sensibilité du 5.4.5.
+Avec une actualisation de 1 % par mois, l'offre devient rentable dès que la marge mensuelle par client actif dépasse environ **3,75 €** ; avec 2 %, il faut environ **6 €**. L'offre est donc beaucoup moins coûteuse à justifier si la marge est élevée : c'est la lecture pratique du tableau de sensibilité du 5.4.5.
 
 **Corrigé 12.** Instants de sortie : 1, 2, 3, 5, 6, 9 (les censures aux mois 4 et 7 réduisent seulement les ensembles à risque). Aux mois 1 ($n=8$) : $d_1=1$ ; 2 ($n=7$) : $d_2=1$ ; 3 ($n=6$) : $d_1=1$ ; 5 ($n=4$) : $d_2=1$ ; 6 ($n=3$) : $d_1=1$ ; 9 ($n=1$) : $d_2=1$. On applique $\hat F_k(t)=\sum\hat S(t_j^-)\,d_{kj}/n_j$.
 

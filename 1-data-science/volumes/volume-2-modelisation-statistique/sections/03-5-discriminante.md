@@ -20,7 +20,7 @@ $$\ln\bigl(\pi_kf_k(\mathbf x)\bigr)=\ln\pi_k-\tfrac12\ln|\Sigma_k|-\tfrac12(\ma
 >
 > et l'on classe $\mathbf x$ dans le groupe de plus grand $\delta_k$. La frontière entre deux groupes $k$ et $l$ est l'ensemble des $\mathbf x$ où $\delta_k=\delta_l$ : c'est une équation du **premier degré** en $\mathbf x$, donc un **hyperplan**. D'où le nom d'**analyse discriminante linéaire** (LDA, *linear discriminant analysis*). Si l'on abandonne l'hypothèse $\Sigma_k=\Sigma$, les termes quadratiques ne s'annulent plus et la frontière est une quadrique : c'est l'**analyse discriminante quadratique** (QDA).
 
-**Un exemple à la main, avec une seule variable.** Yasmine note la satisfaction (de 1 à 5) de chaque cliente. Parmi celles qui **n'ont pas** racheté, la satisfaction moyenne est $\mu_0=3$ ; parmi celles qui ont racheté, $\mu_1=4$. Dans les deux groupes, l'écart-type est $\sigma=0{,}8$. Pour deux groupes et une variable, la règle « $\delta_1(x)>\delta_0(x)$ » équivaut à
+**Un exemple à la main, avec une seule variable.** la gérante note la satisfaction (de 1 à 5) de chaque cliente. Parmi celles qui **n'ont pas** racheté, la satisfaction moyenne est $\mu_0=3$ ; parmi celles qui ont racheté, $\mu_1=4$. Dans les deux groupes, l'écart-type est $\sigma=0{,}8$. Pour deux groupes et une variable, la règle « $\delta_1(x)>\delta_0(x)$ » équivaut à
 
 $$x>\frac{\mu_0+\mu_1}{2}+\frac{\sigma^2}{\mu_1-\mu_0}\ln\frac{\pi_0}{\pi_1}.$$
 

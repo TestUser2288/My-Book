@@ -8,12 +8,12 @@ Une **fraction** est une division : $\frac{3}{4}$ veut dire « 3 divisé par 4 �
 
 $$\frac{3}{4} + \frac{5}{6} = \frac{3 \times 3}{4 \times 3} + \frac{5 \times 2}{6 \times 2} = \frac{9}{12} + \frac{10}{12} = \frac{19}{12}.$$
 
-Un **pourcentage** est une fraction de dénominateur 100. « Prendre 25 % de 120 DT » revient à calculer $120 \times \frac{25}{100} = 30$ DT.
+Un **pourcentage** est une fraction de dénominateur 100. « Prendre 25 % de 120 € » revient à calculer $120 \times \frac{25}{100} = 30$ €.
 
-> 🧪 **Exemple (Dar Jasmin).** Un tapis coûte 240 DT. Yasmine propose une remise de 15 %.
+> 🧪 **Exemple (la boutique).** Un tapis coûte 240 €. La gérante propose une remise de 15 %.
 >
-> - Montant de la remise : $240 \times 0{,}15 = 36$ DT.
-> - Nouveau prix : $240 - 36 = 204$ DT, ou directement $240 \times 0{,}85 = 204$ DT.
+> - Montant de la remise : $240 \times 0{,}15 = 36$ €.
+> - Nouveau prix : $240 - 36 = 204$ €, ou directement $240 \times 0{,}85 = 204$ €.
 >
 > **Astuce** : « baisser de 15 % » revient à **multiplier par 0,85**. « Augmenter de 19 % » (la TVA) revient à multiplier par 1,19.
 
@@ -48,11 +48,11 @@ $$2x - 7 = 11 \;\Longrightarrow\; 2x = 18 \;\Longrightarrow\; x = 9.$$
 
 Une **fonction affine** s'écrit $y = ax + b$. Le nombre $a$ est la **pente** (de combien $y$ augmente quand $x$ augmente de 1), et $b$ est l'**ordonnée à l'origine** (la valeur de $y$ quand $x = 0$).
 
-> 🧪 **Exemple.** Les frais de livraison de Dar Jasmin valent 5 DT de forfait plus 0,80 DT par kilo. Si $x$ est le poids en kilos :
+> 🧪 **Exemple.** Les frais de livraison de la boutique valent 5 € de forfait plus 0,80 € par kilo. Si $x$ est le poids en kilos :
 >
 > $$\text{frais}(x) = 0{,}8\,x + 5.$$
 >
-> Pour un colis de 6 kg : $0{,}8 \times 6 + 5 = 9{,}8$ DT. La pente (0,8) est le coût d'un kilo de plus ; l'ordonnée à l'origine (5) est le forfait.
+> Pour un colis de 6 kg : $0{,}8 \times 6 + 5 = 9{,}8$ €. La pente (0,8) est le coût d'un kilo de plus ; l'ordonnée à l'origine (5) est le forfait.
 
 Cette idée, « une pente et une ordonnée à l'origine », reviendra souvent : c'est la base de la régression linéaire.
 
@@ -64,11 +64,11 @@ $$\sum_{i=1}^{n} x_i = x_1 + x_2 + \dots + x_n.$$
 
 Cela se lit : « somme, pour $i$ allant de 1 à $n$, des $x_i$ ». C'est exactement une boucle `for` qui additionne.
 
-> 🧪 **Exemple.** Les ventes de Dar Jasmin sur cinq jours (en dinars) : $x_1 = 120,\; x_2 = 80,\; x_3 = 200,\; x_4 = 100,\; x_5 = 150$.
+> 🧪 **Exemple.** Les ventes de la boutique sur cinq jours (en euros) : $x_1 = 120,\; x_2 = 80,\; x_3 = 200,\; x_4 = 100,\; x_5 = 150$.
 >
-> $$\sum_{i=1}^{5} x_i = 120 + 80 + 200 + 100 + 150 = 650 \text{ DT.}$$
+> $$\sum_{i=1}^{5} x_i = 120 + 80 + 200 + 100 + 150 = 650 \text{ €.}$$
 >
-> La **moyenne** est $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i = \frac{650}{5} = 130$ DT.
+> La **moyenne** est $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i = \frac{650}{5} = 130$ €.
 
 ```python
 ventes = [120, 80, 200, 100, 150]
@@ -136,10 +136,10 @@ Le reste sera expliqué quand il apparaîtra, et le chapitre 4 reprend tout depu
 
 Si vous savez répondre à ces cinq questions, vous avez tout ce qu'il faut pour commencer :
 
-1. Quel est le prix final d'un article à 80 DT avec 19 % de TVA ?
+1. Quel est le prix final d'un article à 80 € avec 19 % de TVA ?
 2. Que vaut $\sum_{i=1}^{4} i^2$ ?
 3. Quelle est la pente de $y = -3x + 10$ ?
 4. Simplifiez $\ln(e^2 \times e^3)$.
 5. Combien font $\sqrt{81} + 2^{-1}$ ?
 
-**Réponses.** (1) $80 \times 1{,}19 = 95{,}2$ DT. (2) $1 + 4 + 9 + 16 = 30$. (3) $-3$ (la droite descend). (4) $\ln(e^5) = 5$. (5) $9 + 0{,}5 = 9{,}5$.
+**Réponses.** (1) $80 \times 1{,}19 = 95{,}2$ €. (2) $1 + 4 + 9 + 16 = 30$. (3) $-3$ (la droite descend). (4) $\ln(e^5) = 5$. (5) $9 + 0{,}5 = 9{,}5$.

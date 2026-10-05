@@ -3,10 +3,10 @@
 > « Tous les modèles sont faux, mais certains sont utiles. »
 > — George Box
 
-Au volume I, vous avez appris à **décrire** des données (chapitre 3 : moyennes, corrélations) et à **comparer** des groupes (tests de Student, de Welch). Mais Yasmine pose rarement des questions aussi simples. Elle demande plutôt :
+Au volume I, vous avez appris à **décrire** des données (chapitre 3 : moyennes, corrélations) et à **comparer** des groupes (tests de Student, de Welch). Mais la gérante pose rarement des questions aussi simples. Elle demande plutôt :
 
-- « **Combien** dépense un client de plus de 50 ans acquis par Instagram, *par rapport à* un client de 30 ans acquis en boutique ? »
-- « Quand je dis que les clients Instagram dépensent moins, est-ce vraiment le **canal**, ou est-ce parce qu'ils sont plus jeunes ? »
+- « **Combien** dépense un client de plus de 50 ans acquis par Réseaux, *par rapport à* un client de 30 ans acquis en boutique ? »
+- « Quand je dis que les clients Réseaux dépensent moins, est-ce vraiment le **canal**, ou est-ce parce qu'ils sont plus jeunes ? »
 - « Si je ne connais que l'âge et le canal d'un nouveau client, **quel panier** puis-je prévoir ? Avec quelle marge d'erreur ? »
 
 Pour répondre, il faut un outil qui relie **une quantité à expliquer** à **plusieurs variables explicatives en même temps**, qui mesure l'effet de chacune *toutes choses égales par ailleurs*, et qui dit honnêtement quelle confiance accorder aux chiffres. Cet outil est la **régression linéaire**, le cheval de trait de la statistique appliquée : il sert tous les jours, il est au cœur de modèles plus sophistiqués (chapitres suivants et volume III), et le comprendre à fond rend tout le reste plus facile.
@@ -20,7 +20,7 @@ Pour répondre, il faut un outil qui relie **une quantité à expliquer** à **p
 - ➕ **Pour aller plus loin** : la **régularisation** (Ridge, Lasso, Elastic Net, 1.5), la **régression robuste** (1.6), et les **modèles à effets mixtes** pour les données groupées (1.7).
 - **1.8 Exercices corrigés**.
 
-> 💡 **Le fil conducteur : le panier des clients de Dar Jasmin.** Nous travaillons sur **2 000 clients** de Dar Jasmin, observés sur une année (âge, canal d'acquisition, ville, dépenses, etc.) et, pour certains, leur réponse à un petit questionnaire de satisfaction. Ces données sont **simulées** (graine fixe) : ainsi, nous connaissons la vérité, et nous pourrons à la fin de l'étude **vérifier** que la méthode la retrouve. C'est un luxe que la vie réelle n'offre jamais, et il rend très instructif l'examen de ce que la régression fait bien… ou moins bien.
+> 💡 **Le fil conducteur : le panier des clients de la boutique.** Nous travaillons sur **2 000 clients** de la boutique, observés sur une année (âge, canal d'acquisition, ville, dépenses, etc.) et, pour certains, leur réponse à un petit questionnaire de satisfaction. Ces données sont **simulées** (graine fixe) : ainsi, nous connaissons la vérité, et nous pourrons à la fin de l'étude **vérifier** que la méthode la retrouve. C'est un luxe que la vie réelle n'offre jamais, et il rend très instructif l'examen de ce que la régression fait bien… ou moins bien.
 
 > 📦 **Les fichiers de données.** Ce chapitre lit `donnees/clients.csv` (un client par ligne) et, à partir de 1.4, `donnees/enquete_satisfaction.csv` (réponses à huit questions de satisfaction). Au 1.7, un petit jeu supplémentaire (`donnees/ch01-relais.csv`) est simulé sous vos yeux. Le code est exécuté depuis la racine du volume, d'où les chemins `donnees/…`.
 

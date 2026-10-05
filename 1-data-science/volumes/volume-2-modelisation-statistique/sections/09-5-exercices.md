@@ -4,9 +4,9 @@
 
 ### Énoncés
 
-**Exercice 1 ⭐ (quel type de données ?).** Pour chaque situation, dites s'il s'agit de données **géostatistiques**, **surfaciques** ou d'un **semis de points**, et nommez l'outil de ce chapitre qui répond à la question. (a) Yasmine relève la **température** à l'intérieur de 40 entrepôts de stockage répartis dans la région et veut estimer la température dans un entrepôt qu'elle n'a pas visité. (b) Elle dispose du **taux de retour de colis** de chacune des 24 gouvernorats et se demande si les gouvernorats voisins ont des taux semblables. (c) Elle a les **adresses** de tous ses clients de Sousse et se demande si elles se regroupent. (d) Un transporteur mesure le **délai de livraison** à 300 adresses et veut cartographier le délai moyen attendu sur toute la zone.
+**Exercice 1 ⭐ (quel type de données ?).** Pour chaque situation, dites s'il s'agit de données **géostatistiques**, **surfaciques** ou d'un **semis de points**, et nommez l'outil de ce chapitre qui répond à la question. (a) la gérante relève la **température** à l'intérieur de 40 entrepôts de stockage répartis dans la région et veut estimer la température dans un entrepôt qu'elle n'a pas visité. (b) Elle dispose du **taux de retour de colis** de chacune des 24 gouvernorats et se demande si les gouvernorats voisins ont des taux semblables. (c) Elle a les **adresses** de tous ses clients de Ville D et se demande si elles se regroupent. (d) Un transporteur mesure le **délai de livraison** à 300 adresses et veut cartographier le délai moyen attendu sur toute la zone.
 
-**Exercice 2 ⭐ (haversine à la main).** Calculez à la main la distance entre Tunis $(36{,}81^\circ\text{N};\,10{,}18^\circ\text{E})$ et Sousse $(35{,}83^\circ\text{N};\,10{,}61^\circ\text{E})$, en utilisant la latitude moyenne pour le facteur $\cos\varphi$. Comparez au résultat de la formule de haversine.
+**Exercice 2 ⭐ (haversine à la main).** Calculez à la main la distance entre Ville E $(36{,}81^\circ\text{N};\,10{,}18^\circ\text{E})$ et Ville D $(35{,}83^\circ\text{N};\,10{,}61^\circ\text{E})$, en utilisant la latitude moyenne pour le facteur $\cos\varphi$. Comparez au résultat de la formule de haversine.
 
 **Exercice 3 ⭐⭐ (Moran sur quatre zones).** Quatre zones alignées A–B–C–D (chacune voisine de la précédente et de la suivante) ont pour valeurs $1,\,2,\,3,\,4$. (a) Calculez à la main l'indice de Moran avec les poids binaires, puis avec les poids standardisés par ligne. (b) Quelle est son espérance sous l'hypothèse nulle ? (c) Il n'y a que $4!=24$ façons de ranger ces valeurs sur les zones : calculez la distribution **exacte** de $I$ et la p-valeur de l'alignement observé.
 
@@ -35,12 +35,12 @@
 **Corrigé 2.** $\Delta\varphi=0{,}98^\circ$ donne $0{,}98\times111{,}2\approx109{,}0$ km vers le sud. $\Delta\lambda=0{,}43^\circ$ : avec $\cos(36{,}32^\circ)\approx0{,}806$, $0{,}43\times111{,}2\times0{,}806\approx38{,}5$ km vers l'est. La distance est $\sqrt{109{,}0^2+38{,}5^2}\approx115{,}6$ km.
 
 ```python
-print("haversine Tunis - Sousse :", round(float(haversine(36.81, 10.18, 35.83, 10.61)), 1), "km")
+print("haversine Ville E - Ville D :", round(float(haversine(36.81, 10.18, 35.83, 10.61)), 1), "km")
 print("estimation à la main     :", round(float(np.hypot(0.98 * 111.2, 0.43 * 111.2 * np.cos(np.radians(36.32)))), 1), "km")
 ```
 <!--sortie-->
 ```text
-haversine Tunis - Sousse : 115.6 km
+haversine Ville E - Ville D : 115.6 km
 estimation à la main     : 115.6 km
 ```
 

@@ -1,6 +1,6 @@
 ## 1.2 Analyse : mesurer le changement
 
-L'algèbre linéaire nous a appris à décrire des données. L'**analyse** nous apprend à décrire comment les choses **changent**. C'est ce qui permet de répondre à des questions comme : « si j'augmente mon prix d'un dinar, mes recettes montent-elles ou descendent-elles, et de combien ? ». Elle repose sur deux notions : la **dérivée** (le changement instantané) et l'**intégrale** (le changement accumulé).
+L'algèbre linéaire nous a appris à décrire des données. L'**analyse** nous apprend à décrire comment les choses **changent**. C'est ce qui permet de répondre à des questions comme : « si j'augmente mon prix d'un euro, mes recettes montent-elles ou descendent-elles, et de combien ? ». Elle repose sur deux notions : la **dérivée** (le changement instantané) et l'**intégrale** (le changement accumulé).
 
 ### 1.2.1 La dérivée : la vitesse à laquelle une fonction change
 
@@ -8,11 +8,11 @@ L'algèbre linéaire nous a appris à décrire des données. L'**analyse** nous 
 
 #### Une fonction pour commencer
 
-Une **fonction** associe à chaque valeur d'entrée $x$ une valeur de sortie $f(x)$. Voici celle que nous utiliserons dans cette section : le bénéfice hebdomadaire de Yasmine pour une poterie, en fonction du nombre $q$ de pièces vendues. Plus elle en vend, plus elle doit baisser le prix, et il y a 300 DT de frais fixes :
+Une **fonction** associe à chaque valeur d'entrée $x$ une valeur de sortie $f(x)$. Voici celle que nous utiliserons dans cette section : le bénéfice hebdomadaire de la gérante pour une poterie, en fonction du nombre $q$ de pièces vendues. Plus elle en vend, plus elle doit baisser le prix, et il y a 300 € de frais fixes :
 
 $$P(q) = -2q^2 + 80q - 300.$$
 
-Par exemple, $P(20) = -2\cdot 400 + 1600 - 300 = 500$ DT.
+Par exemple, $P(20) = -2\cdot 400 + 1600 - 300 = 500$ €.
 
 #### D'abord, une idée de limite
 
@@ -139,33 +139,33 @@ def benefice(q):
     return -2 * q**2 + 80 * q - 300
 
 for q in [10, 15, 20, 25, 30]:
-    print(f"q = {q:>2}   bénéfice = {benefice(q):>4} DT")
+    print(f"q = {q:>2}   bénéfice = {benefice(q):>4} €")
 ```
 <!--sortie-->
 ```text
-q = 10   bénéfice =  300 DT
-q = 15   bénéfice =  450 DT
-q = 20   bénéfice =  500 DT
-q = 25   bénéfice =  450 DT
-q = 30   bénéfice =  300 DT
+q = 10   bénéfice =  300 €
+q = 15   bénéfice =  450 €
+q = 20   bénéfice =  500 €
+q = 25   bénéfice =  450 €
+q = 30   bénéfice =  300 €
 ```
 
 Le bénéfice monte, atteint un sommet, puis redescend : c'est une parabole « en cloche ». **Au sommet, la tangente est horizontale, donc la dérivée est nulle.** C'est la clé de l'optimisation. On dérive :
 
 $$P'(q) = -4q + 80.$$
 
-On résout $P'(q) = 0$ : $-4q + 80 = 0$, donc $q = 20$ pièces, pour un bénéfice $P(20) = 500$ DT.
+On résout $P'(q) = 0$ : $-4q + 80 = 0$, donc $q = 20$ pièces, pour un bénéfice $P(20) = 500$ €.
 
-La dérivée a aussi une lecture économique directe : c'est le **bénéfice marginal**, le gain approximatif que rapporte la pièce supplémentaire. En $q = 10$, $P'(10) = -40 + 80 = 40$ DT. Vérifions avec la vraie différence :
+La dérivée a aussi une lecture économique directe : c'est le **bénéfice marginal**, le gain approximatif que rapporte la pièce supplémentaire. En $q = 10$, $P'(10) = -40 + 80 = 40$ €. Vérifions avec la vraie différence :
 
 ```python
-print("gain réel de la 11e pièce : P(11) - P(10) =", benefice(11) - benefice(10), "DT")
-print("pente en q = 10           : P'(10) = -4*10 + 80 =", -4 * 10 + 80, "DT")
+print("gain réel de la 11e pièce : P(11) - P(10) =", benefice(11) - benefice(10), "€")
+print("pente en q = 10           : P'(10) = -4*10 + 80 =", -4 * 10 + 80, "€")
 ```
 <!--sortie-->
 ```text
-gain réel de la 11e pièce : P(11) - P(10) = 38 DT
-pente en q = 10           : P'(10) = -4*10 + 80 = 40 DT
+gain réel de la 11e pièce : P(11) - P(10) = 38 €
+pente en q = 10           : P'(10) = -4*10 + 80 = 40 €
 ```
 
 La pente (40) est une bonne approximation du gain réel (38) : elle est exacte pour une variation infiniment petite, et approchée pour une variation d'une pièce. Enfin, confirmons le sommet par une recherche numérique, sans utiliser la dérivée :
@@ -174,11 +174,11 @@ La pente (40) est une bonne approximation du gain réel (38) : elle est exacte p
 from scipy.optimize import minimize_scalar
 
 res = minimize_scalar(lambda q: -benefice(q), bounds=(0, 40), method="bounded")
-print(f"optimum numérique : q = {res.x:.3f}, bénéfice = {-res.fun:.2f} DT")
+print(f"optimum numérique : q = {res.x:.3f}, bénéfice = {-res.fun:.2f} €")
 ```
 <!--sortie-->
 ```text
-optimum numérique : q = 20.000, bénéfice = 500.00 DT
+optimum numérique : q = 20.000, bénéfice = 500.00 €
 ```
 
 (On minimise $-P$ puisque la fonction cherche un minimum : maximiser $P$ revient à minimiser $-P$.)

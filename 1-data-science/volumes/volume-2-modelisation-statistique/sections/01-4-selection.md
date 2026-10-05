@@ -23,7 +23,7 @@ plt.rcParams.update(STYLE)
 
 clients = pd.read_csv("donnees/clients.csv")
 df = clients[clients["nb_commandes_an"] > 0].copy()
-df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Instagram"])
+df["canal"] = pd.Categorical(df["canal_acquisition"], categories=["Boutique", "Site", "Réseaux"])
 df["a"] = df["age"] - 36
 df["log_panier"] = np.log(df["panier_moyen"])
 
@@ -383,13 +383,13 @@ Nous avons un luxe : les données sont simulées, nous connaissons donc le vrai 
 
 $$\log(\text{panier})=4{,}00+0{,}008\,(\text{âge}-36)+\delta_{\text{canal}}+0{,}12\,F_1+\varepsilon,\qquad\varepsilon\sim\mathcal N(0,\,0{,}35^2),$$
 
-avec $\delta=+0{,}22$ pour la Boutique, $+0{,}05$ pour le Site, $-0{,}12$ pour Instagram. Ici $F_1$ est un **« goût pour les produits »** non observé (de moyenne 0 et d'écart-type 1) ; ni la ville, ni l'offre de bienvenue, ni le score de service **n'interviennent** dans le panier. Comparons au modèle M3 retenu par le BIC :
+avec $\delta=+0{,}22$ pour la Boutique, $+0{,}05$ pour le Site, $-0{,}12$ pour Réseaux. Ici $F_1$ est un **« goût pour les produits »** non observé (de moyenne 0 et d'écart-type 1) ; ni la ville, ni l'offre de bienvenue, ni le score de service **n'interviennent** dans le panier. Comparons au modèle M3 retenu par le BIC :
 
 ```python
 m3 = fits["M3"]
 ic = m3.conf_int()
-vrai_site, vrai_insta = 0.05 - 0.22, -0.12 - 0.22              # effets du Site et d'Instagram RELATIVEMENT à la Boutique
-vrai = {"Intercept": np.nan, "C(canal)[T.Site]": vrai_site, "C(canal)[T.Instagram]": vrai_insta, "a": 0.008}
+vrai_site, vrai_insta = 0.05 - 0.22, -0.12 - 0.22              # effets du Site et d'Réseaux RELATIVEMENT à la Boutique
+vrai = {"Intercept": np.nan, "C(canal)[T.Site]": vrai_site, "C(canal)[T.Réseaux]": vrai_insta, "a": 0.008}
 comp = pd.DataFrame({"estimation (M3)": m3.params, "IC95 bas": ic[0], "IC95 haut": ic[1]})
 comp["vérité"] = pd.Series(vrai)
 comp["IC contient la vérité ?"] = [("oui" if (lo <= v <= hi) else "non") if not np.isnan(v) else "—" for lo, hi, v in zip(comp["IC95 bas"], comp["IC95 haut"], comp["vérité"])]
@@ -397,30 +397,30 @@ print(comp.round(4).to_string())
 print()
 print("Variables retenues dans M3 : âge, canal, score produit. Écartées par les critères : ville, offre, score service, âge², interactions.")
 print("Dans M7 (le modèle « tout »), p-valeurs des variables sans effet réel :")
-print(fits["M7"].pvalues[["C(ville)[T.Bizerte]", "C(ville)[T.Nabeul]", "C(ville)[T.Sfax]", "C(ville)[T.Sousse]", "C(ville)[T.Tunis]", "offre_bienvenue", "a2", "score_service"]].round(3).to_string())
+print(fits["M7"].pvalues[["C(ville)[T.Ville A]", "C(ville)[T.Ville B]", "C(ville)[T.Ville C]", "C(ville)[T.Ville D]", "C(ville)[T.Ville E]", "offre_bienvenue", "a2", "score_service"]].round(3).to_string())
 ```
 <!--sortie-->
 ```text
                        estimation (M3)  IC95 bas  IC95 haut  vérité IC contient la vérité ?
 Intercept                       3.6543    3.5385     3.7701     NaN                       —
 C(canal)[T.Site]               -0.1573   -0.2114    -0.1032  -0.170                     oui
-C(canal)[T.Instagram]          -0.3519   -0.4045    -0.2993  -0.340                     oui
+C(canal)[T.Réseaux]          -0.3519   -0.4045    -0.2993  -0.340                     oui
 a                               0.0097    0.0078     0.0117   0.008                     oui
 score_produit                   0.1557    0.1255     0.1859     NaN                       —
 
 Variables retenues dans M3 : âge, canal, score produit. Écartées par les critères : ville, offre, score service, âge², interactions.
 Dans M7 (le modèle « tout »), p-valeurs des variables sans effet réel :
-C(ville)[T.Bizerte]    0.901
-C(ville)[T.Nabeul]     0.934
-C(ville)[T.Sfax]       0.526
-C(ville)[T.Sousse]     0.808
-C(ville)[T.Tunis]      0.883
+C(ville)[T.Ville A]    0.901
+C(ville)[T.Ville B]     0.934
+C(ville)[T.Ville C]       0.526
+C(ville)[T.Ville D]     0.808
+C(ville)[T.Ville E]      0.883
 offre_bienvenue        0.788
 a2                     0.300
 score_service          0.051
 ```
 
-Les effets du **canal** et de l'**âge** sont retrouvés : les intervalles à 95 % contiennent les vraies valeurs (−0,17 pour le Site, −0,34 pour Instagram, +0,008 par année d'âge). La méthode a bien écarté les variables **sans effet réel** (ville, offre, courbure, interactions). L'intercept ne se compare pas directement, car dans M3 il correspond à un score produit de 0 (une valeur impossible sur une échelle de 1 à 5) : un bon exemple de la nécessité de **centrer** les variables pour interpréter la constante.
+Les effets du **canal** et de l'**âge** sont retrouvés : les intervalles à 95 % contiennent les vraies valeurs (−0,17 pour le Site, −0,34 pour Réseaux, +0,008 par année d'âge). La méthode a bien écarté les variables **sans effet réel** (ville, offre, courbure, interactions). L'intercept ne se compare pas directement, car dans M3 il correspond à un score produit de 0 (une valeur impossible sur une échelle de 1 à 5) : un bon exemple de la nécessité de **centrer** les variables pour interpréter la constante.
 
 Reste le cas du **score service** : il n'a aucun effet direct dans le vrai modèle du panier, et pourtant l'AIC et la validation croisée le **gardent**, de justesse, avec une $t$-statistique voisine de 1,9. C'est la **conséquence mécanique** de la corrélation entre les facteurs « produit » et « service » dans la population (corrélation de 0,3 entre $F_1$ et $F_2$) : le score de service est un peu informatif sur $F_1$, donc sur le panier. Et c'est un rappel qu'**une association n'est pas un effet**.
 

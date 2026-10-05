@@ -5,7 +5,7 @@
 
 > 🧭 **Chapitre complémentaire.** Ce chapitre est **entièrement facultatif** : rien dans les chapitres 1 à 6 ni dans le projet du volume n'en dépend. Il s'adresse à ceux dont les données ont une **position** : des adresses de clients, des points de livraison, des zones géographiques, des capteurs. Si c'est votre cas, vous verrez que presque tout ce que nous avons appris repose sur une hypothèse que l'espace met à mal : l'**indépendance** des observations.
 
-Dar Jasmin livre maintenant dans tout le nord du pays. Yasmine remarque des choses que les tableaux des chapitres précédents ne savent pas dire :
+La boutique livre maintenant dans tout le nord du pays. La gérante remarque des choses que les tableaux des chapitres précédents ne savent pas dire :
 
 - *« Les délais de livraison longs sont groupés : quand un client de Zaghouan attend longtemps, ses voisins aussi. »* Un point isolé ne serait pas un problème ; un **paquet** de retards, c'est un problème de tournée ou de route.
 - *« Mes ventes par délégation ont l'air de former des îlots : des zones où l'on vend beaucoup, entourées de zones où l'on vend beaucoup. »* Est-ce réel, ou est-ce l'œil qui voit des formes dans le hasard ?

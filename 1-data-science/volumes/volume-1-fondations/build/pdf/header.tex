@@ -29,6 +29,28 @@
 \usepackage{microtype}
 \usepackage{etoolbox}
 \AtBeginEnvironment{longtable}{\small}
+
+% ---- Hiérarchie des titres : chapitres, sections et sous-sections bien visibles ----------------
+\usepackage[explicit]{titlesec}
+\usepackage{needspace}
+\newcommand{\chapfmt}[1]{%
+  {\color{bleu}\rule{\linewidth}{3.2pt}}\par\vspace{12pt}%
+  \raggedright{\fontsize{27}{32}\selectfont\color{bleu}\bfseries #1}\par\vspace{9pt}%
+  {\color{bleu}\rule{\linewidth}{0.8pt}}}
+\titleformat{\chapter}[block]{\normalfont\bfseries}{}{0pt}{\chapfmt{#1}}
+\titlespacing*{\chapter}{0pt}{10pt}{34pt}
+\titleformat{\section}[block]{\normalfont\Large\bfseries}{}{0pt}{%
+  \colorbox{bleu}{\parbox{\dimexpr\linewidth-2\fboxsep}{\raggedright\color{white}\strut#1\strut}}}
+\titlespacing*{\section}{0pt}{30pt plus 6pt minus 3pt}{14pt plus 2pt}
+\titleformat{\subsection}[block]{\normalfont\large\bfseries\color{bleu}}{}{0pt}{#1}[{\vspace{1pt}\color{bleu!45}\titlerule[0.6pt]}]
+\titlespacing*{\subsection}{0pt}{20pt plus 4pt minus 2pt}{8pt plus 2pt}
+\titleformat{\subsubsection}[block]{\normalfont\normalsize\bfseries\itshape\color{violet}}{}{0pt}{#1}
+\titlespacing*{\subsubsection}{0pt}{13pt plus 3pt minus 2pt}{4pt plus 1pt}
+\titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries\color{gray!70!black}}{}{0pt}{#1.}
+\titlespacing*{\paragraph}{0pt}{8pt}{6pt}
+\preto\section{\needspace{9\baselineskip}}
+\preto\subsection{\needspace{7\baselineskip}}
+\preto\subsubsection{\needspace{5\baselineskip}}
 \makeatletter
 \renewcommand{\maketitle}{\begin{titlepage}\centering
   \vspace*{2.8cm}

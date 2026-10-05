@@ -1,10 +1,10 @@
 ## 5.4 Normalisation et conception de schémas
 
-> 💡 **Intuition.** Pourquoi avoir découpé les données de Dar Jasmin en cinq tables, au lieu d'un seul grand tableau, comme dans Excel ? Parce qu'un tableau unique **répète** les mêmes informations (la ville d'une cliente apparaît sur chacune de ses commandes), et que **tout ce qui est répété finit par se contredire**. La **normalisation** est la méthode qui consiste à ranger chaque fait **une seule fois**, à sa place. Cette section explique *pourquoi* le schéma du 5.1 est bon, et vous donne la méthode pour en concevoir un vous-même. Nous terminerons par deux sujets de **performance et de fiabilité** : les index et les transactions.
+> 💡 **Intuition.** Pourquoi avoir découpé les données de la boutique en cinq tables, au lieu d'un seul grand tableau, comme dans Excel ? Parce qu'un tableau unique **répète** les mêmes informations (la ville d'une cliente apparaît sur chacune de ses commandes), et que **tout ce qui est répété finit par se contredire**. La **normalisation** est la méthode qui consiste à ranger chaque fait **une seule fois**, à sa place. Cette section explique *pourquoi* le schéma du 5.1 est bon, et vous donne la méthode pour en concevoir un vous-même. Nous terminerons par deux sujets de **performance et de fiabilité** : les index et les transactions.
 
 ### 5.4.1 Le problème : la grande feuille unique
 
-Imaginons que Yasmine ait gardé son habitude du tableur : **une seule feuille** avec une ligne par article vendu, contenant tout ce qu'on sait sur la commande, la cliente et le produit. Fabriquons cette feuille pour les **huit premières commandes** : nous créons dans la base des tables de travail préfixées `ex_` (nous les supprimerons à la fin de la section).
+Imaginons que la gérante ait gardé son habitude du tableur : **une seule feuille** avec une ligne par article vendu, contenant tout ce qu'on sait sur la commande, la cliente et le produit. Fabriquons cette feuille pour les **huit premières commandes** : nous créons dans la base des tables de travail préfixées `ex_` (nous les supprimerons à la fin de la section).
 
 ```sql
 CREATE TABLE ex_feuille (
@@ -35,30 +35,30 @@ ORDER BY id_commande, id_produit;
 <!--sortie-->
 ```text
  id_commande  id_produit  id_client  prenom    ville                nom_produit nom_categorie  quantite
-           1           1          2    Sami   Ariana           Tajine décoratif       Poterie         1
-           2          10          6   Hatem La Marsa           Pendentif khamsa        Bijoux         1
-           3           2          3   Aymen     Sfax Bol en céramique de Nabeul       Poterie         1
-           3           3          3   Aymen     Sfax       Vase peint à la main       Poterie         1
-           3          13          3   Aymen     Sfax    Savon à l'huile d'olive   Cosmétiques         1
-           4          11          1 Yassine La Marsa         Bracelet de perles        Bijoux         1
-           4          14          1 Yassine La Marsa              Eau de jasmin   Cosmétiques         1
-           5           8          5    Emna   Ariana            Pochette brodée       Textile         2
-           5           9          5    Emna   Ariana            Bague en argent        Bijoux         1
-           5          15          5    Emna   Ariana           Huile de nigelle   Cosmétiques         1
-           6           2          9   Salma    Tunis Bol en céramique de Nabeul       Poterie         1
-           6           8          9   Salma    Tunis            Pochette brodée       Textile         1
-           7           5          4    Emna   Ariana            Foutah en coton       Textile         1
-           7           9          4    Emna   Ariana            Bague en argent        Bijoux         1
-           8           4          5    Emna   Ariana            Plat à couscous       Poterie         2
-           8           5          5    Emna   Ariana            Foutah en coton       Textile         1
+           1           1          2    Sami   Ville A           Tajine décoratif       Poterie         1
+           2          10          6   Hatem Ville C           Pendentif khamsa        Bijoux         1
+           3           2          3   Aymen     Ville F Bol en céramique de Ville E       Poterie         1
+           3           3          3   Aymen     Ville F       Vase peint à la main       Poterie         1
+           3          13          3   Aymen     Ville F    Savon à l'huile d'olive   Cosmétiques         1
+           4          11          1 Yassine Ville C         Bracelet de perles        Bijoux         1
+           4          14          1 Yassine Ville C              Eau de jasmin   Cosmétiques         1
+           5           8          5    Emna   Ville A            Pochette brodée       Textile         2
+           5           9          5    Emna   Ville A            Bague en argent        Bijoux         1
+           5          15          5    Emna   Ville A           Huile de nigelle   Cosmétiques         1
+           6           2          9   Salma    Ville H Bol en céramique de Ville E       Poterie         1
+           6           8          9   Salma    Ville H            Pochette brodée       Textile         1
+           7           5          4    Emna   Ville A            Foutah en coton       Textile         1
+           7           9          4    Emna   Ville A            Bague en argent        Bijoux         1
+           8           4          5    Emna   Ville A            Plat à couscous       Poterie         2
+           8           5          5    Emna   Ville A            Foutah en coton       Textile         1
 ```
 
-Regardez la cliente n° 5, Emna Hamdi : elle apparaît sur **cinq lignes**, et sa ville « Ariana » est écrite cinq fois. Même chose pour le produit n° 9 (Bague en argent) et sa catégorie « Bijoux ». Cette redondance cause trois catégories de problèmes, appelées **anomalies**.
+Regardez la cliente n° 5, Emna Hamdi : elle apparaît sur **cinq lignes**, et sa ville « Ville A » est écrite cinq fois. Même chose pour le produit n° 9 (Bague en argent) et sa catégorie « Bijoux ». Cette redondance cause trois catégories de problèmes, appelées **anomalies**.
 
-**1. Anomalie de mise à jour.** Emna déménage à Sousse. L'employé de Yasmine ne corrige qu'**une** ligne sur cinq (il a oublié les autres) :
+**1. Anomalie de mise à jour.** Emna déménage à Ville G. L'employé de la gérante ne corrige qu'**une** ligne sur cinq (il a oublié les autres) :
 
 ```sql
-UPDATE ex_feuille SET ville = 'Sousse'
+UPDATE ex_feuille SET ville = 'Ville G'
 WHERE id_client = 5 AND id_commande = 8 AND id_produit = 5;
 ```
 
@@ -71,8 +71,8 @@ GROUP BY id_client, prenom, nom, ville;
 <!--sortie-->
 ```text
  id_client prenom   nom  ville  lignes
-         5   Emna Hamdi Ariana       4
-         5   Emna Hamdi Sousse       1
+         5   Emna Hamdi Ville A       4
+         5   Emna Hamdi Ville G       1
 ```
 
 Deux villes pour la même personne : on ne sait plus laquelle est vraie. C'est exactement l'histoire de « Amel Ben Salah » du 5.1.1. Dans notre vraie base, cette erreur est **impossible** : la ville d'une cliente n'est écrite qu'à un seul endroit.
@@ -80,11 +80,11 @@ Deux villes pour la même personne : on ne sait plus laquelle est vraie. C'est e
 > ⚠️ **Une incohérence ne se résorbe pas toute seule.** Même un `SELECT DISTINCT id_client, ville` ne sait pas « choisir » la bonne ville : il renvoie les deux. Les doublons contradictoires sont de la **vraie** information fausse, que seul un humain peut trancher. Remettons la ville d'origine pour la suite :
 
 ```sql
-UPDATE ex_feuille SET ville = 'Ariana'
+UPDATE ex_feuille SET ville = 'Ville A'
 WHERE id_client = 5 AND id_commande = 8 AND id_produit = 5;
 ```
 
-**2. Anomalie d'insertion.** Yasmine veut ajouter au catalogue un nouveau produit, pas encore vendu. Impossible : la feuille n'a de place que pour des *lignes de commande*, et la clé primaire exige un numéro de commande.
+**2. Anomalie d'insertion.** la gérante veut ajouter au catalogue un nouveau produit, pas encore vendu. Impossible : la feuille n'a de place que pour des *lignes de commande*, et la clé primaire exige un numéro de commande.
 
 ```python
 try:
@@ -129,7 +129,7 @@ Résumé : dans une table, **tout fait doit être associé à un seul sujet**. U
 
 > 📐 **Définition.** Dans une table $R$ d'attributs $A$, on dit que $X$ **détermine fonctionnellement** $Y$, noté $X\to Y$ (avec $X,Y\subseteq A$), si deux lignes qui ont la **même valeur de $X$** ont **forcément la même valeur de $Y$** :
 > $$\forall\,t_1,t_2\in R,\quad t_1[X]=t_2[X]\ \Longrightarrow\ t_1[Y]=t_2[Y].$$
-> Exemples dans notre feuille : `id_client` $\to$ `ville` (un client n'a qu'une ville) ; `id_produit` $\to$ `prix_catalogue` ; mais **pas** `ville` $\to$ `id_client` (plusieurs clientes habitent Ariana).
+> Exemples dans notre feuille : `id_client` $\to$ `ville` (un client n'a qu'une ville) ; `id_produit` $\to$ `prix_catalogue` ; mais **pas** `ville` $\to$ `id_client` (plusieurs clientes habitent Ville A).
 
 Une clé primaire est un cas particulier : $K$ est une **clé** de $R$ si $K\to A$ (elle détermine *toutes* les colonnes) et si aucun sous-ensemble strict de $K$ n'en fait autant (minimalité).
 
@@ -139,7 +139,7 @@ Les dépendances fonctionnelles obéissent à trois règles, les **axiomes d'Arm
 2. **Augmentation** : si $X\to Y$, alors $XZ\to YZ$ pour tout $Z$.
 3. **Transitivité** : si $X\to Y$ et $Y\to Z$, alors $X\to Z$.
 
-La **fermeture** $X^+$ d'un ensemble d'attributs est l'ensemble de tout ce qu'il détermine, directement ou par transitivité. On la calcule en partant de $X$ et en ajoutant les attributs déterminés tant que c'est possible. Appliquons-le à notre feuille. Les dépendances que nous croyons vraies (règles de gestion de Dar Jasmin) sont :
+La **fermeture** $X^+$ d'un ensemble d'attributs est l'ensemble de tout ce qu'il détermine, directement ou par transitivité. On la calcule en partant de $X$ et en ajoutant les attributs déterminés tant que c'est possible. Appliquons-le à notre feuille. Les dépendances que nous croyons vraies (règles de gestion de la boutique) sont :
 
 ```python
 dependances = [
@@ -230,7 +230,7 @@ Les **formes normales** sont des niveaux de « propreté » d'un schéma, chaque
 | **2FN** | 1FN **et** aucun attribut ne dépend d'une **partie** de la clé (utile quand la clé est composite) | informations sur le produit répétées sur chaque vente |
 | **3FN** | 2FN **et** aucun attribut non-clé ne dépend d'un **autre attribut non-clé** (pas de dépendance transitive) | ville du client recopiée parce que `id_client` détermine `ville` |
 
-**1FN.** Si Yasmine avait noté le panier dans une seule case (`articles = "Foutah en coton ; Pochette brodée"`), elle n'aurait pu ni compter les ventes par produit, ni les joindre au catalogue : on ne sait pas jointer un morceau de texte. La solution est **une ligne par article** : c'est ce que fait notre feuille, qui est donc déjà en 1FN (et nous aurions eu le même problème avec des colonnes `produit1`, `produit2`, `produit3`).
+**1FN.** Si la gérante avait noté le panier dans une seule case (`articles = "Foutah en coton ; Pochette brodée"`), elle n'aurait pu ni compter les ventes par produit, ni les joindre au catalogue : on ne sait pas jointer un morceau de texte. La solution est **une ligne par article** : c'est ce que fait notre feuille, qui est donc déjà en 1FN (et nous aurions eu le même problème avec des colonnes `produit1`, `produit2`, `produit3`).
 
 **2FN.** La clé de la feuille est composite (`id_commande`, `id_produit`). Or les infos du produit ne dépendent que de `id_produit`, et celles de la commande que de `id_commande` : ce sont des **dépendances partielles**. On découpe : chaque groupe d'attributs va dans une table dont la clé est l'attribut qui le détermine.
 
@@ -359,16 +359,16 @@ ORDER BY categorie, canal;
 ```text
   categorie     canal  chiffre_affaires
      Bijoux  Boutique            2256.0
-     Bijoux Instagram            1914.0
+     Bijoux Réseaux            1914.0
      Bijoux      Site            2836.0
 Cosmétiques  Boutique             878.0
-Cosmétiques Instagram            1099.0
+Cosmétiques Réseaux            1099.0
 Cosmétiques      Site            1170.0
     Poterie  Boutique            2397.0
-    Poterie Instagram            2143.0
+    Poterie Réseaux            2143.0
     Poterie      Site            2410.0
     Textile  Boutique            2997.0
-    Textile Instagram            1607.0
+    Textile Réseaux            1607.0
     Textile      Site            2390.0
 ```
 

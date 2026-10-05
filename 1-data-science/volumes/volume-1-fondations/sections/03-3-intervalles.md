@@ -1,6 +1,6 @@
 ## 3.3 Intervalles de confiance
 
-> 💡 **Intuition.** Dire « le panier moyen est de 60,25 DT » est trompeur : cela suggère une précision que l'on n'a pas. Un meilleur énoncé est : « le panier moyen se situe, avec une confiance de 95 %, entre 56,5 et 64,0 DT ». L'**intervalle de confiance** (IC) transforme une estimation ponctuelle en une **fourchette honnête**, dont la largeur reflète l'incertitude.
+> 💡 **Intuition.** Dire « le panier moyen est de 60,25 € » est trompeur : cela suggère une précision que l'on n'a pas. Un meilleur énoncé est : « le panier moyen se situe, avec une confiance de 95 %, entre 56,5 et 64,0 € ». L'**intervalle de confiance** (IC) transforme une estimation ponctuelle en une **fourchette honnête**, dont la largeur reflète l'incertitude.
 
 ### 3.3.1 Construire un intervalle pour une moyenne
 
@@ -20,7 +20,7 @@ Il a une structure à retenir absolument, qui se retrouvera partout :
 
 $$\text{estimation}\ \pm\ \text{(valeur critique)}\times\text{(erreur-type)}.$$
 
-**Exemple à la main.** Sur 400 commandes, $\bar x=60{,}25$ DT et $s=38{,}02$. L'erreur-type est $38{,}02/\sqrt{400}=1{,}90$. L'IC à 95 % est $60{,}25\pm1{,}96\times1{,}90=60{,}25\pm3{,}73$, soit **[56,5 ; 64,0]** DT.
+**Exemple à la main.** Sur 400 commandes, $\bar x=60{,}25$ € et $s=38{,}02$. L'erreur-type est $38{,}02/\sqrt{400}=1{,}90$. L'IC à 95 % est $60{,}25\pm1{,}96\times1{,}90=60{,}25\pm3{,}73$, soit **[56,5 ; 64,0]** €.
 
 ### 3.3.2 Que veut dire « 95 % de confiance » ?
 
@@ -54,19 +54,19 @@ for _ in range(essais):
     couvre += (lo <= mu <= hi)
     largeurs.append(hi - lo)
 print("part des intervalles contenant la vraie moyenne :", round(couvre / essais, 4))
-print("largeur moyenne :", round(np.mean(largeurs), 2), "DT")
+print("largeur moyenne :", round(np.mean(largeurs), 2), "€")
 ```
 <!--sortie-->
 ```text
 part des intervalles contenant la vraie moyenne : 0.9451
-largeur moyenne : 23.88 DT
+largeur moyenne : 23.88 €
 ```
 
 La couverture est proche de 95 % (un peu moins : la loi des montants est asymétrique et $n=40$ est modeste ; nous reviendrons sur ces limites). L'idée est donc validée.
 
 > ⚠️ **Deux erreurs d'interprétation à éviter.**
 > 1. « La vraie valeur a 95 % de chances d'être dans [56,5 ; 64,0] » : formulation courante, rigoureusement fausse dans l'approche fréquentiste (dans l'approche bayésienne, elle est correcte pour un *intervalle de crédibilité*).
-> 2. « 95 % des **commandes** sont dans cet intervalle » : confusion entre la précision de la **moyenne** et la dispersion des **données**. L'IC de la moyenne est étroit ([56,5 ; 64,0]), alors que 95 % des commandes sont entre 19 et 129 DT (3.1.3).
+> 2. « 95 % des **commandes** sont dans cet intervalle » : confusion entre la précision de la **moyenne** et la dispersion des **données**. L'IC de la moyenne est étroit ([56,5 ; 64,0]), alors que 95 % des commandes sont entre 19 et 129 € (3.1.3).
 
 ### 3.3.3 Quand l'écart-type est inconnu : la loi de Student
 
@@ -119,19 +119,19 @@ def ic_moyenne(x, niveau=0.95):
     se = x.std(ddof=1) / np.sqrt(len(x))
     return stats.t.interval(niveau, len(x) - 1, loc=x.mean(), scale=se)
 
-for canal in ["Instagram", "Site", "Boutique"]:
+for canal in ["Réseaux", "Site", "Boutique"]:
     x = df.loc[df["canal"] == canal, "montant"]
     lo, hi = ic_moyenne(x)
     print(f"{canal:<10} n = {len(x):>3}   moyenne = {x.mean():5.1f}   IC95 % = [{lo:5.1f} ; {hi:5.1f}]")
 ```
 <!--sortie-->
 ```text
-Instagram  n = 138   moyenne =  49.0   IC95 % = [ 43.8 ;  54.2]
+Réseaux  n = 138   moyenne =  49.0   IC95 % = [ 43.8 ;  54.2]
 Site       n = 148   moyenne =  59.5   IC95 % = [ 53.3 ;  65.7]
 Boutique   n = 114   moyenne =  74.8   IC95 % = [ 67.3 ;  82.4]
 ```
 
-Les intervalles d'Instagram ([43,8 ; 54,2]) et de la boutique ([67,3 ; 82,4]) **sont très éloignés** : c'est un indice sérieux que ces deux canaux diffèrent vraiment. L'intervalle du site ([53,3 ; 65,7]) chevauche légèrement celui d'Instagram mais pas celui de la boutique. Attention : « les intervalles se chevauchent » ne prouve **pas** que les moyennes sont égales, et même des intervalles qui se touchent peuvent cacher une différence significative. La bonne méthode est de construire un intervalle (ou un test) pour la **différence** elle-même, ce que nous ferons au 3.4.
+Les intervalles d'Réseaux ([43,8 ; 54,2]) et de la boutique ([67,3 ; 82,4]) **sont très éloignés** : c'est un indice sérieux que ces deux canaux diffèrent vraiment. L'intervalle du site ([53,3 ; 65,7]) chevauche légèrement celui d'Réseaux mais pas celui de la boutique. Attention : « les intervalles se chevauchent » ne prouve **pas** que les moyennes sont égales, et même des intervalles qui se touchent peuvent cacher une différence significative. La bonne méthode est de construire un intervalle (ou un test) pour la **différence** elle-même, ce que nous ferons au 3.4.
 
 > 💡 **Ce qui fait varier la largeur.** La demi-largeur est $t\times s/\sqrt n$. Elle **diminue** quand $n$ augmente (en $1/\sqrt n$), **augmente** quand la dispersion $s$ augmente, et **augmente** quand on exige plus de confiance (99 % donne un intervalle plus large que 95 %). Il n'y a pas de gratuité : plus de certitude coûte en précision.
 
@@ -216,25 +216,25 @@ IC bootstrap 95 % de la moyenne : [56.7 64. ]
 (à comparer à l'IC de Student de la moyenne : [56.5 64. ] )
 ```
 
-Pour la moyenne, le bootstrap donne pratiquement le même résultat que la formule de Student : rassurant. Pour la **médiane**, qui n'a pas de formule simple, il fournit un intervalle ([environ 47 ; 55] DT) que l'on n'aurait pas pu obtenir à la main.
+Pour la moyenne, le bootstrap donne pratiquement le même résultat que la formule de Student : rassurant. Pour la **médiane**, qui n'a pas de formule simple, il fournit un intervalle ([environ 47 ; 55] €) que l'on n'aurait pas pu obtenir à la main.
 
 > 🧪 **Limites.** Le bootstrap suppose que l'échantillon est représentatif de la population ; il marche mal pour des statistiques « extrêmes » (le maximum), avec de très petits échantillons, ou en présence de très fortes dépendances entre observations. Il reste un outil de base du data scientist, car il généralise à **n'importe quelle** statistique sans calcul mathématique.
 
 ### 3.3.6 Dimensionner un échantillon
 
-On peut renverser le raisonnement : *quelle précision veut-on ?* Si Yasmine veut estimer le panier moyen à ±2 DT près, avec une confiance de 95 % et en supposant $s\approx38$ DT, il faut $1{,}96\times38/\sqrt n\le2$, soit
+On peut renverser le raisonnement : *quelle précision veut-on ?* Si la gérante veut estimer le panier moyen à ±2 € près, avec une confiance de 95 % et en supposant $s\approx38$ €, il faut $1{,}96\times38/\sqrt n\le2$, soit
 
 $$n\ge\Bigl(\frac{1{,}96\,s}{\varepsilon}\Bigr)^2=\Bigl(\frac{1{,}96\times38}2\Bigr)^2\approx1\,387\ \text{commandes}.$$
 
 ```python
 s, eps = 38, 2
-print("n pour une marge de ±2 DT :", int(np.ceil((1.96 * s / eps) ** 2)))
-print("n pour une marge de ±1 DT :", int(np.ceil((1.96 * s / 1) ** 2)))
+print("n pour une marge de ±2 € :", int(np.ceil((1.96 * s / eps) ** 2)))
+print("n pour une marge de ±1 € :", int(np.ceil((1.96 * s / 1) ** 2)))
 ```
 <!--sortie-->
 ```text
-n pour une marge de ±2 DT : 1387
-n pour une marge de ±1 DT : 5548
+n pour une marge de ±2 € : 1387
+n pour une marge de ±1 € : 5548
 ```
 
 Diviser la marge par 2 demande **4 fois plus de données** (la loi en $1/\sqrt n$ du 2.4). C'est pourquoi gagner de la précision devient vite très coûteux.

@@ -4,7 +4,7 @@
 
 ### Énoncés
 
-**Exercice 1 ⭐ (concevoir une expérience).** Yasmine veut comparer deux présentations de la page d'accueil de son site, A et B. Elle propose : « affichage A la semaine prochaine, affichage B la semaine suivante, et je compare les commandes ». (a) Quelle est l'unité expérimentale ? (b) Citez deux raisons pour lesquelles la comparaison sera biaisée. (c) Proposez un plan qui applique les trois principes de Fisher (randomisation, répétition, blocage).
+**Exercice 1 ⭐ (concevoir une expérience).** la gérante veut comparer deux présentations de la page d'accueil de son site, A et B. Elle propose : « affichage A la semaine prochaine, affichage B la semaine suivante, et je compare les commandes ». (a) Quelle est l'unité expérimentale ? (b) Citez deux raisons pour lesquelles la comparaison sera biaisée. (c) Proposez un plan qui applique les trois principes de Fisher (randomisation, répétition, blocage).
 
 **Exercice 2 ⭐ (ANOVA à la main).** Trois fournisseurs de papier d'emballage, quatre lots chacun ; on mesure la résistance à la déchirure (en newtons) :
 Fournisseur 1 : $52,\,48,\,50,\,50$ ; Fournisseur 2 : $56,\,58,\,54,\,56$ ; Fournisseur 3 : $62,\,60,\,64,\,62$.
@@ -14,7 +14,7 @@ Calculez les moyennes, $SS_B$, $SS_W$, les carrés moyens et la statistique $F$.
 
 **Exercice 4 ⭐⭐ (comparaisons multiples).** Toujours avec les données de l'exercice 2, calculez le seuil HSD de Tukey (utilisez $q_{0{,}95;\,3,\,9}\approx3{,}95$) et dites quelles paires de fournisseurs diffèrent. Pourquoi ne pas simplement faire trois tests de Student à 5 % ?
 
-**Exercice 5 ⭐⭐ (blocs).** Quatre traitements sont testés dans trois blocs (trois semaines) ; ventes en dizaines de DT :
+**Exercice 5 ⭐⭐ (blocs).** Quatre traitements sont testés dans trois blocs (trois semaines) ; ventes en dizaines de € :
 
 | | traitement 1 | traitement 2 | traitement 3 | traitement 4 |
 |---|---|---|---|---|

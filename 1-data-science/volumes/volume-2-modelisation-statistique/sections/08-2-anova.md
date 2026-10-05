@@ -4,7 +4,7 @@
 
 ### 8.2.1 Le problème : quatre agencements de vitrine
 
-Yasmine a testé quatre agencements de vitrine (« Classique », « Par couleur », « Par thème », « Vedette »). Pendant 48 jours d'ouverture, elle a tiré au sort l'agencement de chaque journée (12 jours par agencement) et relevé les ventes du jour. Les unités expérimentales sont les journées, comme nous l'avons discuté en 8.1.
+La gérante a testé quatre agencements de vitrine (« Classique », « Par couleur », « Par thème », « Vedette »). Pendant 48 jours d'ouverture, elle a tiré au sort l'agencement de chaque journée (12 jours par agencement) et relevé les ventes du jour. Les unités expérimentales sont les journées, comme nous l'avons discuté en 8.1.
 
 ```python
 import numpy as np
@@ -61,7 +61,7 @@ ax.axhline(df["ventes"].mean(), color="#898781", ls="--", lw=1)
 ax.text(len(ordre) - 0.5, df["ventes"].mean() + 3, "moyenne générale", ha="right", color="#52514e", fontsize=8)
 ax.set_xticks(range(len(ordre)))
 ax.set_xticklabels(ordre)
-ax.set_ylabel("ventes du jour (DT)")
+ax.set_ylabel("ventes du jour (€)")
 ax.set_title("Ventes selon l'agencement (un point = une journée, trait orange = moyenne)")
 plt.savefig("figures/ch08-vitrines.png", dpi=200, bbox_inches="tight")
 print("figure enregistrée")
@@ -147,7 +147,7 @@ On compare maintenant les sommes de carrés **ramenées à leurs degrés de libe
 > $$F=\frac{MS_B}{MS_W}\ \underset{H_0}{\sim}\ \mathcal F(k-1,\;N-k).$$
 > Sous $H_0$, $F$ vaut environ 1 ; si les effets existent, $F$ est tiré vers le haut. On rejette donc $H_0$ quand $F$ est **grand** (test unilatéral à droite).
 
-Appliquons cela aux données de Yasmine, d'abord à la main, ensuite avec les bibliothèques :
+Appliquons cela aux données de la gérante, d'abord à la main, ensuite avec les bibliothèques :
 
 ```python
 from statsmodels.formula.api import ols
@@ -241,12 +241,12 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.6))
 ax1.scatter(osm, osr, s=20, color=BLEU)
 ax1.plot(osm, pente * np.asarray(osm) + ordonnee, color=ORANGE, lw=1.5)
 ax1.set_xlabel("quantiles théoriques de la loi normale")
-ax1.set_ylabel("résidus (DT)")
+ax1.set_ylabel("résidus (€)")
 ax1.set_title("Diagramme quantile-quantile")
 ax2.scatter(modele.fittedvalues, residus, s=20, color=BLEU)
 ax2.axhline(0, color="#898781", lw=1)
-ax2.set_xlabel("valeur ajustée = moyenne du groupe (DT)")
-ax2.set_ylabel("résidus (DT)")
+ax2.set_xlabel("valeur ajustée = moyenne du groupe (€)")
+ax2.set_ylabel("résidus (€)")
 ax2.set_title("Résidus selon la valeur ajustée")
 plt.tight_layout()
 plt.savefig("figures/ch08-anova-diagnostics.png", dpi=200, bbox_inches="tight")
@@ -299,15 +299,15 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 n_par = N // k
 q = stats.studentized_range.ppf(0.95, k, N - k)
 hsd = q * np.sqrt(MSW / n_par)
-print(f"q(0.95 ; k={k}, ddl={N - k}) = {q:.3f}  ->  HSD = {q:.3f} x sqrt({MSW:.0f}/{n_par}) = {hsd:.1f} DT")
+print(f"q(0.95 ; k={k}, ddl={N - k}) = {q:.3f}  ->  HSD = {q:.3f} x sqrt({MSW:.0f}/{n_par}) = {hsd:.1f} €")
 lsd = stats.t.ppf(0.975, N - k) * np.sqrt(2 * MSW / n_par)
-print(f"(seuil d'un test de Student non corrigé, pour une seule paire : {lsd:.1f} DT)\n")
+print(f"(seuil d'un test de Student non corrigé, pour une seule paire : {lsd:.1f} €)\n")
 
 moy = g.mean()
 paires = [(a, b) for i, a in enumerate(moy.index) for b in moy.index[i + 1:]]
 for a, b in paires:
     ecart = moy[b] - moy[a]
-    print(f"{b:12s} - {a:12s} : écart = {ecart:6.1f} DT   {'> HSD : significatif' if abs(ecart) > hsd else '<= HSD'}")
+    print(f"{b:12s} - {a:12s} : écart = {ecart:6.1f} €   {'> HSD : significatif' if abs(ecart) > hsd else '<= HSD'}")
 
 tukey = pairwise_tukeyhsd(df["ventes"], df["agencement"], alpha=0.05)
 tab = pd.DataFrame(tukey._results_table.data[1:], columns=tukey._results_table.data[0])
@@ -316,15 +316,15 @@ print(tab.round(3).to_string(index=False))
 ```
 <!--sortie-->
 ```text
-q(0.95 ; k=4, ddl=44) = 3.776  ->  HSD = 3.776 x sqrt(1140/12) = 36.8 DT
-(seuil d'un test de Student non corrigé, pour une seule paire : 27.8 DT)
+q(0.95 ; k=4, ddl=44) = 3.776  ->  HSD = 3.776 x sqrt(1140/12) = 36.8 €
+(seuil d'un test de Student non corrigé, pour une seule paire : 27.8 €)
 
-Par couleur  - Classique    : écart =   28.4 DT   <= HSD
-Par thème    - Classique    : écart =   40.7 DT   > HSD : significatif
-Vedette      - Classique    : écart =   19.2 DT   <= HSD
-Par thème    - Par couleur  : écart =   12.4 DT   <= HSD
-Vedette      - Par couleur  : écart =   -9.2 DT   <= HSD
-Vedette      - Par thème    : écart =  -21.5 DT   <= HSD
+Par couleur  - Classique    : écart =   28.4 €   <= HSD
+Par thème    - Classique    : écart =   40.7 €   > HSD : significatif
+Vedette      - Classique    : écart =   19.2 €   <= HSD
+Par thème    - Par couleur  : écart =   12.4 €   <= HSD
+Vedette      - Par couleur  : écart =   -9.2 €   <= HSD
+Vedette      - Par thème    : écart =  -21.5 €   <= HSD
 
      group1      group2  meandiff  p-adj   lower  upper  reject
   Classique Par couleur    28.358  0.183  -8.448 65.165   False
@@ -335,7 +335,7 @@ Par couleur     Vedette    -9.167  0.910 -45.973 27.640   False
   Par thème     Vedette   -21.533  0.410 -58.340 15.273   False
 ```
 
-La partie « à la main » et la bibliothèque donnent les mêmes décisions. On voit aussi le prix de la prudence : avec 6 comparaisons, il faut un écart d'environ 37 DT pour conclure, alors qu'un test non corrigé se contenterait d'environ 28 DT (deux écarts, 28,4 et 40,7, l'auraient franchi). Après correction, un seul écart franchit la barre : le plus grand, « Par thème » contre « Classique » (écart de 40,7 DT, $p$ ajustée $=0{,}025$, intervalle de confiance simultané de 3,9 à 77,5 DT : l'effet est détecté, mais **très imprécis**). Avec la correction de Bonferroni (ici sur des tests de Student séparés), on arrive à la même conclusion : seul « Par thème » contre « Classique » reste significatif ($p$ brute $0{,}0055$, multipliée par 6 : $0{,}033$).
+La partie « à la main » et la bibliothèque donnent les mêmes décisions. On voit aussi le prix de la prudence : avec 6 comparaisons, il faut un écart d'environ 37 € pour conclure, alors qu'un test non corrigé se contenterait d'environ 28 € (deux écarts, 28,4 et 40,7, l'auraient franchi). Après correction, un seul écart franchit la barre : le plus grand, « Par thème » contre « Classique » (écart de 40,7 €, $p$ ajustée $=0{,}025$, intervalle de confiance simultané de 3,9 à 77,5 € : l'effet est détecté, mais **très imprécis**). Avec la correction de Bonferroni (ici sur des tests de Student séparés), on arrive à la même conclusion : seul « Par thème » contre « Classique » reste significatif ($p$ brute $0{,}0055$, multipliée par 6 : $0{,}033$).
 
 ```python
 brut = {}
@@ -354,7 +354,7 @@ Vedette      - Par couleur  : p brute = 0.5288 ; p Bonferroni (x6) = 1.0000
 Vedette      - Par thème    : p brute = 0.0632 ; p Bonferroni (x6) = 0.3794
 ```
 
-> 💡 **Un contraste planifié, pour une question précise.** Si, **avant** l'expérience, Yasmine s'était demandé « l'agencement *Par thème* fait-il mieux que la moyenne des trois autres ? », elle pouvait tester **un seul** contraste $c=\bar y_{\text{thème}}-\tfrac13(\bar y_{\text{classique}}+\bar y_{\text{couleur}}+\bar y_{\text{vedette}})$, avec un seul test. Un contraste est une combinaison linéaire des moyennes dont les poids somment à 0 ; son écart-type estimé est $\sqrt{MS_W\sum_i c_i^2/n_i}$, et sa statistique suit une loi de Student à $N-k$ degrés de liberté. Poser la question **avant** évite d'avoir à corriger des dizaines de comparaisons possibles.
+> 💡 **Un contraste planifié, pour une question précise.** Si, **avant** l'expérience, la gérante s'était demandé « l'agencement *Par thème* fait-il mieux que la moyenne des trois autres ? », elle pouvait tester **un seul** contraste $c=\bar y_{\text{thème}}-\tfrac13(\bar y_{\text{classique}}+\bar y_{\text{couleur}}+\bar y_{\text{vedette}})$, avec un seul test. Un contraste est une combinaison linéaire des moyennes dont les poids somment à 0 ; son écart-type estimé est $\sqrt{MS_W\sum_i c_i^2/n_i}$, et sa statistique suit une loi de Student à $N-k$ degrés de liberté. Poser la question **avant** évite d'avoir à corriger des dizaines de comparaisons possibles.
 
 ```python
 poids = pd.Series({"Classique": -1 / 3, "Par couleur": -1 / 3, "Par thème": 1.0, "Vedette": -1 / 3})
@@ -362,16 +362,16 @@ estim = (poids * moy).sum()
 se = np.sqrt(MSW * (poids ** 2 / g.size()).sum())
 t_c = estim / se
 ic = (estim - stats.t.ppf(0.975, N - k) * se, estim + stats.t.ppf(0.975, N - k) * se)
-print(f"contraste thème - moyenne des autres = {estim:.1f} DT  (écart-type {se:.1f})")
+print(f"contraste thème - moyenne des autres = {estim:.1f} €  (écart-type {se:.1f})")
 print(f"t = {t_c:.2f}, p = {2 * stats.t.sf(abs(t_c), N - k):.4f}, IC95 = [{ic[0]:.1f} ; {ic[1]:.1f}]")
 ```
 <!--sortie-->
 ```text
-contraste thème - moyenne des autres = 24.9 DT  (écart-type 11.3)
+contraste thème - moyenne des autres = 24.9 €  (écart-type 11.3)
 t = 2.21, p = 0.0324, IC95 = [2.2 ; 47.6]
 ```
 
-Le thème l'emporte d'environ 25 DT sur la moyenne des trois autres ($p=0{,}032$, intervalle de 2 à 48 DT). Une **seule** question posée à l'avance, donc **un seul** test, sans correction : la conclusion est plus nette que celle des six comparaisons deux à deux, mais elle n'est honnête que parce que la question a été choisie **avant** de voir les données.
+Le thème l'emporte d'environ 25 € sur la moyenne des trois autres ($p=0{,}032$, intervalle de 2 à 48 €). Une **seule** question posée à l'avance, donc **un seul** test, sans correction : la conclusion est plus nette que celle des six comparaisons deux à deux, mais elle n'est honnête que parce que la question a été choisie **avant** de voir les données.
 
 ```python
 x = np.arange(len(tab))
@@ -383,7 +383,7 @@ for i, r in tab.iterrows():
 ax.axvline(0, color="#898781", lw=1)
 ax.set_yticks(x)
 ax.set_yticklabels([f"{r['group2']} - {r['group1']}" for _, r in tab.iterrows()])
-ax.set_xlabel("écart de moyennes (DT) avec intervalle de confiance simultané à 95 % (Tukey)")
+ax.set_xlabel("écart de moyennes (€) avec intervalle de confiance simultané à 95 % (Tukey)")
 ax.set_title("Comparaisons deux à deux : en orange, celles dont l'intervalle exclut 0")
 plt.savefig("figures/ch08-tukey.png", dpi=200, bbox_inches="tight")
 print("figure enregistrée")
@@ -418,7 +418,7 @@ L'agencement explique donc environ 17 % de la variance des ventes journalières 
 
 ### 8.2.8 Les blocs : retirer du bruit connu
 
-Yasmine refait l'expérience autrement. Elle sait que les semaines diffèrent beaucoup (soldes, fêtes, météo) : elle découpe l'expérience en **8 semaines** (les **blocs**), et chaque semaine elle teste **chacun des quatre agencements une fois**, dans un ordre tiré au hasard. Soit 32 journées. C'est un **plan en blocs complets randomisés**.
+La gérante refait l'expérience autrement. Elle sait que les semaines diffèrent beaucoup (soldes, fêtes, météo) : elle découpe l'expérience en **8 semaines** (les **blocs**), et chaque semaine elle teste **chacun des quatre agencements une fois**, dans un ordre tiré au hasard. Soit 32 journées. C'est un **plan en blocs complets randomisés**.
 
 Le modèle ajoute un effet de bloc :
 
@@ -497,13 +497,13 @@ print(f"efficacité relative du plan en blocs = {ER:.1f}")
 # comparaison des agencements à l'intérieur des blocs (Tukey avec le carré moyen de l'erreur du modèle à blocs)
 moyennes = bl.groupby("agencement")["ventes"].mean()
 hsd_bloc = stats.studentized_range.ppf(0.95, kk, (b - 1) * (kk - 1)) * np.sqrt(MSE_bloc / b)
-print(f"HSD (blocs) = {hsd_bloc:.1f} DT")
+print(f"HSD (blocs) = {hsd_bloc:.1f} €")
 print((moyennes - moyennes["Classique"]).round(1).to_string())
 ```
 <!--sortie-->
 ```text
 efficacité relative du plan en blocs = 9.0
-HSD (blocs) = 18.4 DT
+HSD (blocs) = 18.4 €
 agencement
 Classique       0.0
 Par couleur    17.1
@@ -511,7 +511,7 @@ Par thème      42.9
 Vedette        11.3
 ```
 
-Ici l'efficacité relative est d'environ **9** : un plan sans blocs aurait demandé à peu près neuf fois plus de journées par agencement (de l'ordre de 70 semaines au lieu de 8) pour atteindre la même précision. Et le seuil de Tukey n'est plus que de 18 DT (contre 37 DT dans l'expérience sans blocs) : avec les mêmes quatre agencements, on distingue maintenant des écarts deux fois plus petits. « Par thème » dépasse « Classique » de 43 DT, « Par couleur » de 17 DT, juste sous le seuil, et « Vedette » de 11 DT.
+Ici l'efficacité relative est d'environ **9** : un plan sans blocs aurait demandé à peu près neuf fois plus de journées par agencement (de l'ordre de 70 semaines au lieu de 8) pour atteindre la même précision. Et le seuil de Tukey n'est plus que de 18 € (contre 37 € dans l'expérience sans blocs) : avec les mêmes quatre agencements, on distingue maintenant des écarts deux fois plus petits. « Par thème » dépasse « Classique » de 43 €, « Par couleur » de 17 €, juste sous le seuil, et « Vedette » de 11 €.
 
 > ⚠️ **Deux précautions.**
 > 1. Les blocs se **choisissent avant** l'expérience, parce qu'ils sont *connus* comme source de variabilité. On bloque sur ce qui varie beaucoup (la semaine), pas sur n'importe quoi : chaque bloc coûte des degrés de liberté à l'erreur.
@@ -519,7 +519,7 @@ Ici l'efficacité relative est d'environ **9** : un plan sans blocs aurait deman
 
 ### 8.2.9 Deux facteurs et leur interaction
 
-Yasmine s'intéresse maintenant à l'**emballage** (Kraft, Tissu, Coffret) et au **canal** de la commande (Site, Instagram). Pour chacune des 6 combinaisons, elle observe 10 commandes (60 au total) et relève le **panier** en DT. On obtient un plan **factoriel $3\times2$ avec répétitions**.
+La gérante s'intéresse maintenant à l'**emballage** (Kraft, Tissu, Coffret) et au **canal** de la commande (Site, Réseaux). Pour chacune des 6 combinaisons, elle observe 10 commandes (60 au total) et relève le **panier** en €. On obtient un plan **factoriel $3\times2$ avec répétitions**.
 
 Le modèle à deux facteurs avec interaction s'écrit
 
@@ -536,7 +536,7 @@ print(table.round(1).to_string())
 ```
 <!--sortie-->
 ```text
-canal            Instagram  Site  moyenne ligne
+canal            Réseaux  Site  moyenne ligne
 emballage                                      
 Kraft                 43.5  48.0           45.7
 Tissu                 48.0  50.3           49.2
@@ -544,16 +544,16 @@ Coffret               69.8  60.3           65.0
 moyenne colonne       53.8  52.9           53.3
 ```
 
-Lisez les moyennes des cases. Sur le **Site**, passer du Kraft au Coffret fait gagner une dizaine de dinars ; sur **Instagram**, le gain est environ **deux fois plus grand**. L'effet de l'emballage dépend du canal : c'est une interaction. Représentons-la, avant de la tester.
+Lisez les moyennes des cases. Sur le **Site**, passer du Kraft au Coffret fait gagner une dizaine de euros ; sur **Réseaux**, le gain est environ **deux fois plus grand**. L'effet de l'emballage dépend du canal : c'est une interaction. Représentons-la, avant de la tester.
 
 ```python
 fig, ax = plt.subplots(figsize=(6.2, 3.8))
-for canal, couleur in [("Site", BLEU), ("Instagram", ORANGE)]:
+for canal, couleur in [("Site", BLEU), ("Réseaux", ORANGE)]:
     m = ec[ec["canal"] == canal].groupby("emballage")["panier"].mean().loc[["Kraft", "Tissu", "Coffret"]]
     ax.plot(m.index, m.values, "o-", color=couleur, lw=2)
     ax.text(2.05, m.values[-1], canal, color=couleur, va="center")
 ax.set_xlim(-0.2, 2.6)
-ax.set_ylabel("panier moyen (DT)")
+ax.set_ylabel("panier moyen (€)")
 ax.set_title("Graphique d'interaction : les courbes ne sont pas parallèles")
 plt.savefig("figures/ch08-interaction.png", dpi=200, bbox_inches="tight")
 print("figure enregistrée")
@@ -563,7 +563,7 @@ print("figure enregistrée")
 figure enregistrée
 ```
 
-![Graphique d'interaction : panier moyen selon l'emballage, une courbe par canal. Les deux courbes montent avec le niveau d'emballage mais celle d'Instagram monte plus fort, donc elles ne sont pas parallèles.](figures/ch08-interaction.png)
+![Graphique d'interaction : panier moyen selon l'emballage, une courbe par canal. Les deux courbes montent avec le niveau d'emballage mais celle d'Réseaux monte plus fort, donc elles ne sont pas parallèles.](figures/ch08-interaction.png)
 
 > 💡 **Lire un graphique d'interaction.** Des courbes **parallèles** signifient pas d'interaction (les effets s'additionnent). Des courbes qui **s'écartent** ou **se croisent** signalent une interaction. Ce graphique est le premier outil à regarder pour deux facteurs.
 
@@ -594,17 +594,17 @@ SS emballage à la main = 4248.2  (tableau : 4248.2)
 On lit le tableau **de bas en haut** : on teste d'abord l'**interaction**. Si elle est significative, l'interprétation des effets principaux devient **trompeuse**, car un effet principal est une moyenne sur l'autre facteur, qui peut cacher des effets de signes ou d'ampleurs différents. Ici, l'interaction est significative ; l'effet de l'emballage est très fort. En revanche, l'effet principal du **canal** est quasiment nul : ce n'est pas que le canal n'a aucune importance (il joue sur l'effet du coffret), c'est que, **en moyenne sur les emballages**, les deux canaux se compensent. C'est le piège classique. Quand il y a interaction, on étudie les **effets simples** : l'effet d'un facteur **à chaque niveau** de l'autre.
 
 ```python
-for canal in ["Site", "Instagram"]:
+for canal in ["Site", "Réseaux"]:
     sous = ec[ec["canal"] == canal]
     a = anova_lm(ols("panier ~ C(emballage)", sous).fit())
     m = sous.groupby("emballage")["panier"].mean()
     print(f"{canal:10s}: F emballage = {a.loc['C(emballage)', 'F']:.1f}, p = {a.loc['C(emballage)', 'PR(>F)']:.4f} ; "
-          f"gain Coffret - Kraft = {m['Coffret'] - m['Kraft']:.1f} DT")
+          f"gain Coffret - Kraft = {m['Coffret'] - m['Kraft']:.1f} €")
 ```
 <!--sortie-->
 ```text
-Site      : F emballage = 7.1, p = 0.0032 ; gain Coffret - Kraft = 12.3 DT
-Instagram : F emballage = 42.1, p = 0.0000 ; gain Coffret - Kraft = 26.3 DT
+Site      : F emballage = 7.1, p = 0.0032 ; gain Coffret - Kraft = 12.3 €
+Réseaux : F emballage = 42.1, p = 0.0000 ; gain Coffret - Kraft = 26.3 €
 ```
 
 > ⚠️ **Plans déséquilibrés.** Ici, chaque case contient 10 observations (plan **équilibré**) : les sommes de carrés sont uniques et les facteurs « orthogonaux ». Quand les effectifs diffèrent selon les cases, la décomposition dépend de l'ordre des facteurs (sommes de carrés de type I, II ou III). Préférez alors l'interprétation par les **coefficients du modèle** et des tests ciblés plutôt que la lecture mécanique du tableau d'ANOVA. C'est une raison de plus de **planifier des plans équilibrés**.
@@ -617,7 +617,7 @@ $$\lambda=\frac{\sum_i n_i\tau_i^2}{\sigma^2}=N f^2,$$
 
 où $f=\sqrt{\sum_i\tau_i^2/k}\,/\,\sigma$ est l'effet de Cohen (8.2.7). La puissance est $\mathbb P\left(F>F_{1-\alpha}\right)$ sous cette loi.
 
-Reprenons l'expérience de la vitrine **telle qu'elle a été planifiée** : moyennes vraies 200, 215, 240 et 205 DT, écart-type $\sigma=30$ DT, 12 jours par agencement.
+Reprenons l'expérience de la vitrine **telle qu'elle a été planifiée** : moyennes vraies 200, 215, 240 et 205 €, écart-type $\sigma=30$ €, 12 jours par agencement.
 
 ```python
 from statsmodels.stats.power import FTestAnovaPower
@@ -652,7 +652,7 @@ puissance avec 12 jours par agencement : 0.826
 fréquence de rejet simulée : 0.820
 ```
 
-La puissance **prévue** était d'environ **83 %** : la formule (loi de Fisher non centrale), `statsmodels` et la simulation (5 000 expériences rejouées) s'accordent à quelques millièmes près. Avec l'effet que Yasmine espérait, l'expérience de 12 jours par agencement était donc **bien dimensionnée**. Le $p=0{,}036$ observé, proche du seuil, n'a rien de contradictoire : le $F$ observé (3,10) est simplement inférieur à celui qu'on attend en moyenne avec l'effet espéré (environ $1+\lambda/(k-1)\approx5{,}2$, avec $\lambda=Nf^2\approx12{,}7$) : une fluctuation d'échantillonnage ordinaire, qui arrive environ une fois sur cinq. Et si l'effet réel n'était que **moitié moindre** que celui espéré ?
+La puissance **prévue** était d'environ **83 %** : la formule (loi de Fisher non centrale), `statsmodels` et la simulation (5 000 expériences rejouées) s'accordent à quelques millièmes près. Avec l'effet que la gérante espérait, l'expérience de 12 jours par agencement était donc **bien dimensionnée**. Le $p=0{,}036$ observé, proche du seuil, n'a rien de contradictoire : le $F$ observé (3,10) est simplement inférieur à celui qu'on attend en moyenne avec l'effet espéré (environ $1+\lambda/(k-1)\approx5{,}2$, avec $\lambda=Nf^2\approx12{,}7$) : une fluctuation d'échantillonnage ordinaire, qui arrive environ une fois sur cinq. Et si l'effet réel n'était que **moitié moindre** que celui espéré ?
 
 ```python
 f_moitie = f_plan / 2
@@ -743,7 +743,7 @@ Même tableau d'analyse de variance, mêmes comparaisons de Tukey (au détail d'
 
 ### 8.2.12 Ce que cachaient les données
 
-Les données étant simulées, nous connaissons la vérité (script `build/donnees_ch08.py`). Pour la vitrine, les moyennes vraies étaient **200, 215, 240 et 205 DT** pour Classique, Par couleur, Par thème et Vedette, avec un bruit de 30 DT. Les écarts **observés** par rapport à « Classique » dans l'expérience à 48 jours (+28, +41 et +19 DT pour Par couleur, Par thème et Vedette) en sont proches mais pas identiques à ceux qui étaient programmés (+15, +40 et +5) : l'erreur d'estimation d'un écart est ici d'environ 14 DT (un écart-type), et le hasard a fait **sur-estimer** l'avantage de « Par couleur » et de « Vedette ». Avec 12 jours par groupe, on ne peut espérer que des ordres de grandeur. Dans l'expérience en blocs, les effets vrais étaient $0,\ 15,\ 40,\ 5$ DT et les écarts estimés sont +17, +43 et +11 DT, avec une erreur d'estimation d'environ 7 DT, deux fois plus petite : c'est le gain de précision apporté par les blocs. Pour l'emballage, l'interaction était programmée : le coffret apporte $+10$ DT au site mais $+22$ DT sur Instagram.
+Les données étant simulées, nous connaissons la vérité (script `build/donnees_ch08.py`). Pour la vitrine, les moyennes vraies étaient **200, 215, 240 et 205 €** pour Classique, Par couleur, Par thème et Vedette, avec un bruit de 30 €. Les écarts **observés** par rapport à « Classique » dans l'expérience à 48 jours (+28, +41 et +19 € pour Par couleur, Par thème et Vedette) en sont proches mais pas identiques à ceux qui étaient programmés (+15, +40 et +5) : l'erreur d'estimation d'un écart est ici d'environ 14 € (un écart-type), et le hasard a fait **sur-estimer** l'avantage de « Par couleur » et de « Vedette ». Avec 12 jours par groupe, on ne peut espérer que des ordres de grandeur. Dans l'expérience en blocs, les effets vrais étaient $0,\ 15,\ 40,\ 5$ € et les écarts estimés sont +17, +43 et +11 €, avec une erreur d'estimation d'environ 7 €, deux fois plus petite : c'est le gain de précision apporté par les blocs. Pour l'emballage, l'interaction était programmée : le coffret apporte $+10$ € au site mais $+22$ € sur Réseaux.
 
 > ✅ **À retenir.**
 > - L'ANOVA **décompose la variabilité** : $SS_T=SS_B+SS_W$, exactement ; le test $F=MS_B/MS_W\sim\mathcal F(k-1,N-k)$ sous $H_0$ compare variabilité entre et à l'intérieur des groupes.

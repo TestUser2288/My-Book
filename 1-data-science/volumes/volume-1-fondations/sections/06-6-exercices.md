@@ -8,7 +8,7 @@
 
 **Exercice 2 ⭐ (tuyaux).** Combien de commandes ont reçu chacune des notes de satisfaction (1 à 5) ? Répondez avec **une seule ligne** de commandes enchaînées par des tuyaux, puis vérifiez avec pandas.
 
-**Exercice 3 ⭐ (premiers pas avec Git).** Dans un nouveau dépôt `journal`, créez un fichier `notes.txt` contenant la ligne « Hypothèse : les commandes Instagram sont plus petites. » et enregistrez-le (commit 1). Ajoutez une seconde ligne « Test à faire : comparer les moyennes par canal. » et enregistrez (commit 2). Par maladresse, vous supprimez ensuite `notes.txt` avec `rm`. Retrouvez-le **sans refaire à la main**, puis affichez l'historique en une ligne par commit.
+**Exercice 3 ⭐ (premiers pas avec Git).** Dans un nouveau dépôt `journal`, créez un fichier `notes.txt` contenant la ligne « Hypothèse : les commandes Réseaux sont plus petites. » et enregistrez-le (commit 1). Ajoutez une seconde ligne « Test à faire : comparer les moyennes par canal. » et enregistrez (commit 2). Par maladresse, vous supprimez ensuite `notes.txt` avec `rm`. Retrouvez-le **sans refaire à la main**, puis affichez l'historique en une ligne par commit.
 
 **Exercice 4 ⭐⭐ (awk).** Calculez, pour chaque canal, le **pourcentage de commandes notées 4 ou 5** (colonne `satisfaction`), avec `awk`. Vérifiez avec pandas.
 
@@ -16,7 +16,7 @@
 
 **Exercice 6 ⭐⭐ (état caché).** Un notebook contient, de haut en bas, les cinq cellules suivantes :
 (A) `n = 100` ; (B) `taux = 0.19` ; (C) `tva = n * taux` ; (D) `n = 200` ; (E) `print(tva)`.
-Yasmine les exécute dans l'ordre **A, B, D, C, E** (elle a lancé D avant C). (a) Qu'affiche E ? (b) Qu'afficherait E après « Restart & Run All » ? (c) Quelle conclusion en tirez-vous ?
+La gérante les exécute dans l'ordre **A, B, D, C, E** (elle a lancé D avant C). (a) Qu'affiche E ? (b) Qu'afficherait E après « Restart & Run All » ? (c) Quelle conclusion en tirez-vous ?
 
 **Exercice 7 ⭐⭐ (environnement).** Créez un environnement virtuel `env-a`, installez-y `tabulate==0.8.9` et enregistrez les versions dans `requirements.txt`. Reconstruisez ensuite, dans un second environnement `env-b`, **exactement les mêmes** bibliothèques à partir de ce seul fichier, et prouvez qu'elles sont identiques.
 
@@ -46,7 +46,7 @@ projet-yasmine/donnees
 projet-yasmine/donnees/commandes.csv
 projet-yasmine/src
 Site,62.6,4,3
-Instagram,37.5,3,4
+Réseaux,37.5,3,4
 Site,31.4,4,4
 401 projet-yasmine/donnees/commandes.csv
 ```
@@ -95,7 +95,7 @@ cd ~/atelier/exercices
 mkdir journal
 cd journal
 git init -q
-echo "Hypothèse : les commandes Instagram sont plus petites." > notes.txt
+echo "Hypothèse : les commandes Réseaux sont plus petites." > notes.txt
 git add notes.txt
 git commit -q -m "Première hypothèse"
 echo "Test à faire : comparer les moyennes par canal." >> notes.txt
@@ -108,7 +108,7 @@ git log --oneline
 ```
 <!--sortie-->
 ```text
-Hypothèse : les commandes Instagram sont plus petites.
+Hypothèse : les commandes Réseaux sont plus petites.
 Test à faire : comparer les moyennes par canal.
 07f3ebd Ajout du test à faire
 7c4ddf0 Première hypothèse
@@ -126,7 +126,7 @@ awk -F, 'NR > 1 { n[$1]++; if ($4 >= 4) bons[$1]++ }
 <!--sortie-->
 ```text
 Boutique   95.6 %
-Instagram  63.0 %
+Réseaux  63.0 %
 Site       69.6 %
 ```
 
@@ -140,7 +140,7 @@ print(satisfaits.round(1))
 ```text
 canal
 Boutique     95.6
-Instagram    63.0
+Réseaux    63.0
 Site         69.6
 Name: satisfaction, dtype: float64
 ```
@@ -223,7 +223,7 @@ jouer("ABCDE")
 (b) Restart & Run All (A, B, C, D, E) : 19.0
 ```
 
-(a) Dans l'ordre réellement joué, `n` vaut déjà 200 quand C calcule la TVA : E affiche $200\times0{,}19=38$. (b) Dans l'ordre du fichier, C est exécutée alors que `n` vaut encore 100 : E affiche $100\times0{,}19=19$. (c) Le **même notebook** donne deux résultats différents selon l'ordre d'exécution : le chiffre que Yasmine voyait à l'écran (38) n'est pas celui qu'obtiendra quiconque ouvrira le fichier et exécutera tout (19). C'est exactement l'état caché du 6.2.3 : **toujours** redémarrer et tout exécuter avant de se fier à un résultat. (Une analyse correcte de la logique du carnet dirait aussi que la cellule D, placée *après* C mais qui change `n`, est probablement mal placée.)
+(a) Dans l'ordre réellement joué, `n` vaut déjà 200 quand C calcule la TVA : E affiche $200\times0{,}19=38$. (b) Dans l'ordre du fichier, C est exécutée alors que `n` vaut encore 100 : E affiche $100\times0{,}19=19$. (c) Le **même notebook** donne deux résultats différents selon l'ordre d'exécution : le chiffre que la gérante voyait à l'écran (38) n'est pas celui qu'obtiendra quiconque ouvrira le fichier et exécutera tout (19). C'est exactement l'état caché du 6.2.3 : **toujours** redémarrer et tout exécuter avant de se fier à un résultat. (Une analyse correcte de la logique du carnet dirait aussi que la cellule D, placée *après* C mais qui change `n`, est probablement mal placée.)
 
 **Corrigé 7.** On crée le premier environnement, on y installe la version exacte demandée, puis on fige ; le second environnement est reconstruit uniquement depuis `requirements.txt`.
 
@@ -279,7 +279,7 @@ bash src/compte.sh absent.csv 1; echo "code : $?"
 ```text
 --- colonne 1 (canal) ---
     114 Boutique
-    138 Instagram
+    138 Réseaux
     148 Site
 --- colonne 4 (satisfaction) ---
       1 1
@@ -359,7 +359,7 @@ df = pd.read_csv(sys.argv[1])
 print("# Rapport sur les ventes")
 print()
 print(f"- Commandes : {len(df)}")
-print(f"- Montant moyen : {df['montant'].mean():.2f} DT")
+print(f"- Montant moyen : {df['montant'].mean():.2f} €")
 print(f"- Satisfaction moyenne : {df['satisfaction'].mean():.2f} / 5")
 FIN
 cat > Makefile <<'FIN'
@@ -378,7 +378,7 @@ python src/rapport.py donnees/commandes.csv > rapports/rapport.md
 # Rapport sur les ventes
 
 - Commandes : 400
-- Montant moyen : 60.25 DT
+- Montant moyen : 60.25 €
 - Satisfaction moyenne : 3.96 / 5
 ```
 
@@ -429,4 +429,4 @@ Vous savez maintenant :
 - **isoler chaque projet** dans un environnement virtuel et **figer** ses dépendances dans `requirements.txt` ;
 - (en option) **automatiser** avec des scripts shell et `make`, comprendre Docker, fabriquer un **rapport dynamique** (Python + Pandoc, R Markdown, Quarto, LaTeX), maîtriser les graines aléatoires et surveiller l'intégrité des données avec une empreinte.
 
-Le fil rouge de tout le chapitre tient en une phrase : **un résultat n'existe que s'il peut être refait**. Vous disposez désormais de l'ensemble des fondations du volume : les mathématiques (chapitre 1), les probabilités (2), la statistique (3), la programmation (4), les bases de données (5) et les outils de travail (6). Il est temps de tout assembler dans le **projet du volume** : une étude complète des ventes de Dar Jasmin, des données brutes jusqu'au rapport.
+Le fil rouge de tout le chapitre tient en une phrase : **un résultat n'existe que s'il peut être refait**. Vous disposez désormais de l'ensemble des fondations du volume : les mathématiques (chapitre 1), les probabilités (2), la statistique (3), la programmation (4), les bases de données (5) et les outils de travail (6). Il est temps de tout assembler dans le **projet du volume** : une étude complète des ventes de la boutique, des données brutes jusqu'au rapport.

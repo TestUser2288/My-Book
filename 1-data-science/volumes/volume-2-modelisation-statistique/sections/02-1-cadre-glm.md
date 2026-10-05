@@ -28,11 +28,11 @@ print("depense_annuelle : moyenne", round(d.mean(), 1), "| médiane", round(d.me
 <!--sortie-->
 ```text
    age canal_acquisition  offre_bienvenue  rachat_12m  nb_commandes_an  depense_annuelle
-0   19         Instagram                0           0                4            116.50
+0   19         Réseaux                0           0                4            116.50
 1   43              Site                1           1                2            148.92
 2   35          Boutique                1           0                6            509.05
-3   42         Instagram                0           0                0              0.00
-4   21         Instagram                0           0                7            321.77
+3   42         Réseaux                0           0                0              0.00
+4   21         Réseaux                0           0                7            321.77
 5   30              Site                0           1               13           1141.53
 
 rachat_12m       : valeurs [0, 1] | proportion de 1 : 0.509
@@ -40,7 +40,7 @@ nb_commandes_an  : moyenne 3.88 | variance 13.27 | part de zéros 0.13
 depense_annuelle : moyenne 247.0 | médiane 156.5 | écart-type 297.2 | part de zéros 0.13
 ```
 
-Trois variables, trois natures. `rachat_12m` ne prend que les valeurs 0 et 1 (51 % de clients ont racheté). `nb_commandes_an` est un comptage : en moyenne 3,88 commandes, mais avec une variance de 13,27, soit **3,4 fois la moyenne** (nous y reviendrons), et 13 % de clients à zéro. `depense_annuelle` est un montant : moyenne de 247 DT mais médiane de 156,5 DT et écart-type de 297 DT (supérieur à la moyenne) : la signature d'une forte asymétrie à droite, avec elle aussi 13 % de zéros (ce sont les mêmes clients : pas de commande, pas de dépense).
+Trois variables, trois natures. `rachat_12m` ne prend que les valeurs 0 et 1 (51 % de clients ont racheté). `nb_commandes_an` est un comptage : en moyenne 3,88 commandes, mais avec une variance de 13,27, soit **3,4 fois la moyenne** (nous y reviendrons), et 13 % de clients à zéro. `depense_annuelle` est un montant : moyenne de 247 € mais médiane de 156,5 € et écart-type de 297 € (supérieur à la moyenne) : la signature d'une forte asymétrie à droite, avec elle aussi 13 % de zéros (ce sont les mêmes clients : pas de commande, pas de dépense).
 
 **Premier problème : les probabilités sortent de $[0,1]$.** Pour expliquer `rachat_12m` (0 ou 1) par une droite, on ajuste ce qu'on appelle un **modèle de probabilité linéaire** : $P(Y=1)=\beta_0+\beta_1x_1+\dots$, estimé par moindres carrés ordinaires. Utilisons les clients qui ont répondu à l'enquête de satisfaction (section 2.2) : on dispose pour eux de deux notes moyennes, `note_produits` (questions 1 à 4) et `note_service` (questions 5 à 8).
 
@@ -100,7 +100,7 @@ print(tab.round(3).to_string())
                    moyenne  variance  clients  variance / moyenne
 canal_acquisition                                                
 Boutique              4.14     13.75      504                3.32
-Instagram             3.46     11.84      816                3.42
+Réseaux             3.46     11.84      816                3.42
 Site                  4.20     14.32      680                3.41
 
          observé  Poisson(3.88)
@@ -120,7 +120,7 @@ Site                  4.20     14.32      680                3.41
 
 La variance des comptages est **3,3 à 3,4 fois leur moyenne dans chacun des trois canaux**. Or une loi de Poisson impose variance $=$ moyenne. Le second tableau le montre sans ambiguïté : une loi de Poisson de moyenne 3,88 prévoirait 2,1 % de clients à zéro commande, alors qu'on en observe 13,0 % ; elle prévoirait 0,2 % de clients à 11 commandes ou plus, alors qu'on en observe 6,0 %. La distribution observée est plus **aplatie** que Poisson, avec trop de valeurs à *chaque* extrémité : c'est la **surdispersion**. Nous la traiterons à la section 2.3.
 
-**Troisième problème : des montants positifs, asymétriques, avec des zéros.** Une dépense annuelle ne peut pas être négative, sa dispersion augmente avec le niveau (les gros clients varient en DT bien plus que les petits) et il y a un paquet de clients à zéro. Une loi normale n'est pas du tout adaptée. Résumons tout cela en une figure.
+**Troisième problème : des montants positifs, asymétriques, avec des zéros.** Une dépense annuelle ne peut pas être négative, sa dispersion augmente avec le niveau (les gros clients varient en € bien plus que les petits) et il y a un paquet de clients à zéro. Une loi normale n'est pas du tout adaptée. Résumons tout cela en une figure.
 
 ```python
 fig, axes = plt.subplots(1, 3, figsize=(13, 3.9))
@@ -151,7 +151,7 @@ ax.set_title("(b) un comptage : trop dispersé pour Poisson"); ax.legend(frameon
 # (c) dépense annuelle
 ax = axes[2]
 ax.hist(d, bins=np.arange(0, 1300, 40), color=AQUA)
-ax.set_xlabel("dépense annuelle (DT)"); ax.set_ylabel("nombre de clients")
+ax.set_xlabel("dépense annuelle (€)"); ax.set_ylabel("nombre de clients")
 ax.set_title("(c) un montant : positif, asymétrique, zéros")
 plt.tight_layout()
 plt.savefig("figures/ch02-pourquoi-glm.png", dpi=200, bbox_inches="tight")
@@ -256,7 +256,7 @@ Le **lien** transforme la moyenne en prédicteur linéaire, $g(\mu)=\eta$. Il a 
 
 Le **lien canonique** d'une famille est celui qui rend $\theta=\eta$, c'est-à-dire $g=(b')^{-1}$ : logit pour Bernoulli, log pour Poisson, inverse pour Gamma, identité pour la normale. Il a de belles propriétés mathématiques (l'équation du score se simplifie, l'estimation converge très bien), mais ce n'est **pas une obligation** : le choix du lien est un choix de modélisation, à faire selon l'interprétation voulue. On utilise très souvent le lien **log pour la loi Gamma** (effets multiplicatifs sur des montants), bien que son lien canonique soit l'inverse.
 
-> 💡 **Exemple chiffré : le lien log.** Supposons qu'un client Instagram passe en moyenne 3 commandes par an, et qu'un client de la boutique en passe 3,6. Avec un lien log, $\log\mu_{\text{boutique}}-\log\mu_{\text{Instagram}}=\beta$ donne $\beta=\log(3{,}6/3)=\log1{,}2\approx0{,}182$. On lit : « la boutique passe **20 % de commandes en plus** », un effet **multiplicatif** : si Instagram passait 10 commandes, la boutique en passerait 12. Avec un lien identité, on aurait dit « 0,6 commande de plus », un effet **additif** : or il est peu plausible que l'écart reste de 0,6 pour des clients bien plus actifs.
+> 💡 **Exemple chiffré : le lien log.** Supposons qu'un client Réseaux passe en moyenne 3 commandes par an, et qu'un client de la boutique en passe 3,6. Avec un lien log, $\log\mu_{\text{boutique}}-\log\mu_{\text{Réseaux}}=\beta$ donne $\beta=\log(3{,}6/3)=\log1{,}2\approx0{,}182$. On lit : « la boutique passe **20 % de commandes en plus** », un effet **multiplicatif** : si Réseaux passait 10 commandes, la boutique en passerait 12. Avec un lien identité, on aurait dit « 0,6 commande de plus », un effet **additif** : or il est peu plausible que l'écart reste de 0,6 pour des clients bien plus actifs.
 
 ### 2.1.5 L'estimation : maximum de vraisemblance et IRLS
 

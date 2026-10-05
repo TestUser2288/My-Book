@@ -1,6 +1,6 @@
 ## 3.3 Classification non supervisée
 
-> 💡 **Intuition.** Yasmine a devant elle un millier de clientes et voudrait savoir « qui ressemble à qui ». On ne lui a donné aucune étiquette (« cliente fidèle », « cliente de passage ») : on veut que ce soient **les données elles-mêmes** qui proposent des groupes. C'est la **classification non supervisée** (*clustering*) : regrouper les individus de façon que ceux d'un même groupe se ressemblent plus entre eux qu'avec ceux des autres groupes. Deux familles de méthodes, simples et complémentaires : les **k-means** (on fixe le nombre de groupes et on optimise) et la **classification hiérarchique** (on construit un arbre de fusions successives).
+> 💡 **Intuition.** la gérante a devant elle un millier de clientes et voudrait savoir « qui ressemble à qui ». On ne lui a donné aucune étiquette (« cliente fidèle », « cliente de passage ») : on veut que ce soient **les données elles-mêmes** qui proposent des groupes. C'est la **classification non supervisée** (*clustering*) : regrouper les individus de façon que ceux d'un même groupe se ressemblent plus entre eux qu'avec ceux des autres groupes. Deux familles de méthodes, simples et complémentaires : les **k-means** (on fixe le nombre de groupes et on optimise) et la **classification hiérarchique** (on construit un arbre de fusions successives).
 
 > ⚠️ **Avertissement de départ.** Un algorithme de classification **rend toujours des groupes**, même quand il n'y en a aucun. Donnez-lui un nuage uniforme, il le découpera en morceaux avec le même aplomb. Tout ce que nous apprendrons dans cette section — choisir le nombre de groupes, mesurer leur qualité, tester leur stabilité — sert à répondre à la vraie question : *ces groupes existent-ils, ou est-ce moi qui les ai tracés ?*
 
@@ -10,7 +10,7 @@ Un groupe, c'est un ensemble de points **proches**. Il faut donc définir « pro
 
 $$d(\mathbf x,\mathbf y)=\sqrt{\sum_{j=1}^p(x_j-y_j)^2}.$$
 
-Comme en ACP (section 3.1.5), **les unités comptent** : si le panier est en DT et le nombre de commandes en unités, la distance sera dominée par le panier. On **standardise** donc presque toujours les variables avant de classer. Autre limite : la distance euclidienne n'a de sens que pour des variables **numériques**. Pour des variables mixtes (numériques et qualitatives), on utilise des distances adaptées (par exemple celle de Gower) ; pour des variables qualitatives pures, on peut passer par l'analyse des correspondances multiples (section 3.4).
+Comme en ACP (section 3.1.5), **les unités comptent** : si le panier est en € et le nombre de commandes en unités, la distance sera dominée par le panier. On **standardise** donc presque toujours les variables avant de classer. Autre limite : la distance euclidienne n'a de sens que pour des variables **numériques**. Pour des variables mixtes (numériques et qualitatives), on utilise des distances adaptées (par exemple celle de Gower) ; pour des variables qualitatives pures, on peut passer par l'analyse des correspondances multiples (section 3.4).
 
 ### 3.3.2 Les k-means
 
@@ -25,7 +25,7 @@ Trouver la partition qui minimise $W$ est un problème difficile (il y a un nomb
 
 On répète jusqu'à ce que plus aucun point ne change de groupe.
 
-**Un exemple à la main.** Six clientes décrites par une seule variable (leur panier moyen, en dizaines de DT) : $1,\ 2,\ 4,\ 9,\ 11,\ 12$. On veut $k=2$ groupes et on choisit, au hasard, les centres initiaux $\mu_1=1$ et $\mu_2=4$.
+**Un exemple à la main.** Six clientes décrites par une seule variable (leur panier moyen, en dizaines de €) : $1,\ 2,\ 4,\ 9,\ 11,\ 12$. On veut $k=2$ groupes et on choisit, au hasard, les centres initiaux $\mu_1=1$ et $\mu_2=4$.
 
 - *Affectation 1.* Les points $1$ et $2$ sont plus proches de $\mu_1=1$ ; le point $4$ est son propre centre ; $9$, $11$ et $12$ sont plus proches de $4$ que de $1$. Groupes : $\{1,2\}$ et $\{4,9,11,12\}$.
 - *Mise à jour 1.* Les nouvelles moyennes sont $\mu_1=1{,}5$ et $\mu_2=(4+9+11+12)/4=9$.
@@ -223,7 +223,7 @@ k
 
 Deux lectures concordantes. La **variance intra-groupe** s'effondre de $1\,200$ à $607$ puis à $188$ quand on passe de $1$ à $2$ puis à $3$ groupes (pour $k=1$, $W=n\times p=600\times2=1\,200$ puisque les variables sont standardisées), puis ne décroît plus que lentement : le **coude** est net en $k=3$. La **silhouette moyenne** atteint son maximum en $k=3$ ($0{,}676$) et chute ensuite. Les deux outils retrouvent le bon nombre de groupes. Pour interpréter une silhouette moyenne, on utilise des repères conventionnels (Kaufman et Rousseeuw) : au-dessus de $0{,}5$, la structure est réelle ; entre $0{,}25$ et $0{,}5$, elle est faible ; en dessous de $0{,}25$, on ne peut pas dire qu'il y ait une structure. Ces repères restent **indicatifs** : des variables très asymétriques produisent des silhouettes élevées même sans aucun groupe, et l'on ne peut interpréter une silhouette qu'en la comparant à celle d'un nuage témoin sans structure (voir l'exercice 12).
 
-![Choix du nombre de groupes : variance intra-groupe (le coude) et silhouette moyenne, pour les clientes simulées avec trois vrais profils et pour les clientes réelles de Dar Jasmin.](figures/ch03-choix-k.png)
+![Choix du nombre de groupes : variance intra-groupe (le coude) et silhouette moyenne, pour les clientes simulées avec trois vrais profils et pour les clientes réelles de la boutique.](figures/ch03-choix-k.png)
 
 ### 3.3.4 La classification hiérarchique
 
@@ -299,7 +299,7 @@ Les **deux dernières fusions** ont lieu à des hauteurs de $29{,}1$ et $34{,}3$
 
 **k-means ou hiérarchique ?** Les k-means passent très bien à l'échelle (des millions de points), mais exigent $k$ à l'avance et ne trouvent que des groupes « arrondis ». La classification hiérarchique donne une vue **à toutes les échelles** et ne dépend pas d'une initialisation, mais elle exige de stocker les $n^2/2$ distances (elle ne dépasse guère quelques dizaines de milliers de points) et ses fusions sont définitives : une erreur précoce ne se corrige jamais.
 
-### 3.3.5 Une segmentation honnête des clientes de Dar Jasmin
+### 3.3.5 Une segmentation honnête des clientes de la boutique
 
 Passons aux **vraies** clientes (celles du fichier `clients.csv`, qui sont simulées mais **sans** segments programmés, comme dans la plupart des situations réelles). Nous décrivons chaque cliente par quatre variables : nombre de commandes par an, panier moyen, durée de la relation et âge. On écarte la dépense annuelle (elle est quasiment le produit de deux autres variables), et les clientes sans commande (panier nul).
 
@@ -359,8 +359,8 @@ segment
 
 Quatre profils lisibles se dégagent, pour peu qu'on les nomme avec prudence :
 
-- **Segment 3** (40 % des clientes) : les plus **jeunes** (29 ans en moyenne) au **plus petit panier** (47 DT) ;
-- **Segment 0** (30 %) : les plus **âgées** (45 ans) au **plus gros panier** (76 DT) ;
+- **Segment 3** (40 % des clientes) : les plus **jeunes** (29 ans en moyenne) au **plus petit panier** (47 €) ;
+- **Segment 0** (30 %) : les plus **âgées** (45 ans) au **plus gros panier** (76 €) ;
 - **Segment 2** (14 %) : les **habituées**, avec 11 commandes par an en moyenne, contre 3 à 4 pour les autres ;
 - **Segment 1** (16 %) : les **anciennes**, dont la relation dure en moyenne 53 mois, contre 17 à 21 pour les autres.
 
@@ -393,7 +393,7 @@ Les clientes simulées avec de vrais groupes donnent une stabilité **quasi parf
 
 > ⚠️ **Stabilité n'est pas existence.** Une partition peut être reproductible sans correspondre à des groupes réels : avec 1 740 clientes, les k-means retrouvent à peu près les mêmes quatre « tranches » à chaque tirage, comme un découpeur de gâteau qui poserait toujours son couteau aux mêmes endroits. La stabilité est une condition **nécessaire** (une partition instable est sûrement arbitraire), jamais **suffisante**. C'est pourquoi on la combine avec la silhouette et le coude.
 
-![Les clientes de Dar Jasmin (variables standardisées) projetées sur les deux premières composantes principales, colorées par segment k-means (k = 4). Les segments se touchent : ils découpent un nuage continu.](figures/ch03-segments-clients.png)
+![Les clientes de la boutique (variables standardisées) projetées sur les deux premières composantes principales, colorées par segment k-means (k = 4). Les segments se touchent : ils découpent un nuage continu.](figures/ch03-segments-clients.png)
 
 > 🧪 **Révélation.** Aucun segment n'avait été programmé dans ces données : les variables ont été générées indépendamment de toute notion de « type de cliente ». Les k-means ont pourtant rendu quatre groupes, tout aussi sérieux en apparence que les trois profils simulés. Seuls les **indicateurs** (silhouette inférieure à $0{,}25$, absence de coude, stabilité inégale dans le pire cas) pouvaient nous avertir qu'ils n'étaient pas réels. Voilà pourquoi on ne livre jamais une segmentation sans ces diagnostics.
 
