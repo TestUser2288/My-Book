@@ -1,0 +1,13 @@
+{
+ "serie": "Série 1 — Volume II",
+ "nom": "Modélisation statistique",
+ "ligneA": "Régression\\,\\textperiodcentered\\ Modèles linéaires généralisés\\,\\textperiodcentered\\ Analyse multivariée",
+ "ligneB": "Séries temporelles\\,\\textperiodcentered\\ Survie\\,\\textperiodcentered\\ Statistique bayésienne",
+ "pied": "De la régression linéaire aux méthodes bayésiennes,\\\\ avec Dar Jasmin, de 2016 à 2025.",
+ "title": "DATA SCIENCE",
+ "subtitle": "Volume II : Modélisation statistique — De la régression linéaire aux méthodes bayésiennes",
+ "author": "Série 1 : Data Science",
+ "source": "livre/volume-2-modelisation-statistique-complet.md",
+ "out": "livre/volume-2-modelisation-statistique.pdf",
+ "start_heading": "# Introduction"
+}

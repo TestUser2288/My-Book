@@ -1,0 +1,13 @@
+{
+ "serie": "Série 1 — Volume I",
+ "nom": "Fondations",
+ "ligneA": "Mathématiques\\,\\textperiodcentered\\ Probabilités\\,\\textperiodcentered\\ Statistique",
+ "ligneB": "Programmation\\,\\textperiodcentered\\ Bases de données\\,\\textperiodcentered\\ Outils",
+ "pied": "Un livre pour apprendre le métier pas à pas,\\\\ avec une boutique d'artisanat tunisienne pour fil rouge.",
+ "title": "DATA SCIENCE",
+ "subtitle": "Volume I : Fondations — Mathématiques, probabilités, statistique, programmation, bases de données et outils",
+ "author": "Série 1 : Data Science",
+ "source": "livre/volume-1-fondations-complet.md",
+ "out": "livre/volume-1-fondations.pdf",
+ "start_heading": "# Avant-propos"
+}
