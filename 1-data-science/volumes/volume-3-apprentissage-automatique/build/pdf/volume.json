@@ -1,0 +1,54 @@
+{
+ "serie": "Série 1 — Volume III",
+ "nom": "Apprentissage automatique",
+ "ligneA": "Démarche et validation\\,\\textperiodcentered\\ Modèles supervisés\\,\\textperiodcentered\\ Non supervisé",
+ "ligneB": "Variables et déséquilibre\\,\\textperiodcentered\\ Évaluation et interprétabilité",
+ "pied": "De la démarche aux modèles interprétables,\\\\ avec une boutique pour fil rouge.",
+ "title": "DATA SCIENCE",
+ "author": "Série 1 : Data Science",
+ "subtitle": "Volume III : Apprentissage automatique — De la démarche aux modèles interprétables",
+ "livre": {
+  "dossier": "sections",
+  "source": "livre/volume-3-apprentissage-automatique-complet.md",
+  "out": "livre/volume-3-apprentissage-automatique.pdf",
+  "start_heading": "# Introduction",
+  "titres": {
+   "00": "00-introduction",
+   "01": "chapitre-1-demarche-ml",
+   "02": "chapitre-2-apprentissage-supervise",
+   "03": "chapitre-3-non-supervise",
+   "04": "chapitre-4-ingenierie-des-variables",
+   "05": "chapitre-5-evaluation-interpretabilite",
+   "06": "chapitre-6-anomalies-fraude",
+   "07": "chapitre-7-recommandation",
+   "08": "chapitre-8-semi-supervise-actif",
+   "09": "chapitre-9-renforcement",
+   "10": "cloture-points-cles"
+  }
+ },
+ "cahier": {
+  "dossier": "cahier",
+  "source": "livre/cahier-volume-3-complet.md",
+  "out": "livre/cahier-volume-3.pdf",
+  "start_heading": "# Mode d'emploi",
+  "serie": "Série 1 — Volume III",
+  "nom": "Cahier d'exercices et d'applications",
+  "ligneA": "Exercices corrigés\\,\\textperiodcentered\\ Applications guidées\\,\\textperiodcentered\\ Projet",
+  "ligneB": "Compagnon du volume III : Apprentissage automatique",
+  "pied": "À utiliser avec le livre : chaque chapitre renvoie ici\\\\ pour s'entraîner.",
+  "subtitle": "Cahier d'exercices et d'applications du volume III : Apprentissage automatique",
+  "titres": {
+   "00": "cahier-00-mode-emploi",
+   "01": "cahier-chapitre-1",
+   "02": "cahier-chapitre-2",
+   "03": "cahier-chapitre-3",
+   "04": "cahier-chapitre-4",
+   "05": "cahier-chapitre-5",
+   "06": "cahier-chapitre-6",
+   "07": "cahier-chapitre-7",
+   "08": "cahier-chapitre-8",
+   "09": "cahier-chapitre-9",
+   "10": "cahier-projet-et-autoevaluation"
+  }
+ }
+}
