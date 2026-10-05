@@ -17,7 +17,7 @@ local subst = {
   ["💡"] = "{\\symfont\\color{bleu}■}", ["📐"] = "{\\symfont\\color{violet}■}",
   ["🛠"] = "{\\symfont\\color{aqua}■}", ["🧪"] = "{\\symfont\\color{gray}■}",
   ["🧭"] = "{\\symfont\\color{gray}■}", ["📦"] = "{\\symfont\\color{gray}■}",
-  ["🏋"] = "", ["\u{FE0F}"] = "", ["₀"] = "\\textsubscript{0}",
+  ["🏋"] = "", ["\u{FE0F}"] = "", ["₀"] = "\\textsubscript{0}", ["ᵉ"] = "\\textsuperscript{e}",
 }
 
 local function fix_str(s)
@@ -75,5 +75,26 @@ local function Blocks(blocks)
   return out
 end
 
+
+-- Dans le code (police mono) : les symboles absents de DejaVu Sans Mono deviennent du texte
+local code_subst = { ["✓"] = "[OK]", ["✗"] = "[X]", ["✔"] = "[OK]", ["✘"] = "[X]", ["✅"] = "[OK]", ["❌"] = "[X]",
+  ["💡"] = "(i)", ["📐"] = "(rigueur)", ["🛠"] = "(appli)", ["🧪"] = "(remarque)", ["🧭"] = "(repère)",
+  ["⚠"] = "(!)", ["\u{FE0F}"] = "" }
+local function fix_code(text)
+  local out, changed = text, false
+  for k, v in pairs(code_subst) do
+    if out:find(k, 1, true) then out = out:gsub(k:gsub("%p", "%%%0"), (v:gsub("%%", "%%%%"))); changed = true end
+  end
+  return out, changed
+end
+local function CodeBlock(cb)
+  local t, ch = fix_code(cb.text)
+  if ch then cb.text = t; return cb end
+end
+local function Code(c)
+  local t, ch = fix_code(c.text)
+  if ch then c.text = t; return c end
+end
+
 -- ordre : d'abord les callouts (avant que les emojis ne soient remplacés), puis les caractères
-return { { BlockQuote = BlockQuote, Blocks = Blocks }, { Str = fix_str } }
+return { { BlockQuote = BlockQuote, Blocks = Blocks, CodeBlock = CodeBlock, Code = Code }, { Str = fix_str } }

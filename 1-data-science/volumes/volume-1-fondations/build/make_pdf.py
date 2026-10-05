@@ -40,7 +40,7 @@ meta = {
     "colorlinks": "true",
     "toc-depth": "2",
 }
-cmd = ["pandoc", md, "-f", "markdown+tex_math_dollars-smart", "-o", out, "--pdf-engine=xelatex",
+cmd = ["pandoc", md, "-f", "markdown+tex_math_dollars-smart+lists_without_preceding_blankline", "-o", out, "--pdf-engine=xelatex",
        "--toc", "--top-level-division=chapter", "--resource-path=.",
        "--lua-filter=build/pdf/callouts.lua", "-H", "build/pdf/header.tex",
        "--highlight-style=tango"]
