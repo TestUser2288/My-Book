@@ -124,7 +124,7 @@ Les données aléatoires sont générées avec une **graine** (*seed*) fixée, c
 
 Pour installer ce qu'il faut, un seul jeu de commandes suffit (détaillé au chapitre 6) :
 
-```bash
+```bash noexec
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn
