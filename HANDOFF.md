@@ -201,7 +201,7 @@ Promises made *by the new chapters* that must stay true:
 ## 12. Git / publishing status
 
 - Work is committed locally in `/var/www/book` (one commit per logical piece). Commit identity is a repo-local `Claude <noreply@anthropic.com>`; commits end with the `Co-Authored-By` line.
-- **Pushing to GitHub was NOT possible from this machine**: there are no GitHub credentials (no `gh`, no token, HTTPS prompts for a username). To publish: `cd /var/www/book && git push origin main` after authenticating (a personal access token via `git credential`, or `gh auth login`). `git log origin/main..HEAD` lists what is unpushed.
+- **Pushing works now.** In session 2 no credentials existed (HTTPS prompted for a username). Between sessions the user created `~/.ssh/id_ed25519`, registered it with their GitHub account and switched `origin` to `git@github.com:TestUser2288/My-Book.git`. Session 3 pushed everything to `origin/main` (`git status -sb` shows `main...origin/main` in sync). The unrelated Leaders deploy key (`leaders_parent_mobile_ed25519`, host alias `github-leaders-parent-mobile`) is **not** used for this repo — keep it that way.
 - The PDFs (Volume I ≈ 5 MB, Volume II ≈ 16 MB) and the SQLite file are committed on purpose (the books promise the data to the reader). Each re-committed PDF adds its size to the history: commit PDFs once per milestone, not per fix.
 - After running `make fill`/`make check` for Volume I, `git checkout -- donnees/dar_jasmin.db` (rewritten byte-wise by the fill; same content).
 
