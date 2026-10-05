@@ -1,6 +1,6 @@
 # Série 1, Volume II : Modélisation statistique
 
-*De la régression linéaire aux méthodes bayésiennes.* **Écrit** (voir `/HANDOFF.md`, section 13).
+*De la régression linéaire aux méthodes bayésiennes.* **Écrit** : livre (370 p.) et cahier d'exercices et d'applications (277 p.). Voir `/HANDOFF.md` (section 13) et `/CONVENTIONS.md`.
 
 | Chapitre | Contenu |
 |---|---|
@@ -14,11 +14,11 @@
 | ➕ 7. Inférence causale | résultats potentiels, DAG, propension, différences de différences, instruments |
 | ➕ 8. Plans d'expériences | ANOVA, plans factoriels et fractionnaires, surfaces de réponse |
 | ➕ 9. Statistique spatiale | Moran, variogramme, krigeage, processus ponctuels |
-| Projet | le plan 2026 de Dar Jasmin (SARIMA, logistique, Tweedie, Cox, valeur client) |
-| Clôture | points clés, 42 questions d'auto-évaluation |
+| Clôture (livre) | points clés |
+| Cahier | exercices et applications de chaque chapitre ; projet « plan 2026 de la boutique » ; 42 questions d'auto-évaluation |
 
 ```bash
 make check   # réexécute tout le code sans rien écrire (0 erreur attendu, ~25 min)
-make pdf     # assemble livre/ et construit livre/volume-2-modelisation-statistique.pdf
+make pdf     # assemble livre/ et construit les PDF du livre et du cahier
 ```
 Données : `donnees/` (générées par `build/donnees2.py` et les scripts `build/donnees_ch0N.py`, graines fixes).

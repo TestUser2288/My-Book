@@ -48,7 +48,7 @@ def cube():
     ax.annotate("", xy=(-1.75, 1.15), xytext=(-1.75, -1.0), arrowprops=dict(arrowstyle="->", color=style.ENCRE2))
     ax.text(-1.95, 0.1, "B : prix  normal (−) → promo (+)", rotation=90, va="center", ha="right", color=style.ENCRE2, fontsize=9)
     ax.annotate("", xy=(3.0, -0.62), xytext=(2.45, -1.04), arrowprops=dict(arrowstyle="->", color=style.ENCRE2))
-    ax.text(2.45, -1.35, "C : relance\ne-mail (−) → stories (+)", ha="left", va="top", color=style.ENCRE2, fontsize=9)
+    ax.text(2.45, -1.35, "C : relance\ne-mail (−) → réseaux\nsociaux (+)", ha="left", va="top", color=style.ENCRE2, fontsize=9)
     ax.set_xlim(-2.6, 4.2)
     ax.set_ylim(-2.1, 2.4)
     ax.set_title("Commandes hebdomadaires moyennes aux 8 sommets du plan 2³", color=style.ENCRE, pad=10)

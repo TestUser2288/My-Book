@@ -14,10 +14,12 @@ Convention :
 
 Usage : fill.py [--check] fichier1.md fichier2.md ...
 """
+import atexit
 import contextlib
 import io
 import os
 import re
+import shutil
 import sys
 import traceback
 
@@ -93,6 +95,7 @@ class Session:
         import subprocess, tempfile
         self.lang = lang
         self.tmp = tempfile.mkdtemp(prefix=f"fill_{lang}_")
+        atexit.register(shutil.rmtree, self.tmp, ignore_errors=True)   # ne pas laisser d'environnements virtuels dans /tmp
         env = dict(os.environ, HOME=self.tmp, LANG="C.UTF-8", LC_ALL="C.UTF-8")
         if lang == "r":
             cmd = ["R", "--vanilla", "--slave", "--no-save"]

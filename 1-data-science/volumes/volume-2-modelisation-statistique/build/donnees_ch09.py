@@ -1,8 +1,9 @@
-"""Données simulées du chapitre 9 (statistique spatiale). Le code est identique à celui imprimé dans le livre.
-    python3 build/donnees_ch09.py  -> écrit donnees/ch09-delegations.csv et donnees/ch09-livraisons.csv
+"""Données simulées du chapitre 9 (statistique spatiale), pour une région fictive : une grille de zones et des adresses de livraison.
+Le code des générateurs est repris dans le cahier d'exercices et d'applications.
+    python3 build/donnees_ch09.py  -> écrit donnees/ch09-zones.csv et donnees/ch09-livraisons.csv
 
 Vérité terrain
-  délégations : grille 12 x 12, ventes_hab = 50 + 8*z avec (I - 0.9*W) z = e, W = contiguïté « reine » standardisée par ligne, e ~ N(0,1) ;
+  zones       : grille 12 x 12, ventes_hab = 50 + 8*z avec (I - 0.9*W) z = e, W = contiguïté « reine » standardisée par ligne, e ~ N(0,1) ;
                 ventes_bruit : N(50, 8^2) indépendant (aucune structure spatiale).
   livraisons  : 200 adresses dans un carré de 100 km x 100 km ; champ gaussien stationnaire de covariance exponentielle
                 C(h) = 1.0 * exp(-h/12) (portée pratique 36 km), moyenne 4 jours, bruit de mesure (pépite) de variance 0.4.
@@ -26,7 +27,7 @@ def contiguite_reine(n_lig, n_col):
     return W
 
 
-def delegations(seed=9, n_lig=12, n_col=12, rho=0.9):
+def grille_zones(seed=9, n_lig=12, n_col=12, rho=0.9):
     rng = np.random.default_rng(seed)
     W = contiguite_reine(n_lig, n_col)
     W = W / W.sum(axis=1, keepdims=True)                      # standardisation par ligne
@@ -60,7 +61,7 @@ def livraisons(seed=27, n=200, cote=100.0, sill=1.0, a=12.0, pepite=0.4, moyenne
 def generer(dossier=None):
     dossier = dossier or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "donnees")
     os.makedirs(dossier, exist_ok=True)
-    delegations().to_csv(os.path.join(dossier, "ch09-delegations.csv"), index=False)
+    grille_zones().to_csv(os.path.join(dossier, "ch09-zones.csv"), index=False)
     liv, _ = livraisons()
     liv.to_csv(os.path.join(dossier, "ch09-livraisons.csv"), index=False)
 

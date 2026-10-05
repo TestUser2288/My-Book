@@ -244,7 +244,7 @@ def demande_recettes():
     ax.plot(pp, R(pp), color=BLEU, lw=2)
     ax.scatter([p_opt], [R(p_opt)], color=ORANGE, s=40, zorder=5)
     ax.scatter([40], [R(40)], color=MUET, s=40, zorder=5)
-    ax.annotate(f"optimum : p* ≈ {p_opt:.1f} €\n{R(p_opt):,.0f} €".replace(",", " "), xy=(p_opt, R(p_opt)), xytext=(23, 2560),
+    ax.annotate(f"optimum : p* ≈ {p_opt:.1f} €\n{R(p_opt):,.0f} €".replace(",", " ").replace(".", ","), xy=(p_opt, R(p_opt)), xytext=(23, 2560),
                 fontsize=9, color=ENCRE2, arrowprops=dict(arrowstyle="-", color=MUET, lw=0.8))
     ax.annotate(f"prix actuel : 40 €\n{R(40):,.0f} €".replace(",", " "), xy=(40, R(40)), xytext=(41.5, 2480),
                 fontsize=9, color=ENCRE2, arrowprops=dict(arrowstyle="-", color=MUET, lw=0.8))

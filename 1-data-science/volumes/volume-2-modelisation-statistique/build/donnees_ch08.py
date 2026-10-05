@@ -14,7 +14,7 @@ ch08-vitrines-blocs.csv  (8 semaines = blocs × 4 agencements, une fois chacun p
 ch08-emballage-canal.csv (3 emballages × 2 canaux × 10 commandes ; panier en €, écart-type 9)
     panier = 50 + {Kraft 0, Tissu +3, Coffret +10 (Site) ou +22 (Réseaux)} + {Site 0, Réseaux -4} ; il y a donc une INTERACTION.
 ch08-factoriel-2p3.csv   (plan 2^3 répliqué 2 fois : 16 essais, ordre aléatoire ; réponse = commandes de la semaine)
-    A = emballage cadeau (-1 standard, +1 cadeau), B = prix (-1 normal, +1 promo de 10 %), C = relance (-1 e-mail, +1 stories Réseaux)
+    A = emballage cadeau (-1 standard, +1 cadeau), B = prix (-1 normal, +1 promo de 10 %), C = relance (-1 e-mail, +1 publication sur les réseaux sociaux)
     modèle en unités codées : 60 + 4A + 6B + 2C - 2.5AB + 1.5BC ; bruit : écart-type 3.5  (effets = 2 x coefficients).
 ch08-factoriel-2p4.csv   (plan 2^4 NON répliqué : 16 essais ; réponse = commandes de la semaine)
     facteurs A, B, C comme ci-dessus + D = message personnalisé (-1 non, +1 oui)

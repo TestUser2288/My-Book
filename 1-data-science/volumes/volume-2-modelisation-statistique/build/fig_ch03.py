@@ -391,7 +391,7 @@ def acm_carte():
                 .replace("rachat_12m_", "rachat=").replace("tranche_age_", "âge "))
         ax.annotate(nom, (x, y), xytext=deplace.get(nom, (6, 6)), textcoords="offset points", color=coul, fontsize=9, fontweight="bold")
     xv, yv = G[[i for i, f_ in enumerate(famille) if f_ == "ville"]].mean(axis=0)
-    ax.annotate("points gris : les six villes\n(petits groupes, positions instables)", (G[famille.index("ville"), 0], G[famille.index("ville"), 1]),
+    ax.annotate("points gris : les modalités de ville\n(petits groupes, positions instables)", (G[famille.index("ville"), 0], G[famille.index("ville"), 1]),
                 xytext=(26, 30), textcoords="offset points", color=MUET, fontsize=8)
     ax.axhline(0, color=style.AXE, lw=0.8); ax.axvline(0, color=style.AXE, lw=0.8)
     ax.set_xlabel(f"axe 1 ({part[0]:.0f} % de l'inertie)"); ax.set_ylabel(f"axe 2 ({part[1]:.0f} %)")

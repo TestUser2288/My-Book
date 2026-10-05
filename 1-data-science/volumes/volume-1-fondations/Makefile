@@ -1,42 +1,41 @@
-# Construction du volume I. Usage : make help
+# Construction d'un volume : LIVRE (sections/) et CAHIER d'exercices et d'applications (cahier/). Usage : make help
 # Prérequis : bash setup-env.sh  (crée .venv et installe R, pandoc, xelatex...)
 VENV   ?= .venv
 PY     := $(VENV)/bin/python
-# Les blocs bash des chapitres 4 et 6 appellent python/pytest/jupyter : le venv doit être en tête du PATH.
+# Les blocs bash appellent python/pytest/jupyter : le venv doit être en tête du PATH.
 RUN    := PATH=$(abspath $(VENV))/bin:$$PATH $(PY) build/fill.py
 S      := sections
+C      := cahier
 
-# Variables exigées par le chapitre 6 (voir le commentaire en tête de sections/06-0-intro.md)
+# Variables exigées par certains chapitres (voir le commentaire en tête du chapitre « outils »)
 export DONNEES := $(abspath donnees)
 export NO_COLOR := 1
+export OMP_NUM_THREADS := 1
 
-# Groupes de fichiers exécutés ENSEMBLE (espace de noms partagé), dans cet ordre.
-CH0 := $(S)/00-a-avant-propos.md $(S)/00-b-rappel-express.md
-CH1 := $(sort $(wildcard $(S)/01-*.md))
-CH2 := $(sort $(wildcard $(S)/02-*.md))
-CH3 := $(sort $(wildcard $(S)/03-*.md))
-CH4a := $(S)/04-1-python.md $(S)/04-2-r.md $(S)/04-3-algorithmes.md
-CH4b := $(S)/04-4-numpy-pandas.md $(S)/04-5-visualisation.md
-CH4c := $(S)/04-6-poo-tests.md $(S)/04-7-autres-langages.md $(S)/04-8-complexite.md
-CH4d := $(S)/04-9-exercices.md
-CH5 := $(sort $(wildcard $(S)/05-*.md))
-CH6 := $(sort $(wildcard $(S)/06-*.md))
-CH7 := $(sort $(wildcard $(S)/07-*.md))
-GROUPS := CH0 CH1 CH2 CH3 CH4a CH4b CH4c CH4d CH5 CH6 CH7
+# Un groupe = un chapitre : ses fichiers sont exécutés ENSEMBLE, dans l'ordre (espace de noms Python partagé).
+# Le cahier est exécuté séparément du livre : chaque chapitre du cahier doit être autonome (il recharge ses données).
+N := 00 01 02 03 04 05 06 07 08 09 10
+$(foreach n,$(N),$(eval CH$(n)  := $$(sort $$(wildcard $(S)/$(n)-*.md))))
+$(foreach n,$(N),$(eval CAH$(n) := $$(sort $$(wildcard $(C)/$(n)-*.md))))
+GROUPS := $(foreach n,$(N),CH$(n)) $(foreach n,$(N),CAH$(n))
 
-.PHONY: help fill check livre pdf all
+.PHONY: help fill check livre cahier pdf pdf-livre pdf-cahier all
 help:
-	@echo "make check  : réexécute tout SANS écrire et signale les différences"
-	@echo "make fill   : réexécute tout et réécrit les sorties dans sections/"
-	@echo "make livre  : assemble livre/*.md à partir de sections/"
-	@echo "make pdf    : livre + PDF (pandoc/xelatex)"
+	@echo "make check      : réexécute tout (livre ET cahier) SANS écrire et signale les différences"
+	@echo "make fill       : réexécute tout et réécrit les sorties dans sections/ et cahier/"
+	@echo "make livre      : assemble livre/*.md (code 'hide' retiré)"
+	@echo "make pdf        : assemble et construit les deux PDF (livre + cahier)"
+	@echo "make pdf-livre  / make pdf-cahier : un seul PDF"
 
 check:
-	$(foreach g,$(GROUPS),$(RUN) --check $($(g)) &&) true
+	$(foreach g,$(GROUPS),$(if $($(g)),$(RUN) --check $($(g)) &&)) true
 fill:
-	$(foreach g,$(GROUPS),$(RUN) $($(g)) &&) true
+	$(foreach g,$(GROUPS),$(if $($(g)),$(RUN) $($(g)) &&)) true
 livre:
-	$(PY) build/assemble.py
-pdf: livre
-	$(PY) build/make_pdf.py
+	$(PY) build/assemble.py tout
+pdf-livre: livre
+	$(PY) build/make_pdf.py livre
+pdf-cahier: livre
+	@if [ -d $(C) ]; then $(PY) build/make_pdf.py cahier; fi
+pdf: pdf-livre pdf-cahier
 all: fill pdf

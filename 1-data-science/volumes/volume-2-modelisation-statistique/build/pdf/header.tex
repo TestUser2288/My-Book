@@ -16,8 +16,9 @@
   \ifthenelse{\equal{#1}{application}}{\begin{calloutbox}{aqua}{}}{%
   \ifthenelse{\equal{#1}{attention}}{\begin{calloutbox}{orange}{}}{%
   \ifthenelse{\equal{#1}{retenir}}{\begin{calloutbox}{vert}{}}{%
+  \ifthenelse{\equal{#1}{cahier}}{\begin{calloutbox}{etoile}{}}{%
   \ifthenelse{\equal{#1}{remarque}}{\begin{calloutbox}{gray}{}}{%
-  \begin{calloutbox}{gray}{}}}}}}}%
+  \begin{calloutbox}{gray}{}}}}}}}}%
 }{\end{calloutbox}}
 \usepackage{ifthen}
 \usepackage{fvextra}
