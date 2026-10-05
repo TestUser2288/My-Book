@@ -17,7 +17,7 @@ local subst = {
   ["💡"] = "{\\symfont\\color{bleu}■}", ["📐"] = "{\\symfont\\color{violet}■}",
   ["🛠"] = "{\\symfont\\color{aqua}■}", ["🧪"] = "{\\symfont\\color{gray}■}",
   ["🧭"] = "{\\symfont\\color{gray}■}", ["📦"] = "{\\symfont\\color{gray}■}",
-  ["📒"] = "{\\symfont\\color{etoile}■}", ["🏋"] = "", ["\u{FE0F}"] = "", ["₀"] = "\\textsubscript{0}", ["₁"] = "\\textsubscript{1}", ["₂"] = "\\textsubscript{2}", ["⁴"] = "\\textsuperscript{4}", ["ᵉ"] = "\\textsuperscript{e}",
+  ["📒"] = "{\\symfont\\color{etoile}■}", ["🏋"] = "", ["\u{FE0F}"] = "", ["₀"] = "\\textsubscript{0}", ["₁"] = "\\textsubscript{1}", ["₂"] = "\\textsubscript{2}", ["⁴"] = "\\textsuperscript{4}", ["ʳ"] = "\\textsuperscript{r}", ["ᵉ"] = "\\textsuperscript{e}",
 }
 
 local function fix_str(s)
