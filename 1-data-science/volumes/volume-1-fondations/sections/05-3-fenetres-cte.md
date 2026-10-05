@@ -16,16 +16,16 @@ LIMIT 6;
 ```
 <!--sortie-->
 ```text
- id_commande     canal  montant  moyenne_du_canal  ecart
-           1  Boutique     44.8             74.81 -30.01
-           2      Site     34.5             59.50 -25.00
-           3 Réseaux     88.2             49.01  39.19
-           4 Réseaux     30.1             49.01 -18.91
-           5  Boutique    110.1             74.81  35.29
-           6      Site     39.8             59.50 -19.70
+ id_commande    canal  montant  moyenne_du_canal  ecart
+           1 Boutique     44.8             74.81 -30.01
+           2     Site     34.5             59.50 -25.00
+           3  Réseaux     88.2             49.01  39.19
+           4  Réseaux     30.1             49.01 -18.91
+           5 Boutique    110.1             74.81  35.29
+           6     Site     39.8             59.50 -19.70
 ```
 
-Chaque commande est toujours là, et trois colonnes se sont ajoutées. Par exemple, la commande n° 1 (boutique, 44,80 €) est 30,01 € **en dessous** du panier moyen de la boutique (74,81 €), alors que la commande n° 3 (Réseaux, 88,20 €) est 39,19 € **au-dessus** de celui d'Réseaux (49,01 €). Une commande de 88 € est « grosse » sur Réseaux mais « moyenne » en boutique : l'écart à son propre canal est plus parlant que le montant brut.
+Chaque commande est toujours là, et trois colonnes se sont ajoutées. Par exemple, la commande n° 1 (boutique, 44,80 €) est 30,01 € **en dessous** du panier moyen de la boutique (74,81 €), alors que la commande n° 3 (Réseaux, 88,20 €) est 39,19 € **au-dessus** de celui du canal Réseaux (49,01 €). Une commande de 88 € est « grosse » sur le canal Réseaux mais « moyenne » en boutique : l'écart à son propre canal est plus parlant que le montant brut.
 
 La syntaxe est toujours : **`fonction(...) OVER ( PARTITION BY ... ORDER BY ... cadre )`**.
 
@@ -44,7 +44,7 @@ Trois fonctions numérotent les lignes d'une partition, selon l'ordre demandé. 
 
 ```sql
 WITH notes(client, note) AS (
-    VALUES ('Amel', 5), ('Sami', 5), ('Ines', 4), ('Walid', 3), ('Rim', 3)
+    VALUES ('Léa', 5), ('Noé', 5), ('Mia', 4), ('Hugo', 3), ('Zoé', 3)
 )
 SELECT client, note,
        ROW_NUMBER() OVER (ORDER BY note DESC) AS row_number,
@@ -55,16 +55,16 @@ FROM notes;
 <!--sortie-->
 ```text
 client  note  row_number  rank  dense_rank
-  Amel     5           1     1           1
-  Sami     5           2     1           1
-  Ines     4           3     3           2
- Walid     3           4     4           3
-   Rim     3           5     4           3
+   Léa     5           1     1           1
+   Noé     5           2     1           1
+   Mia     4           3     3           2
+  Hugo     3           4     4           3
+   Zoé     3           5     4           3
 ```
 
 Lisez-le colonne par colonne :
 
-- `ROW_NUMBER` : 1, 2, 3, 4, 5. Aucun ex æquo n'est reconnu : le départage entre Amel et Sami est **arbitraire** (si vous voulez un résultat reproductible, ajoutez un second critère d'ordre).
+- `ROW_NUMBER` : 1, 2, 3, 4, 5. Aucun ex æquo n'est reconnu : le départage entre Léa et Noé est **arbitraire** (si vous voulez un résultat reproductible, ajoutez un second critère d'ordre).
 - `RANK` : 1, 1, 3, 4, 4. Les ex æquo partagent le même rang, et **le rang suivant saute** (comme aux Jeux olympiques : deux médailles d'or, pas d'argent, puis le bronze).
 - `DENSE_RANK` : 1, 1, 2, 3, 3. Les rangs sont **consécutifs**, sans trou.
 
@@ -82,16 +82,16 @@ ORDER BY canal, rang;
 ```
 <!--sortie-->
 ```text
-    canal  rang  id_commande date_commande  montant
- Boutique     1          243    2025-08-26    212.4
- Boutique     2          362    2025-12-16    208.8
- Boutique     3          115    2025-05-15    189.2
-Réseaux     1          140    2025-06-10    166.1
-Réseaux     2           59    2025-03-27    159.9
-Réseaux     3          125    2025-05-23    127.3
-     Site     1          157    2025-06-23    255.7
-     Site     2           61    2025-03-28    243.8
-     Site     3          208    2025-07-31    217.1
+   canal  rang  id_commande date_commande  montant
+Boutique     1          243    2025-08-26    212.4
+Boutique     2          362    2025-12-16    208.8
+Boutique     3          115    2025-05-15    189.2
+ Réseaux     1          140    2025-06-10    166.1
+ Réseaux     2           59    2025-03-27    159.9
+ Réseaux     3          125    2025-05-23    127.3
+    Site     1          157    2025-06-23    255.7
+    Site     2           61    2025-03-28    243.8
+    Site     3          208    2025-07-31    217.1
 ```
 
 Ce motif (**« top N par groupe »**) est l'un des plus fréquents en entretien d'embauche comme en entreprise : « les 3 meilleurs vendeurs par région », « le dernier achat de chaque client » (`ROW_NUMBER() ... ORDER BY date DESC`, puis `rang = 1`).
@@ -195,31 +195,7 @@ ORDER BY mois;
 
 La première ligne n'a pas de précédent : `LAG` renvoie `NULL` (que pandas affiche `NaN`). Les plus fortes hausses sont en novembre (+79,6 %), en décembre (+45,6 %) et en mars (+44,4 %), la plus forte baisse en septembre (−29,7 %).
 
-Une deuxième application, plus riche : **le délai entre deux commandes successives du même client**. Pour chaque commande, `LAG(date_commande)` *dans la partition du client* donne la date de sa commande précédente. Voici d'abord ce que cela donne pour la cliente n° 1 (les dates sont en texte ISO, `julianday` les convertit en nombres de jours) :
-
-```sql
-SELECT id_client, date_commande,
-       LAG(date_commande) OVER (PARTITION BY id_client ORDER BY date_commande, id_commande) AS commande_precedente,
-       CAST(julianday(date_commande)
-            - julianday(LAG(date_commande) OVER (PARTITION BY id_client ORDER BY date_commande, id_commande))
-            AS INTEGER)                                                                    AS jours_ecoules
-FROM commandes
-WHERE id_client = 1
-ORDER BY date_commande, id_commande
-LIMIT 6;
-```
-<!--sortie-->
-```text
- id_client date_commande commande_precedente  jours_ecoules
-         1    2025-01-05                 NaN            NaN
-         1    2025-02-01          2025-01-05           27.0
-         1    2025-02-11          2025-02-01           10.0
-         1    2025-02-14          2025-02-11            3.0
-         1    2025-03-08          2025-02-14           22.0
-         1    2025-03-09          2025-03-08            1.0
-```
-
-Et pour l'ensemble de la clientèle : combien de jours séparent en moyenne deux achats successifs d'un même client ? Nous calculons d'abord les intervalles, puis nous les résumons :
+Une deuxième utilisation, plus riche : **le délai entre deux commandes successives du même client**. `LAG(date_commande)` calculé *dans la partition du client* donne la date de sa commande précédente (les dates sont en texte ISO, `julianday` les convertit en nombres de jours). Combien de jours séparent en moyenne deux achats successifs d'un même client ? Nous calculons d'abord les intervalles, puis nous les résumons :
 
 ```sql
 WITH achats AS (
@@ -260,42 +236,7 @@ SELECT ... FROM etape2 WHERE ...
 
 La deuxième forme se lit **de haut en bas**, comme un script : on peut vérifier chaque étape isolément, ce qui est précieux pour le débogage. On peut enchaîner plusieurs CTE (séparées par des virgules) ; chacune peut utiliser celles qui précèdent.
 
-> 🛠️ **Application : segmenter la clientèle par quartiles de dépenses.** Les marketeurs aiment les segmentations de type **RFM** : **R**écence (depuis combien de temps le client n'a-t-il pas acheté ?), **F**réquence (combien de fois a-t-il acheté ?), **M**ontant (combien a-t-il dépensé ?). Construisons-la en deux étapes. La première CTE calcule les trois indicateurs par client ; la seconde utilise `NTILE(4)`, qui découpe les clients, triés par montant décroissant, en **4 groupes d'effectifs égaux** (quartiles) :
-
-```sql
-WITH rfm AS (
-    SELECT id_client,
-           CAST(julianday('2025-12-31') - julianday(MAX(date_commande)) AS INTEGER) AS recence_jours,
-           COUNT(*)                     AS frequence,
-           ROUND(SUM(montant), 2)       AS montant
-    FROM commandes
-    GROUP BY id_client
-),
-segments AS (
-    SELECT *, NTILE(4) OVER (ORDER BY montant DESC) AS quartile
-    FROM rfm
-)
-SELECT quartile,
-       COUNT(*)                          AS clients,
-       ROUND(MIN(montant))               AS depense_min,
-       ROUND(MAX(montant))               AS depense_max,
-       ROUND(SUM(montant))               AS depense_totale,
-       ROUND(AVG(frequence), 1)          AS achats_moyens,
-       ROUND(AVG(recence_jours))         AS jours_depuis_dernier_achat
-FROM segments
-GROUP BY quartile
-ORDER BY quartile;
-```
-<!--sortie-->
-```text
- quartile  clients  depense_min  depense_max  depense_totale  achats_moyens  jours_depuis_dernier_achat
-        1       17        427.0       1874.0         14063.0           12.6                        20.0
-        2       17        270.0        427.0          5678.0            5.8                        49.0
-        3       16        122.0        270.0          3086.0            3.6                        66.0
-        4       16         33.0        122.0          1270.0            1.8                       153.0
-```
-
-Le quartile 1 (les 17 plus gros clients) dépense **14 063 € sur 24 098**, soit **58 %** du chiffre d'affaires, et ils sont revenus il y a 20 jours en moyenne. Le quartile 4 (16 clients) ne pèse que 5 % et n'est pas revenu depuis 153 jours en moyenne. On retrouve la fameuse loi de **Pareto** (« 80-20 », ici plutôt « 25-58 ») : une minorité de clients fait une majorité du chiffre d'affaires. Cette information change la stratégie : chouchouter le quartile 1, relancer le quartile 3, ne pas s'acharner sur le quartile 4.
+Deux remarques pratiques. **(1)** Une CTE n'est visible que **dans la requête** qui la déclare : elle n'est pas enregistrée dans la base (pour cela, il existe les vues, 5.4.4). **(2)** Rien n'oblige à découper : une requête simple n'a pas besoin de CTE. La règle est celle de la lisibilité : dès que vous imbriquez deux niveaux de sous-requêtes, ou que vous avez besoin d'utiliser le même résultat intermédiaire à deux endroits, nommez l'étape.
 
 ### 5.3.6 Les CTE récursives : des requêtes qui se rappellent elles-mêmes
 
@@ -323,108 +264,36 @@ SELECT i, i * i AS carre FROM n;
 
 La base procède ainsi : elle écrit la ligne `1` ; pour chaque ligne nouvellement produite, elle applique le pas (`1` donne `2`, `2` donne `3`...) jusqu'à ce que `WHERE i < 5` bloque la production.
 
-**Usage 1 : fabriquer un calendrier.** Une table de ventes ne contient que les jours où il y a eu des ventes : les jours **sans** vente n'apparaissent pas, ce qui fausse les moyennes quotidiennes. La parade classique : générer **tous les jours** de l'année avec une CTE récursive, puis les joindre aux commandes par un `LEFT JOIN` (5.2.5). Combien de jours la boutique n'a-t-il rien vendu, mois par mois ?
+**Premier usage, fabriquer un calendrier :** on génère *tous* les jours de l'année, puis on les joint aux commandes par un `LEFT JOIN` pour ne pas oublier les jours sans vente (sans lui, les moyennes quotidiennes seraient surestimées) ; c'est l'application 5.7 du cahier.
 
-```sql
-WITH RECURSIVE jours(d) AS (
-    SELECT '2025-01-01'
-    UNION ALL
-    SELECT date(d, '+1 day') FROM jours WHERE d < '2025-12-31'
-),
-ventes_par_jour AS (
-    SELECT j.d, COUNT(c.id_commande) AS commandes
-    FROM jours AS j
-    LEFT JOIN commandes AS c ON c.date_commande = j.d
-    GROUP BY j.d
-)
-SELECT strftime('%Y-%m', d)          AS mois,
-       COUNT(*)                      AS jours,
-       SUM(commandes = 0)            AS jours_sans_commande,
-       ROUND(AVG(commandes), 2)      AS commandes_par_jour
-FROM ventes_par_jour
-GROUP BY mois
-ORDER BY mois;
-```
-<!--sortie-->
-```text
-   mois  jours  jours_sans_commande  commandes_par_jour
-2025-01     31                   19                0.52
-2025-02     28                   15                0.71
-2025-03     31                   15                0.81
-2025-04     30                    7                1.20
-2025-05     31                    9                1.16
-2025-06     30                   10                1.10
-2025-07     31                    7                1.35
-2025-08     31                    7                1.42
-2025-09     30                    8                1.03
-2025-10     31                   18                0.65
-2025-11     30                    7                1.33
-2025-12     31                   10                1.84
-```
-
-Cette requête enchaîne **une CTE récursive** (le calendrier) et **une CTE ordinaire** (le comptage). En janvier, par exemple, **19 jours sur 31** se sont passés sans la moindre commande, et ils n'apparaissent dans aucune table de ventes. Sans le calendrier, la « moyenne par jour » de décembre serait calculée seulement sur les jours où l'on a vendu (donc **surestimée**) ; avec lui, elle l'est sur les 31 jours. C'est un exemple concret de **biais de sélection** dans une requête : les jours sans vente sont absents du tableau, donc invisibles.
-
-**Usage 2 : parcourir une hiérarchie.** La table `clients` contient le parrainage : un client peut avoir été parrainé par un autre, lui-même parrainé... C'est un **arbre**. À quelle profondeur ? Combien de filleuls (directs ou non) a chaque ambassadeur ? Une jointure ne peut parcourir qu'un nombre fixe de niveaux ; une CTE récursive les parcourt tous. Cas de base : les clients **sans parrain** (les « racines »). Pas : on ajoute leurs filleuls, puis les filleuls de leurs filleuls...
+**Second usage : parcourir une hiérarchie.** La table `clients` contient le parrainage : un client peut avoir été parrainé par un autre, lui-même parrainé... C'est un **arbre**. À quelle profondeur ? Combien de filleuls (directs ou non) a chaque ambassadeur ? Une jointure ne peut parcourir qu'un nombre fixe de niveaux ; une CTE récursive les parcourt tous. Cas de base : les clients **sans parrain** (les « racines »). Pas : on ajoute leurs filleuls, puis les filleuls de leurs filleuls...
 
 ```sql
 WITH RECURSIVE reseau(id_client, racine, profondeur) AS (
-    SELECT id_client, id_client, 0
-    FROM clients
-    WHERE id_parrain IS NULL
+    SELECT id_client, id_client, 0 FROM clients WHERE id_parrain IS NULL
     UNION ALL
     SELECT c.id_client, r.racine, r.profondeur + 1
-    FROM clients AS c
-    JOIN reseau  AS r ON c.id_parrain = r.id_client
+    FROM clients AS c JOIN reseau AS r ON c.id_parrain = r.id_client
 )
-SELECT r.racine,
-       cl.prenom || ' ' || cl.nom      AS ambassadeur,
-       COUNT(*) - 1                    AS filleuls,
-       MAX(r.profondeur)               AS generations
-FROM reseau AS r
-JOIN clients AS cl ON cl.id_client = r.racine
-GROUP BY r.racine
-ORDER BY filleuls DESC
-LIMIT 4;
+SELECT r.racine, cl.prenom || ' ' || cl.nom AS ambassadeur,
+       COUNT(*) - 1 AS filleuls, MAX(r.profondeur) AS generations
+FROM reseau AS r JOIN clients AS cl ON cl.id_client = r.racine
+GROUP BY r.racine ORDER BY filleuls DESC LIMIT 4;
 ```
 <!--sortie-->
 ```text
- racine    ambassadeur  filleuls  generations
-     10     Nour Hamdi         5            4
-      7 Zied Ben Salah         4            3
-      1 Yassine Lahmar         4            3
-      5     Emna Hamdi         3            3
+ racine  ambassadeur  filleuls  generations
+     10   Lou Michel         5            4
+      7  Paul Martin         4            3
+      1 Yann Lambert         4            3
+      5  Anna Michel         3            3
 ```
 
-Le premier réseau est celui du client n° 10 : **5 filleuls répartis sur 4 générations**. (`COUNT(*) - 1` : on ne compte pas la racine elle-même.) Voyons-le de plus près en affichant, pour chaque membre du réseau, sa profondeur et son `chemin`. Le texte `chemin` recolle les prénoms le long de la branche (cela permet aussi de trier dans l'ordre de parcours d'un arbre) :
-
-```sql
-WITH RECURSIVE arbre(id_client, profondeur, chemin) AS (
-    SELECT id_client, 0, prenom || ' ' || nom
-    FROM clients
-    WHERE id_client = 10
-    UNION ALL
-    SELECT c.id_client, a.profondeur + 1, a.chemin || ' > ' || c.prenom || ' ' || c.nom
-    FROM clients AS c
-    JOIN arbre   AS a ON c.id_parrain = a.id_client
-)
-SELECT id_client, profondeur, chemin
-FROM arbre
-ORDER BY chemin;
-```
-<!--sortie-->
-```text
- id_client  profondeur                                                                     chemin
-        10           0                                                                 Nour Hamdi
-        14           1                                                Nour Hamdi > Fares Bouazizi
-        23           2                                  Nour Hamdi > Fares Bouazizi > Hatem Mejri
-        28           3                 Nour Hamdi > Fares Bouazizi > Hatem Mejri > Emna Ben Salah
-        55           4 Nour Hamdi > Fares Bouazizi > Hatem Mejri > Emna Ben Salah > Oussama Mejri
-        18           1                                                    Nour Hamdi > Sami Hamdi
-```
-
-Le `chemin` de chaque client donne **toute sa chaîne de parrainage** depuis l'ambassadeur : Oussama Mejri (profondeur 4) est arrivé par Emna Ben Salah, venue par Hatem Mejri, venu par Fares Bouazizi, venu par Nour Hamdi. Remarquez que Nour Hamdi (client n° 10) **n'a jamais passé de commande** : elle figure dans la liste des quatorze clients du 5.2.5. Pourtant elle a amené cinq clients : une requête qui ne regarderait que les achats la jugerait sans valeur ! On peut ainsi calculer le chiffre d'affaires **généré** par un réseau, ce qui est la base d'une prime au parrainage.
+Le premier réseau est celui du client n° 10 : **5 filleuls répartis sur 4 générations**. (`COUNT(*) - 1` : on ne compte pas la racine elle-même.) L'application 5.8 du cahier affiche la chaîne complète de parrainage de chaque membre (un « chemin » recollé le long de l'arbre) et calcule le chiffre d'affaires généré par un réseau, base d'une prime au parrainage.
 
 > ⚠️ **Récursion et sécurité.** Si le parrainage contenait un **cycle** (A parraine B qui parraine A), la récursion tournerait indéfiniment. Ici c'est impossible, puisqu'un parrain a toujours un numéro plus petit, donc une inscription plus ancienne, que son filleul (nous l'avons garanti à la construction de la base, 5.1.3), mais, sur des données réelles, ajoutez toujours une **condition d'arrêt** (profondeur maximale, par exemple `WHERE profondeur < 10`). C'est l'équivalent du `while` qui ne se termine jamais.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : applications 5.6 (segmentation RFM avec `NTILE`), 5.7 (un calendrier complet) et 5.8 (réseau de parrainage), exercices 5.8 à 5.10.
 
 > ✅ **À retenir**
 >

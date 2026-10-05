@@ -1,6 +1,6 @@
 ## 5.2 Requêtes SQL : sélection, jointures, agrégation
 
-> 💡 **Intuition.** SQL est un langage **déclaratif** : on ne dit pas *comment* trouver le résultat (« parcours la table, compare, recopie... »), on décrit *ce qu'on veut* (« les commandes de plus de 100 € passées sur Réseaux »), et la base choisit seule la meilleure méthode. C'est comme commander au restaurant : on dit « un tajine, sans piment », pas la recette.
+> 💡 **Intuition.** SQL est un langage **déclaratif** : on ne dit pas *comment* trouver le résultat (« parcours la table, compare, recopie... »), on décrit *ce qu'on veut* (« les commandes de plus de 100 € passées par le canal Réseaux »), et la base choisit seule la meilleure méthode. C'est comme commander au restaurant : on dit « le plat du jour, sans oignons », pas la recette.
 
 ### 5.2.1 Anatomie d'une requête : `SELECT ... FROM ...`
 
@@ -13,11 +13,11 @@ LIMIT 4;
 ```
 <!--sortie-->
 ```text
- id_commande     canal  montant
-           1  Boutique     44.8
-           2      Site     34.5
-           3 Réseaux     88.2
-           4 Réseaux     30.1
+ id_commande    canal  montant
+           1 Boutique     44.8
+           2     Site     34.5
+           3  Réseaux     88.2
+           4  Réseaux     30.1
 ```
 
 On peut **calculer** de nouvelles colonnes et les **renommer** avec `AS` (un *alias*). Les montants de la boutique sont TTC, avec une TVA de 19 % ; calculons le hors taxe et la TVA :
@@ -71,7 +71,7 @@ WHERE canal = 'Réseaux' AND montant > 100;
  11
 ```
 
-(Les textes se mettent entre **apostrophes simples** : `'Réseaux'`. Les guillemets doubles servent aux noms de colonnes.) Il y a donc peu de grosses commandes sur Réseaux. Pour tester une liste de valeurs, `IN` ; pour un intervalle (**bornes incluses**), `BETWEEN` ; pour une recherche de motif dans un texte, `LIKE` (`%` remplace n'importe quelle suite de caractères, `_` un seul caractère) :
+(Les textes se mettent entre **apostrophes simples** : `'Réseaux'`. Les guillemets doubles servent aux noms de colonnes.) Il y a donc peu de grosses commandes par le canal Réseaux. Pour tester une liste de valeurs, `IN` ; pour un intervalle (**bornes incluses**), `BETWEEN` ; pour une recherche de motif dans un texte, `LIKE` (`%` remplace n'importe quelle suite de caractères, `_` un seul caractère) :
 
 ```sql
 SELECT COUNT(*) AS commandes_de_decembre
@@ -87,16 +87,16 @@ WHERE date_commande BETWEEN '2025-12-01' AND '2025-12-31';
 ```sql
 SELECT id_produit, nom, prix_catalogue
 FROM produits
-WHERE nom LIKE '%jasmin%';
+WHERE nom LIKE '%parfum%';
 ```
 <!--sortie-->
 ```text
- id_produit                       nom  prix_catalogue
-         14             Eau de jasmin            14.0
-         16 Bougie parfumée au jasmin            20.0
+ id_produit             nom  prix_catalogue
+         14    Eau parfumée            14.0
+         16 Bougie parfumée            20.0
 ```
 
-**Attention aux priorités.** `AND` passe **avant** `OR`, comme la multiplication passe avant l'addition. L'expression `A OR B AND C` se lit donc `A OR (B AND C)`, ce qui n'est pas du tout `(A OR B) AND C`. Mesurons l'écart sur un exemple. On veut compter « les commandes de plus de 100 € passées sur Réseaux ou sur le site » :
+**Attention aux priorités.** `AND` passe **avant** `OR`, comme la multiplication passe avant l'addition. L'expression `A OR B AND C` se lit donc `A OR (B AND C)`, ce qui n'est pas du tout `(A OR B) AND C`. Mesurons l'écart sur un exemple. On veut compter « les commandes de plus de 100 € passées par le canal Réseaux ou par le site » :
 
 ```sql
 SELECT 'sans parenthèses' AS version, COUNT(*) AS nb
@@ -114,7 +114,7 @@ sans parenthèses 152
 avec parenthèses  25
 ```
 
-Sans parenthèses, la requête compte **toutes** les commandes Réseaux (quel que soit le montant) *plus* les commandes du site de plus de 100 € : 152 lignes. Avec parenthèses, elle compte les grosses commandes (plus de 100 €) d'Réseaux *ou* du site : 25 lignes. Un écart de 1 à 6 dans le résultat, à cause de deux caractères.
+Sans parenthèses, la requête compte **toutes** les commandes du canal Réseaux (quel que soit le montant) *plus* les commandes du site de plus de 100 € : 152 lignes. Avec parenthèses, elle compte les grosses commandes (plus de 100 €) venues des réseaux sociaux *ou* du site : 25 lignes. Un écart de 1 à 6 dans le résultat, à cause de deux caractères.
 
 > ⚠️ **Règle d'or.** Dès qu'on mélange `AND` et `OR`, **mettez des parenthèses**, même quand elles sont techniquement inutiles. Votre lecteur (et vous dans six mois) vous en sera reconnaissant.
 
@@ -147,16 +147,18 @@ ORDER BY ville;
 ```
 <!--sortie-->
 ```text
-   ville
-  Ville A
- Ville B
+  ville
+Ville A
+Ville B
 Ville C
 Ville D
-  Ville E
-    Ville F
-  Ville G
-   Ville H
+Ville E
+Ville F
+Ville G
+Ville H
 ```
+
+Trois précisions utiles sur ces clauses. **(1)** On peut trier sur un **alias** défini dans le `SELECT` (`ORDER BY chiffre_affaires`) ou sur la **position** de la colonne (`ORDER BY 2`), mais la première forme est bien plus lisible. **(2)** Les `NULL` (5.2.7) sont placés **en premier** par SQLite dans un tri croissant, et en dernier dans un tri décroissant ; d'autres SGBD font l'inverse, et la plupart acceptent `NULLS FIRST` / `NULLS LAST` pour le préciser. **(3)** `LIMIT n OFFSET m` saute les `m` premières lignes avant d'en garder `n` : c'est la façon classique de **paginer** un résultat (page 3 de 10 lignes : `LIMIT 10 OFFSET 20`). Rappelez-vous enfin que `LIMIT` sans `ORDER BY` donne un résultat **arbitraire** : pour un « top 5 », le tri est obligatoire.
 
 ### 5.2.4 Agréger : `COUNT`, `SUM`, `AVG`, `GROUP BY`
 
@@ -196,13 +198,13 @@ ORDER BY chiffre_affaires DESC;
 ```
 <!--sortie-->
 ```text
-    canal  commandes  panier_moyen  chiffre_affaires  satisfaction  delai_moyen
-     Site        148         59.50            8807.0          3.79         4.70
- Boutique        114         74.81            8528.0          4.49         0.00
-Réseaux        138         49.01            6764.0          3.72         4.49
+   canal  commandes  panier_moyen  chiffre_affaires  satisfaction  delai_moyen
+    Site        148         59.50            8807.0          3.79         4.70
+Boutique        114         74.81            8528.0          4.49         0.00
+ Réseaux        138         49.01            6764.0          3.72         4.49
 ```
 
-En une requête de six lignes, nous avons la photographie de l'activité. Le **site** fait le plus de chiffre d'affaires parce qu'il a le plus de commandes ; la **boutique**, avec moins de commandes, a le panier moyen et la satisfaction les plus élevés (le délai de livraison y est nul : les clients repartent avec leur achat). **Réseaux** a les paniers les plus modestes.
+En une requête de six lignes, nous avons la photographie de l'activité. Le **site** fait le plus de chiffre d'affaires parce qu'il a le plus de commandes ; la **boutique**, avec moins de commandes, a le panier moyen et la satisfaction les plus élevés (le délai de livraison y est nul : les clients repartent avec leur achat). Le canal **Réseaux** a les paniers les plus modestes.
 
 > ⚠️ **La règle du `GROUP BY`.** Dans un `SELECT` avec `GROUP BY`, chaque colonne affichée doit être **soit dans le `GROUP BY`, soit à l'intérieur d'une fonction d'agrégation**. Demander `SELECT canal, montant ... GROUP BY canal` n'a pas de sens : quelle valeur de `montant` choisir parmi les 148 lignes du groupe « Site » ? (SQLite en choisit une, arbitrairement, sans protester ; PostgreSQL refuse avec une erreur : c'est plus prudent.)
 
@@ -218,10 +220,10 @@ ORDER BY clients DESC, ville;
 <!--sortie-->
 ```text
   ville  clients
- Ville A       13
+Ville A       13
 Ville B       11
- Ville G       11
-  Ville H       11
+Ville G       11
+Ville H       11
 ```
 
 Un usage très pratique de `GROUP BY ... HAVING` : **détecter les doublons**. Reprenons notre remarque du 5.1.2 : peut-on identifier un client par son prénom et son nom ? Cherchons les couples qui apparaissent plus d'une fois (`GROUP_CONCAT` recolle les villes en un seul texte) :
@@ -235,18 +237,18 @@ ORDER BY homonymes DESC, nom;
 ```
 <!--sortie-->
 ```text
- prenom      nom  homonymes                   villes
-Oussama Chaabane          3 Ville A / Ville C / Ville F
-   Ines    Dridi          3  Ville A / Ville H / Ville E
-  Salma Bouazizi          2            Ville G / Ville F
-   Nour    Hamdi          2           Ville H / Ville G
-  Salma   Jlassi          2         Ville E / Ville B
-Yassine   Lahmar          2        Ville C / Ville A
-  Dorra    Mejri          2         Ville D / Ville H
-   Emna    Sassi          2        Ville B / Ville B
+prenom      nom  homonymes                      villes
+   Léa Fontaine          3 Ville A / Ville H / Ville E
+  Théo    Simon          3 Ville A / Ville C / Ville F
+  Anna    Faure          2           Ville B / Ville B
+   Zoé   Garcia          2           Ville G / Ville F
+  Elsa   Girard          2           Ville D / Ville H
+  Yann  Lambert          2           Ville C / Ville A
+   Lou   Michel          2           Ville H / Ville G
+   Zoé   Moreau          2           Ville E / Ville B
 ```
 
-Huit couples de prénom et nom apparaissent plusieurs fois, dont trois « Ines Dridi » ! Et deux « Emna Sassi » habitent la même ville : sans le numéro `id_client`, il serait **impossible** de les distinguer. La clé primaire n'est pas un luxe.
+Huit couples de prénom et nom apparaissent plusieurs fois, dont trois « Léa Fontaine » ! Et deux « Anna Faure » habitent la même ville : sans le numéro `id_client`, il serait **impossible** de les distinguer. La clé primaire n'est pas un luxe.
 
 > 💡 **`COUNT(*)` ou `COUNT(colonne)` ?** `COUNT(*)` compte les **lignes**. `COUNT(colonne)` compte les lignes où la colonne **n'est pas vide** (`NULL`) : nous y reviendrons au 5.2.7, c'est un grand classique des erreurs de comptage.
 
@@ -290,12 +292,12 @@ LIMIT 5;
 ```
 <!--sortie-->
 ```text
-prenom      nom  ville date_commande  montant
- Fares Bouazizi Ville G    2025-06-23    255.7
-  Nour Chaabane   Ville F    2025-03-28    243.8
-Mariem    Sassi  Ville H    2025-07-31    217.1
-  Sami    Dridi Ville A    2025-08-26    212.4
-  Sami    Dridi Ville A    2025-12-16    208.8
+prenom      nom   ville date_commande  montant
+ Jules   Garcia Ville G    2025-06-23    255.7
+   Lou    Simon Ville F    2025-03-28    243.8
+  Nina    Faure Ville H    2025-07-31    217.1
+   Sam Fontaine Ville A    2025-08-26    212.4
+   Sam Fontaine Ville A    2025-12-16    208.8
 ```
 
 Deux détails de lisibilité : on donne des **alias courts aux tables** (`c`, `cl`), et on **préfixe** chaque colonne par la table d'où elle vient (`cl.nom`), ce qui évite les ambiguïtés quand deux tables ont une colonne du même nom (comme `id_client`).
@@ -352,28 +354,30 @@ SELECT cl.id_client, cl.prenom, cl.nom, cl.ville
 FROM clients AS cl
 LEFT JOIN commandes AS c ON c.id_client = cl.id_client
 WHERE c.id_commande IS NULL
-ORDER BY cl.id_client;
+ORDER BY cl.id_client
+LIMIT 6;
 ```
 <!--sortie-->
 ```text
- id_client  prenom      nom    ville
-        10    Nour    Hamdi    Ville H
-        23   Hatem    Mejri   Ville G
-        31 Yassine Chaabane   Ville E
-        38 Oussama    Sassi Ville D
-        42   Hatem Bouazizi  Ville B
-        56    Lina    Dridi  Ville B
-        58   Salma   Jlassi   Ville E
-        67    Zied   Gharbi   Ville G
-        69   Salma   Jlassi  Ville B
-        73   Salma Bouazizi     Ville F
-        75    Lina    Mejri Ville C
-        77    Nour    Hamdi   Ville G
-        78    Ines    Ayari    Ville H
-        79   Hatem Trabelsi   Ville G
+ id_client prenom      nom   ville
+        10    Lou   Michel Ville H
+        23   Hugo   Girard Ville G
+        31   Yann    Simon Ville E
+        38   Théo    Faure Ville D
+        42   Hugo   Garcia Ville B
+        56   Lina Fontaine Ville B
 ```
 
-Ces quatorze clients se sont inscrits mais n'ont jamais acheté : une liste précieuse pour une campagne de relance (« votre premier achat à -10 % »). Le motif **`LEFT JOIN ... WHERE droite IS NULL`** (« les lignes de gauche sans correspondance à droite ») est l'un des plus utiles de tout SQL. Avec un `INNER JOIN`, ces quatorze clients n'auraient jamais été trouvés, puisqu'ils n'ont aucune commande à joindre.
+```sql hide
+SELECT COUNT(*) AS nb FROM clients cl LEFT JOIN commandes c ON c.id_client = cl.id_client WHERE c.id_commande IS NULL;
+```
+<!--sortie-->
+```text
+ nb
+ 14
+```
+
+Les six premières lignes ci-dessus sont les premiers des quatorze clients qui se sont inscrits mais n'ont jamais acheté : une liste précieuse pour une campagne de relance (« votre premier achat à -10 % »). Le motif **`LEFT JOIN ... WHERE droite IS NULL`** (« les lignes de gauche sans correspondance à droite ») est l'un des plus utiles de tout SQL. Avec un `INNER JOIN`, ces quatorze clients n'auraient jamais été trouvés, puisqu'ils n'ont aucune commande à joindre.
 
 > 📐 **Les quatre jointures, en une phrase.** `INNER` : l'intersection (couples valides seulement). `LEFT` : tous les couples valides, plus les lignes de gauche sans partenaire (complétées par `NULL`). `RIGHT` : l'inverse (rarement utilisé : on échange simplement les deux tables). `FULL` : les deux. SQLite gère `INNER`, `LEFT`, `CROSS` et, depuis la version 3.39, `RIGHT` et `FULL`.
 
@@ -389,12 +393,12 @@ LIMIT 5;
 ```
 <!--sortie-->
 ```text
-         filleul        parrain
-  Bilel Bouazizi Zied Ben Salah
-   Salma Mansour    Hatem Ayari
-Oussama Bouazizi Zied Ben Salah
-  Fares Bouazizi     Nour Hamdi
-      Amel Ayari     Emna Hamdi
+      filleul       parrain
+   Luc Garcia   Paul Martin
+  Zoé Laurent Hugo Lefebvre
+  Théo Garcia   Paul Martin
+ Jules Garcia    Lou Michel
+Alex Lefebvre   Anna Michel
 ```
 
 (L'opérateur `||` recolle deux textes.) Imaginez la même table lue deux fois : une fois dans le rôle des filleuls (`f`), une fois dans celui des parrains (`p`).
@@ -445,10 +449,10 @@ WHERE cl.id_client IN (SELECT id_client FROM commandes WHERE montant > 200);
 <!--sortie-->
 ```text
  id_client prenom      nom
-         2   Sami    Dridi
-        14  Fares Bouazizi
-        39   Nour Chaabane
-        71 Mariem    Sassi
+         2    Sam Fontaine
+        14  Jules   Garcia
+        39    Lou    Simon
+        71   Nina    Faure
 ```
 
 **(c) Une condition d'existence**, avec `EXISTS` : « les clients ayant déjà acheté en boutique ». La sous-requête est ici **corrélée** : elle fait référence à la ligne courante de la requête externe (`clients.id_client`).
@@ -468,6 +472,8 @@ WHERE EXISTS (SELECT 1 FROM commandes AS c
 > 💡 **Quand préférer une jointure à une sous-requête ?** Les deux marchent souvent. Une règle simple : si vous avez besoin des colonnes de l'autre table dans le résultat, **jointure**. Si l'autre table ne sert que de **filtre** (existence, appartenance), **`EXISTS` / `IN`**. Les CTE (5.3) rendront les requêtes imbriquées beaucoup plus lisibles.
 
 ### 5.2.7 Les pièges : `NULL` et dates
+
+Deux sources d'erreurs reviennent sans cesse dans les requêtes des débutants (et des autres) : les valeurs **absentes** (`NULL`), qui suivent une logique à trois valeurs que l'intuition ne devine pas, et les **dates**, qui sont des textes déguisés. Cette sous-section les traite l'une après l'autre.
 
 #### Le `NULL` : ni zéro, ni texte vide, mais « **inconnu** »
 
@@ -503,8 +509,8 @@ WHERE telephone = NULL;
 Résultat : **zéro**, alors qu'il y a des clients sans téléphone, et aucun message d'erreur. Un deuxième piège, plus sournois : le **filtre « différent de »** qui oublie les inconnus.
 
 ```sql
-SELECT (SELECT COUNT(*) FROM clients WHERE telephone <> '98725588')                       AS differents,
-       (SELECT COUNT(*) FROM clients WHERE telephone <> '98725588' OR telephone IS NULL)  AS differents_ou_inconnus;
+SELECT (SELECT COUNT(*) FROM clients WHERE telephone <> '7725588')                       AS differents,
+       (SELECT COUNT(*) FROM clients WHERE telephone <> '7725588' OR telephone IS NULL)  AS differents_ou_inconnus;
 ```
 <!--sortie-->
 ```text
@@ -512,7 +518,7 @@ SELECT (SELECT COUNT(*) FROM clients WHERE telephone <> '98725588')             
          64                      79
 ```
 
-Parmi les 80 clients, un seul a le numéro `98725588` ; on s'attendrait donc à 79 « autres » clients. Le filtre `<>` n'en trouve que **64** : les quinze clients sans téléphone ont disparu, car pour eux la condition n'est pas « vraie » mais « inconnue ». Il faut ajouter explicitement `OR telephone IS NULL`.
+Parmi les 80 clients, un seul a le numéro `7725588` ; on s'attendrait donc à 79 « autres » clients. Le filtre `<>` n'en trouve que **64** : les quinze clients sans téléphone ont disparu, car pour eux la condition n'est pas « vraie » mais « inconnue ». Il faut ajouter explicitement `OR telephone IS NULL`.
 
 Les fonctions d'agrégation, elles, **ignorent** les `NULL` : `AVG(id_parrain)` ne moyennise que les clients parrainés (ce qui d'ailleurs n'a aucun sens, un numéro n'est pas une quantité). Pour remplacer un `NULL` par une valeur par défaut, on utilise **`COALESCE`**, qui renvoie son premier argument non vide :
 
@@ -523,11 +529,11 @@ LIMIT 4;
 ```
 <!--sortie-->
 ```text
- id_client  prenom       telephone
-         1 Yassine        98725588
-         2    Sami (non renseigné)
-         3   Aymen (non renseigné)
-         4    Emna (non renseigné)
+ id_client prenom       telephone
+         1   Yann         7725588
+         2    Sam (non renseigné)
+         3   Adam (non renseigné)
+         4   Anna (non renseigné)
 ```
 
 Enfin, le piège **le plus dangereux** du chapitre : `NOT IN` avec une sous-requête qui contient un `NULL`. Cherchons les clients qui **n'ont parrainé personne**, c'est-à-dire dont le numéro n'apparaît jamais dans la colonne `id_parrain` :
@@ -596,73 +602,9 @@ il_y_a_90_jours debut_du_mois  jours_ecoules
 
 > ⚠️ **N'utilisez jamais `date('now')` dans une analyse censée être reproductible.** `'now'` change tous les jours : votre requête donnera un résultat différent demain, et nul ne pourra la rejouer. Dans ce livre, la « date du jour » est **fixée** au **31 décembre 2025** (date d'arrêté de la base). En entreprise, on passe la date d'arrêté en paramètre.
 
-### 5.2.8 Mises en pratique
+### 5.2.8 `CASE WHEN` : classer et croiser
 
-Réunissons tous ces outils pour répondre à trois vraies questions de la gérante.
-
-**Question 1 : « Qui sont mes dix meilleurs clients ? »** On joint clients et commandes, on regroupe par client, on trie par chiffre d'affaires décroissant.
-
-```sql
-SELECT cl.id_client,
-       cl.prenom || ' ' || cl.nom   AS client,
-       cl.ville,
-       COUNT(*)                     AS commandes,
-       ROUND(SUM(c.montant), 2)     AS chiffre_affaires,
-       ROUND(AVG(c.montant), 2)     AS panier_moyen,
-       MAX(c.date_commande)         AS derniere_commande
-FROM clients AS cl
-JOIN commandes AS c ON c.id_client = cl.id_client
-GROUP BY cl.id_client
-ORDER BY chiffre_affaires DESC
-LIMIT 10;
-```
-<!--sortie-->
-```text
- id_client         client    ville  commandes  chiffre_affaires  panier_moyen derniere_commande
-         2     Sami Dridi   Ville A         23            1874.3         81.49        2025-12-24
-         1 Yassine Lahmar Ville C         28            1701.7         60.77        2025-12-20
-        47    Sarra Hamdi Ville C         22            1317.3         59.88        2025-12-17
-        11 Bilel Bouazizi    Ville H         18            1218.9         67.72        2025-12-29
-        45  Emna Trabelsi   Ville A         15            1009.3         67.29        2025-12-25
-        17     Ines Dridi   Ville A         15             937.6         62.51        2025-12-22
-        39  Nour Chaabane     Ville F         10             833.1         83.31        2025-12-10
-        27 Salma Bouazizi   Ville G         13             808.9         62.22        2025-12-28
-        14 Fares Bouazizi   Ville G          5             566.0        113.20        2025-11-09
-        51    Dorra Mejri Ville D         12             552.0         46.00        2025-12-10
-```
-
-On trouve un client très fidèle (Yassine Lahmar : 28 commandes) et un client qui dépense le plus (Sami Dridi : 1 874 €, panier moyen de 81 €). Notez que le dixième client (Dorra Mejri) a un chiffre d'affaires de 552 €, **plus de trois fois moins** que le premier : la clientèle est très inégale. Remarquez aussi le `GROUP BY cl.id_client` et non `GROUP BY cl.nom` : regrouper par nom aurait fusionné les homonymes !
-
-**Question 2 : « Quel est le chiffre d'affaires de chaque mois, canal par canal ? »** On veut un tableau avec un canal par colonne : c'est un **tableau croisé** (*pivot*). SQL n'a pas de commande universelle pour cela, mais l'astuce `SUM(CASE WHEN ... THEN ... ELSE 0 END)` fait très bien l'affaire. `CASE WHEN` est le « si... alors... sinon » de SQL.
-
-```sql
-SELECT strftime('%Y-%m', date_commande) AS mois,
-       ROUND(SUM(CASE WHEN canal = 'Réseaux' THEN montant ELSE 0 END)) AS instagram,
-       ROUND(SUM(CASE WHEN canal = 'Site'      THEN montant ELSE 0 END)) AS site,
-       ROUND(SUM(CASE WHEN canal = 'Boutique'  THEN montant ELSE 0 END)) AS boutique,
-       ROUND(SUM(montant))                                               AS total
-FROM commandes
-GROUP BY mois
-ORDER BY mois;
-```
-<!--sortie-->
-```text
-   mois  instagram   site  boutique  total
-2025-01      262.0  379.0     356.0  996.0
-2025-02      382.0  203.0     582.0 1168.0
-2025-03      737.0  824.0     126.0 1687.0
-2025-04      367.0  919.0     557.0 1843.0
-2025-05      693.0  679.0     942.0 2314.0
-2025-06      816.0  723.0     951.0 2491.0
-2025-07      647.0  992.0     932.0 2571.0
-2025-08      601.0 1161.0     672.0 2435.0
-2025-09      454.0  675.0     584.0 1713.0
-2025-10      324.0  531.0     416.0 1272.0
-2025-11      551.0  759.0     974.0 2284.0
-2025-12      928.0  960.0    1437.0 3325.0
-```
-
-**Question 3 : « Les clients en retard de livraison sont-ils moins satisfaits ? »** `CASE WHEN` sert aussi à créer des **classes** à partir d'une variable numérique : ici, le délai de livraison.
+`CASE WHEN` est le « si... alors... sinon » de SQL. Il sert à créer des **classes** à partir d'une variable numérique, et, combiné avec `SUM`, à fabriquer des **tableaux croisés**. Voici la première utilisation : répartir les commandes selon leur délai de livraison, pour voir si les clients en retard sont moins satisfaits.
 
 ```sql
 SELECT CASE WHEN delai_livraison = 0 THEN '0 j (retrait)'
@@ -686,35 +628,9 @@ ORDER BY MIN(delai_livraison);
 
 La satisfaction **baisse régulièrement** avec le délai : de 4,49 pour un retrait en boutique à 3,17 au-delà d'une semaine. C'est exactement la relation que nous avions mise en évidence par la corrélation au chapitre 3, retrouvée ici avec de simples agrégations SQL. (Attention, comme toujours, à ne pas conclure trop vite à la causalité : le retrait en boutique diffère des commandes en ligne à bien d'autres égards.)
 
-> 🛠️ **Application : repérer les clients « dormants ».** Une cliente qui achetait régulièrement et qui ne revient plus est un signe d'alerte (on parle de *churn* quand elle part pour de bon). Définissons : un client **dormant** a passé **au moins 3 commandes** mais **aucune depuis plus de 90 jours** avant la date d'arrêté (le 31 décembre 2025). Le seuil se calcule : `date('2025-12-31', '-90 days')` donne le 2 octobre 2025.
+La seconde utilisation, `SUM(CASE WHEN canal = 'Site' THEN montant ELSE 0 END)`, place chaque canal dans sa propre colonne : c'est un **tableau croisé** (*pivot*). SQL n'en a pas de commande universelle, et cette astuce suffit presque toujours.
 
-```sql
-SELECT cl.id_client,
-       cl.prenom || ' ' || cl.nom   AS client,
-       COUNT(*)                     AS commandes,
-       MAX(c.date_commande)         AS derniere_commande,
-       CAST(julianday('2025-12-31') - julianday(MAX(c.date_commande)) AS INTEGER) AS jours_sans_achat
-FROM clients AS cl
-JOIN commandes AS c ON c.id_client = cl.id_client
-GROUP BY cl.id_client
-HAVING COUNT(*) >= 3 AND MAX(c.date_commande) < '2025-10-02'
-ORDER BY jours_sans_achat DESC;
-```
-<!--sortie-->
-```text
- id_client         client  commandes derniere_commande  jours_sans_achat
-        20 Aymen Bouazizi          3        2025-05-07               238
-        62     Emna Sassi          3        2025-06-16               198
-        37   Dorra Lahmar          3        2025-07-21               163
-        16     Amel Ayari          5        2025-07-26               158
-        40    Sarra Sassi          3        2025-08-14               139
-        50     Lina Sassi          4        2025-08-17               136
-         8  Oussama Hamdi          6        2025-08-30               123
-         6    Hatem Ayari          6        2025-09-24                98
-        29    Walid Ayari          7        2025-09-26                96
-```
-
-Neuf clients répondent à ces critères : voilà la liste de relance de la gérante. Le client le plus ancien (Aymen Bouazizi, dernière commande le 7 mai) n'est pas revenu depuis 238 jours. Notez l'emploi de `HAVING` avec **deux conditions sur le groupe** : le nombre de commandes **et** la date de la dernière.
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : applications 5.3 (les dix meilleurs clients), 5.4 (chiffre d'affaires par mois et par canal) et 5.5 (clients dormants), exercices 5.2 à 5.7.
 
 > ✅ **À retenir**
 >

@@ -10,7 +10,7 @@ $$\frac{3}{4} + \frac{5}{6} = \frac{3 \times 3}{4 \times 3} + \frac{5 \times 2}{
 
 Un **pourcentage** est une fraction de dénominateur 100. « Prendre 25 % de 120 € » revient à calculer $120 \times \frac{25}{100} = 30$ €.
 
-> 🧪 **Exemple (la boutique).** Un tapis coûte 240 €. La gérante propose une remise de 15 %.
+> 🧪 **Exemple (la boutique).** Un article coûte 240 €. La gérante propose une remise de 15 %.
 >
 > - Montant de la remise : $240 \times 0{,}15 = 36$ €.
 > - Nouveau prix : $240 - 36 = 204$ €, ou directement $240 \times 0{,}85 = 204$ €.
@@ -19,7 +19,7 @@ Un **pourcentage** est une fraction de dénominateur 100. « Prendre 25 % de 120
 
 > ⚠️ **Piège.** Une hausse de 20 % suivie d'une baisse de 20 % **ne ramène pas** au prix de départ : $100 \to 120 \to 96$. Les pourcentages se multiplient, ils ne s'additionnent pas.
 
-```python
+```python hide
 prix = 100
 prix = prix * 1.20   # +20 %
 prix = prix * 0.80   # -20 %
@@ -70,7 +70,7 @@ Cela se lit : « somme, pour $i$ allant de 1 à $n$, des $x_i$ ». C'est exactem
 >
 > La **moyenne** est $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i = \frac{650}{5} = 130$ €.
 
-```python
+```python hide
 ventes = [120, 80, 200, 100, 150]
 total = sum(ventes)
 moyenne = total / len(ventes)
@@ -97,7 +97,7 @@ $$\ln(ab) = \ln a + \ln b, \qquad \ln(a^n) = n \ln a, \qquad \ln(e^x) = x, \qqua
 
 > 🧪 **Exemple.** Un placement double tous les 10 ans. Après 30 ans, il a été multiplié par $2^3 = 8$. Combien de « doublements » faut-il pour multiplier par 1000 ? $\log_2(1000) \approx 9{,}97$, soit environ 10 doublements.
 
-```python
+```python hide
 import math
 print(math.log10(1000))        # logarithme en base 10
 print(math.log2(1000))         # logarithme en base 2
@@ -134,12 +134,6 @@ Le reste sera expliqué quand il apparaîtra, et le chapitre 4 reprend tout depu
 
 ## Faites le point
 
-Si vous savez répondre à ces cinq questions, vous avez tout ce qu'il faut pour commencer :
+Cinq petites questions de vérification, avec leurs réponses, vous attendent dans le cahier : si vous savez y répondre, vous avez tout ce qu'il faut pour commencer.
 
-1. Quel est le prix final d'un article à 80 € avec 19 % de TVA ?
-2. Que vaut $\sum_{i=1}^{4} i^2$ ?
-3. Quelle est la pente de $y = -3x + 10$ ?
-4. Simplifiez $\ln(e^2 \times e^3)$.
-5. Combien font $\sqrt{81} + 2^{-1}$ ?
-
-**Réponses.** (1) $80 \times 1{,}19 = 95{,}2$ €. (2) $1 + 4 + 9 + 16 = 30$. (3) $-3$ (la droite descend). (4) $\ln(e^5) = 5$. (5) $9 + 0{,}5 = 9{,}5$.
+> 📒 **Pour s'entraîner.** Cahier, mode d'emploi : exercices du rappel express (0.1 à 0.5).

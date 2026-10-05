@@ -63,7 +63,7 @@ Son gradient est $\nabla L(\boldsymbol{\theta}) = -2\,\mathbf{X}^\top(\mathbf{y}
 
 On retrouve ici le rang de la section 1.1. Reprenons nos colonnes redondantes (prix HT et prix TTC) : si $\mathbf{X}$ contient les deux, alors $\boldsymbol{\theta} = (1, 0)$ (« on utilise le HT ») et $\boldsymbol{\theta} = (0, 1/1{,}19)$ (« on utilise le TTC divisé par 1,19 ») produisent **exactement les mêmes prédictions** et donc la même perte : le fond du bol est une *rigole*, pas un point. Le minimum existe mais n'est pas unique.
 
-```python
+```python hide
 import numpy as np
 
 ht = np.array([40.0, 25.0, 60.0, 15.0])
@@ -77,9 +77,13 @@ theta = [1. 0.] -> prédictions : [40. 25. 60. 15.]
 theta = [0.     0.8403] -> prédictions : [40. 25. 60. 15.]
 ```
 
-Pour notre petit exemple de trois points, la hessienne est $2\mathbf{X}^\top\mathbf{X}$ avec $\mathbf{X}$ constituée de la colonne $x = (1,2,3)$ et d'une colonne de 1 :
+Pour notre petit exemple de trois points, la hessienne est $2\mathbf{X}^\top\mathbf{X}$ avec $\mathbf{X}$ constituée de la colonne $x = (1,2,3)$ et d'une colonne de 1. On calcule $\mathbf{X}^\top\mathbf{X} = \begin{pmatrix}14 & 6\\ 6 & 3\end{pmatrix}$, donc
 
-```python
+$$\mathbf{H} = \begin{pmatrix}28 & 12\\ 12 & 6\end{pmatrix}, \qquad \operatorname{tr}\mathbf{H} = 34,\quad \det\mathbf{H} = 168 - 144 = 24,$$
+
+de sorte que ses valeurs propres sont $\lambda = 17 \pm \sqrt{265}$, soit environ $33{,}28$ et $0{,}72$.
+
+```python hide
 x = np.array([1.0, 2.0, 3.0])
 y = np.array([2.0, 3.0, 5.0])
 X = np.column_stack([x, np.ones_like(x)])          # colonnes : x et 1  ->  theta = (a, b)
@@ -96,7 +100,7 @@ Hessienne :
 valeurs propres : [ 0.721 33.279]
 ```
 
-Les deux valeurs propres (0,72 et 33,28) sont positives : $L$ est convexe, avec un unique minimum. Remarquez toutefois qu'elles sont **très inégales** (un rapport de 46). Cela signifie que le bol est très allongé : raide dans une direction, presque plat dans l'autre. Nous allons voir que cela a des conséquences concrètes.
+Les deux valeurs propres ($0{,}72$ et $33{,}28$) sont positives : $L$ est convexe, avec un unique minimum. Remarquez toutefois qu'elles sont **très inégales** (un rapport de 46). Cela signifie que le bol est très allongé : raide dans une direction, presque plat dans l'autre. Nous allons voir que cela a des conséquences concrètes.
 
 ### 1.3.3 La descente de gradient
 
@@ -134,9 +138,18 @@ Peut-on prévoir ce comportement ? Oui, et c'est instructif :
 >
 > Avec $\eta = 0{,}1$, le facteur vaut $0{,}8$ : on réduit l'erreur de 20 % à chaque pas ($x_1 - 3 = 0{,}8 \times (-3) = -2{,}4$, soit $x_1 = 0{,}6$ ✔). Le cas $\eta = 0{,}5$ donne un facteur 0 : convergence **en un seul pas** (c'est le pas idéal, égal à l'inverse de la courbure $f'' = 2$). Pour $\eta > 1$, le facteur dépasse 1 en valeur absolue : l'erreur **grandit** à chaque pas. $\blacksquare$
 
-Observons les cinq comportements possibles :
+Voici les cinq premiers pas, pour cinq valeurs de $\eta$ (départ $x_0 = 0$) :
 
-```python
+| $\eta$ | $x_0$ | $x_1$ | $x_2$ | $x_3$ | $x_4$ | $x_5$ | $x_6$ |
+|---|---|---|---|---|---|---|---|
+| 0,1 | 0 | 0,6 | 1,08 | 1,464 | 1,771 | 2,017 | 2,214 |
+| 0,5 | 0 | 3 | 3 | 3 | 3 | 3 | 3 |
+| 0,9 | 0 | 5,4 | 1,08 | 4,536 | 1,771 | 3,983 | 2,214 |
+| 1,0 | 0 | 6 | 0 | 6 | 0 | 6 | 0 |
+| 1,1 | 0 | 6,6 | −1,32 | 8,184 | −3,221 | 10,465 | −5,958 |
+
+
+```python hide
 grad_1d = lambda x: 2 * (x - 3)
 
 for eta in [0.1, 0.5, 0.9, 1.0, 1.1]:
@@ -164,9 +177,17 @@ On y voit : $\eta = 0{,}1$ converge doucement ; $\eta = 0{,}5$ tombe sur 3 dès 
 
 #### Descente de gradient en deux dimensions : ajuster une droite
 
-Passons au problème de la droite ajustée aux points $(1,2)$, $(2,3)$, $(3,5)$. Écrivons l'algorithme une fois pour toutes sous une forme réutilisable :
+Passons au problème de la droite ajustée aux points $(1,2)$, $(2,3)$, $(3,5)$. Pour la perte $L(\boldsymbol{\theta}) = \|\mathbf{y} - \mathbf{X}\boldsymbol{\theta}\|^2$, le gradient est $-2\mathbf{X}^\top(\mathbf{y} - \mathbf{X}\boldsymbol{\theta})$. L'algorithme complet tient en cinq lignes :
 
-```python
+1. choisir un point de départ $\boldsymbol{\theta}_0$ et un pas $\eta$ ;
+2. calculer le gradient $\mathbf{g} = \nabla L(\boldsymbol{\theta})$ ;
+3. si $\|\mathbf{g}\|$ est presque nul, s'arrêter ;
+4. sinon, remplacer $\boldsymbol{\theta}$ par $\boldsymbol{\theta} - \eta\,\mathbf{g}$ ;
+5. recommencer en 2 (au plus un nombre fixé de fois).
+
+Le code complet est dans l'application 1.8 du cahier.
+
+```python hide
 def descente_de_gradient(grad, theta0, eta, n_iter=1000, tol=1e-8):
     """Descente de gradient : renvoie le point final et le chemin parcouru."""
     theta = np.array(theta0, dtype=float)
@@ -186,9 +207,9 @@ def perte_L(theta, X, y):
     return np.sum((y - X @ theta)**2)
 ```
 
-On a vu que la hessienne a pour valeurs propres 0,72 et 33,28. Pour que la descente converge, le pas doit être inférieur à $2/\lambda_{\max} = 2/33{,}28 \approx 0{,}060$ (même raisonnement que $0 < \eta < 1$ en une dimension, où la courbure était 2). Essayons un pas de $0{,}05$ (acceptable), puis de $0{,}07$ (trop grand) :
+On a vu que la hessienne a pour valeurs propres 0,72 et 33,28. Pour que la descente converge, le pas doit être inférieur à $2/\lambda_{\max} = 2/33{,}28 \approx 0{,}060$ (même raisonnement que $0 < \eta < 1$ en une dimension, où la courbure était 2). Essayons un pas de $0{,}05$ (acceptable), puis de $0{,}07$ (trop grand). Voici ce que l'on observe.
 
-```python
+```python hide
 theta, chemin = descente_de_gradient(lambda t: grad_L(t, X, y), [0, 0], eta=0.05, n_iter=5000, tol=1e-6)
 print("eta = 0,05 : itérations =", len(chemin) - 1, "   theta =", theta.round(4))
 
@@ -207,7 +228,7 @@ Pourquoi tant d'itérations ? À cause du bol allongé : le pas est limité par 
 
 > 🧪 **Pourquoi ça aide ?** Avec la colonne centrée, le produit $\mathbf{X}^\top\mathbf{X}$ devient **diagonal** : $\begin{pmatrix}2&0\\0&3\end{pmatrix}$. Les deux directions deviennent indépendantes et de courbures comparables (4 et 6 pour la hessienne). Le bol est presque rond.
 
-```python
+```python hide
 xc = x - x.mean()
 Xc = np.column_stack([xc, np.ones_like(xc)])
 print("valeurs propres (variable centrée) :", np.linalg.eigvalsh(2 * Xc.T @ Xc).round(3))
@@ -230,9 +251,13 @@ Enfin, pour ce problème précis, une solution **exacte** existe, sans itérer. 
 
 $$\mathbf{X}^\top\mathbf{X}\,\boldsymbol{\theta} = \mathbf{X}^\top\mathbf{y},$$
 
-un système linéaire (les « équations normales ») que l'on sait résoudre avec ce que nous avons vu en 1.1.2 :
+un système linéaire (les « équations normales ») que l'on sait résoudre avec ce que nous avons vu en 1.1.2. Ici $\mathbf{X}^\top\mathbf{X} = \begin{pmatrix}14&6\\6&3\end{pmatrix}$ (de déterminant $6$) et $\mathbf{X}^\top\mathbf{y} = (23,\,10)^\top$, donc
 
-```python
+$$\boldsymbol{\theta} = \frac16\begin{pmatrix}3&-6\\-6&14\end{pmatrix}\begin{pmatrix}23\\10\end{pmatrix} = \frac16\begin{pmatrix}9\\2\end{pmatrix} = \begin{pmatrix}1{,}5\\ 1/3\end{pmatrix},$$
+
+la même droite $y = 1{,}5\,x + 1/3$ que la descente de gradient, trouvée sans itérer.
+
+```python hide
 theta_exact = np.linalg.solve(X.T @ X, X.T @ y)
 print("équations normales :", theta_exact.round(4))
 ```
@@ -245,17 +270,19 @@ Pourquoi alors se servir de la descente de gradient ? Parce que **la plupart des
 
 ![Chemin de la descente de gradient sur les courbes de niveau de la perte, avec la variable brute (à gauche) et la variable centrée (à droite). Le bol allongé force à zigzaguer ; le bol presque rond permet d'aller droit au but.](figures/ch01-descente-2d.png)
 
-### 1.3.4 🛠️ Application : le prix qui maximise les recettes
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.8, exercices 1.6 et 1.8.
 
-Voici un vrai petit problème de décision, qui combine tout le chapitre. La gérante a testé huit prix pour un même bol en céramique, chacun pendant une semaine :
+### 1.3.4 Un exemple de décision : le prix qui maximise les recettes
+
+Voici un petit problème de décision réaliste, qui combine tout le chapitre. L'application 1.9 du cahier le refait pas à pas avec du code. La gérante a testé huit prix pour un même bol en céramique, chacun pendant une semaine :
 
 | Prix $p$ (€) | 25 | 28 | 31 | 34 | 37 | 40 | 43 | 46 |
-|---|---|---|---|---|---|---|---|---|
+|-------------------|---|---|---|---|---|---|---|---|
 | Ventes $q$ (pièces) | 93 | 82 | 82 | 69 | 67 | 56 | 56 | 47 |
 
 **Étape 1 : modéliser la demande.** On suppose une relation linéaire $q = \alpha + \beta\,p$ et on cherche $\alpha$ et $\beta$ par descente de gradient. Ici les prix valent environ 35 et les ventes environ 70 : les variables n'ont pas la même échelle. Nous appliquons donc ce que nous venons d'apprendre : **standardiser le prix** avant de descendre.
 
-```python
+```python hide
 prix = np.array([25, 28, 31, 34, 37, 40, 43, 46], dtype=float)
 ventes = np.array([93, 82, 82, 69, 67, 56, 56, 47], dtype=float)
 
@@ -278,7 +305,7 @@ alpha = 143.944   beta = -2.111
 contrôle avec np.polyfit : [143.944  -2.111]
 ```
 
-Treize itérations seulement. Le modèle trouvé est $q \approx 143{,}9 - 2{,}11\,p$ : **chaque euro de hausse fait perdre environ 2,1 ventes par semaine**. (La ligne `polyfit` vérifie notre résultat avec la fonction toute faite de NumPy.)
+Treize itérations seulement. Le modèle trouvé est $q \approx 143{,}9 - 2{,}11\,p$ : **chaque euro de hausse fait perdre environ 2,1 ventes par semaine**. (Un ajustement direct par les équations normales redonne exactement les mêmes valeurs.)
 
 **Étape 2 : exprimer les recettes.** Les recettes sont le prix multiplié par les quantités vendues :
 
@@ -290,7 +317,7 @@ $$p^\star = -\frac{\alpha}{2\beta}.$$
 
 Comme $\beta < 0$, on a $R'' = 2\beta < 0$ : c'est bien un maximum.
 
-```python
+```python hide
 p_opt = -alpha / (2 * beta)
 R = lambda p: p * (alpha + beta * p)
 print(f"prix optimal p* = {p_opt:.2f} €")
@@ -312,6 +339,8 @@ recettes prévues à 46 € :   2154.3 € par semaine
 
 > ⚠️ **Prudence.** Ce résultat est obtenu avec **huit** points et un modèle très simple. Il ne dit rien de l'incertitude (de combien $p^\star$ pourrait-il se tromper ?), ni du bénéfice (ici nous avons maximisé les *recettes*, sans tenir compte des coûts), ni de l'extrapolation hors de la plage de prix testée. Ces questions sont l'objet du chapitre 3 (statistique) et du volume II (régression). Retenez la démarche : **modéliser, écrire la fonction objectif, la dériver, l'annuler.**
 
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.9.
+
 ### 1.3.5 Optimisation sous contraintes : les multiplicateurs de Lagrange
 
 Dans la vraie vie, on n'optimise presque jamais librement : on a un **budget**, une capacité, un poids maximal. On cherche alors le meilleur choix **parmi ceux qui respectent une contrainte**.
@@ -320,7 +349,7 @@ Dans la vraie vie, on n'optimise presque jamais librement : on a un **budget**, 
 
 #### Un exemple concret
 
-La gérante dispose de 1 000 € de budget publicitaire à répartir entre Facebook ($x$ euros) et Réseaux ($y$ euros). Elle estime les recettes générées par :
+La gérante dispose de 1 000 € de budget publicitaire à répartir entre deux canaux de publicité, le canal A ($x$ euros) et le canal B ($y$ euros). Elle estime les recettes générées par :
 
 $$R(x, y) = 80\sqrt{x} + 120\sqrt{y}.$$
 
@@ -344,9 +373,9 @@ On annule toutes ses dérivées partielles :
 
 > 📐 **Pourquoi cette méthode marche.** Le long de la contrainte, on peut paramétrer $y = 1000 - x$ et regarder $R$ comme fonction d'une seule variable. Au maximum, sa dérivée s'annule, ce qui s'écrit $\nabla R \cdot \mathbf{t} = 0$ où $\mathbf{t}$ est la direction du sentier : $\nabla R$ est perpendiculaire au sentier. Or le gradient de $g(x,y) = x + y - 1000$ l'est aussi. Deux vecteurs perpendiculaires à la même direction (en dimension 2) sont parallèles : $\nabla R = \lambda\,\nabla g$. C'est exactement ce que disent les équations $\partial\mathcal{L}/\partial x = \partial\mathcal{L}/\partial y = 0$. $\blacksquare$
 
-Vérifions par trois chemins différents : un solveur numérique, une recherche exhaustive le long de la contrainte, et la formule.
+Un solveur numérique, puis une recherche exhaustive le long de la contrainte, donnent le même résultat que la formule : $x = 307{,}7$, $y = 692{,}3$ et des recettes de $4\,560{,}70$ €.
 
-```python
+```python hide
 from scipy.optimize import minimize
 
 R2 = lambda v: 80 * np.sqrt(v[0]) + 120 * np.sqrt(v[1])
@@ -371,9 +400,9 @@ recherche exhaustive : x = 307.7, y = 692.3, recettes = 4560.70
 formule              : x = 307.7, y = 692.3, recettes = 4560.70
 ```
 
-**Le multiplicateur $\lambda$ a une signification concrète.** Au point optimal, $\lambda = 40/\sqrt{x} \approx 40/17{,}54 \approx 2{,}28$. C'est le **prix de l'ombre** (*shadow price*) de la contrainte : **un euro de budget supplémentaire rapporterait environ 2,28 € de recettes en plus**, si l'on réoptimise la répartition. Vérifions :
+**Le multiplicateur $\lambda$ a une signification concrète.** Au point optimal, $\lambda = 40/\sqrt{x} \approx 40/17{,}54 \approx 2{,}28$. C'est le **prix de l'ombre** (*shadow price*) de la contrainte : **un euro de budget supplémentaire rapporterait environ 2,28 € de recettes en plus**, si l'on réoptimise la répartition. Vérification : porter le budget à 1 001 € fait gagner en réalité $2{,}2798$ € de recettes, contre $\lambda \approx 2{,}2804$.
 
-```python
+```python hide
 meilleur = lambda B: R2([B / 3.25, B - B / 3.25])       # répartition optimale pour un budget B
 print("gain réel avec 1 € de plus :", round(meilleur(1001) - meilleur(1000), 4))
 print("multiplicateur lambda       :", round(40 / np.sqrt(x_th), 4))
@@ -393,3 +422,5 @@ C'est une information précieuse pour fixer un budget : 1 € de publicité en p
 > - Descente de gradient : $\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_k - \eta\,\nabla f(\boldsymbol{\theta}_k)$. Le pas $\eta$ ne doit être ni trop petit (lent) ni trop grand (divergence : $\eta < 2/\lambda_{\max}$ pour une fonction quadratique).
 > - **Centrer et standardiser** les variables arrondit le bol et accélère considérablement la descente.
 > - Sous contrainte, on annule les dérivées du lagrangien ; $\lambda$ mesure la valeur marginale de la contrainte.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.10, exercice 1.7.

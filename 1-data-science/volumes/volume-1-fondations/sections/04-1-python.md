@@ -2,9 +2,9 @@
 
 > 💡 **Intuition.** Un programme est une **recette de cuisine** écrite pour un exécutant très docile mais totalement dépourvu de bon sens : il fait *exactement* ce que vous écrivez, à une vitesse folle, sans jamais se fatiguer, et sans jamais deviner ce que vous vouliez dire. Apprendre à programmer, c'est apprendre à écrire des recettes sans ambiguïté. Python est un excellent choix pour cela : ses recettes se lisent presque comme des phrases.
 
-Dans cette section, nous partons de zéro et nous terminons par un **programme complet** : la caisse de la boutique de la gérante. Chaque notion suit le même rythme que dans le reste du livre : une image, un exemple fait à la main, puis le code et sa sortie réelle.
+Dans cette section, nous partons de zéro et nous terminons par un **programme complet** : le ticket de caisse d'une boutique. Chaque notion suit le même rythme que dans le reste du livre : une image, un exemple fait à la main, puis un court morceau de code et sa sortie réelle.
 
-> 🧭 **Section à lire dans l'ordre.** Si vous programmez déjà, lisez seulement les titres et les encadrés ⚠️, puis passez au programme final (4.1.10) pour vérifier que tout vous semble familier.
+> 🧭 **Section à lire dans l'ordre.** Si vous programmez déjà, lisez seulement les titres et les encadrés ⚠️, puis passez au petit programme final (4.1.10) pour vérifier que tout vous semble familier.
 
 ### 4.1.1 Pourquoi Python, et comment l'exécuter
 
@@ -45,28 +45,23 @@ Les quatre types de base :
 | Texte | `str` | `"bol"` | noms, étiquettes |
 | Booléen | `bool` | `True`, `False` | vrai ou faux |
 
-**Exemple à la main.** la gérante vend 3 bols à 12,5 € hors taxe. Le total HT est $3\times12{,}5=37{,}5$ €. Avec 19 % de TVA : $37{,}5\times1{,}19=44{,}625$ €, soit 44,63 € si l'on arrondit « comme à l'école » (la moitié vers le haut). Faisons-le faire à Python :
+**Exemple à la main.** La gérante vend 3 bols à 12,5 € hors taxe. Le total HT est $3\times12{,}5=37{,}5$ €. Avec 19 % de TVA : $37{,}5\times1{,}19=44{,}625$ €, soit 44,63 € si l'on arrondit « comme à l'école » (la moitié vers le haut). Faisons-le faire à Python :
 
 ```python
-quantite = 3
-prix_ht = 12.5
-total_ht = quantite * prix_ht
-total_ttc = total_ht * 1.19
-
-print("total HT  :", total_ht)
+quantite, prix_ht = 3, 12.5
+total_ttc = quantite * prix_ht * 1.19
 print("total TTC :", total_ttc)
 print("arrondi   :", round(total_ttc, 2))
 print(type(quantite), type(prix_ht), type("bol"), type(True))
 ```
 <!--sortie-->
 ```text
-total HT  : 37.5
 total TTC : 44.625
 arrondi   : 44.62
 <class 'int'> <class 'float'> <class 'str'> <class 'bool'>
 ```
 
-Les totaux correspondent au calcul à la main, **sauf l'arrondi** : Python affiche `44.62` et non 44,63. La raison : 44,625 tombe pile à mi-chemin entre 44,62 et 44,63, et `round` arrondit ces cas vers le chiffre **pair** (« arrondi du banquier »), d'où 44,62. Dans d'autres cas, c'est l'approximation binaire des décimaux (1.5.1) qui fait pencher l'arrondi d'un côté ou de l'autre. Pour des centimes exacts, on utilise le module `decimal` ; pour un ticket de caisse, on peut aussi calculer en **millimes** (entiers). Gardez cet écart en tête : il illustre qu'un résultat de programme se **vérifie** toujours contre un calcul indépendant. Notez enfin que `type(...)` révèle le type d'une valeur : une commande que vous utiliserez souvent pour comprendre une erreur.
+Le total correspond au calcul à la main, **sauf l'arrondi** : Python affiche `44.62` et non 44,63. La raison : 44,625 tombe pile à mi-chemin entre 44,62 et 44,63, et `round` arrondit ces cas vers le chiffre **pair** (« arrondi du banquier »), d'où 44,62. Dans d'autres cas, c'est l'approximation binaire des décimaux (1.5.1) qui fait pencher l'arrondi d'un côté ou de l'autre. Pour des centimes exacts, on utilise le module `decimal` ; pour un ticket de caisse, on peut aussi calculer en **millimes** (entiers). Gardez cet écart en tête : il illustre qu'un résultat de programme se **vérifie** toujours contre un calcul indépendant. Notez enfin que `type(...)` révèle le type d'une valeur : une commande que vous utiliserez souvent pour comprendre une erreur.
 
 Les opérateurs arithmétiques sont `+ - * /` et trois autres moins connus :
 
@@ -76,19 +71,8 @@ Les opérateurs arithmétiques sont `+ - * /` et trois autres moins connus :
 | `//` | division entière | `17 // 5` | 3 |
 | `%` | reste (modulo) | `17 % 5` | 2 |
 
-```python
-print(2 ** 10)
-print(17 // 5, 17 % 5)      # 17 = 3*5 + 2
-print(17 / 5)               # la division « / » donne toujours un float
-print(7 % 2 == 0)           # un nombre est pair si son reste modulo 2 vaut 0
-```
-<!--sortie-->
-```text
-1024
-3 2
-3.4
-False
-```
+Par exemple, $17=3\times5+2$, d'où `17 // 5` $=3$ et `17 % 5` $=2$ ; un nombre est pair si son reste modulo 2 vaut 0. Quant à la division `/`, elle donne toujours un `float` : `17 / 5` vaut $3{,}4$.
+
 
 > ⚠️ **Les décimaux sont approchés.** Python (comme tous les langages) stocke les `float` en binaire, ce qui explique les petites surprises du type $0{,}1+0{,}2\neq0{,}3$ expliquées en 1.5.1. Conséquence pratique : on **n'écrit jamais** `a == b` pour comparer deux décimaux calculés, on utilise `math.isclose(a, b)`. Et pour des montants d'argent, on arrondit explicitement avec `round(x, 2)` à l'affichage.
 
@@ -98,20 +82,16 @@ Un texte (`str`) s'écrit entre guillemets. On peut le découper, le mettre en m
 
 ```python
 nom = "  Bol en céramique bleue "
-print(nom.strip())               # enlève les espaces au début et à la fin
 print(nom.strip().upper())
 print(nom.strip().replace("bleue", "verte"))
-print(len(nom.strip()))          # nombre de caractères
-print("céramique" in nom)        # True si le morceau est présent
-print(nom.strip().split(" "))    # découpe en liste de mots
+print(len(nom.strip()), "céramique" in nom)       # longueur, présence d'un morceau
+print(nom.strip().split(" "))                      # découpe en liste de mots
 ```
 <!--sortie-->
 ```text
-Bol en céramique bleue
 BOL EN CÉRAMIQUE BLEUE
 Bol en céramique verte
-22
-True
+22 True
 ['Bol', 'en', 'céramique', 'bleue']
 ```
 
@@ -120,18 +100,12 @@ Pour **insérer des valeurs dans une phrase**, la méthode moderne est la **f-st
 ```python
 produit, quantite, prix = "bol", 3, 12.5
 print(f"{quantite} x {produit} à {prix} €")
-print(f"total : {quantite * prix:.2f} €")      # .2f : 2 décimales
-print(f"part de TVA : {0.19:.0%}")              # .0% : pourcentage
-print(f"{'produit':<10}|{'prix':>8}")           # < aligne à gauche, > à droite
-print(f"{produit:<10}|{prix:>8.2f}")
+print(f"total : {quantite * prix:.2f} €  (TVA {0.19:.0%})")      # .2f : 2 décimales ; .0% : pourcentage
 ```
 <!--sortie-->
 ```text
 3 x bol à 12.5 €
-total : 37.50 €
-part de TVA : 19%
-produit   |    prix
-bol       |   12.50
+total : 37.50 €  (TVA 19%)
 ```
 
 Les f-strings sont la base de tous les rapports et tickets de caisse que vous écrirez.
@@ -151,20 +125,16 @@ Une variable ne contient pas forcément une seule valeur. Python offre quatre «
 
 ```python
 montants = [44.8, 34.5, 88.2, 30.1, 110.1]
-print(montants[0], montants[-1])     # premier et dernier
-print(montants[1:4])                  # indices 1, 2, 3
-montants.append(39.8)                 # ajoute à la fin
+print(montants[0], montants[-1], montants[1:4])     # premier, dernier, indices 1 à 3
+montants.append(39.8)                                # ajoute à la fin
 print(len(montants), sum(montants), max(montants), min(montants))
-print(sorted(montants))               # copie triée ; la liste d'origine ne change pas
-print(f"moyenne = {sum(montants) / len(montants):.2f}")
+print(sorted(montants))                              # copie triée ; l'original ne change pas
 ```
 <!--sortie-->
 ```text
-44.8 110.1
-[34.5, 88.2, 30.1]
+44.8 110.1 [34.5, 88.2, 30.1]
 6 347.5 110.1 30.1
 [30.1, 34.5, 39.8, 44.8, 88.2, 110.1]
-moyenne = 57.92
 ```
 
 > ⚠️ **Piège classique du débutant : le décalage de 1.** Dans une liste de 6 éléments, les indices vont de 0 à **5** ; `montants[6]` provoque une erreur. Et `montants[1:4]` contient **3** éléments (1, 2, 3), pas 4. Règle : la longueur d'un découpage est `b - a`.
@@ -175,20 +145,15 @@ moyenne = 57.92
 
 ```python
 catalogue = {"bol": 12.5, "tasse": 8.0, "plateau": 45.0}
-print(catalogue["tasse"])
-catalogue["bougie"] = 15.9            # ajout
-catalogue["bol"] = 13.0               # modification
-print(catalogue)
-print(catalogue.get("lampe", "inconnu"))   # .get évite l'erreur si la clé n'existe pas
+catalogue["bougie"] = 15.9                           # ajout
+print(catalogue["tasse"], catalogue.get("lampe", "inconnu"))   # .get évite l'erreur
 for nom, prix in catalogue.items():
     print(f"  {nom:<8} {prix:>6.2f} €")
 ```
 <!--sortie-->
 ```text
-8.0
-{'bol': 13.0, 'tasse': 8.0, 'plateau': 45.0, 'bougie': 15.9}
-inconnu
-  bol       13.00 €
+8.0 inconnu
+  bol       12.50 €
   tasse      8.00 €
   plateau   45.00 €
   bougie    15.90 €
@@ -197,7 +162,7 @@ inconnu
 **Les ensembles** oublient l'ordre et éliminent les doublons : exactement ce qu'il faut pour compter des clients **distincts**.
 
 ```python
-acheteurs = ["Sana", "Mehdi", "Sana", "Ines", "Mehdi", "Sana"]
+acheteurs = ["Léa", "Hugo", "Léa", "Inès", "Hugo", "Léa"]
 distincts = set(acheteurs)
 print(len(acheteurs), "achats par", len(distincts), "clients distincts")
 print(sorted(distincts))              # trié pour un affichage stable
@@ -205,7 +170,7 @@ print(sorted(distincts))              # trié pour un affichage stable
 <!--sortie-->
 ```text
 6 achats par 3 clients distincts
-['Ines', 'Mehdi', 'Sana']
+['Hugo', 'Inès', 'Léa']
 ```
 
 L'ordre d'affichage d'un ensemble peut changer d'une exécution à l'autre : n'y comptez jamais (c'est pourquoi nous l'avons passé par `sorted` pour l'afficher).
@@ -245,39 +210,23 @@ Une **boucle** répète un bloc. Deux formes :
 - `for élément in collection:` : une fois pour chaque élément (on sait combien).
 - `while condition:` : tant que la condition est vraie (on ne sait pas combien).
 
-**Exemple à la main.** la gérante place 1 000 € à 5 % par an, intérêts composés. Au bout d'un an : $1000\times1{,}05=1050$. Deux ans : $1050\times1{,}05=1102{,}5$. Combien d'années pour **doubler** ? C'est une question « jusqu'à ce que » : une boucle `while`.
+**Exemple à la main.** La gérante place 1 000 € à 5 % par an, intérêts composés. Au bout d'un an : $1000\times1{,}05=1050$. Deux ans : $1050\times1{,}05=1102{,}5$. Combien d'années pour **doubler** ? C'est une question « jusqu'à ce que » : une boucle `while`.
 
 ```python
 capital, annees = 1000.0, 0
 while capital < 2000:
     capital = capital * 1.05
     annees += 1                       # raccourci pour annees = annees + 1
-    print(f"année {annees:2d} : {capital:8.2f} €")
-print("doublé en", annees, "ans")
+print("doublé en", annees, "ans :", round(capital, 2), "€")
 ```
 <!--sortie-->
 ```text
-année  1 :  1050.00 €
-année  2 :  1102.50 €
-année  3 :  1157.62 €
-année  4 :  1215.51 €
-année  5 :  1276.28 €
-année  6 :  1340.10 €
-année  7 :  1407.10 €
-année  8 :  1477.46 €
-année  9 :  1551.33 €
-année 10 :  1628.89 €
-année 11 :  1710.34 €
-année 12 :  1795.86 €
-année 13 :  1885.65 €
-année 14 :  1979.93 €
-année 15 :  2078.93 €
-doublé en 15 ans
+doublé en 15 ans : 2078.93 €
 ```
 
-Vérification mathématique : on cherche le plus petit $n$ tel que $1{,}05^n\ge2$, soit $n\ge\ln 2/\ln1{,}05$.
+Vérification mathématique : on cherche le plus petit $n$ tel que $1{,}05^n\ge2$, soit $n\ge\ln 2/\ln1{,}05\approx14{,}21$.
 
-```python
+```python hide
 import math
 print(round(math.log(2) / math.log(1.05), 2))
 ```
@@ -286,7 +235,7 @@ print(round(math.log(2) / math.log(1.05), 2))
 14.21
 ```
 
-Le résultat réel est entre 14 et 15 : il faut donc 15 années entières, ce que la boucle a trouvé.
+Le résultat réel (14,21) est entre 14 et 15 : il faut donc 15 années entières, ce que la boucle a trouvé.
 
 > ⚠️ **La boucle infinie.** Si, dans un `while`, la condition ne devient jamais fausse (ici, si on oubliait la ligne `capital = ...`), le programme tourne éternellement. Dans un terminal, `Ctrl+C` l'arrête. Avant de lancer un `while`, demandez-vous : *qu'est-ce qui le fera s'arrêter ?* (La même question sera posée avec rigueur pour les algorithmes en 4.3.)
 
@@ -295,7 +244,7 @@ La boucle `for` parcourt n'importe quelle collection ; `range(n)` produit les en
 ```python
 for i in range(3):
     print("i =", i)
-for rang, nom in enumerate(["Sana", "Mehdi", "Ines"], start=1):
+for rang, nom in enumerate(["Léa", "Hugo", "Inès"], start=1):
     print(rang, nom)
 ```
 <!--sortie-->
@@ -303,9 +252,9 @@ for rang, nom in enumerate(["Sana", "Mehdi", "Ines"], start=1):
 i = 0
 i = 1
 i = 2
-1 Sana
-2 Mehdi
-3 Ines
+1 Léa
+2 Hugo
+3 Inès
 ```
 
 **Les compréhensions de liste** sont une écriture compacte d'une boucle qui construit une liste : `[expression for x in collection if condition]`. Elles se lisent comme une phrase mathématique « l'ensemble des $f(x)$ pour $x$ dans… tel que… ».
@@ -316,8 +265,7 @@ ttc = [round(m * 1.19, 2) for m in montants]
 gros = [m for m in montants if m > 60]
 print(ttc)
 print(gros)
-carres = {n: n ** 2 for n in range(1, 6)}      # même idée pour un dictionnaire
-print(carres)
+print({n: n ** 2 for n in range(1, 6)})      # même idée pour un dictionnaire
 ```
 <!--sortie-->
 ```text
@@ -370,14 +318,14 @@ min = 30.1, moyenne = 61.54, max = 110.1
 Les fonctions peuvent aussi être **passées** à d'autres fonctions, ce qui donne des écritures très concises. Exemple : trier des commandes selon un critère choisi avec l'argument `key`.
 
 ```python
-commandes = [("Sana", 44.8), ("Mehdi", 110.1), ("Ines", 30.1)]
-print(sorted(commandes, key=lambda c: c[1]))                 # du plus petit au plus gros montant
-print(sorted(commandes, key=lambda c: c[1], reverse=True)[0]) # la plus grosse
+commandes = [("Léa", 44.8), ("Hugo", 110.1), ("Inès", 30.1)]
+print(sorted(commandes, key=lambda c: c[1]))                   # du plus petit au plus gros montant
+print(sorted(commandes, key=lambda c: c[1], reverse=True)[0])  # la plus grosse
 ```
 <!--sortie-->
 ```text
-[('Ines', 30.1), ('Sana', 44.8), ('Mehdi', 110.1)]
-('Mehdi', 110.1)
+[('Inès', 30.1), ('Léa', 44.8), ('Hugo', 110.1)]
+('Hugo', 110.1)
 ```
 
 `lambda c: c[1]` est une mini-fonction sans nom qui renvoie le second élément du couple.
@@ -391,10 +339,9 @@ def tenter(description, fonction):
     try:
         fonction()
     except Exception as e:
-        print(f"{description:<26} -> {type(e).__name__}: {e}")
+        print(f"{description:<20} -> {type(e).__name__}: {e}")
 
-montants = [44.8, 34.5, 88.2]
-tenter("indice hors liste", lambda: montants[5])
+tenter("indice hors liste", lambda: [44.8, 34.5, 88.2][5])
 tenter("clé absente", lambda: {"bol": 12.5}["lampe"])
 tenter("division par zéro", lambda: 10 / 0)
 tenter("texte + nombre", lambda: "total : " + 12.5)
@@ -403,12 +350,12 @@ tenter("nom inconnu", lambda: variable_inexistante)
 ```
 <!--sortie-->
 ```text
-indice hors liste          -> IndexError: list index out of range
-clé absente                -> KeyError: 'lampe'
-division par zéro          -> ZeroDivisionError: division by zero
-texte + nombre             -> TypeError: can only concatenate str (not "float") to str
-texte vers entier          -> ValueError: invalid literal for int() with base 10: 'douze'
-nom inconnu                -> NameError: name 'variable_inexistante' is not defined
+indice hors liste    -> IndexError: list index out of range
+clé absente          -> KeyError: 'lampe'
+division par zéro    -> ZeroDivisionError: division by zero
+texte + nombre       -> TypeError: can only concatenate str (not "float") to str
+texte vers entier    -> ValueError: invalid literal for int() with base 10: 'douze'
+nom inconnu          -> NameError: name 'variable_inexistante' is not defined
 ```
 
 Lecture :
@@ -424,42 +371,40 @@ Lecture :
 
 ```python
 saisies = ["12.5", "8", "abc", "", "15,9", "45.0"]
-valides, rejetees = [], []
+valides = []
 for s in saisies:
     try:
         valides.append(float(s))
     except ValueError:
-        rejetees.append(s)
+        print("rejetée :", repr(s))
 print("valides :", valides)
-print("rejetées :", rejetees)
 ```
 <!--sortie-->
 ```text
+rejetée : 'abc'
+rejetée : ''
+rejetée : '15,9'
 valides : [12.5, 8.0, 45.0]
-rejetées : ['abc', '', '15,9']
 ```
 
 Remarquez que `"15,9"` (virgule française) est rejeté : Python attend le **point** décimal. C'est une cause fréquente de données « cassées » quand elles viennent d'un tableur configuré en français.
 
-> 🛠️ **Méthode pour déboguer** (à épingler au-dessus de votre écran). (1) Lisez la **dernière ligne** du message. (2) Repérez la ligne de code citée. (3) Affichez avec `print` les valeurs et les types utilisés à cet endroit. (4) Réduisez le problème au plus petit exemple qui échoue. (5) Seulement ensuite, cherchez le message sur Internet. Neuf fois sur dix, les étapes 1 à 3 suffisent.
+> 💡 **Méthode pour déboguer** (à épingler au-dessus de votre écran). (1) Lisez la **dernière ligne** du message. (2) Repérez la ligne de code citée. (3) Affichez avec `print` les valeurs et les types utilisés à cet endroit. (4) Réduisez le problème au plus petit exemple qui échoue. (5) Seulement ensuite, cherchez le message sur Internet. Neuf fois sur dix, les étapes 1 à 3 suffisent.
 
 ### 4.1.9 Modules, fichiers et données réelles
 
 Python ne contient pas tout, mais il sait **importer** du code déjà écrit. Un **module** est un fichier de fonctions ; la bibliothèque standard en fournit des dizaines (`math`, `random`, `statistics`, `csv`, `datetime`…), et on en installe d'autres avec `pip` (section 6.3).
 
 ```python
-import math
-import statistics
+import math, statistics
 from collections import Counter
 
-print(math.sqrt(144), math.pi)
-print(statistics.mean([2, 4, 4, 4, 5, 5, 7, 9]), statistics.pstdev([2, 4, 4, 4, 5, 5, 7, 9]))
+print(math.sqrt(144), statistics.mean([2, 4, 4, 4, 5, 5, 7, 9]))
 print(Counter("abracadabra"))     # compte les occurrences
 ```
 <!--sortie-->
 ```text
-12.0 3.141592653589793
-5 2.0
+12.0 5
 Counter({'a': 5, 'b': 2, 'r': 2, 'c': 1, 'd': 1})
 ```
 
@@ -467,32 +412,25 @@ Lisons maintenant le fichier de données du livre, `donnees/commandes.csv`, **sa
 
 ```python
 import csv
-from collections import Counter
 
 with open("donnees/commandes.csv", encoding="utf-8") as f:
     lignes = list(csv.DictReader(f))     # chaque ligne devient un dictionnaire
-
-print("nombre de commandes :", len(lignes))
-print("première commande   :", lignes[0])
-print("type du montant     :", type(lignes[0]["montant"]))
+print(len(lignes), "commandes ; première :", lignes[0])
+print("type du montant :", type(lignes[0]["montant"]))
 ```
 <!--sortie-->
 ```text
-nombre de commandes : 400
-première commande   : {'canal': 'Boutique', 'montant': '44.8', 'livraison': '0', 'satisfaction': '4'}
-type du montant     : <class 'str'>
+400 commandes ; première : {'canal': 'Boutique', 'montant': '44.8', 'livraison': '0', 'satisfaction': '4'}
+type du montant : <class 'str'>
 ```
 
 Le mot-clé `with` ouvre le fichier **et le referme proprement** à la sortie du bloc, même en cas d'erreur. Remarquez que les valeurs sont lues comme du **texte** : `"44.8"` n'est pas un nombre ! Il faut convertir.
 
 ```python
 montants = [float(l["montant"]) for l in lignes]
-canaux = Counter(l["canal"] for l in lignes)
 print("montant moyen :", round(sum(montants) / len(montants), 2))
-print("répartition   :", dict(canaux))
 
-# montant moyen par canal, avec un dictionnaire de listes
-par_canal = {}
+par_canal = {}                           # un dictionnaire de listes
 for l in lignes:
     par_canal.setdefault(l["canal"], []).append(float(l["montant"]))
 for canal, valeurs in par_canal.items():
@@ -501,15 +439,14 @@ for canal, valeurs in par_canal.items():
 <!--sortie-->
 ```text
 montant moyen : 60.25
-répartition   : {'Boutique': 114, 'Site': 148, 'Réseaux': 138}
   Boutique   n = 114   moyenne =  74.81 €
   Site       n = 148   moyenne =  59.50 €
-  Réseaux  n = 138   moyenne =  49.01 €
+  Réseaux    n = 138   moyenne =  49.01 €
 ```
 
 On retrouve le montant moyen de 60,25 € calculé au chapitre 3. Nous avons tout fait à la main, avec des boucles et des dictionnaires : c'est précisément le travail que pandas fera en **une ligne** à la section 4.4. Savoir le faire « à la main » vous permet de comprendre ce que pandas fait pour vous.
 
-### 4.1.10 Un programme complet : la caisse de la boutique
+### 4.1.10 Un petit programme complet : le ticket de caisse
 
 Rassemblons tout. La gérante veut un petit programme qui, pour un panier, **édite un ticket de caisse** avec les règles suivantes :
 
@@ -526,30 +463,29 @@ Rassemblons tout. La gérante veut un petit programme qui, pour un panier, **éd
 - TVA : $105{,}93\times0{,}19=20{,}1267\approx20{,}13$ € ;
 - total TTC : $105{,}93+20{,}13=126{,}06$ €.
 
-Le programme, découpé en petites fonctions faciles à tester :
+Le programme se découpe en **petites fonctions** faciles à tester. Les deux premières suffisent à calculer les montants :
 
 ```python
 CATALOGUE = {"bol": 12.5, "tasse": 8.0, "plateau": 45.0, "bougie": 15.9}
-TVA = 0.19
-SEUIL_REMISE = 100
-TAUX_REMISE = 0.10
-
+TVA, SEUIL_REMISE, TAUX_REMISE = 0.19, 100, 0.10
 
 def sous_total(panier):
-    """panier : liste de couples (nom du produit, quantité)."""
+    """panier : liste de couples (produit, quantité)."""
     return sum(CATALOGUE[nom] * qte for nom, qte in panier)
-
 
 def remise(montant_ht):
     return montant_ht * TAUX_REMISE if montant_ht > SEUIL_REMISE else 0.0
+```
 
+Une troisième fonction, `ticket`, appelle les deux premières puis met le résultat en forme avec des f-strings (l'application 4.1 du cahier la construit pas à pas). Pour notre panier, elle produit :
 
+```python hide-code
 def ticket(panier):
     ht = sous_total(panier)
     r = remise(ht)
     net = ht - r
     tva = net * TVA
-    lignes = ["=== DAR JASMIN ==="]
+    lignes = ["=== BOUTIQUE ==="]
     for nom, qte in panier:
         lignes.append(f"{qte} x {nom:<8} {CATALOGUE[nom]:>6.2f}  {qte * CATALOGUE[nom]:>8.2f}")
     lignes.append(f"{'Sous-total HT':<20}{ht:>8.2f}")
@@ -558,13 +494,12 @@ def ticket(panier):
     lignes.append(f"{'TOTAL TTC':<20}{net + tva:>8.2f}")
     return "\n".join(lignes), round(net + tva, 2)
 
-
 texte, total = ticket([("bol", 2), ("plateau", 1), ("bougie", 3)])
 print(texte)
 ```
 <!--sortie-->
 ```text
-=== DAR JASMIN ===
+=== BOUTIQUE ===
 2 x bol       12.50     25.00
 1 x plateau   45.00     45.00
 3 x bougie    15.90     47.70
@@ -577,13 +512,9 @@ TOTAL TTC             126.06
 Le ticket affiche 117,70 € de sous-total, 11,77 de remise, 20,13 de TVA et 126,06 € au total : **exactement** nos valeurs à la main. Testons aussi les cas limites avec `assert`, une instruction qui ne dit rien quand la condition est vraie et **arrête** le programme avec une erreur quand elle est fausse :
 
 ```python
-# Cas 1 : petit panier, pas de remise. 2 tasses = 16,00 HT ; TVA = 3,04 ; TTC = 19,04
-assert ticket([("tasse", 2)])[1] == 19.04
-# Cas 2 : panier vide
-assert ticket([])[1] == 0.0
-# Cas 3 : juste au seuil (100 € pile) : la remise ne s'applique PAS (condition « > »)
-assert remise(100) == 0.0
-# Cas 4 : le panier précédent
+assert remise(100) == 0.0                          # pile au seuil : pas de remise (condition « > »)
+assert ticket([("tasse", 2)])[1] == 19.04          # 2 tasses : 16,00 HT ; TVA 3,04
+assert ticket([])[1] == 0.0                        # panier vide
 assert ticket([("bol", 2), ("plateau", 1), ("bougie", 3)])[1] == 126.06
 print("tous les tests passent")
 ```
@@ -592,9 +523,9 @@ print("tous les tests passent")
 tous les tests passent
 ```
 
-> 🛠️ **Ce qu'on vient de faire, c'est de la rigueur.** Calculer à la main *avant* de coder fournit un « oracle » : si le programme et la main divergent, l'un des deux a tort, et on cherche lequel. Les `assert` transforment cette vérification en filet de sécurité automatique. Nous irons plus loin avec de vrais tests unitaires en 4.6.
+> 💡 **Ce qu'on vient de faire, c'est de la rigueur.** Calculer à la main *avant* de coder fournit un « oracle » : si le programme et la main divergent, l'un des deux a tort, et on cherche lequel. Les `assert` transforment cette vérification en filet de sécurité automatique. Nous irons plus loin avec de vrais tests unitaires en 4.6.
 
-> 🧪 **Pour aller plus loin, essayez de modifier le programme.** Que se passe-t-il si on demande un produit absent du catalogue ? (Réponse : une `KeyError`, comme en 4.1.8.) Comment afficher un message gentil plutôt qu'un plantage ? Comment ajouter un code promo ? Ces trois questions sont des exercices de la section 4.9.
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.1 (le programme complet de la caisse) ; exercices 4.1 à 4.3 (dictionnaires et boucles, produit absent du catalogue, code promo).
 
 > ✅ **À retenir**
 > - Une **variable** est une étiquette sur une valeur ; les types de base sont `int`, `float`, `str`, `bool`.

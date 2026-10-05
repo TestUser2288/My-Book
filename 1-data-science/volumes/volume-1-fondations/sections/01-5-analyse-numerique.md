@@ -22,9 +22,9 @@ False
 0.2999999999999999888977698
 ```
 
-Les nombres décimaux de Python (type `float`) suivent la norme IEEE 754 en **double précision** : 64 bits, soit environ **16 chiffres significatifs**. L'erreur relative maximale d'un arrondi est appelée **epsilon machine** :
+Les nombres décimaux de Python (type `float`) suivent la norme IEEE 754 en **double précision** : 64 bits, soit environ **16 chiffres significatifs**. L'erreur relative maximale d'un arrondi est appelée **epsilon machine** ; elle vaut environ $2{,}2\times10^{-16}$.
 
-```python
+```python hide
 import numpy as np
 print("epsilon machine :", np.finfo(float).eps)
 ```
@@ -74,9 +74,9 @@ True
 False
 ```
 
-Conséquence pratique : l'**ordre** des additions compte. Additionner un million de fois $0{,}1$ ne donne pas exactement 100 000.
+Conséquence pratique : l'**ordre** des additions compte. Additionner un million de fois $0{,}1$ ne donne pas exactement 100 000 : une boucle d'additions successives renvoie $100\,000{,}000\,001\,33\ldots$, alors qu'une somme « compensée » (la fonction `math.fsum`) renvoie $100\,000{,}0$, exacte à l'arrondi final.
 
-```python
+```python hide
 s = 0.0
 for _ in range(1_000_000):
     s += 0.1
@@ -165,9 +165,9 @@ Un changement de $0{,}0001$ sur les données a **complètement changé la soluti
 Deux conséquences pratiques :
 
 1. Pour résoudre $\mathbf{A}\mathbf{x}=\mathbf{b}$, on utilise `np.linalg.solve(A, b)`, **pas** `np.linalg.inv(A) @ b` : c'est plus rapide **et** plus précis.
-2. Centrer et standardiser les variables (1.3.3) diminue le conditionnement, ce qui explique en partie le gain de 335 à 18 itérations.
+2. Centrer et standardiser les variables (1.3.3) diminue le conditionnement, ce qui explique en partie le gain de 335 à 18 itérations : sur notre exemple, $\kappa(\mathbf{X}^\top\mathbf{X})$ passe de $46{,}1$ à $1{,}5$.
 
-```python
+```python hide
 x = np.array([1.0, 2.0, 3.0])
 X_brut = np.column_stack([x, np.ones(3)])
 X_centre = np.column_stack([x - x.mean(), np.ones(3)])
@@ -186,9 +186,19 @@ kappa(X^T X) centré : 1.5
 
 $$x_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)}.$$
 
-Pour calculer $\sqrt{2}$, on cherche le zéro de $f(x) = x^2 - 2$, avec $f'(x) = 2x$ :
+Pour calculer $\sqrt{2}$, on cherche le zéro de $f(x) = x^2 - 2$, avec $f'(x) = 2x$, donc $x_{k+1} = x_k - \dfrac{x_k^2 - 2}{2x_k}$. En partant de $x_0 = 1$ :
 
-```python
+| étape | $x$ | erreur |
+|---|---|---|
+| 0 | 1,000000000000000 | $4{,}1\times10^{-1}$ |
+| 1 | 1,500000000000000 | $8{,}6\times10^{-2}$ |
+| 2 | 1,416666666666667 | $2{,}5\times10^{-3}$ |
+| 3 | 1,414215686274510 | $2{,}1\times10^{-6}$ |
+| 4 | 1,414213562374690 | $1{,}6\times10^{-12}$ |
+| 5 | 1,414213562373095 | 0 |
+
+
+```python hide
 x = 1.0
 for k in range(6):
     print(f"étape {k} : x = {x:.15f}   erreur = {abs(x - 2**0.5):.2e}")
@@ -208,7 +218,7 @@ Le nombre de chiffres justes **double** à chaque étape (on parle de convergenc
 
 **La dichotomie.** Plus lente mais beaucoup plus robuste : si $f$ est continue et change de signe entre $a$ et $b$, il existe un zéro entre les deux. On coupe l'intervalle en deux, on garde la moitié qui change de signe, et on recommence. L'erreur est divisée par 2 à chaque tour.
 
-```python
+```python hide
 def dichotomie(f, a, b, tol=1e-10):
     n = 0
     while b - a > tol:
@@ -228,7 +238,7 @@ print(f"racine = {racine:.10f} en {n} étapes")
 racine = 1.4142135624 en 35 étapes
 ```
 
-Il faut 35 étapes à la dichotomie, contre 5 à Newton, pour une précision comparable. Newton est rapide mais peut diverger si on part mal ; la dichotomie est lente mais ne rate jamais. Les bibliothèques (`scipy.optimize.brentq`) combinent les deux.
+Pour $\sqrt{2}$ sur l'intervalle $[0, 2]$ avec une tolérance de $10^{-10}$, il faut 35 étapes à la dichotomie, contre 5 à Newton, pour une précision comparable. Newton est rapide mais peut diverger si on part mal ; la dichotomie est lente mais ne rate jamais. Les bibliothèques (`scipy.optimize.brentq`) combinent les deux.
 
 > ✅ **À retenir (analyse numérique).**
 >
@@ -237,3 +247,5 @@ Il faut 35 étapes à la dichotomie, contre 5 à Newton, pour une précision com
 > - Le conditionnement $\kappa$ mesure la fragilité d'un problème ; on perd environ $\log_{10}\kappa$ chiffres.
 > - `solve` plutôt que `inv`. Centrer et standardiser améliore le conditionnement.
 > - Newton : rapide mais capricieux ; dichotomie : lente mais sûre.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : exercice 1.9.

@@ -44,23 +44,7 @@ Cette seule définition recouvre les cas discret ($\sum$) et continu ($\int f$) 
 
 $$E[X]=0{,}7\times0+0{,}3\times80=24\ \text{€}.$$
 
-```python
-import numpy as np
-rng = np.random.default_rng(31)
-n = 500_000
-achete = rng.random(n) < 0.3
-depense = np.where(achete, rng.exponential(80, size=n), 0.0)
-
-print("P(X = 0) simulée :", round((depense == 0).mean(), 4))
-print("E[X] simulée      :", round(depense.mean(), 2), "(théorie : 24)")
-print("médiane           :", round(np.median(depense), 2), "(70 % des clients ne dépensent rien)")
-```
-<!--sortie-->
-```text
-P(X = 0) simulée : 0.6998
-E[X] simulée      : 24.03 (théorie : 24)
-médiane           : 0.0 (70 % des clients ne dépensent rien)
-```
+Une simulation de 500 000 clients confirme ces chiffres : 70,0 % de dépenses nulles, une dépense moyenne de 24,03 € (théorie : 24), et une **médiane égale à 0** (70 % des clients ne dépensent rien).
 
 Les données réelles de commerce sont très souvent de ce type (« zero-inflated »), et c'est la raison pour laquelle on ne peut pas toujours plaquer une loi normale ou exponentielle sans réfléchir.
 
@@ -91,3 +75,19 @@ Quand dit-on qu'une variable « a une densité » ? Réponse : quand sa loi $P_X
 > - Un événement de probabilité 0 n'est pas impossible ; « presque sûrement » = avec probabilité 1.
 > - Espérance = intégrale de Lebesgue ; elle gère les lois mixtes (atome + densité).
 > - Trois convergences : presque sûre ⟹ en probabilité ⟹ en loi (LGN forte, LGN faible, TCL).
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : application 2.6 (dépenses « à zéros »).
+
+```python hide
+# Vérifie les nombres cités dans la section 2.5 (loi mixte « dépenses à zéros »).
+import numpy as np
+rng = np.random.default_rng(31)
+n = 500_000
+achete = rng.random(n) < 0.3
+depense = np.where(achete, rng.exponential(80, size=n), 0.0)
+print("P(X = 0) simulée :", round((depense == 0).mean(), 4), "| E[X] simulée :", round(depense.mean(), 2), "| médiane :", round(np.median(depense), 2), "| théorie E = ", 0.3 * 80)
+```
+<!--sortie-->
+```text
+P(X = 0) simulée : 0.6998 | E[X] simulée : 24.03 | médiane : 0.0 | théorie E =  24.0
+```

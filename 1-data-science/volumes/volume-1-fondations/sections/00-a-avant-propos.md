@@ -49,10 +49,19 @@ Ce volume essaie d'éviter les deux, en **alternant systématiquement** :
 1. une **intuition** simple, avec une image ou une histoire ;
 2. un **exemple chiffré** assez petit pour être refait à la main ;
 3. quand c'est utile, une **démonstration rigoureuse**, pour que la certitude remplace la confiance aveugle ;
-4. une **petite application réelle** que l'on exécute avec du code ;
-5. des **exercices corrigés** pour vérifier que l'idée est bien entrée.
+4. un **point à retenir** et les pièges à éviter.
 
 Chaque idée importante reçoit au moins un exemple « sans issue de secours » : un exemple si concret qu'on ne puisse plus se dire « je n'ai pas compris ».
+
+### Un livre, et son cahier
+
+Pour que la lecture reste fluide, **le livre ne contient ni exercices, ni corrigés, ni longues applications** : il explique, il montre des exemples, il démontre. Tout ce qui sert à **s'entraîner** vit dans un second ouvrage, le **Cahier d'exercices et d'applications** de ce volume : des exercices corrigés, classés par difficulté, des applications guidées sur des données réalistes, et le projet de clôture du volume.
+
+Les deux ouvrages se répondent. À la fin des sections concernées, une ligne de ce type vous indique quoi faire ensuite :
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.1, exercices 3.1 à 3.4.
+
+Le cahier est organisé comme le livre : le chapitre 3 du cahier accompagne le chapitre 3 du livre. Une manière efficace de travailler : **lire une section du livre, puis faire sans attendre les exercices indiqués**, avec un crayon, avant de regarder les corrigés.
 
 ### Les encadrés
 
@@ -63,10 +72,10 @@ Pour que la lecture reste fluide, chaque type de contenu a son pictogramme :
 | 💡 **Intuition** | L'idée en langage courant, sans formule. À lire en premier. |
 | 🧪 **Exemple** | Un calcul concret, souvent refait à la main. |
 | 📐 **Démonstration** | Le raisonnement rigoureux. On peut la sauter à la première lecture, mais elle est ce qui rend la compréhension durable. |
-| 🛠️ **Application** | Une petite application réelle, avec du code. |
 | ⚠️ **Piège** | Une erreur classique, que presque tout le monde fait une fois. |
 | ✅ **À retenir** | Le résumé à garder en mémoire. |
-| 🏋️ **Exercices** | À faire avec un crayon avant de regarder les corrigés. |
+| 🧭 **Repère** | Un guide de lecture, ou l'annonce d'une section optionnelle. |
+| 📒 **Pour s'entraîner** | Un renvoi vers les exercices et applications du cahier. |
 | ➕ **Pour aller plus loin** | Section facultative : approfondissement, outil ou sujet connexe. |
 
 ### Le principe « essentiel / pour aller plus loin »
@@ -79,17 +88,17 @@ Les sections marquées **➕ Pour aller plus loin** sont des cadeaux, pas des ob
 
 | Parcours | Pour qui | Que lire |
 |---|---|---|
-| **Essentiel** | Vous voulez la vue d'ensemble, vite | Les encadrés 💡 🧪 🛠️ ✅, sans les 📐 ni les ➕ |
-| **Complet** | Vous voulez comprendre en profondeur | Tout le parcours essentiel, démonstrations comprises, plus les exercices |
-| **Praticien** | Vous aimez coder avant de théoriser | Le chapitre 6 (outils), puis le 4 (programmation), puis le 5 (SQL), puis les chapitres 1 à 3 |
+| **Essentiel** | Vous voulez la vue d'ensemble, vite | Le livre sans les démonstrations 📐 ni les sections ➕ ; les 💡, 🧪, ⚠️ et ✅ suffisent |
+| **Complet** | Vous voulez comprendre en profondeur | Tout le parcours essentiel, démonstrations comprises, et les exercices du cahier après chaque section |
+| **Praticien** | Vous aimez coder avant de théoriser | Le chapitre 6 (outils), puis le 4 (programmation), puis le 5 (SQL), avec les applications du cahier ; les chapitres 1 à 3 ensuite |
 
-> 💡 **Vous n'avez jamais programmé ?** Pas de panique : chaque bloc de code est suivi de **sa sortie réelle**. On peut donc lire le livre sans rien exécuter et comprendre ce qui se passe. Quand vous serez prêt(e), le chapitre 4 (section 4.1) vous apprend Python depuis zéro.
+> 💡 **Vous n'avez jamais programmé ?** Pas de panique : dans les chapitres de programmation, chaque bloc de code est suivi de **sa sortie réelle**, et chaque bloc est court. On peut donc lire le livre sans rien exécuter et comprendre ce qui se passe. Quand vous serez prêt(e), le chapitre 4 (section 4.1) vous apprend Python depuis zéro, et le cahier vous propose de quoi pratiquer.
 
 ## Le fil rouge : la boutique
 
 Apprendre sur des données abstraites est ennuyeux. Tout au long de ce volume, nous travaillerons donc sur une même histoire :
 
-> **La gérante** vient de lancer **la boutique**, une boutique en ligne d'artisanat tunisien : poteries, huile d'olive, tapis, bijoux. Elle vend, elle livre, elle reçoit des retours. Elle a des questions ; vous allez l'aider à y répondre avec des données.
+> **La gérante** dirige **une boutique** qui vend des produits artisanaux (céramiques, textiles, bijoux, cosmétiques) dans son magasin, sur son site web et sur les réseaux sociaux. Elle vend, elle livre, elle reçoit des retours. Elle a des questions ; vous allez l'aider à y répondre avec des données.
 
 Voici quelques-unes de ses questions, et le chapitre où nous y répondrons :
 
@@ -105,22 +114,17 @@ Voici quelques-unes de ses questions, et le chapitre où nous y répondrons :
 | « Quels sont mes dix meilleurs clients ? » | SQL | 5 |
 | « Comment retrouver la version de mon analyse d'il y a un mois ? » | Git | 6 |
 
-**Une précision importante :** la boutique et toutes ses données sont **fictifs**. Les chiffres sont générés par ordinateur, avec des règles simples que nous connaissons, ce qui permet de vérifier que nos méthodes retrouvent bien la réalité. Toute ressemblance avec une vraie boutique serait une coïncidence.
+**Une précision importante :** cette boutique, son personnel, ses clients et toutes ses données sont **fictifs**. Les chiffres sont générés par ordinateur, avec des règles simples que nous connaissons, ce qui permet de vérifier que nos méthodes retrouvent bien la réalité. Toute ressemblance avec une entreprise réelle serait une coïncidence.
 
 ## Le code de ce livre
 
-Les exemples de code sont écrits en **Python** (langage principal du livre), avec quelques exemples en **R** et en **SQL**. Chaque exemple Python ou SQL est suivi de sa sortie, introduite par un bloc grisé comme celui-ci :
+Ce livre n'est pas un manuel de programmation, sauf dans les chapitres 4, 5 et 6, qui enseignent précisément Python, SQL, Git et la ligne de commande. La règle est donc simple :
 
-```python
-prix = [45.0, 12.5, 80.0]
-print(f"Total du panier : {sum(prix):.2f} €")
-```
-<!--sortie-->
-```text
-Total du panier : 137.50 €
-```
+- **le code n'apparaît que lorsqu'il aide à comprendre** : quand on apprend à programmer, quand l'exemple *est* un morceau de code (une requête SQL, une commande Git), ou quand un phénomène numérique se montre mieux qu'il ne se décrit ;
+- **les blocs sont courts** (une quinzaine de lignes au plus) et chacun est suivi de sa sortie réelle ;
+- **les calculs, les simulations et les graphiques qui illustrent un résultat** sont bien produits par du code, mais ce code n'encombre pas le texte : les chiffres cités sont reproductibles, et les versions complètes se trouvent dans le cahier et dans le dépôt du livre.
 
-Les données aléatoires sont générées avec une **graine** (*seed*) fixée, ce qui fait qu'en rejouant le code, vous obtiendrez les mêmes nombres que dans le livre, à de très légères variations près selon les versions des bibliothèques.
+Les exemples sont écrits en **Python** (langage principal), avec quelques exemples en **R** et en **SQL**. Les données aléatoires sont générées avec une **graine** (*seed*) fixée : en rejouant le code, vous obtiendrez les mêmes nombres que dans le livre, à de très légères variations près selon les versions des bibliothèques. Les jeux de données utilisés (un tableau de commandes, puis une petite base SQL) sont fournis dans le dossier `donnees/`.
 
 Pour installer ce qu'il faut, un seul jeu de commandes suffit (détaillé au chapitre 6) :
 
@@ -140,7 +144,7 @@ pip install numpy pandas scipy matplotlib seaborn
  Chapitre 4 : Programmation ──► Chapitre 5 : SQL ──► Chapitre 6 : Outils
                                                │
                                                ▼
-                              Projet du volume : l'étude complète de la boutique
+                              Cahier : le projet du volume, l'étude complète de la boutique
 ```
 
 | Chapitre | Il répond à la question… | À la fin, vous saurez… |
@@ -154,36 +158,10 @@ pip install numpy pandas scipy matplotlib seaborn
 
 ## Faites le point : un petit test de départ
 
-Prenez dix minutes, un crayon, et répondez **sans calculatrice**. Les réponses sont juste après.
+Avant de commencer, le **cahier** propose un petit **test de départ** de dix questions, à faire en dix minutes, au crayon, **sans calculatrice** : un peu de calcul, de probabilités, de dérivation et une question sur la programmation. Les réponses et la manière d'interpréter votre score y sont données.
 
-1. Calculez $\dfrac{3}{4} + \dfrac{5}{6}$.
-2. Développez $(x + 2)^2$.
-3. Résolvez $2x - 7 = 11$.
-4. Quelle est la moyenne des nombres 4, 8, 15, 16, 23, 42 ?
-5. On lance deux dés équilibrés. Quelle est la probabilité que la somme fasse 7 ?
-6. Quelle est la dérivée de $x^2$ ?
-7. Calculez $2^3 \times 2^4$.
-8. Que vaut $\log_{10}(1000)$ ?
-9. Un article coûte 120 €. On applique 25 % de remise. Quel est le nouveau prix ?
-10. Dans une phrase : à quoi sert une « variable » en programmation ?
+> 📒 **Pour s'entraîner.** Cahier, mode d'emploi : test de départ.
 
-**Réponses.**
-
-1. $\frac{3}{4} + \frac{5}{6} = \frac{9}{12} + \frac{10}{12} = \frac{19}{12}$.
-2. $(x+2)^2 = x^2 + 4x + 4$.
-3. $2x = 18$, donc $x = 9$.
-4. $(4+8+15+16+23+42)/6 = 108/6 = 18$.
-5. Il y a $6 \times 6 = 36$ résultats possibles, dont 6 donnent 7 : (1,6), (2,5), (3,4), (4,3), (5,2), (6,1). Probabilité : $6/36 = 1/6$.
-6. $2x$.
-7. $2^{3+4} = 2^7 = 128$.
-8. $3$, car $10^3 = 1000$.
-9. $120 \times 0{,}75 = 90$ €.
-10. Une variable est un nom qui désigne une valeur gardée en mémoire (par exemple `prix = 45.0`), que l'on peut relire et modifier.
-
-**Comment interpréter votre score ?**
-
-- **8 à 10 bonnes réponses** : vous êtes prêt(e). Commencez par le chapitre 1.
-- **5 à 7** : lisez d'abord le « Rappel express », puis commencez.
-- **Moins de 5** : lisez le « Rappel express » attentivement, en refaisant les calculs à la main. Ce n'est pas une affaire de talent, seulement de pratique.
+La règle de lecture est simple. Si vous êtes à l'aise, commencez par le chapitre 1. Si le test vous a fait hésiter, lisez d'abord le « Rappel express » qui suit : ce n'est pas une affaire de talent, seulement de pratique.
 
 Maintenant, au travail. La gérante nous attend, et sa boutique reçoit une commande à l'instant.

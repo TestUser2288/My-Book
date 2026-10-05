@@ -2,7 +2,7 @@
 
 > 🧭 **Section optionnelle.** Vous pouvez faire toute une carrière d'analyste avec des fonctions, des listes et des tableaux pandas. Mais dès que votre code dépasse quelques dizaines de lignes, ou qu'un collègue (ou vous-même, dans six mois) doit le relire, trois outils changent la vie : **regrouper** les données et les opérations qui vont ensemble (les *objets*), **écrire clairement** (le *code propre*), et **vérifier automatiquement** que le code fait ce qu'on croit (les *tests*). Cette section les présente sur un exemple concret : le panier d'une cliente de la boutique.
 
-Pour cette section, nous écrivons de vrais **fichiers** Python, puis nous les exécutons depuis un terminal, exactement comme vous le feriez sur votre machine. Les blocs ci-dessous sont donc des commandes du terminal (`bash`) : la commande `cat > fichier <<'FIN' … FIN` crée un fichier avec le texte qui suit, et `python fichier.py` l'exécute. (Le chapitre 6.3 détaille le terminal.)
+Pour les tests, nous écrivons de vrais **fichiers** Python que nous exécutons depuis un terminal, exactement comme vous le feriez sur votre machine : la commande `cat > fichier <<'FIN' … FIN` crée un fichier avec le texte qui suit, et `python -m pytest` lance les tests. (Le chapitre 6.3 détaille le terminal.) Le module complet de la boutique et sa suite de tests sont donnés dans le cahier ; ici, nous n'en montrons que les passages utiles.
 
 ### 4.6.1 Pourquoi des objets ? Le problème des dictionnaires
 
@@ -12,9 +12,7 @@ Voyons pourquoi cela sert à quelque chose. Voici un panier représenté « à l
 
 ```python
 panier = {"savon": (20.0, 2), "plateau": (30.0, 1)}      # nom -> (prix HT, quantité)
-
-def total_ht(p):
-    return sum(prix * qte for prix, qte in p.values())
+total_ht = lambda p: sum(prix * qte for prix, qte in p.values())
 
 print("total HT :", total_ht(panier))
 panier["plateau"] = (30.0, -3)                            # une erreur de saisie…
@@ -32,8 +30,7 @@ Rien ne protège le dictionnaire : une quantité négative passe sans bruit, et 
 
 Commençons par la version « longue », avec une classe ordinaire, pour comprendre les mécanismes :
 
-```bash
-cat > article_simple.py <<'FIN'
+```python
 class Article:
     def __init__(self, nom, prix_ht):      # appelée à la création de l'objet
         self.nom = nom                     # self = l'objet en cours de création
@@ -44,14 +41,10 @@ class Article:
 
 savon = Article("savon", 20.0)
 print(savon.nom, savon.prix_ht, savon.prix_ttc())
-print(savon)                               # affichage par défaut : peu lisible
-FIN
-python article_simple.py | sed -E 's/0x[0-9a-f]+/0x…/'     # on masque l'adresse mémoire, qui change à chaque exécution
 ```
 <!--sortie-->
 ```text
 savon 20.0 23.8
-<__main__.Article object at 0x…>
 ```
 
 Lisez ligne à ligne :
@@ -59,12 +52,11 @@ Lisez ligne à ligne :
 - `class Article:` définit le moule.
 - `__init__` est le **constructeur** : Python l'appelle quand on écrit `Article("savon", 20.0)`. Le premier paramètre, `self`, désigne l'objet qu'on est en train de fabriquer ; on y accroche les attributs (`self.nom`, `self.prix_ht`).
 - `prix_ttc` est une **méthode** : on l'appelle avec un point, `savon.prix_ttc()`, et `self` est passé automatiquement.
-- Le dernier `print` montre le défaut de cette version : l'affichage `<__main__.Article object at 0x…>` ne dit rien d'utile (et l'adresse change à chaque exécution).
+- Un défaut de cette version : si l'on écrit `print(savon)`, l'affichage `<__main__.Article object at 0x…>` ne dit rien d'utile (et l'adresse mémoire change à chaque exécution).
 
 Écrire `__init__` et un affichage lisible pour chaque classe devient vite répétitif. C'est le rôle des **dataclasses** (`@dataclass`) : Python écrit pour vous le constructeur, un affichage lisible et la comparaison `==`.
 
-```bash
-cat > article_dc.py <<'FIN'
+```python
 from dataclasses import dataclass
 
 @dataclass
@@ -72,12 +64,9 @@ class Article:
     nom: str
     prix_ht: float
 
-a = Article("savon", 20.0)
-b = Article("savon", 20.0)
+a, b = Article("savon", 20.0), Article("savon", 20.0)
 print(a)                 # affichage lisible, fabriqué automatiquement
 print("a == b ?", a == b)
-FIN
-python article_dc.py
 ```
 <!--sortie-->
 ```text
@@ -110,48 +99,32 @@ Voici les règles métier, que nous vérifierons **à la main** avant de coder :
 
 > ⚠️ **Les annotations de type ne sont pas vérifiées à l'exécution.** Python les lit, mais ne les impose pas. Ce sont des indications pour les humains et pour les outils de vérification (comme `mypy`). Regardez :
 
-```bash
-cat > typage.py <<'FIN'
+```python
 def double(x: int) -> int:
     return x * 2
 
-print(double(21))
-print(double("ab"))      # une chaîne n'est pas un entier… et pourtant, aucune erreur
-FIN
-python typage.py
+print(double(21), double("ab"))      # une chaîne n'est pas un entier… et pourtant, aucune erreur
 ```
 <!--sortie-->
 ```text
-42
-abab
+42 abab
 ```
 
 > ⚠️ **Piège classique : l'argument par défaut modifiable.** Une valeur par défaut comme `[]` est créée **une seule fois**, à la définition de la fonction, puis partagée entre tous les appels. C'est une des erreurs les plus fréquentes en Python :
 
-```bash
-cat > piege.py <<'FIN'
-def ajouter_mauvais(article, panier=[]):          # MAUVAIS : la liste est partagée
+```python
+def ajouter_mauvais(article, panier=[]):          # MAUVAIS : la liste est partagée entre les appels
     panier.append(article)
     return panier
 
-def ajouter_bon(article, panier=None):            # BON : on crée la liste à chaque appel
-    if panier is None:
-        panier = []
-    panier.append(article)
-    return panier
-
-print("mauvais :", ajouter_mauvais("savon"), ajouter_mauvais("plateau"))
-print("bon     :", ajouter_bon("savon"), ajouter_bon("plateau"))
-FIN
-python piege.py
+print(ajouter_mauvais("savon"), ajouter_mauvais("plateau"))
 ```
 <!--sortie-->
 ```text
-mauvais : ['savon', 'plateau'] ['savon', 'plateau']
-bon     : ['savon'] ['plateau']
+['savon', 'plateau'] ['savon', 'plateau']
 ```
 
-Avec la version fautive, le deuxième panier *contient aussi le savon* du premier : deux clientes se retrouvent avec le même panier. Vous retrouverez ce motif (`None` puis création) dans les dataclasses sous la forme `field(default_factory=list)`.
+Avec la version fautive, le deuxième panier *contient aussi le savon* du premier : deux clientes se retrouvent avec le même panier. La version correcte écrit `panier=None` dans la signature, puis `if panier is None: panier = []` dans le corps de la fonction (on obtient alors `['savon']` puis `['plateau']`). Vous retrouverez ce motif dans les dataclasses sous la forme `field(default_factory=list)`.
 
 ### 4.6.5 Tester son code : le filet de sécurité
 
@@ -159,70 +132,53 @@ Avec la version fautive, le deuxième panier *contient aussi le savon* du premie
 
 Le schéma universel d'un test s'appelle **Arrange – Act – Assert** : on **prépare** les données (*arrange*), on **exécute** la fonction (*act*), on **vérifie** le résultat (*assert*). Nous utilisons **pytest**, l'outil standard : il suffit d'écrire des fonctions dont le nom commence par `test_` et d'y mettre des `assert`.
 
-**Étape 1 : une fonction de remise, écrite trop vite.**
+**Étape 1 : une fonction de remise, écrite trop vite.** Un test attend 60 € pour 80 € avec 25 % de remise :
 
 ```bash
 cat > remises.py <<'FIN'
 def prix_apres_remise(prix, taux):
-    """Prix après une remise de `taux` (0,25 pour 25 %)."""
     return prix - taux
 FIN
-
 cat > test_remises.py <<'FIN'
 from remises import prix_apres_remise
 
 def test_remise_de_25_pour_cent():
-    # 80 € avec 25 % de remise : 80 * (1 - 0,25) = 60 €
-    assert prix_apres_remise(80.0, 0.25) == 60.0
-
-def test_sans_remise():
-    assert prix_apres_remise(80.0, 0.0) == 80.0
+    assert prix_apres_remise(80.0, 0.25) == 60.0      # 80 * (1 - 0,25) = 60
 FIN
-
-python -m pytest -q --color=no --tb=short -p no:cacheprovider test_remises.py 2>&1 | sed -E 's/ in [0-9.]+s//'
+python -m pytest -q --color=no --tb=short -p no:cacheprovider test_remises.py 2>&1 | grep -E "^E |passed|failed" | sed -E 's/ in [0-9.]+s//'
 ```
 <!--sortie-->
 ```text
-F.                                                                       [100%]
-=================================== FAILURES ===================================
-_________________________ test_remise_de_25_pour_cent __________________________
-test_remises.py:5: in test_remise_de_25_pour_cent
-    assert prix_apres_remise(80.0, 0.25) == 60.0
 E   assert 79.75 == 60.0
 E    +  where 79.75 = prix_apres_remise(80.0, 0.25)
-=========================== short test summary info ============================
-FAILED test_remises.py::test_remise_de_25_pour_cent - assert 79.75 == 60.0
-1 failed, 1 passed
+1 failed
 ```
 
-Le test a fait son travail : la fonction soustrait le *taux* (0,25 € !) au lieu d'appliquer le pourcentage. Notez que `test_sans_remise` passe, ce qui montre pourquoi **un seul test ne suffit pas** : un code faux peut réussir un cas particulier. Le message affiche la ligne en cause, la valeur obtenue (79,75) et la valeur attendue (60).
+Le test a fait son travail : la fonction soustrait le *taux* (0,25 € !) au lieu d'appliquer le pourcentage. Le message affiche la ligne en cause, la valeur obtenue (79,75) et la valeur attendue (60). Notez qu'un second test, `prix_apres_remise(80.0, 0.0) == 80.0`, passerait : un code faux peut réussir un cas particulier, ce qui montre pourquoi **un seul test ne suffit pas**.
 
 **Étape 2 : on corrige, on relance.**
 
 ```bash
 cat > remises.py <<'FIN'
 def prix_apres_remise(prix, taux):
-    """Prix après une remise de `taux` (0,25 pour 25 %)."""
     if not 0 <= taux <= 1:
         raise ValueError(f"le taux doit être entre 0 et 1, reçu {taux}")
     return prix * (1 - taux)
 FIN
-
-python -m pytest -q --color=no --tb=short -p no:cacheprovider test_remises.py 2>&1 | sed -E 's/ in [0-9.]+s//'
+python -m pytest -q --color=no --tb=short -p no:cacheprovider test_remises.py 2>&1 | grep -E "passed|failed" | sed -E 's/ in [0-9.]+s//'
 ```
 <!--sortie-->
 ```text
-..                                                                       [100%]
-2 passed
+1 passed
 ```
 
-Deux tests verts. Remarquez que nous avons aussi ajouté une **validation** : un taux de 25 (au lieu de 0,25) lèverait une erreur claire plutôt que de produire un prix négatif.
+Test vert. Remarquez que nous avons aussi ajouté une **validation** : un taux de 25 (au lieu de 0,25) lèverait une erreur claire plutôt que de produire un prix négatif.
 
-> 🛠️ **Un réflexe d'expert : écrire le test *avant* le correctif.** Quand vous découvrez un bogue, écrivez d'abord un test qui l'attrape (il est rouge), puis corrigez le code (il devient vert). Ce bogue ne reviendra jamais sans que quelqu'un le remarque. Cette discipline s'appelle le **développement piloté par les tests** (*TDD*).
+> 💡 **Un réflexe d'expert : écrire le test *avant* le correctif.** Quand vous découvrez un bogue, écrivez d'abord un test qui l'attrape (il est rouge), puis corrigez le code (il devient vert). Ce bogue ne reviendra jamais sans que quelqu'un le remarque. Cette discipline s'appelle le **développement piloté par les tests** (*TDD*).
 
-**Étape 3 : le module de la boutique.** Les quatre classes, avec docstrings, annotations de types, validation et une constante pour la TVA :
+**Étape 3 : le module de la boutique.** Il contient quatre classes (un article, un panier, une commande en boutique, une commande sur le site), avec docstrings, annotations de types, validation et une constante pour la TVA (une soixantaine de lignes, données dans le cahier). Voici les passages qui illustrent la section :
 
-```bash
+```bash hide
 cat > boutique.py <<'FIN'
 """Modèle objet minimal de la boutique."""
 from dataclasses import dataclass, field
@@ -294,6 +250,29 @@ echo "module écrit : $(wc -l < boutique.py) lignes"
 module écrit : 62 lignes
 ```
 
+```python noexec
+@dataclass(frozen=True)             # frozen : on ne peut plus modifier un article créé
+class Article:
+    nom: str
+    prix_ht: float
+
+    def __post_init__(self):
+        if self.prix_ht < 0:
+            raise ValueError(f"prix négatif pour {self.nom!r}")
+
+class Commande:                     # une commande en boutique : retrait gratuit
+    def __init__(self, panier):
+        self.panier = panier
+    def frais_livraison(self):
+        return 0.0
+    def total_a_payer(self):
+        return round(self.panier.total_ttc() + self.frais_livraison(), 2)
+
+class CommandeSite(Commande):       # héritage : on ne redéfinit que ce qui change
+    def frais_livraison(self):
+        return 0.0 if self.panier.total_ttc() >= 100.0 else 7.0
+```
+
 Quelques points de lecture :
 
 - `frozen=True` rend l'article **immuable** : impossible d'écrire `article.prix_ht = -5` après coup. Moins de bogues possibles.
@@ -303,9 +282,9 @@ Quelques points de lecture :
 
 > 💡 **Quand utiliser l'héritage ?** Avec parcimonie. Deux classes dont l'une « *est une sorte de* » l'autre (une commande du site *est une* commande) : oui. Pour simplement réutiliser du code, préférez la **composition** (un objet qui *contient* un autre, comme `Commande` contient un `Panier`). Beaucoup de projets de data science n'ont besoin que de fonctions et de dataclasses.
 
-**Étape 4 : les tests du module.** Chaque règle métier vérifiée à la main plus haut devient un test. Le décorateur `@pytest.fixture` prépare le panier de l'exemple (le *arrange*) ; `pytest.approx` compare des nombres décimaux avec une petite tolérance (rappelez-vous, section 1.5 : `0.1 + 0.2 != 0.3` en binaire !) ; `@pytest.mark.parametrize` rejoue le même test avec plusieurs valeurs.
+**Étape 4 : les tests du module.** Chaque règle métier vérifiée à la main plus haut devient un test (il y en a dix dans le module complet). Le décorateur `@pytest.fixture` prépare le panier de l'exemple (le *arrange*) ; `pytest.approx` compare des nombres décimaux avec une petite tolérance (rappelez-vous, section 1.5 : `0.1 + 0.2 != 0.3` en binaire !) ; `@pytest.mark.parametrize` rejoue le même test avec plusieurs valeurs. Voici deux tests, puis la suite complète :
 
-```bash
+```bash hide
 cat > test_boutique.py <<'FIN'
 import pytest
 
@@ -367,29 +346,53 @@ python -m pytest -v --color=no --tb=short -p no:cacheprovider 2>&1 | sed -E 's/ 
 <!--sortie-->
 ```text
 ============================= test session starts ==============================
-collecting ... collected 12 items
+collecting ... collected 11 items
 
-test_boutique.py::test_nombre_d_unites PASSED                            [  8%]
-test_boutique.py::test_total_ht PASSED                                   [ 16%]
-test_boutique.py::test_total_ttc PASSED                                  [ 25%]
-test_boutique.py::test_total_ttc_avec_remise PASSED                      [ 33%]
-test_boutique.py::test_quantite_invalide[0] PASSED                       [ 41%]
-test_boutique.py::test_quantite_invalide[-2] PASSED                      [ 50%]
-test_boutique.py::test_prix_negatif_refuse PASSED                        [ 58%]
-test_boutique.py::test_retrait_boutique_gratuit PASSED                   [ 66%]
-test_boutique.py::test_livraison_payante_sous_le_seuil PASSED            [ 75%]
-test_boutique.py::test_livraison_offerte_au_dessus_du_seuil PASSED       [ 83%]
-test_remises.py::test_remise_de_25_pour_cent PASSED                      [ 91%]
-test_remises.py::test_sans_remise PASSED                                 [100%]
+test_boutique.py::test_nombre_d_unites PASSED                            [  9%]
+test_boutique.py::test_total_ht PASSED                                   [ 18%]
+test_boutique.py::test_total_ttc PASSED                                  [ 27%]
+test_boutique.py::test_total_ttc_avec_remise PASSED                      [ 36%]
+test_boutique.py::test_quantite_invalide[0] PASSED                       [ 45%]
+test_boutique.py::test_quantite_invalide[-2] PASSED                      [ 54%]
+test_boutique.py::test_prix_negatif_refuse PASSED                        [ 63%]
+test_boutique.py::test_retrait_boutique_gratuit PASSED                   [ 72%]
+test_boutique.py::test_livraison_payante_sous_le_seuil PASSED            [ 81%]
+test_boutique.py::test_livraison_offerte_au_dessus_du_seuil PASSED       [ 90%]
+test_remises.py::test_remise_de_25_pour_cent PASSED                      [100%]
 
-============================== 12 passed ==============================
+============================== 11 passed ==============================
 ```
 
-Chaque ligne verte est une promesse tenue. Vérifiez qu'elles correspondent bien aux calculs faits à la main : $83{,}30$, $74{,}97$, $83{,}30+7=90{,}30$, et le panier de $90$ € HT qui vaut $90\times1{,}19=107{,}10$ € TTC, donc livraison offerte.
+```python noexec
+@pytest.fixture
+def panier():                                   # Arrange : le panier de l'exemple
+    p = Panier()
+    p.ajouter(Article("savon", 20.0), 2)
+    p.ajouter(Article("plateau", 30.0))
+    return p
 
-> 🧪 **Que se passe-t-il si on casse le code ?** Modifions le seuil de livraison offerte à 1 000 € dans le module (une faute de frappe plausible : un zéro en trop), et relançons les tests. Un seul test devrait passer au rouge, celui qui protège précisément cette règle :
+def test_total_ttc(panier):                     # Act + Assert
+    assert panier.total_ttc() == pytest.approx(83.30)
+
+@pytest.mark.parametrize("quantite", [0, -2])   # le même test, rejoué avec plusieurs valeurs
+def test_quantite_invalide(quantite):
+    with pytest.raises(ValueError):
+        Panier().ajouter(Article("savon", 20.0), quantite)
+```
 
 ```bash
+python -m pytest -q --color=no -p no:cacheprovider 2>&1 | tail -1 | sed -E 's/ in [0-9.]+s//'
+```
+<!--sortie-->
+```text
+11 passed
+```
+
+Les onze tests (dix pour le module, un pour la remise) passent : chaque test vert est une promesse tenue. Ils vérifient les calculs faits à la main : $83{,}30$, $74{,}97$, $83{,}30+7=90{,}30$, et le panier de $90$ € HT qui vaut $90\times1{,}19=107{,}10$ € TTC, donc livraison offerte.
+
+> 🧪 **Que se passe-t-il si on casse le code ?** Modifions le seuil de livraison offerte à 1 000 € dans le module (une faute de frappe plausible : un zéro en trop), et relançons les tests : un seul passe au rouge (« 1 failed, 10 passed »), celui qui protège précisément cette règle ; en remettant la bonne valeur, on retrouve « 11 passed ».
+
+```bash hide
 sed -i 's/SEUIL_LIVRAISON_OFFERTE = 100.0/SEUIL_LIVRAISON_OFFERTE = 1000.0/' boutique.py
 python -m pytest -q --color=no --tb=no -p no:cacheprovider 2>&1 | sed -E 's/ in [0-9.]+s//' | tail -2
 sed -i 's/SEUIL_LIVRAISON_OFFERTE = 1000.0/SEUIL_LIVRAISON_OFFERTE = 100.0/' boutique.py   # on remet la bonne valeur
@@ -398,52 +401,17 @@ python -m pytest -q --color=no -p no:cacheprovider 2>&1 | sed -E 's/ in [0-9.]+s
 <!--sortie-->
 ```text
 FAILED test_boutique.py::test_livraison_offerte_au_dessus_du_seuil - assert 1...
-1 failed, 11 passed
-12 passed
+1 failed, 10 passed
+11 passed
 ```
 
 Voilà la valeur d'une suite de tests : une modification « innocente » est détectée **immédiatement**, avec le nom du test et la règle violée.
 
-### 4.6.6 Une application : tester une fonction d'analyse
+### 4.6.6 Tester une fonction d'analyse
 
-Les tests ne servent pas qu'aux classes : une fonction d'analyse de données mérite les mêmes soins, surtout si elle sera réutilisée dans un rapport. Voici le panier moyen par canal (le même calcul que celui du chapitre 3), testé sur un **petit tableau dont on connaît la réponse à la main**.
+Les tests ne servent pas qu'aux classes : une fonction d'analyse de données mérite les mêmes soins, surtout si elle sera réutilisée dans un rapport. Prenons le panier moyen par canal (le même calcul que celui du chapitre 3, `commandes.groupby("canal")["montant"].mean()`). On le teste sur un **petit tableau dont on connaît la réponse à la main** : deux commandes du Site à 10 et 30 € (moyenne $(10+30)/2=20$) et une commande de la Boutique à 50 € (moyenne 50). Si la fonction renvoie autre chose, un test devient rouge. Elle est alors **nommée, documentée et protégée**. Dans un vrai projet, on range le code dans un dossier `src/` et les tests dans un dossier `tests/` ; la commande `pytest` trouve alors tout seule les fichiers `test_*.py` (chapitre 6.1 pour les ranger sous Git). L'application 4.7 du cahier fait cet exercice complet.
 
-```bash
-cat > analyse.py <<'FIN'
-import pandas as pd
-
-
-def panier_moyen_par_canal(commandes: pd.DataFrame) -> pd.Series:
-    """Montant moyen des commandes pour chaque canal de vente."""
-    return commandes.groupby("canal")["montant"].mean()
-FIN
-
-cat > test_analyse.py <<'FIN'
-import pandas as pd
-import pytest
-
-from analyse import panier_moyen_par_canal
-
-
-def test_panier_moyen_par_canal():
-    petit = pd.DataFrame({
-        "canal":   ["Site", "Site", "Boutique"],
-        "montant": [10.0, 30.0, 50.0],
-    })
-    resultat = panier_moyen_par_canal(petit)
-    assert resultat["Site"] == pytest.approx(20.0)        # (10 + 30) / 2
-    assert resultat["Boutique"] == pytest.approx(50.0)    # une seule commande
-FIN
-
-python -m pytest -v --color=no --tb=short -p no:cacheprovider test_analyse.py 2>&1 | sed -E 's/ in [0-9.]+s//' | grep -E "PASSED|FAILED|passed|failed"
-```
-<!--sortie-->
-```text
-test_analyse.py::test_panier_moyen_par_canal PASSED                      [100%]
-============================== 1 passed ===============================
-```
-
-Cette fonction renvoie la même chose que `df.groupby("canal")["montant"].mean()` appliqué aux 400 commandes (section 4.4), mais elle est maintenant **nommée, documentée et protégée**. Dans un vrai projet, on range le code dans un dossier `src/` et les tests dans un dossier `tests/` ; la commande `pytest` trouve alors tout seule les fichiers `test_*.py` (chapitre 6.1 pour les ranger sous Git).
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.7 (module de la boutique et ses tests) ; exercice 4.13 (un test unitaire qui vise la borne).
 
 > ✅ **À retenir (objets, code propre, tests).**
 >

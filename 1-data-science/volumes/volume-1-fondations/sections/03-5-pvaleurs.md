@@ -10,9 +10,9 @@ $$p=P\bigl(\text{résultat aussi extrême ou plus}\ \big|\ H_0\bigr).$$
 
 Observez la direction du conditionnement : c'est $P(\text{données}\mid H_0)$ et **non** $P(H_0\mid\text{données})$. Nous avons vu au 2.1 que **inverser un conditionnement est l'erreur classique**.
 
-Pour la sentir, rien de mieux que de fabriquer un monde où $H_0$ est vraie et de regarder les p-valeurs qu'on obtient. Simulons 10 000 tests de Student de deux groupes de 30 individus **tirés dans la même loi** (donc aucune vraie différence) :
+Pour la sentir, rien de mieux que de fabriquer un monde où $H_0$ est vraie et de regarder les p-valeurs qu'on obtient. Simulons 10 000 tests de Student de deux groupes de 30 individus **tirés dans la même loi** (donc aucune vraie différence). Résultat : 4,86 % des p-valeurs sont inférieures à 0,05, 1,03 % à 0,01, et 50,1 % à 0,5 ; leur moyenne vaut 0,499.
 
-```python
+```python hide
 import numpy as np
 from scipy import stats
 
@@ -34,9 +34,9 @@ moyenne des p-valeurs                      : 0.499
 
 Quand $H_0$ est vraie, **la p-valeur suit une loi uniforme sur $[0,1]$** : 5 % des tests donnent $p<0{,}05$, 1 % donnent $p<0{,}01$, etc. C'est exactement ce que signifie « niveau $\alpha=5\,\%$ » : **un test sur vingt crie au loup à tort** quand il n'y a rien. Ce n'est pas un défaut du test, c'est sa définition.
 
-Et quand $H_0$ est **fausse** ? Les p-valeurs se tassent vers 0 :
+Et quand $H_0$ est **fausse** ? Avec un vrai effet ($d=0{,}8$), 86,5 % des tests donnent $p<0{,}05$, et les p-valeurs se tassent vers 0 : en 10 classes de largeur 0,1, l'histogramme sous $H_0$ est plat (980, 1 008, 1 028, 1 006, 991, 985, 1 036, 964, 1 024, 978), alors que sous $H_1$ il est entassé à gauche (9 248, 419, 160, 62, 47, 25, 16, 9, 7, 7).
 
-```python
+```python hide
 pvals_h1 = np.array([stats.ttest_ind(rng.normal(0.8, 1, 30), rng.normal(0, 1, 30)).pvalue for _ in range(10_000)])
 print("avec un vrai effet (d = 0,8) : proportion de p < 0,05 :", round((pvals_h1 < 0.05).mean(), 3))
 print("histogramme (10 classes) sous H0 :", np.histogram(pvals_h0, bins=10, range=(0, 1))[0])
@@ -63,7 +63,7 @@ Sous $H_0$, l'histogramme est **plat** ; sous $H_1$, il est entassé à gauche. 
 
 **Le point 5 mérite une démonstration**, car il est lourd de conséquences. Le risque réel de se tromper quand on rejette dépend de la **proportion d'hypothèses qui sont vraies** au départ : on retrouve la formule de Bayes de la section 2.1 et l'erreur du taux de base !
 
-> 💡 **Exemple.** la gérante teste 1 000 idées d'amélioration (couleur d'un bouton, texte d'une promotion, ordre des produits…). Réalistement, **10 %** seulement ont un vrai effet (100 vraies idées, 900 inutiles). Son test a un niveau $\alpha=5\,\%$ et une puissance de 80 %.
+> 💡 **Exemple.** La gérante teste 1 000 idées d'amélioration (couleur d'un bouton, texte d'une promotion, ordre des produits…). Réalistement, **10 %** seulement ont un vrai effet (100 vraies idées, 900 inutiles). Son test a un niveau $\alpha=5\,\%$ et une puissance de 80 %.
 >
 > - Vraies idées détectées : $100\times0{,}80=80$.
 > - Idées inutiles « détectées » à tort : $900\times0{,}05=45$.
@@ -73,22 +73,11 @@ $$P(\text{fausse découverte}\mid\text{significatif})=\frac{45}{125}=36\,\%.$$
 
 Plus d'un résultat « significatif » sur trois est faux, alors que $\alpha$ n'est que de 5 % ! Même mécanisme que l'alerte antifraude du 2.1.6. C'est pourquoi on exige des preuves plus fortes pour des hypothèses peu plausibles a priori (« des affirmations extraordinaires exigent des preuves extraordinaires »).
 
-```python
-alpha, puissance, part_vraies = 0.05, 0.80, 0.10
-vrais_positifs = part_vraies * puissance
-faux_positifs = (1 - part_vraies) * alpha
-print("proportion de faux parmi les significatifs :", round(faux_positifs / (vrais_positifs + faux_positifs), 3))
-```
-<!--sortie-->
-```text
-proportion de faux parmi les significatifs : 0.36
-```
-
 ### 3.5.3 Signification statistique ≠ importance pratique
 
-Avec assez de données, **n'importe quelle** différence, même ridicule, devient « significative ». Un exemple extrême : deux versions d'une page ont des taux de conversion de 20,00 % et 20,10 %, mesurés sur 10 millions de visiteurs chacune.
+Avec assez de données, **n'importe quelle** différence, même ridicule, devient « significative ». Un exemple extrême : deux versions d'une page ont des taux de conversion de 20,00 % et 20,10 %, mesurés sur 10 millions de visiteurs chacune. Le test à deux proportions donne $z=5{,}58$ et $p=2{,}3\times10^{-8}$ : l'écart est hautement « significatif », alors que le gain n'est que de **0,1 point** de pourcentage.
 
-```python
+```python hide
 nA = nB = 10_000_000
 pA, pB = 0.2000, 0.2010
 p_pool = (pA + pB) / 2
@@ -102,7 +91,7 @@ z = 5.58    p-valeur = 2.3e-08
 gain absolu : 0.1 point de pourcentage
 ```
 
-La p-valeur est inférieure à 0,001 (hautement « significatif »), mais le gain est de **0,1 point** de conversion. Est-il utile ? Cela dépend du coût du changement, pas de la p-valeur. **Toujours rapporter la taille de l'effet et son intervalle de confiance**, jamais seulement « $p<0{,}05$ ».
+La p-valeur est minuscule, mais le gain est de **0,1 point** de conversion. Est-il utile ? Cela dépend du coût du changement, pas de la p-valeur. **Toujours rapporter la taille de l'effet et son intervalle de confiance**, jamais seulement « $p<0{,}05$ ».
 
 ### 3.5.4 La puissance : savoir si l'on peut voir ce qu'on cherche
 
@@ -121,7 +110,9 @@ La puissance dépend de quatre choses liées entre elles :
 
 $$\text{puissance}=P\bigl(Z>1{,}96-1{,}95\bigr)\approx0{,}50.$$
 
-```python
+Le calcul exact donne 0,502, et une simulation de 10 000 expériences identiques retrouve 0,495 : la formule est bonne.
+
+```python hide
 def puissance_ab(p1, p2, n, alpha=0.05):
     se = np.sqrt(p1 * (1 - p1) / n + p2 * (1 - p2) / n)
     return stats.norm.cdf(abs(p2 - p1) / se - stats.norm.ppf(1 - alpha / 2))
@@ -150,7 +141,7 @@ La puissance n'était que de **50 %** : même si B est réellement meilleure de 
 
 $$n\ \text{par groupe}=\frac{(z_{1-\alpha/2}+z_{1-\beta})^2\,\bigl[p_1(1-p_1)+p_2(1-p_2)\bigr]}{(p_2-p_1)^2}.$$
 
-```python
+```python hide
 za, zb = stats.norm.ppf(0.975), stats.norm.ppf(0.80)
 def n_par_groupe(p1, p2):
     return (za + zb) ** 2 * (p1 * (1 - p1) + p2 * (1 - p2)) / (p2 - p1) ** 2
@@ -166,6 +157,10 @@ détecter 12 % -> 14 % :   4435 visiteurs par version
 détecter 12 % -> 13 % :  17166 visiteurs par version
 ```
 
+| Effet à détecter | 12 % → 17 % | 12 % → 15 % | 12 % → 14 % | 12 % → 13 % |
+|---|---|---|---|---|
+| Visiteurs par version | 775 | 2 033 | 4 435 | 17 166 |
+
 Pour détecter 3 points avec 80 % de puissance, il faut **environ 2 000 visiteurs par version**, soit le double de ce que la gérante avait. Pour détecter 1 point, il en faut **près de 18 000**. La loi en $1/\text{effet}^2$ est impitoyable : diviser l'effet par 3 multiplie les besoins par 9.
 
 ![À gauche : puissance d'un test A/B en fonction du nombre de visiteurs, pour trois tailles d'effet. À droite : si l'on « jette un œil » aux résultats de plus en plus souvent et que l'on s'arrête dès que p < 0,05, le taux de faux positifs explose (sous H₀).](figures/ch03-puissance.png)
@@ -180,7 +175,11 @@ Raisonnons comme au 2.1.4 (« au moins un ») : si les 20 tests sont indépendan
 
 $$1-(1-\alpha)^m=1-0{,}95^{20}\approx0{,}64.$$
 
-```python
+| Nombre de tests $m$ | 1 | 5 | 10 | 20 | 50 | 100 |
+|------------------------------------|-----|-----|-----|-----|-----|-----|
+| $P(\text{au moins un faux positif})$ | 0,050 | 0,226 | 0,401 | 0,642 | 0,923 | 0,994 |
+
+```python hide
 for m_tests in (1, 5, 10, 20, 50, 100):
     print(f"{m_tests:>3} tests : P(au moins un faux positif) = {1 - 0.95 ** m_tests:.3f}")
 ```
@@ -204,9 +203,16 @@ Avec 100 tests, c'est quasi certain (99,4 %). Dès que l'on teste plusieurs vari
 
 > 📐 **Procédure de Benjamini–Hochberg.** Trier les p-valeurs : $p_{(1)}\le\dots\le p_{(m)}$. Trouver le plus grand $k$ tel que $p_{(k)}\le\dfrac km\,\alpha$. Rejeter les hypothèses correspondant à $p_{(1)},\dots,p_{(k)}$.
 
-Mettons-les à l'épreuve dans une simulation réaliste : La gérante compare 100 catégories de produits entre deux périodes. Parmi elles, **10** ont vraiment changé (effet $d=1$) et **90** n'ont pas bougé. Chaque comparaison utilise 40 observations par période.
+Mettons-les à l'épreuve dans une simulation réaliste : la gérante compare 100 catégories de produits entre deux périodes. Parmi elles, **10** ont vraiment changé (effet $d=1$) et **90** n'ont pas bougé. Chaque comparaison utilise 40 observations par période. Les résultats sont :
 
-```python
+| Méthode | Découvertes | Vraies | Fausses |
+|---|---|---|---|
+| Aucune correction ($p<0{,}05$) | 12 | 9 | 3 |
+| Bonferroni | 7 | 7 | 0 |
+| Holm | 7 | 7 | 0 |
+| Benjamini-Hochberg | 9 | 9 | 0 |
+
+```python hide
 rng = np.random.default_rng(5)
 m_tests, n_vrais, n_obs = 100, 10, 40
 vraie_diff = np.array([1.0] * n_vrais + [0.0] * (m_tests - n_vrais))
@@ -276,3 +282,5 @@ Lecture (pour cette graine) : sans correction, on « découvre » 12 effets, don
 > - Ce n'est ni $P(H_0\mid\text{données})$, ni la taille de l'effet. Le taux de fausses découvertes dépend de la proportion d'hypothèses vraies (Bayes).
 > - **Puissance** $=1-\beta$ : dépend de l'effet, de $n$, de la dispersion et de $\alpha$. Dimensionner avant l'expérience : $n\propto1/\text{effet}^2$.
 > - **Tests multiples** : $1-(1-\alpha)^m$ ; corriger par **Holm** (FWER) ou **Benjamini-Hochberg** (FDR). Pas de *peeking*, pas de *p-hacking*.
+>
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.5, exercices 3.9 et 3.10.

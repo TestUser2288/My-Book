@@ -7,7 +7,7 @@
 >
 > La gérante a l'habitude d'Excel. Tout ce que nous allons faire ici, elle pourrait le faire à la main dans une feuille de calcul, mais pour 400 lignes ce serait pénible, et pour 400 000 lignes ce serait impossible. Surtout, **le code est rejouable** : on corrige une erreur, on relance, on retrouve toutes les analyses mises à jour.
 
-> 🧭 **Comment lire cette section.** Elle est longue parce que pandas est *l'*outil que vous utiliserez tous les jours. Les trois premières parties (4.4.1 à 4.4.4) concernent NumPy ; la suite concerne pandas. Chaque notion est introduite par un **petit exemple à la main**, puis appliquée aux 400 commandes de la boutique. Si vous êtes pressé(e), lisez au moins 4.4.5 à 4.4.9, puis la petite application de 4.4.13.
+> 🧭 **Comment lire cette section.** Elle est longue parce que pandas est *l'*outil que vous utiliserez tous les jours. Les trois premières parties (4.4.1 à 4.4.4) concernent NumPy ; la suite concerne pandas. Chaque notion est introduite par un **petit exemple à la main**, puis appliquée aux 400 commandes de la boutique. Si vous êtes pressé(e), lisez au moins 4.4.5 à 4.4.9, puis la conclusion de 4.4.13.
 
 ### 4.4.1 NumPy : pourquoi un tableau n'est pas une liste
 
@@ -16,9 +16,7 @@ La gérante veut afficher les prix TTC de cinq articles à partir de leurs prix 
 ```python
 import numpy as np
 
-prix_ht = [10, 20, 5, 40, 15]
-prix_ttc = [round(p * 1.19, 2) for p in prix_ht]
-print(prix_ttc)
+print([round(p * 1.19, 2) for p in [10, 20, 5, 40, 15]])      # avec une liste : une boucle
 ```
 <!--sortie-->
 ```text
@@ -52,9 +50,7 @@ print(np.array([10, 20]) * 2)     # tableau : * 2 multiplie chaque élément
 
 > ⚠️ **Piège classique.** Sur une liste, `*` et `+` **répètent** et **concatènent**. Sur un tableau, ils **calculent**. Si vous voyez une liste de 10 000 nombres se mettre à « doubler de longueur » au lieu de doubler de valeur, c'est qu'un tableau a été oublié.
 
-Mesurons maintenant l'écart de vitesse sur un million de prix :
-
-```python
+```python hide
 import time
 
 x = np.random.default_rng(0).uniform(10, 100, size=1_000_000)
@@ -75,7 +71,7 @@ mêmes résultats : True
 NumPy au moins 5 fois plus rapide : True
 ```
 
-Les durées exactes dépendent de votre machine (nous n'affichons donc que des conclusions robustes). Sur du calcul plus lourd que cette simple multiplication, l'écart se compte en **dizaines, voire centaines de fois**. C'est la raison pour laquelle on cherche toujours à **vectoriser** : écrire `x * 1.19` plutôt qu'une boucle `for`.
+Mesurons l'écart de vitesse sur un million de prix : une boucle `[v * 1.19 for v in liste]` contre l'opération vectorisée `x * 1.19`. Les deux donnent exactement les mêmes résultats, et la version NumPy est **au moins 5 fois plus rapide** ; les durées exactes dépendent de votre machine, nous ne retenons donc que cette conclusion robuste. Sur du calcul plus lourd que cette simple multiplication, l'écart se compte en **dizaines, voire centaines de fois**. C'est la raison pour laquelle on cherche toujours à **vectoriser** : écrire `x * 1.19` plutôt qu'une boucle `for`.
 
 > ✅ **À retenir.** Un tableau NumPy = un bloc de nombres **du même type**, sur lequel les opérations s'appliquent **élément par élément** et vite. Règle d'or : *pas de boucle `for` sur des données, sauf si l'on n'a vraiment pas le choix.*
 
@@ -87,15 +83,12 @@ Quelques manières courantes de fabriquer des tableaux :
 print(np.arange(0, 10, 2))            # de 0 à 10 (exclu), pas de 2
 print(np.linspace(0, 1, 5))           # 5 points régulièrement espacés entre 0 et 1
 print(np.zeros(3), np.ones(3))        # que des 0, que des 1
-print(np.full((2, 3), 7))             # un tableau 2×3 rempli de 7
 ```
 <!--sortie-->
 ```text
 [0 2 4 6 8]
 [0.   0.25 0.5  0.75 1.  ]
 [0. 0. 0.] [1. 1. 1.]
-[[7 7 7]
- [7 7 7]]
 ```
 
 Un tableau a trois caractéristiques à toujours avoir en tête : sa **forme** (`shape`), son nombre de dimensions (`ndim`) et son type (`dtype`). Prenons les ventes hebdomadaires (en €) des trois canaux de la boutique sur quatre semaines : une **matrice** de 3 lignes (canaux) et 4 colonnes (semaines), exactement comme celles du chapitre 1.
@@ -129,7 +122,6 @@ print(A[1, 2])
 print(A[0])
 print(A[:, 3])
 print(A[0:2, 1:3])
-print(A[-1, -1])      # les indices négatifs partent de la fin : dernière ligne, dernière colonne
 ```
 <!--sortie-->
 ```text
@@ -138,28 +130,19 @@ print(A[-1, -1])      # les indices négatifs partent de la fin : dernière lign
 [140  70 105]
 [[150  90]
  [100 120]]
-105
 ```
 
 **Filtrer avec un masque booléen.** Comparer un tableau à un nombre produit un tableau de `True`/`False` de même forme : le **masque**. Utilisé comme indice, il ne garde que les cases `True`.
 
 ```python
 masque = A > 100
-print(masque)
 print(A[masque])                 # les ventes strictement supérieures à 100 €
 print("combien ?", masque.sum()) # True compte pour 1 : on compte donc les cases vraies
-print(np.where(A > 100, "bien", "—"))   # np.where(condition, si_vrai, si_faux)
 ```
 <!--sortie-->
 ```text
-[[ True  True False  True]
- [False False  True False]
- [False False False  True]]
 [120 150 140 120 105]
 combien ? 5
-[['bien' 'bien' '—' 'bien']
- ['—' '—' 'bien' '—']
- ['—' '—' '—' 'bien']]
 ```
 
 Dans le masque, on compte 5 cases vraies : 120, 150 et 140 (Réseaux), 120 (Site, semaine 3) et 105 (Boutique, semaine 4). Notez que le 100 du Site (semaine 2) n'est **pas** compté : la condition est « strictement supérieur à 100 ». La somme d'un masque est une astuce très utile : elle **compte** les `True`.
@@ -178,7 +161,7 @@ print(A[(A > 80) & (A < 130)])      # entre 80 et 130 exclus
 
 ```python
 C = A.copy()
-fenetre = C[0, :]      # une vue sur la ligne d'Réseaux
+fenetre = C[0, :]      # une vue sur la ligne de Réseaux
 fenetre[0] = 999
 print(C[0, 0], "<- modifié par la vue ;  A[0, 0] =", A[0, 0], "(intact, car C est une copie)")
 ```
@@ -187,17 +170,8 @@ print(C[0, 0], "<- modifié par la vue ;  A[0, 0] =", A[0, 0], "(intact, car C e
 999 <- modifié par la vue ;  A[0, 0] = 120 (intact, car C est une copie)
 ```
 
-Enfin, un tableau a **un seul type** : si l'on mélange entiers et décimaux, tout devient décimal. Et un tableau d'entiers ne sait pas représenter une valeur manquante, ce qui sera une raison de plus d'aimer pandas (4.4.11).
+Enfin, un tableau a **un seul type** : si l'on mélange entiers et décimaux, tout devient décimal (`np.array([1, 2, 3.5])` donne `[1. 2. 3.5]`). Et un tableau d'entiers ne sait pas représenter une valeur manquante, ce qui sera une raison de plus d'aimer pandas (4.4.11).
 
-```python
-print(np.array([1, 2, 3.5]))             # tout devient décimal
-print(np.array([1, 2, 3]).astype(float)) # conversion explicite
-```
-<!--sortie-->
-```text
-[1.  2.  3.5]
-[1. 2. 3.]
-```
 
 ### 4.4.3 Le broadcasting : calculer entre tableaux de formes différentes
 
@@ -243,9 +217,9 @@ print(A - moy_canal)
  [-16.25 -26.25  13.75  28.75]]
 ```
 
-À la main : la moyenne d'Réseaux est $(120+150+90+140)/4=125$, donc la première ligne devient $(-5,\ 25,\ -35,\ 15)$. Et si on oublie `keepdims` ? Un message d'erreur clair nous rappelle la règle :
+À la main : la moyenne de Réseaux est $(120+150+90+140)/4=125$, donc la première ligne devient $(-5,\ 25,\ -35,\ 15)$. Et si on oublie `keepdims` ? NumPy refuse et le dit clairement (`operands could not be broadcast together with shapes (3,4) (3,)`), ce qui rappelle la règle.
 
-```python
+```python hide
 try:
     A - A.mean(axis=1)          # forme (3,) au lieu de (3, 1)
 except ValueError as e:
@@ -256,7 +230,7 @@ except ValueError as e:
 ValueError : operands could not be broadcast together with shapes (3,4) (3,) 
 ```
 
-> 🛠️ **Application : standardiser des colonnes.** Au chapitre 1, nous avons vu que les algorithmes de modélisation aiment que les variables aient la même échelle. Centrer-réduire chaque colonne (soustraire sa moyenne, diviser par son écart-type) s'écrit sans boucle grâce au broadcasting : `(X - X.mean(axis=0)) / X.std(axis=0, ddof=1)`. Vous le ferez avec pandas à la section 4.4.7.
+> 💡 **Standardiser des colonnes.** Au chapitre 1, nous avons vu que les algorithmes de modélisation aiment que les variables aient la même échelle. Centrer-réduire chaque colonne (soustraire sa moyenne, diviser par son écart-type) s'écrit sans boucle grâce au broadcasting : `(X - X.mean(axis=0)) / X.std(axis=0, ddof=1)`. Vous le ferez avec pandas à la section 4.4.7.
 
 ### 4.4.4 Agréger, trier, tirer au hasard
 
@@ -272,43 +246,24 @@ Les fonctions de résumé (`sum`, `mean`, `std`, `min`, `max`…) prennent un ar
 print("total général  :", A.sum())
 print("par semaine    :", A.sum(axis=0))
 print("par canal      :", A.sum(axis=1))
-ligne, colonne = divmod(int(A.argmax()), A.shape[1])      # argmax numérote les cases ligne après ligne
-print("meilleure case :", A.max(), "en ligne", ligne, ", colonne", colonne)
 ```
 <!--sortie-->
 ```text
 total général  : 1185
 par semaine    : [270 300 300 315]
 par canal      : [500 380 305]
-meilleure case : 150 en ligne 0 , colonne 1
 ```
 
 Vérification à la main : Réseaux $120+150+90+140=500$, Site $90+100+120+70=380$, Boutique $60+50+90+105=305$, soit $1\,185$ € au total, ce qui est aussi la somme des totaux par semaine ($270+300+300+315$).
 
-Autres opérations fréquentes :
+Autres opérations fréquentes : `np.cumsum` (somme cumulée), `np.diff` (différences successives), `np.sort` et `np.argsort` (le tri, et l'ordre qui trierait).
 
-```python
-ventes_instagram = A[0]
-print("cumul          :", np.cumsum(ventes_instagram))     # somme cumulée
-print("variation      :", np.diff(ventes_instagram))       # différences successives
-print("tri croissant  :", np.sort(ventes_instagram))
-print("ordre des semaines (de la pire à la meilleure) :", np.argsort(ventes_instagram))
-print("écart-type (n-1) :", round(ventes_instagram.std(ddof=1), 2))
-```
-<!--sortie-->
-```text
-cumul          : [120 270 360 500]
-variation      : [ 30 -60  50]
-tri croissant  : [ 90 120 140 150]
-ordre des semaines (de la pire à la meilleure) : [2 0 3 1]
-écart-type (n-1) : 26.46
-```
 
 > ⚠️ **`ddof` encore.** Comme pour `np.std` à la section 3.1.4, NumPy divise par $n$ par défaut. Pour estimer la variance d'une population à partir d'un échantillon, il faut **`ddof=1`** (division par $n-1$). pandas, lui, utilise $n-1$ par défaut : un écart entre `np.std(x)` et `serie.std()` n'est donc pas un bug.
 
 **Nombres aléatoires.** On rencontre le générateur de nombres aléatoires depuis le chapitre 2 : on le crée une fois avec une **graine** (*seed*), puis on tire.
 
-```python
+```python hide
 rng = np.random.default_rng(42)
 jours = rng.normal(loc=120, scale=15, size=100_000)    # 100 000 journées simulées, N(120 ; 15²)
 print("moyenne simulée :", round(jours.mean(), 1))
@@ -320,7 +275,7 @@ moyenne simulée : 119.9
 part des jours à plus de 150 ventes : 0.0233
 ```
 
-La moyenne d'un masque booléen est la **proportion** de `True` : c'est la façon la plus économique d'estimer une probabilité par simulation. On retrouve (à très peu près) les 2,3 % calculés à la main au 2.2 pour un jour à plus de deux écarts-types au-dessus de la moyenne.
+Avec 100 000 journées simulées (`rng.normal(120, 15, size=100_000)`), la moyenne simulée est 119,9 et la part des jours à plus de 150 ventes est 0,0233. La moyenne d'un masque booléen est la **proportion** de `True` : c'est la façon la plus économique d'estimer une probabilité par simulation. On retrouve (à très peu près) les 2,3 % calculés à la main au 2.2 pour un jour à plus de deux écarts-types au-dessus de la moyenne.
 
 Enfin, NumPy sait faire l'algèbre linéaire du chapitre 1 : produit matriciel `@`, transposée `.T`, inverse, valeurs propres, résolution de système, etc.
 
@@ -328,15 +283,13 @@ Enfin, NumPy sait faire l'algèbre linéaire du chapitre 1 : produit matriciel `
 M = np.array([[2.0, 1.0], [1.0, 3.0]])
 b = np.array([5.0, 10.0])
 print("solution de M x = b :", np.linalg.solve(M, b))
-print("valeurs propres de M :", np.round(np.linalg.eigvalsh(M), 3))
 ```
 <!--sortie-->
 ```text
 solution de M x = b : [1. 3.]
-valeurs propres de M : [1.382 3.618]
 ```
 
-À la main : $2x+y=5$ et $x+3y=10$ donnent $x=1$, $y=3$.
+À la main : $2x+y=5$ et $x+3y=10$ donnent $x=1$, $y=3$. (`np.linalg` sait aussi inverser, calculer des valeurs propres, etc. : voir le chapitre 1.)
 
 > ✅ **À retenir (NumPy).** (1) tableau = type unique + forme ; (2) indexer avec `[ligne, colonne]`, tranches `a:b` (fin exclue) et masques booléens ; (3) le **broadcasting** étire les dimensions de taille 1 ; (4) `axis` = la dimension qui disparaît ; (5) une tranche est une **vue** : `.copy()` pour travailler sans risque.
 
@@ -349,47 +302,39 @@ Deux objets suffisent pour commencer :
 - la **Series** : une colonne, c'est-à-dire un tableau NumPy muni d'un **index** (une étiquette par valeur) et d'un nom ;
 - le **DataFrame** : un tableau de plusieurs Series partageant le même index.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 
 pd.set_option("display.width", 110)          # pour que les tableaux larges ne soient pas coupés à l'affichage
 pd.set_option("display.max_columns", 20)
+```
+
+```python
+import pandas as pd
 
 ventes = pd.Series([500, 380, 305], index=["Réseaux", "Site", "Boutique"], name="ventes")
 print(ventes)
-print()
-print("accès par étiquette :", ventes["Site"], "| par position :", ventes.iloc[2])
+print("par étiquette :", ventes["Site"], "| par position :", ventes.iloc[2])
 ```
 <!--sortie-->
 ```text
-Réseaux    500
-Site         380
-Boutique     305
+Réseaux     500
+Site        380
+Boutique    305
 Name: ventes, dtype: int64
-
-accès par étiquette : 380 | par position : 305
+par étiquette : 380 | par position : 305
 ```
 
 Un `DataFrame` s'obtient, par exemple, à partir d'un dictionnaire « nom de colonne → valeurs » :
 
 ```python
-mini = pd.DataFrame({
-    "canal": ["Réseaux", "Site", "Boutique"],
-    "ventes": [500, 380, 305],
-    "ouvert_le_dimanche": [True, True, False],
-})
-print(mini)
-print()
+mini = pd.DataFrame({"canal": ["Réseaux", "Site", "Boutique"], "ventes": [500, 380, 305],
+                     "ouvert_le_dimanche": [True, True, False]})
 print(mini.dtypes)
 ```
 <!--sortie-->
 ```text
-       canal  ventes  ouvert_le_dimanche
-0  Réseaux     500                True
-1       Site     380                True
-2   Boutique     305               False
-
 canal                   str
 ventes                int64
 ouvert_le_dimanche     bool
@@ -405,20 +350,22 @@ Chaque colonne a **son** type : `str` (texte), `int64` (entiers), `bool` (vrai/f
 ```python
 df = pd.read_csv("donnees/commandes.csv")
 print(df.shape)
-print(df.head())
-print()
-df.info()
+print(df.head(3))
 ```
 <!--sortie-->
 ```text
 (400, 4)
-       canal  montant  livraison  satisfaction
-0   Boutique     44.8          0             4
-1       Site     34.5          2             4
-2  Réseaux     88.2          5             4
-3  Réseaux     30.1          4             4
-4   Boutique    110.1          0             5
+      canal  montant  livraison  satisfaction
+0  Boutique     44.8          0             4
+1      Site     34.5          2             4
+2   Réseaux     88.2          5             4
+```
 
+```python hide
+df.info()
+```
+<!--sortie-->
+```text
 <class 'pandas.DataFrame'>
 RangeIndex: 400 entries, 0 to 399
 Data columns (total 4 columns):
@@ -434,9 +381,9 @@ memory usage: 12.6 KB
 
 `info()` est le meilleur premier réflexe : nombre de lignes, nom et type de chaque colonne, nombre de valeurs **non nulles** (ici, 400 partout : aucune valeur manquante) et mémoire utilisée.
 
-Le fichier ne contient pas de **date**, or la plupart des vraies données de vente en ont une. Pour illustrer le travail sur les dates (4.4.12) et sur plusieurs tables (4.4.10), nous allons **ajouter deux colonnes simulées** : la date de chaque commande (réparties sur 20 semaines à partir du lundi 5 janvier 2026) et un numéro de client (120 clients possibles). Rappelons que tout est fictif et reproductible grâce à la graine :
+Le fichier ne contient pas de **date**, or la plupart des vraies données de vente en ont une. Pour illustrer le travail sur les dates (4.4.12) et sur plusieurs tables (4.4.10), nous allons **ajouter deux colonnes simulées** : la date de chaque commande (réparties sur 20 semaines à partir du lundi 5 janvier 2026) et un numéro de client (120 clients possibles). La simulation est reproductible grâce à la graine (le code est donné dans la préparation du cahier, chapitre 4) ; la colonne `date` a le type `datetime64`, et `id_commande` numérote les commandes par ordre chronologique :
 
-```python
+```python hide
 rng = np.random.default_rng(7)
 jours = rng.integers(0, 140, size=len(df))            # un jour tiré parmi 140 (= 20 semaines)
 df["date"] = pd.Timestamp("2026-01-05") + pd.to_timedelta(jours, unit="D")
@@ -449,13 +396,13 @@ print(df.dtypes)
 ```
 <!--sortie-->
 ```text
-   id_commande      canal  montant  livraison  satisfaction       date  id_client
-0            1       Site     49.9          8             2 2026-01-05        100
-1            2  Réseaux     21.5          3             4 2026-01-05         46
-2            3   Boutique     34.2          0             4 2026-01-05         26
-3            4       Site    103.0          3             5 2026-01-05         97
-4            5  Réseaux     26.7          4             4 2026-01-06        105
-5            6   Boutique     37.4          0             4 2026-01-06        120
+   id_commande     canal  montant  livraison  satisfaction       date  id_client
+0            1      Site     49.9          8             2 2026-01-05        100
+1            2   Réseaux     21.5          3             4 2026-01-05         46
+2            3  Boutique     34.2          0             4 2026-01-05         26
+3            4      Site    103.0          3             5 2026-01-05         97
+4            5   Réseaux     26.7          4             4 2026-01-06        105
+5            6  Boutique     37.4          0             4 2026-01-06        120
 
 id_commande              int64
 canal                      str
@@ -467,30 +414,34 @@ id_client                int64
 dtype: object
 ```
 
-Notez le type `datetime64` de la colonne `date` : pandas sait que ce ne sont pas du texte, mais de vraies dates, avec lesquelles on peut calculer. Dernier réflexe, le résumé statistique :
-
 ```python
-print(df.describe().round(2))
-print()
-print(df["canal"].value_counts())
+print(df.head(4))
 ```
 <!--sortie-->
 ```text
-       id_commande  montant  livraison  satisfaction                 date  id_client
-count       400.00   400.00     400.00        400.00                  400     400.00
-mean        200.50    60.25       3.29          3.96  2026-03-18 06:25:12      61.87
-min           1.00     8.60       0.00          1.00  2026-01-05 00:00:00       2.00
-25%         100.75    34.18       0.00          3.00  2026-02-09 00:00:00      30.75
-50%         200.50    51.00       3.00          4.00  2026-03-19 12:00:00      62.00
-75%         300.25    75.82       5.00          5.00  2026-04-25 00:00:00      93.00
-max         400.00   255.70      13.00          5.00  2026-05-24 00:00:00     120.00
-std         115.61    38.02       2.56          0.80                  NaN      34.71
+   id_commande     canal  montant  livraison  satisfaction       date  id_client
+0            1      Site     49.9          8             2 2026-01-05        100
+1            2   Réseaux     21.5          3             4 2026-01-05         46
+2            3  Boutique     34.2          0             4 2026-01-05         26
+3            4      Site    103.0          3             5 2026-01-05         97
+```
 
-canal
-Site         148
-Réseaux    138
-Boutique     114
-Name: count, dtype: int64
+Notez que pandas sait que `date` n'est pas du texte, mais de vraies dates, avec lesquelles on peut calculer. Dernier réflexe, le résumé statistique (ici, pour le montant) :
+
+```python
+print(df["montant"].describe().round(2))
+```
+<!--sortie-->
+```text
+count    400.00
+mean      60.25
+std       38.02
+min        8.60
+25%       34.18
+50%       51.00
+75%       75.82
+max      255.70
+Name: montant, dtype: float64
 ```
 
 ### 4.4.6 Sélectionner : colonnes, lignes, conditions
@@ -503,12 +454,12 @@ print(petit)
 ```
 <!--sortie-->
 ```text
-   id_commande      canal  montant
-0            1       Site     49.9
-1            2  Réseaux     21.5
-2            3   Boutique     34.2
-3            4       Site    103.0
-4            5  Réseaux     26.7
+   id_commande     canal  montant
+0            1      Site     49.9
+1            2   Réseaux     21.5
+2            3  Boutique     34.2
+3            4      Site    103.0
+4            5   Réseaux     26.7
 ```
 
 | Je veux… | J'écris | Remarque |
@@ -520,20 +471,18 @@ print(petit)
 | des lignes par condition | `petit[petit["montant"] > 50]` | masque booléen, comme en NumPy |
 
 ```python
-print(petit["montant"].tolist())
-print(petit[["canal", "montant"]].iloc[1:3])
-print(petit.loc[1:3, ["canal", "montant"]])      # lignes d'étiquettes 1 à 3 INCLUSES
+print(petit[["canal", "montant"]].iloc[1:3])      # par position : fin exclue
+print(petit.loc[1:3, ["canal", "montant"]])      # par étiquette : fin INCLUSE
 ```
 <!--sortie-->
 ```text
-[49.9, 21.5, 34.2, 103.0, 26.7]
-       canal  montant
-1  Réseaux     21.5
-2   Boutique     34.2
-       canal  montant
-1  Réseaux     21.5
-2   Boutique     34.2
-3       Site    103.0
+      canal  montant
+1   Réseaux     21.5
+2  Boutique     34.2
+      canal  montant
+1   Réseaux     21.5
+2  Boutique     34.2
+3      Site    103.0
 ```
 
 > ⚠️ **`iloc` exclut la fin, `loc` l'inclut.** `iloc[1:3]` renvoie les lignes 1 et 2 ; `loc[1:3]` renvoie les lignes 1, 2 **et 3** (car on désigne des étiquettes, et on veut « de 1 jusqu'à 3 »). C'est l'une des étourderies les plus fréquentes.
@@ -541,27 +490,20 @@ print(petit.loc[1:3, ["canal", "montant"]])      # lignes d'étiquettes 1 à 3 I
 **Filtrer avec des conditions.** Les opérateurs `&`, `|`, `~` demandent **des parenthèses** autour de chaque condition (car `&` s'évalue avant `>`) :
 
 ```python
-gros_insta = df[(df["canal"] == "Réseaux") & (df["montant"] > 100)]
-print("commandes Réseaux de plus de 100 € :", len(gros_insta))
-
-# trois autres formes pratiques
-print(df["canal"].isin(["Site", "Boutique"]).sum())
-print(df["montant"].between(50, 100).sum())          # bornes incluses
-print(df.query("canal == 'Site' and livraison >= 7").shape[0])
+gros_reseaux = df[(df["canal"] == "Réseaux") & (df["montant"] > 100)]
+print("commandes Réseaux de plus de 100 € :", len(gros_reseaux))
+print(df.query("canal == 'Site' and livraison >= 7").shape[0])     # la même idée, écrite comme une phrase
 ```
 <!--sortie-->
 ```text
 commandes Réseaux de plus de 100 € : 11
-262
-153
 21
 ```
 
-La méthode `query` accepte une condition écrite comme une phrase : elle se lit mieux sur des conditions longues. Pour **trier** et chercher les extrêmes :
+La méthode `query` accepte une condition écrite comme une phrase : elle se lit mieux sur des conditions longues. Deux autres formes pratiques : `isin([...])` (appartient à une liste) et `between(a, b)` (bornes incluses). Pour **trier** et chercher les extrêmes, on a `sort_values` ; `nsmallest(3, "montant")` donne directement les trois plus petits :
 
 ```python
 print(df.sort_values("montant", ascending=False).head(3)[["id_commande", "canal", "montant"]])
-print(df.nsmallest(3, "montant")[["id_commande", "canal", "montant"]])
 ```
 <!--sortie-->
 ```text
@@ -569,10 +511,6 @@ print(df.nsmallest(3, "montant")[["id_commande", "canal", "montant"]])
 380          381  Site    255.7
 102          103  Site    243.8
 198          199  Site    217.1
-     id_commande      canal  montant
-289          290  Réseaux      8.6
-366          367  Réseaux     10.3
-326          327  Réseaux     10.7
 ```
 
 ### 4.4.7 Créer et transformer des colonnes
@@ -582,30 +520,24 @@ Une nouvelle colonne s'obtient en l'assignant, avec des opérations **vectorisé
 ```python
 df["livraison_rapide"] = df["livraison"] <= 3
 df["gros_panier"] = np.where(df["montant"] >= 100, "oui", "non")
-df["canal_court"] = df["canal"].str[:3].str.upper()           # méthodes .str : opérations sur le texte
-print(df[["canal", "canal_court", "montant", "gros_panier", "livraison_rapide"]].head(4))
+print(df[["canal", "montant", "gros_panier", "livraison_rapide"]].head(3))
 ```
 <!--sortie-->
 ```text
-       canal canal_court  montant gros_panier  livraison_rapide
-0       Site         SIT     49.9         non             False
-1  Réseaux         INS     21.5         non              True
-2   Boutique         BOU     34.2         non              True
-3       Site         SIT    103.0         oui              True
+      canal  montant gros_panier  livraison_rapide
+0      Site     49.9         non             False
+1   Réseaux     21.5         non              True
+2  Boutique     34.2         non              True
 ```
 
-Le préfixe `.str` donne accès à toutes les méthodes de texte (`upper`, `lower`, `contains`, `replace`, `split`…) appliquées à **chaque élément** de la colonne.
+Pour le texte, le préfixe `.str` donne accès à toutes les méthodes de Python (`upper`, `lower`, `contains`, `replace`, `split`…) appliquées à **chaque élément** de la colonne : par exemple `df["canal"].str.upper()`.
 
 **Découper une variable continue en classes.** `pd.cut` fabrique des classes de bornes choisies, `pd.qcut` des classes d'effectifs égaux (par quantiles). Par exemple, quatre tranches de panier : « petit » (moins de 30 €), « moyen » (30 à 60), « grand » (60 à 100) et « très grand » (plus de 100) :
 
 ```python
-bornes = [0, 30, 60, 100, np.inf]
 noms = ["petit", "moyen", "grand", "très grand"]
-df["tranche"] = pd.cut(df["montant"], bins=bornes, labels=noms)
+df["tranche"] = pd.cut(df["montant"], bins=[0, 30, 60, 100, np.inf], labels=noms)
 print(df["tranche"].value_counts().reindex(noms))
-print()
-quartiles = pd.qcut(df["montant"], q=4, labels=["Q1", "Q2", "Q3", "Q4"])
-print(quartiles.value_counts().sort_index())     # ~100 commandes dans chaque quartile par construction
 ```
 <!--sortie-->
 ```text
@@ -615,7 +547,14 @@ moyen         160
 grand         112
 très grand     52
 Name: count, dtype: int64
+```
 
+```python hide
+quartiles = pd.qcut(df["montant"], q=4, labels=["Q1", "Q2", "Q3", "Q4"])
+print(quartiles.value_counts().sort_index())     # 100 commandes dans chaque quartile par construction
+```
+<!--sortie-->
+```text
 montant
 Q1    100
 Q2    100
@@ -626,27 +565,11 @@ Name: count, dtype: int64
 
 Remarquez la nuance : avec `cut`, les classes sont **définies par vous** et leurs effectifs sont inégaux ; avec `qcut`, ce sont les effectifs qui sont **égaux** (400 / 4 = 100) et les bornes qui s'adaptent aux données.
 
-**Remplacer des valeurs selon un dictionnaire** avec `map` :
-
-```python
-etiquettes = {1: "très mécontent", 2: "mécontent", 3: "neutre", 4: "content", 5: "très content"}
-df["avis"] = df["satisfaction"].map(etiquettes)
-print(df["avis"].value_counts().reindex(list(etiquettes.values())))
-```
-<!--sortie-->
-```text
-avis
-très mécontent      1
-mécontent          15
-neutre             85
-content           195
-très content      104
-Name: count, dtype: int64
-```
+**Remplacer des valeurs selon un dictionnaire** se fait avec `map` : `df["satisfaction"].map({1: "très mécontent", 2: "mécontent", 3: "neutre", 4: "content", 5: "très content"})` remplace chaque note par son libellé (195 commandes sont « content » et 104 « très content »).
 
 **Standardiser** (centrer-réduire), comme annoncé à la fin de 4.4.3, se fait sur une colonne entière :
 
-```python
+```python hide
 z = (df["montant"] - df["montant"].mean()) / df["montant"].std()
 print("moyenne de z nulle :", bool(np.isclose(z.mean(), 0)), "| écart-type de z :", round(z.std(), 6))
 print("commandes à plus de 3 écarts-types de la moyenne :", int((z.abs() > 3).sum()))
@@ -659,9 +582,9 @@ commandes à plus de 3 écarts-types de la moyenne : 7
 
 Par construction, $z$ a une moyenne nulle et un écart-type de 1. Sept commandes dépassent 3 écarts-types. Si les montants suivaient une loi normale, on n'en attendrait qu'**une seule** sur 400 environ (la probabilité d'être à plus de 3 écarts-types est de 0,27 %, d'après les repères du 2.2). En trouver sept confirme ce que nous avions vu au 3.1.5 : la distribution des montants a une **queue lourde à droite**.
 
-> 💡 **`apply` : à garder en dernier recours.** Si une transformation n'existe pas en version vectorisée, `df["col"].apply(ma_fonction)` appelle votre fonction **ligne par ligne** : pratique, mais lent (une boucle Python déguisée). Réflexe : chercher d'abord une opération vectorisée (`.str`, `np.where`, `cut`, `map`, opérateurs arithmétiques…). Sur nos 400 lignes la différence est invisible ; pour la mesurer, on répète les montants 500 fois (200 000 lignes) :
+> 💡 **`apply` : à garder en dernier recours.** Si une transformation n'existe pas en version vectorisée, `df["col"].apply(ma_fonction)` appelle votre fonction **ligne par ligne** : pratique, mais lent (une boucle Python déguisée). Réflexe : chercher d'abord une opération vectorisée (`.str`, `np.where`, `cut`, `map`, opérateurs arithmétiques…). Sur nos 400 lignes la différence est invisible ; en répétant les montants 500 fois (200 000 lignes), `apply` donne le même résultat que la version vectorisée `np.where(gros > 50, gros * 1.19, gros)` mais s'avère **plus lent**.
 
-```python
+```python hide
 import time
 
 gros = pd.concat([df["montant"]] * 500, ignore_index=True)      # 200 000 montants
@@ -687,16 +610,27 @@ Une question revient sans cesse : *si je modifie un morceau de mon tableau, est-
 ```python
 montants = df["montant"]               # une Series dérivée de df
 montants.iloc[0] = -1                  # on la modifie…
-print("df['montant'] au premier rang :", df["montant"].iloc[0], "(inchangé : montants est indépendant de df)")
+print("df['montant'] au premier rang :", df["montant"].iloc[0], "(inchangé)")
 ```
 <!--sortie-->
 ```text
-df['montant'] au premier rang : 49.9 (inchangé : montants est indépendant de df)
+df['montant'] au premier rang : 49.9 (inchangé)
 ```
 
-La conséquence la plus importante : l'**assignation en chaîne** (`df[condition]["colonne"] = valeur`) **ne fonctionne plus**, car `df[condition]` fabrique une copie temporaire que l'on modifie puis que l'on jette. pandas 3.0 émet même un avertissement. Vérifions-le :
+La conséquence la plus importante : l'**assignation en chaîne** (`df[condition]["colonne"] = valeur`) **ne fonctionne plus**, car `df[condition]` fabrique une copie temporaire que l'on modifie puis que l'on jette. pandas 3.0 émet même un avertissement (`ChainedAssignmentError`). Vérifions-le :
 
 ```python
+copie = df.copy()
+copie[copie["canal"] == "Site"]["montant"] = 0           # ✗ assignation en chaîne : sans effet
+copie.loc[copie["canal"] == "Site", "montant"] = 0       # ✓ la bonne écriture
+print(int((copie["montant"] == 0).sum()), "montants mis à zéro")
+```
+<!--sortie-->
+```text
+148 montants mis à zéro
+```
+
+```python hide
 import warnings
 
 copie = df.copy()
@@ -715,6 +649,8 @@ avertissement reçu : ChainedAssignmentError
 montants mis à 0 par la mauvaise écriture : 0
 montants mis à 0 par la bonne écriture   : 148
 ```
+
+Avec la mauvaise écriture, **aucun** montant n'est modifié (0) ; avec la bonne, 148 le sont : les 148 commandes du Site.
 
 > ✅ **La bonne écriture, toujours : `df.loc[condition, "colonne"] = valeur`.** Une seule opération, qui désigne à la fois les lignes et la colonne. Et pour *vraiment* garder une copie intacte avant de modifier : `df2 = df.copy()`.
 
@@ -746,11 +682,11 @@ print(six.groupby("canal")["montant"].agg(["mean", "count"]))
 ```
 <!--sortie-->
 ```text
-            mean  count
-canal                  
-Boutique   100.0      1
-Réseaux   30.0      2
-Site        50.0      3
+           mean  count
+canal                 
+Boutique  100.0      1
+Réseaux    30.0      2
+Site       50.0      3
 ```
 
 Passons aux 400 commandes. L'**agrégation nommée** donne des colonnes lisibles : `nom=("colonne", "fonction")`.
@@ -760,40 +696,30 @@ resume = df.groupby("canal").agg(
     commandes=("montant", "count"),
     ca=("montant", "sum"),
     panier_moyen=("montant", "mean"),
-    panier_median=("montant", "median"),
-    satisfaction=("satisfaction", "mean"),
 ).round(2)
-print(resume.sort_values("ca", ascending=False))
+print(resume)
 ```
 <!--sortie-->
 ```text
-           commandes      ca  panier_moyen  panier_median  satisfaction
-canal                                                                  
-Site             148  8806.5         59.50          49.50          3.79
-Boutique         114  8528.3         74.81          64.85          4.49
-Réseaux        138  6763.5         49.01          41.50          3.72
+          commandes      ca  panier_moyen
+canal                                    
+Boutique        114  8528.3         74.81
+Réseaux         138  6763.5         49.01
+Site            148  8806.5         59.50
 ```
 
-On peut regrouper selon **plusieurs** critères, ou demander une répartition en proportions :
+On peut regrouper selon **plusieurs** critères (`df.groupby(["canal", "gros_panier"]).size().unstack()` donne un tableau canal × panier) ou demander une répartition en proportions :
 
 ```python
-print(df.groupby(["canal", "gros_panier"]).size().unstack())     # unstack : un niveau d'index devient colonnes
-print()
 print(pd.crosstab(df["canal"], df["tranche"], normalize="index").round(2))   # proportions par ligne
 ```
 <!--sortie-->
 ```text
-gros_panier  non  oui
-canal                
-Boutique      87   27
-Réseaux    127   11
-Site         134   14
-
-tranche    petit  moyen  grand  très grand
-canal                                     
-Boutique    0.07   0.37   0.32        0.24
-Réseaux   0.32   0.38   0.22        0.08
-Site        0.16   0.44   0.30        0.09
+tranche   petit  moyen  grand  très grand
+canal                                    
+Boutique   0.07   0.37   0.32        0.24
+Réseaux    0.32   0.38   0.22        0.08
+Site       0.16   0.44   0.30        0.09
 ```
 
 `crosstab` (tableau croisé) est un raccourci pour compter les effectifs de deux variables qualitatives ; avec `normalize="index"` chaque ligne est ramenée à 1, ce qui répond à « *parmi* les commandes Réseaux, quelle part de petits paniers ? ». Pour des tableaux de synthèse à deux entrées sur une variable numérique, on a `pivot_table` :
@@ -806,7 +732,7 @@ print(df.pivot_table(index="canal", columns="gros_panier", values="satisfaction"
 gros_panier   non   oui
 canal                  
 Boutique     4.49  4.48
-Réseaux    3.72  3.64
+Réseaux      3.72  3.64
 Site         3.80  3.71
 ```
 
@@ -814,16 +740,21 @@ Enfin `transform` calcule un résultat **par groupe** mais le renvoie **aligné 
 
 ```python
 df["ecart_moy_canal"] = df["montant"] - df.groupby("canal")["montant"].transform("mean")
-print(df[["canal", "montant", "ecart_moy_canal"]].head(4).round(1))
+print(df[["canal", "montant", "ecart_moy_canal"]].head(3).round(1))
+```
+<!--sortie-->
+```text
+      canal  montant  ecart_moy_canal
+0      Site     49.9             -9.6
+1   Réseaux     21.5            -27.5
+2  Boutique     34.2            -40.6
+```
+
+```python hide
 print("moyenne des écarts nulle dans chaque canal :", bool(np.allclose(df.groupby("canal")["ecart_moy_canal"].mean(), 0)))
 ```
 <!--sortie-->
 ```text
-       canal  montant  ecart_moy_canal
-0       Site     49.9             -9.6
-1  Réseaux     21.5            -27.5
-2   Boutique     34.2            -40.6
-3       Site    103.0             43.5
 moyenne des écarts nulle dans chaque canal : True
 ```
 
@@ -835,20 +766,24 @@ Dans la vraie vie, l'information est **répartie sur plusieurs tables** : la lis
 
 Créons la table des clients : 125 clients, chacun avec une ville. (Les clients 121 à 125 n'ont, par construction, jamais commandé ; comme les commandes ont été attribuées au hasard à des clients de 1 à 120, quelques autres clients n'auront rien commandé non plus. Cela nous servira.)
 
-```python
+```python hide
 rng_c = np.random.default_rng(11)
 clients = pd.DataFrame({
     "id_client": np.arange(1, 126),
     "ville": rng_c.choice(["Ville H", "Ville F", "Ville G", "Ville E", "Ville B"], size=125, p=[0.4, 0.2, 0.2, 0.1, 0.1]),
 })
+
+```
+
+```python
 print(clients.head(3))
 print("clients :", len(clients), "| commandes :", len(df))
 ```
 <!--sortie-->
 ```text
-   id_client   ville
-0          1   Ville H
-1          2    Ville F
+   id_client    ville
+0          1  Ville H
+1          2  Ville F
 2          3  Ville G
 clients : 125 | commandes : 400
 ```
@@ -858,25 +793,33 @@ Voici d'abord un exemple minuscule pour comprendre les types de jointure. Deux c
 ```python
 cmd = pd.DataFrame({"id_client": [1, 9], "montant": [50, 80]})
 fiche = pd.DataFrame({"id_client": [1, 2], "ville": ["Ville H", "Ville F"]})
-for how in ["inner", "left", "outer"]:
+print(cmd.merge(fiche, on="id_client", how="left"))
+```
+<!--sortie-->
+```text
+   id_client  montant    ville
+0          1       50  Ville H
+1          9       80      NaN
+```
+
+```python hide
+for how in ["inner", "outer"]:
     print(f"--- how='{how}'")
     print(cmd.merge(fiche, on="id_client", how=how))
 ```
 <!--sortie-->
 ```text
 --- how='inner'
-   id_client  montant  ville
+   id_client  montant    ville
 0          1       50  Ville H
---- how='left'
-   id_client  montant  ville
-0          1       50  Ville H
-1          9       80    NaN
 --- how='outer'
-   id_client  montant  ville
+   id_client  montant    ville
 0          1     50.0  Ville H
-1          2      NaN   Ville F
-2          9     80.0    NaN
+1          2      NaN  Ville F
+2          9     80.0      NaN
 ```
+
+(Avec `how="inner"`, on n'obtiendrait que la ligne du client 1 ; avec `how="outer"`, trois lignes : les clients 1, 2 et 9.)
 
 - **`inner`** : seulement les clés présentes **des deux côtés** (client 1) ;
 - **`left`** : toutes les lignes de la table de gauche ; on met `NaN` (valeur manquante) quand il n'y a pas de correspondance (client 9 sans fiche) ;
@@ -888,23 +831,19 @@ Sur nos données :
 
 ```python
 cmd_ville = df.merge(clients, on="id_client", how="left")
-print("lignes avant/après la jointure :", len(df), len(cmd_ville))
-print("commandes sans ville connue    :", int(cmd_ville["ville"].isna().sum()))
-print()
-print(cmd_ville.groupby("ville")["montant"].agg(["count", "mean"]).round(1).sort_values("count", ascending=False))
+print("lignes avant/après la jointure :", len(df), len(cmd_ville))      # aucune ligne perdue ni dupliquée
+print(cmd_ville.groupby("ville")["montant"].agg(["count", "mean"]).round(1))
 ```
 <!--sortie-->
 ```text
 lignes avant/après la jointure : 400 400
-commandes sans ville connue    : 0
-
          count  mean
 ville               
-Ville H      176  59.6
-Ville G      92  59.7
-Ville F        71  63.6
-Ville E      42  56.0
 Ville B     19  65.5
+Ville E     42  56.0
+Ville F     71  63.6
+Ville G     92  59.7
+Ville H    176  59.6
 ```
 
 Quels sont les clients qui n'ont **jamais** commandé ? `indicator=True` ajoute une colonne `_merge` qui dit d'où vient chaque ligne (`both` : présent des deux côtés ; `left_only` : seulement dans la table de gauche) :
@@ -912,7 +851,6 @@ Quels sont les clients qui n'ont **jamais** commandé ? `indicator=True` ajoute 
 ```python
 test = clients.merge(df[["id_client"]].drop_duplicates(), on="id_client", how="left", indicator=True)
 print(test["_merge"].value_counts())
-print("sans commande :", test.loc[test["_merge"] == "left_only", "id_client"].tolist())
 ```
 <!--sortie-->
 ```text
@@ -921,6 +859,13 @@ both          114
 left_only      11
 right_only      0
 Name: count, dtype: int64
+```
+
+```python hide
+print("sans commande :", test.loc[test["_merge"] == "left_only", "id_client"].tolist())
+```
+<!--sortie-->
+```text
 sans commande : [1, 6, 43, 50, 67, 84, 121, 122, 123, 124, 125]
 ```
 
@@ -942,9 +887,9 @@ sans validate : 3 lignes au lieu de 2
 MergeError : Merge keys are not unique in right dataset; not a many-to-one merge
 ```
 
-Pour **empiler** des tables de même structure (les commandes de janvier et celles de février, par exemple), on utilise `concat` :
+Pour **empiler** des tables de même structure (les commandes de janvier et celles de février, par exemple), on utilise `pd.concat([janvier, fevrier])` : 75 + 69 lignes donnent bien 144.
 
-```python
+```python hide
 janvier = df[df["date"] < "2026-02-01"]
 fevrier = df[(df["date"] >= "2026-02-01") & (df["date"] < "2026-03-01")]
 empile = pd.concat([janvier, fevrier])
@@ -957,9 +902,9 @@ print(len(janvier), "+", len(fevrier), "=", len(empile))
 
 ### 4.4.11 Valeurs manquantes
 
-Dans les données réelles, il manque toujours quelque chose : un client n'a pas laissé de note, un capteur est tombé en panne, une case n'a pas été remplie. pandas représente ces trous par **`NaN`** (*not a number*) pour les nombres, et par `NaT` pour les dates. Créons une copie de nos données où 30 notes de satisfaction sont perdues :
+Dans les données réelles, il manque toujours quelque chose : un client n'a pas laissé de note, un capteur est tombé en panne, une case n'a pas été remplie. pandas représente ces trous par **`NaN`** (*not a number*) pour les nombres, et par `NaT` pour les dates. Créons (code non reproduit) une copie de nos données où 30 notes de satisfaction, tirées au hasard, sont perdues : 7 chez Boutique, 10 chez Réseaux, 13 chez Site.
 
-```python
+```python hide
 rng_m = np.random.default_rng(3)
 trous = rng_m.choice(len(df), size=30, replace=False)
 dfm = df[["id_commande", "canal", "montant", "satisfaction"]].copy()
@@ -972,9 +917,9 @@ print(dfm["satisfaction"].isna().groupby(dfm["canal"]).sum())
 ```text
 30 notes manquantes sur 400
 canal
-Boutique      7
-Réseaux    10
-Site         13
+Boutique     7
+Réseaux     10
+Site        13
 Name: satisfaction, dtype: int64
 ```
 
@@ -982,20 +927,28 @@ D'abord, **comment les calculs se comportent-ils ?** Sur un exemple à la main :
 
 ```python
 notes = pd.Series([4, 5, np.nan, 3])
-print("moyenne :", notes.mean(), "| effectif :", notes.count(), "| taille :", len(notes))
-print("somme avec skipna=False :", notes.sum(skipna=False))     # un seul NaN contamine la somme
+print("moyenne :", notes.mean(), "| somme avec skipna=False :", notes.sum(skipna=False))
 ```
 <!--sortie-->
 ```text
-moyenne : 4.0 | effectif : 3 | taille : 4
-somme avec skipna=False : nan
+moyenne : 4.0 | somme avec skipna=False : nan
 ```
 
 > ⚠️ **Piège.** Comparer avec `==` ne détecte pas un `NaN` (`NaN == NaN` est faux, par convention). Utilisez **`isna()`** / `notna()`.
 
-Que faire des trous ? Trois stratégies, à choisir selon le contexte :
+Que faire des trous ? Trois stratégies, à choisir selon le contexte : supprimer les lignes incomplètes (`dropna`), remplacer par une valeur « raisonnable » comme la médiane (`fillna`), ou remplacer par la médiane **du groupe** (`fillna` avec `groupby(...).transform("median")`). Voici les deux premières :
 
 ```python
+supprimee = dfm.dropna(subset=["satisfaction"])                        # 1. supprimer les lignes incomplètes
+remplie = dfm["satisfaction"].fillna(dfm["satisfaction"].median())     # 2. remplacer par la médiane
+print(len(supprimee), "lignes conservées ; moyenne après remplissage :", round(remplie.mean(), 3))
+```
+<!--sortie-->
+```text
+370 lignes conservées ; moyenne après remplissage : 3.985
+```
+
+```python hide
 a_supprimer = dfm.dropna(subset=["satisfaction"])                       # 1. supprimer les lignes incomplètes
 remplie_med = dfm["satisfaction"].fillna(dfm["satisfaction"].median())  # 2. remplacer par une valeur « raisonnable »
 remplie_canal = dfm["satisfaction"].fillna(                             # 3. remplacer par la médiane du groupe
@@ -1035,28 +988,32 @@ float64 | Int64
 Avec une colonne de vrais **dates** (type `datetime64`), pandas offre un accès `.dt` aux composantes (année, mois, jour de la semaine…), de l'arithmétique et des regroupements par période.
 
 ```python
-print(df["date"].min(), "->", df["date"].max())
-print("durée couverte :", df["date"].max() - df["date"].min())
 df["jour_semaine"] = df["date"].dt.dayofweek          # 0 = lundi … 6 = dimanche
 df["mois"] = df["date"].dt.month
-print(df[["date", "jour_semaine", "mois"]].head(4))
+print(df[["date", "jour_semaine", "mois"]].head(3))
+```
+<!--sortie-->
+```text
+        date  jour_semaine  mois
+0 2026-01-05             0     1
+1 2026-01-05             0     1
+2 2026-01-05             0     1
+```
+
+```python hide
+print(df["date"].min(), "->", df["date"].max())
+print("durée couverte :", df["date"].max() - df["date"].min())
 ```
 <!--sortie-->
 ```text
 2026-01-05 00:00:00 -> 2026-05-24 00:00:00
 durée couverte : 139 days 00:00:00
-        date  jour_semaine  mois
-0 2026-01-05             0     1
-1 2026-01-05             0     1
-2 2026-01-05             0     1
-3 2026-01-05             0     1
 ```
 
 Si vos dates sont lues comme du **texte** (cas fréquent à l'import d'un fichier), on les convertit avec `pd.to_datetime`, en précisant le format pour éviter l'ambiguïté jour/mois :
 
 ```python
-textes = pd.Series(["05/01/2026", "12/01/2026", "03/02/2026"])
-dates = pd.to_datetime(textes, format="%d/%m/%Y")
+dates = pd.to_datetime(pd.Series(["05/01/2026", "12/01/2026", "03/02/2026"]), format="%d/%m/%Y")
 print(dates.dt.month.tolist(), "<- 3 février = mois 2, comme attendu")
 ```
 <!--sortie-->
@@ -1069,7 +1026,6 @@ Pour **regrouper par semaine**, on convertit chaque date en période hebdomadair
 ```python
 df["semaine"] = df["date"].dt.to_period("W").dt.start_time      # le lundi de la semaine de chaque commande
 print(df[["date", "semaine"]].head(3))
-print("nombre de semaines distinctes :", df["semaine"].nunique())
 ```
 <!--sortie-->
 ```text
@@ -1077,12 +1033,19 @@ print("nombre de semaines distinctes :", df["semaine"].nunique())
 0 2026-01-05 2026-01-05
 1 2026-01-05 2026-01-05
 2 2026-01-05 2026-01-05
+```
+
+```python hide
+print("nombre de semaines distinctes :", df["semaine"].nunique())
+```
+<!--sortie-->
+```text
 nombre de semaines distinctes : 20
 ```
 
-> 🧪 **Vérifions sur un exemple.** Le 5 janvier 2026 est un lundi : la semaine du 5 au 11 janvier est donc repérée par le **5 janvier**. Une commande du jeudi 8 janvier doit avoir pour semaine le 5 janvier ; une commande du lundi 12 janvier, le 12.
+> 🧪 **Vérifions sur un exemple.** Le 5 janvier 2026 est un lundi : la semaine du 5 au 11 janvier est donc repérée par le **5 janvier**. Une commande du jeudi 8 janvier doit avoir pour semaine le 5 janvier ; une commande du lundi 12 janvier, le 12. Le programme le confirme : le lundi 5, le jeudi 8 et le dimanche 11 tombent tous dans la semaine du 5 ; le lundi 12 ouvre celle du 12.
 
-```python
+```python hide
 test = pd.Series(pd.to_datetime(["2026-01-05", "2026-01-08", "2026-01-11", "2026-01-12"]))
 print(pd.DataFrame({"date": test, "jour": test.dt.day_name(), "semaine": test.dt.to_period("W").dt.start_time}))
 ```
@@ -1105,96 +1068,9 @@ print(pd.Series([10, 20, 30, 40]).rolling(2).mean().tolist())
 [nan, 15.0, 25.0, 35.0]
 ```
 
-### 4.4.13 🛠️ Petite application : le rapport hebdomadaire de la gérante
+### 4.4.13 Du tableau au rapport
 
-Rassemblons tout ce que nous venons d'apprendre dans une vraie **mini-application** : un petit programme qui produit, pour une semaine donnée, le rapport que la gérante lit chaque lundi. D'abord le **tableau de bord hebdomadaire** : une ligne par semaine.
-
-```python
-hebdo = df.groupby("semaine").agg(
-    commandes=("montant", "count"),
-    ca=("montant", "sum"),
-    panier_moyen=("montant", "mean"),
-    part_instagram=("canal", lambda s: (s == "Réseaux").mean()),
-).round(2)
-hebdo["ca_lisse"] = hebdo["ca"].rolling(4).mean().round(1)       # moyenne mobile sur 4 semaines
-print(hebdo.head(6))
-print("...")
-print(hebdo.tail(3))
-```
-<!--sortie-->
-```text
-            commandes      ca  panier_moyen  part_instagram  ca_lisse
-semaine                                                              
-2026-01-05         20  1082.4         54.12            0.25       NaN
-2026-01-12         19  1083.0         57.00            0.53       NaN
-2026-01-19         18  1403.0         77.94            0.22       NaN
-2026-01-26         20   750.7         37.54            0.40    1079.8
-2026-02-02         21  1447.6         68.93            0.33    1171.1
-2026-02-09         14   975.8         69.70            0.21    1144.3
-...
-            commandes      ca  panier_moyen  part_instagram  ca_lisse
-semaine                                                              
-2026-05-04         20  1482.8         74.14            0.35    1162.0
-2026-05-11         23  1306.3         56.80            0.39    1225.5
-2026-05-18         27  1585.4         58.72            0.37    1433.7
-```
-
-(La fonction anonyme `lambda s: (s == "Réseaux").mean()` calcule, dans chaque semaine, la proportion de commandes Réseaux, grâce à l'astuce « moyenne d'un masque » vue en 4.4.4.) Puis une **fonction** qui rédige le rapport d'une semaine :
-
-```python
-def rapport_hebdo(df, debut):
-    """Rapport de la semaine commençant le lundi `debut` (texte 'AAAA-MM-JJ')."""
-    debut = pd.Timestamp(debut)
-    sem = df[df["semaine"] == debut]
-    if sem.empty:
-        return f"Aucune commande la semaine du {debut:%d/%m/%Y}."
-    precedente = df[df["semaine"] == debut - pd.Timedelta(weeks=1)]
-    ca, ca_prec = sem["montant"].sum(), precedente["montant"].sum()
-    par_canal = sem.groupby("canal")["montant"].sum().sort_values(ascending=False)
-    top = sem.groupby("id_client")["montant"].sum().nlargest(3)
-
-    lignes = [f"Semaine du {debut:%d/%m/%Y}",
-              f"  commandes : {len(sem)}   |   panier moyen : {sem['montant'].mean():.2f} €",
-              f"  chiffre d'affaires : {ca:.2f} €"]
-    if ca_prec > 0:
-        lignes[-1] += f"  ({(ca / ca_prec - 1) * 100:+.1f} % vs semaine précédente)"
-    lignes.append("  par canal : " + ", ".join(f"{c} {v:.0f} €" for c, v in par_canal.items()))
-    lignes.append("  meilleurs clients : " + ", ".join(f"n°{i} ({v:.0f} €)" for i, v in top.items()))
-    note = sem["satisfaction"].mean()
-    lignes.append(f"  satisfaction moyenne : {note:.2f}/5" + ("   ⚠ à surveiller" if note < 3.5 else ""))
-    return "\n".join(lignes)
-
-
-print(rapport_hebdo(df, "2026-03-02"))
-print()
-print(rapport_hebdo(df, "2026-05-18"))
-print()
-print(rapport_hebdo(df, "2025-01-06"))      # une semaine sans données
-
-# contrôle croisé : le rapport et le tableau hebdomadaire doivent donner les mêmes nombres
-print(hebdo.loc["2026-03-02", ["commandes", "ca"]].tolist())
-```
-<!--sortie-->
-```text
-Semaine du 02/03/2026
-  commandes : 23   |   panier moyen : 72.96 €
-  chiffre d'affaires : 1678.00 €  (+59.4 % vs semaine précédente)
-  par canal : Site 707 €, Boutique 502 €, Réseaux 469 €
-  meilleurs clients : n°42 (189 €), n°7 (170 €), n°83 (160 €)
-  satisfaction moyenne : 3.78/5
-
-Semaine du 18/05/2026
-  commandes : 27   |   panier moyen : 58.72 €
-  chiffre d'affaires : 1585.40 €  (+21.4 % vs semaine précédente)
-  par canal : Site 682 €, Réseaux 465 €, Boutique 438 €
-  meilleurs clients : n°9 (256 €), n°22 (237 €), n°93 (146 €)
-  satisfaction moyenne : 3.85/5
-
-Aucune commande la semaine du 06/01/2025.
-[23.0, 1678.0]
-```
-
-Le contrôle croisé final confirme que le rapport et le tableau hebdomadaire disent la même chose (23 commandes et 1 678 € pour la semaine du 2 mars). Ce petit programme utilise presque tout : filtrage, `groupby`, tri, dates, formatage. Il est surtout **réutilisable** : la semaine prochaine, la gérante changera la date et obtiendra le nouveau rapport sans rien refaire. C'est ce qui sépare une analyse « à la souris » d'une analyse reproductible.
+Tout ce qui précède se combine naturellement. En regroupant les commandes par semaine (`groupby("semaine")`), on obtient un **tableau de bord hebdomadaire** : une ligne par semaine, avec le nombre de commandes, le chiffre d'affaires, le panier moyen, la part du canal Réseaux et une **moyenne mobile** sur quatre semaines qui lisse les à-coups. Une petite fonction qui rédige, pour une semaine donnée, le rapport que la gérante lit chaque lundi (chiffre d'affaires, variation par rapport à la semaine précédente, répartition par canal, meilleurs clients, satisfaction) n'est alors qu'un assemblage de filtres, de `groupby` et de formatage. Cette fonction est **réutilisable** : la semaine suivante, on change la date et on obtient le nouveau rapport sans rien refaire. C'est ce qui sépare une analyse « à la souris » d'une analyse reproductible. Vous la construirez pas à pas dans l'application 4.5 du cahier.
 
 > ✅ **À retenir (pandas).**
 >
@@ -1206,4 +1082,4 @@ Le contrôle croisé final confirme que le rapport et le tableau hebdomadaire di
 > 6. compter les manquants avec `isna().sum()` *avant* de choisir quoi en faire ;
 > 7. des dates en type `datetime64` (`to_datetime`), puis `.dt`, `to_period`, `rolling`.
 >
-> *Pour s'entraîner :* les exercices de la section 4.9 reprennent ces notions.
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.5 (le rapport hebdomadaire) ; exercices 4.9 à 4.11 (NumPy et broadcasting, `groupby` et dates, jointure et clients dormants).

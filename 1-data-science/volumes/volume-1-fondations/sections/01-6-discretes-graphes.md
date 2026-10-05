@@ -6,40 +6,46 @@
 
 Un **ensemble** est une collection d'objets distincts, sans ordre. La gérante propose quatre produits : $P = \{\text{bol}, \text{tapis}, \text{lampe}, \text{plateau}\}$. Ses clients de la semaine ont acheté des sous-ensembles de $P$.
 
-Les opérations de la fiche de notations (1.4.2) se testent directement en Python avec le type `set` :
+Les opérations de la fiche de notations (1.4.2) se calculent à la main. Prenons deux paniers : $A = \{\text{bol}, \text{tapis}, \text{lampe}\}$ et $B = \{\text{bol}, \text{plateau}\}$. Alors
 
-```python
-panier_amel = {"bol", "tapis", "lampe"}
-panier_karim = {"bol", "plateau"}
+- l'**union** $A\cup B = \{\text{bol}, \text{tapis}, \text{lampe}, \text{plateau}\}$ ;
+- l'**intersection** $A\cap B = \{\text{bol}\}$ ;
+- la **différence** $A\setminus B = \{\text{tapis}, \text{lampe}\}$ ;
+- la **taille** $|A| = 3$.
 
-print("union          :", sorted(panier_amel | panier_karim))
-print("intersection   :", sorted(panier_amel & panier_karim))
-print("amel sans karim:", sorted(panier_amel - panier_karim))
-print("taille         :", len(panier_amel))
+
+```python hide
+panier_a = {"bol", "tapis", "lampe"}
+panier_b = {"bol", "plateau"}
+
+print("union          :", sorted(panier_a | panier_b))
+print("intersection   :", sorted(panier_a & panier_b))
+print("A sans B:", sorted(panier_a - panier_b))
+print("taille         :", len(panier_a))
 ```
 <!--sortie-->
 ```text
 union          : ['bol', 'lampe', 'plateau', 'tapis']
 intersection   : ['bol']
-amel sans karim: ['lampe', 'tapis']
+A sans B: ['lampe', 'tapis']
 taille         : 3
 ```
 
-> 💡 **Application : similarité de Jaccard.** Comment mesurer à quel point deux paniers se ressemblent ? On divise la taille de ce qu'ils ont **en commun** par la taille de ce qu'ils ont **au total** :
+> 💡 **La similarité de Jaccard.** Comment mesurer à quel point deux paniers se ressemblent ? On divise la taille de ce qu'ils ont **en commun** par la taille de ce qu'ils ont **au total** :
 >
 > $$J(A, B) = \frac{|A\cap B|}{|A\cup B|}.$$
 >
 > Elle vaut 1 si les paniers sont identiques, 0 s'ils n'ont rien en commun. C'est l'équivalent « ensembliste » de la similarité cosinus du 1.1.1.
 
-```python
+```python hide
 def jaccard(a, b):
     return len(a & b) / len(a | b)
 
-print("Jaccard(Amel, Karim) =", round(jaccard(panier_amel, panier_karim), 3))
+print("Jaccard(A, B) =", round(jaccard(panier_a, panier_b), 3))
 ```
 <!--sortie-->
 ```text
-Jaccard(Amel, Karim) = 0.25
+Jaccard(A, B) = 0.25
 ```
 
 Un seul produit en commun (le bol), sur quatre produits au total : $1/4 = 0{,}25$.
@@ -65,7 +71,7 @@ $$\binom{n}{k} = \frac{n!}{k!\,(n-k)!}.$$
 
 > 📐 **Pourquoi cette formule ?** Il y a $\frac{n!}{(n-k)!}$ façons de choisir $k$ objets *dans l'ordre*. Mais chaque groupe de $k$ objets a été compté $k!$ fois (une fois par ordre possible). On divise donc par $k!$.
 
-```python
+```python hide
 import math
 print("tenues             :", 3 * 4)
 print("coffrets           :", 4 * 3 * 2)
@@ -84,9 +90,11 @@ podium 3 parmi 10  : 720
 paniers de 3 parmi 40: 9880
 ```
 
+Quelques valeurs : $\binom{4}{2} = 6$ ; un podium de 3 parmi 10 compte $10\cdot9\cdot8 = 720$ possibilités ; et $\binom{40}{3} = \dfrac{40\cdot39\cdot38}{3\cdot2\cdot1} = 9\,880$.
+
 > 🧪 **Attention à l'explosion.** Si le catalogue contient 40 produits, il y a déjà 9 880 paniers de trois produits. Pour des paniers de dix produits parmi 40, on dépasse les 847 millions :
 
-```python
+```python hide
 print(math.comb(40, 10))
 ```
 <!--sortie-->
@@ -102,9 +110,18 @@ C'est pourquoi les algorithmes de recommandation ne peuvent pas **énumérer** t
 
 Un **graphe** est un ensemble de **sommets** (des objets) et d'**arêtes** (des liens entre eux). Tout ce qui est « réseau » est un graphe : amis sur un réseau social, routes entre villes, produits souvent achetés ensemble, pages web reliées par des liens.
 
-Voici le graphe des produits **achetés ensemble** dans la boutique : deux produits sont reliés si au moins un client les a pris dans le même panier.
+Voici le graphe des produits **achetés ensemble** dans la boutique : deux produits sont reliés si au moins un client les a pris dans le même panier. Les cinq produits sont le bol, le tapis, la lampe, le plateau et le coussin ; les liens sont bol—plateau, bol—tapis, tapis—lampe, tapis—coussin et lampe—coussin. On range un graphe en **liste d'adjacence** : pour chaque sommet, la liste de ses voisins.
 
-```python
+| Sommet | Voisins | Degré |
+|---|---|---|
+| bol | plateau, tapis | 2 |
+| tapis | bol, lampe, coussin | 3 |
+| lampe | tapis, coussin | 2 |
+| plateau | bol | 1 |
+| coussin | tapis, lampe | 2 |
+
+
+```python hide
 produits = ["bol", "tapis", "lampe", "plateau", "coussin"]
 aretes = [("bol", "plateau"), ("bol", "tapis"), ("tapis", "lampe"),
           ("tapis", "coussin"), ("lampe", "coussin")]
@@ -131,9 +148,13 @@ degrés : {'bol': 2, 'tapis': 3, 'lampe': 2, 'plateau': 1, 'coussin': 2}
 
 Le **degré** d'un sommet est son nombre de voisins : le tapis (degré 3) est le produit le plus « connecté », donc un bon candidat pour une promotion croisée.
 
-**La matrice d'adjacence.** On peut ranger le graphe dans une matrice $\mathbf{A}$ : $A_{ij}=1$ si $i$ et $j$ sont reliés, 0 sinon.
+**La matrice d'adjacence.** On peut ranger le graphe dans une matrice $\mathbf{A}$ : $A_{ij}=1$ si $i$ et $j$ sont reliés, 0 sinon. Avec l'ordre bol, tapis, lampe, plateau, coussin :
 
-```python
+$$\mathbf{A} = \begin{pmatrix} 0&1&0&1&0\\ 1&0&1&0&1\\ 0&1&0&0&1\\ 1&0&0&0&0\\ 0&1&1&0&0 \end{pmatrix}.$$
+
+Elle est **symétrique** : si le bol est lié au tapis, le tapis est lié au bol.
+
+```python hide
 import numpy as np
 idx = {p: i for i, p in enumerate(produits)}
 A = np.zeros((5, 5), dtype=int)
@@ -156,7 +177,7 @@ symétrique : True
 >
 > *Preuve pour $k=2$.* Par définition du produit matriciel, $(\mathbf{A}^2)_{ij}=\sum_{m} A_{im}A_{mj}$. Le terme $A_{im}A_{mj}$ vaut 1 exactement quand $i$—$m$ et $m$—$j$ sont deux arêtes, c'est-à-dire quand $m$ est un intermédiaire possible. La somme compte donc les intermédiaires, c'est-à-dire les chemins en deux pas. Le cas général se démontre par récurrence sur $k$ avec le même argument. $\blacksquare$
 
-```python
+```python hide
 A2 = A @ A
 print("chemins de longueur 2 entre bol et lampe :", A2[idx["bol"], idx["lampe"]])
 print("chemins de longueur 2 entre tapis et tapis :", A2[idx["tapis"], idx["tapis"]])
@@ -181,7 +202,7 @@ L'algorithme utilise une **file** (premier arrivé, premier servi) :
 1. Mettre le sommet de départ dans la file, avec la distance 0.
 2. Tant que la file n'est pas vide : retirer le premier sommet ; pour chacun de ses voisins non encore vus, noter sa distance (celle du sommet + 1) et le mettre en fin de file.
 
-```python
+```python hide
 from collections import deque
 
 def distances_depuis(depart, voisins):
@@ -211,3 +232,5 @@ Depuis le plateau : le bol est à distance 1, le tapis à 2, la lampe et le cous
 > - Un graphe = sommets + arêtes ; le stocker en **liste d'adjacence** ou en **matrice d'adjacence**.
 > - $(\mathbf{A}^k)_{ij}$ = nombre de chemins de longueur $k$ de $i$ à $j$.
 > - BFS : exploration par cercles, plus courts chemins sur graphe non pondéré.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.11, exercice 1.10.

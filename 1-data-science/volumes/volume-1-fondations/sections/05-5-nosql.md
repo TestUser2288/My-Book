@@ -21,9 +21,9 @@ Le modèle relationnel est excellent, mais il a des prix : le **schéma est rigi
 
 ### 5.5.2 Les bases de documents : l'exemple de MongoDB
 
-Dans une base de documents, une commande n'est pas répartie sur plusieurs tables : c'est **un seul document JSON** qui contient tout (le client, les lignes) **imbriqué**. Construisons ces documents à partir de notre base relationnelle, et voyons celui de la commande n° 3 (celle du 5.1.3 aux trois lignes) :
+Dans une base de documents, une commande n'est pas répartie sur plusieurs tables : c'est **un seul document JSON** qui contient tout (le client, les lignes) **imbriqué**. Voici, construit à partir de notre base relationnelle (par un court programme exécuté en coulisses ; l'application 5.10 du cahier le détaille), le document de la commande n° 3, celle du 5.1.3 aux trois lignes :
 
-```python
+```python hide
 import json
 
 lignes_par_commande = {}
@@ -36,7 +36,6 @@ requete_lignes = """
 for id_commande, produit, categorie, quantite, prix in con.execute(requete_lignes):
     lignes_par_commande.setdefault(id_commande, []).append(
         {"produit": produit, "categorie": categorie, "quantite": quantite, "prix": prix})
-
 requete_commandes = """
     SELECT c.id_commande, c.date_commande, c.canal, c.montant, cl.id_client, cl.prenom, cl.nom, cl.ville
     FROM commandes AS c JOIN clients AS cl ON cl.id_client = c.id_client
@@ -47,43 +46,24 @@ documents = [
      "lignes": lignes_par_commande[i]}
     for i, date, canal, montant, id_client, prenom, nom, ville in con.execute(requete_commandes)
 ]
-print(len(documents), "documents")
-print(json.dumps(documents[2], ensure_ascii=False, indent=2))
+```
+
+```python hide-code
+d = documents[2]                                      # la commande n° 3 du 5.1.3
+dump = lambda x: json.dumps(x, ensure_ascii=False)
+print(len(documents), "documents ; le troisième :")
+print('{"_id": %d, "date": %s, "canal": %s, "montant": %s,' % (d["_id"], dump(d["date"]), dump(d["canal"]), d["montant"]))
+print(' "client": %s,' % dump(d["client"]))
+print(' "lignes": [' + ",\n            ".join(dump(l) for l in d["lignes"]) + "]}")
 ```
 <!--sortie-->
 ```text
-400 documents
-{
-  "_id": 3,
-  "date": "2025-01-04",
-  "canal": "Réseaux",
-  "montant": 88.2,
-  "client": {
-    "id": 3,
-    "nom": "Aymen Hamdi",
-    "ville": "Ville F"
-  },
-  "lignes": [
-    {
-      "produit": "Bol en céramique de Ville E",
-      "categorie": "Poterie",
-      "quantite": 1,
-      "prix": 17.84
-    },
-    {
-      "produit": "Vase peint à la main",
-      "categorie": "Poterie",
-      "quantite": 1,
-      "prix": 64.42
-    },
-    {
-      "produit": "Savon à l'huile d'olive",
-      "categorie": "Cosmétiques",
-      "quantite": 1,
-      "prix": 5.94
-    }
-  ]
-}
+400 documents ; le troisième :
+{"_id": 3, "date": "2025-01-04", "canal": "Réseaux", "montant": 88.2,
+ "client": {"id": 3, "nom": "Adam Michel", "ville": "Ville F"},
+ "lignes": [{"produit": "Bol en céramique", "categorie": "Poterie", "quantite": 1, "prix": 17.84},
+            {"produit": "Vase peint à la main", "categorie": "Poterie", "quantite": 1, "prix": 64.42},
+            {"produit": "Savon à l'huile d'olive", "categorie": "Cosmétiques", "quantite": 1, "prix": 5.94}]}
 ```
 
 Ce document **contient tout ce qu'il faut** pour afficher la commande : pas de jointure à faire, une seule lecture suffit. C'est l'argument central des bases de documents : ce qu'on lit ensemble est rangé ensemble. On les interroge avec des filtres sur les champs, y compris dans les listes imbriquées. Voici « les commandes d'au moins 100 € qui contiennent un bijou », d'abord à la manière de MongoDB (les filtres se décrivent avec des documents) :
@@ -96,9 +76,9 @@ db.commandes.countDocuments({
 })
 ```
 
-Reproduisons cette logique en Python sur nos documents (une *compréhension de liste* fait le même travail que le filtre), et comparons avec la réponse **relationnelle** (jointure SQL du 5.2) pour vérifier qu'on obtient bien la même chose :
+Un court programme Python (exécuté en coulisses) applique la même logique, un filtre sur les champs imbriqués, à nos documents ; comparons son résultat avec la réponse **relationnelle** (jointure SQL du 5.2) pour vérifier qu'on obtient bien la même chose :
 
-```python
+```python hide-code
 avec_bijou = [d["_id"] for d in documents
               if d["montant"] >= 100 and any(l["categorie"] == "Bijoux" for l in d["lignes"])]
 
@@ -118,9 +98,9 @@ version relationnelle (SQL): 27
 
 Même résultat, deux philosophies : dans l'une, on **reconstruit** les liens à la lecture (jointure) ; dans l'autre, on les a **pré-assemblés** à l'écriture (imbrication).
 
-Notez qu'il n'est même pas nécessaire de quitter SQLite pour jouer avec des documents : il sait stocker du JSON dans une colonne de texte et l'interroger avec les fonctions `json_extract` et `json_each`. C'est aussi le cas de PostgreSQL (type `jsonb`), ce qui permet un mélange des deux mondes.
+Notez qu'il n'est même pas nécessaire de quitter SQLite pour jouer avec des documents : il sait stocker du JSON dans une colonne de texte et l'interroger avec les fonctions `json_extract` et `json_each`. C'est aussi le cas de PostgreSQL (type `jsonb`), ce qui permet un mélange des deux mondes. Plaçons les 400 documents dans une table `ex_docs` (une colonne de texte JSON) et interrogeons-la.
 
-```python
+```python hide
 con.execute("CREATE TABLE ex_docs (doc TEXT)")
 con.executemany("INSERT INTO ex_docs VALUES (?)", [(json.dumps(d, ensure_ascii=False),) for d in documents])
 con.commit()
@@ -136,16 +116,16 @@ ORDER BY canal;
 ```
 <!--sortie-->
 ```text
-    canal  commandes  panier_moyen
- Boutique        114         74.81
-Réseaux        138         49.01
-     Site        148         59.50
+   canal  commandes  panier_moyen
+Boutique        114         74.81
+ Réseaux        138         49.01
+    Site        148         59.50
 ```
 
 On retrouve les paniers moyens par canal du 5.2.4. (`'$.canal'` est un *chemin* dans le document ; `$.client.ville` atteindrait un champ imbriqué.) La même question du bijou, avec `json_each` qui « déplie » la liste des lignes :
 
 ```sql
-SELECT COUNT(*) AS commandes_avec_bijou_100dt
+SELECT COUNT(*) AS commandes_avec_bijou_100
 FROM ex_docs
 WHERE json_extract(doc, '$.montant') >= 100
   AND EXISTS (SELECT 1 FROM json_each(ex_docs.doc, '$.lignes') AS l
@@ -153,8 +133,8 @@ WHERE json_extract(doc, '$.montant') >= 100
 ```
 <!--sortie-->
 ```text
- commandes_avec_bijou_100dt
-                         27
+ commandes_avec_bijou_100
+                       27
 ```
 
 Pour un agrégat complet, MongoDB utilise un **pipeline** d'étapes qui s'enchaînent (le même esprit que les CTE du 5.3) :
@@ -168,9 +148,9 @@ db.commandes.aggregate([
 ])
 ```
 
-**Le revers de la médaille : la redondance.** Chaque document contient la ville du client. Combien de documents faudrait-il modifier si Sami Dridi (client n° 2) déménageait ?
+**Le revers de la médaille : la redondance.** Chaque document contient la ville du client. Combien de documents faudrait-il modifier si Sam Fontaine (client n° 2) déménageait ? Un comptage exécuté en coulisses répond :
 
-```python
+```python hide
 a_modifier = sum(1 for d in documents if d["client"]["id"] == 2)
 print("documents à modifier pour un seul déménagement :", a_modifier)
 con.execute("DROP TABLE ex_docs")
@@ -181,7 +161,7 @@ con.commit()
 documents à modifier pour un seul déménagement : 23
 ```
 
-Vingt-trois ! C'est exactement l'anomalie de mise à jour du 5.4.1 : en choisissant l'**imbrication**, on assume la **redondance**, et c'est à l'application de la gérer. Dans le monde des documents, on décide au cas par cas ce qu'on imbrique (ce qui est lu ensemble, qui change rarement) et ce qu'on référence (ce qui change souvent). Aucun modèle n'est gratuit.
+**Vingt-trois documents** (autant que de commandes de ce client) ! C'est exactement l'anomalie de mise à jour du 5.4.1 : en choisissant l'**imbrication**, on assume la **redondance**, et c'est à l'application de la gérer. Dans le monde des documents, on décide au cas par cas ce qu'on imbrique (ce qui est lu ensemble, qui change rarement) et ce qu'on référence (ce qui change souvent). Aucun modèle n'est gratuit.
 
 ### 5.5.3 Les bases clé–valeur : l'exemple de Redis
 
@@ -192,43 +172,11 @@ Vingt-trois ! C'est exactement l'anomalie de mise à jour du 5.4.1 : en choisiss
 redis-cli SET panier:2 '{"articles": 3, "total": 88.2}' EX 3600   # panier du client 2, expire dans 1 heure
 redis-cli GET panier:2
 redis-cli INCR visites:page_accueil                                # compteur atomique
-redis-cli ZADD classement_clients 1874.3 "Sami Dridi" 1701.7 "Yassine Lahmar"   # ensemble trié par score
+redis-cli ZADD classement_clients 1874.3 "Sam Fontaine" 1701.7 "Yann Lambert"   # ensemble trié par score
 redis-cli ZREVRANGE classement_clients 0 2 WITHSCORES              # les 3 meilleurs
 ```
 
-Le cas d'usage numéro un est le **cache** : stocker le résultat d'une requête lente (par exemple le tableau de bord du chiffre d'affaires) pour ne pas la recalculer à chaque visite. Voici le mécanisme avec un simple dictionnaire Python : la première fois, la requête SQL est exécutée ; les fois suivantes, la réponse vient directement du « cache » :
-
-```python
-cache = {}
-nb_requetes_sql = 0
-
-def chiffre_affaires_du_canal(canal):
-    global nb_requetes_sql
-    cle = f"ca:{canal}"
-    if cle in cache:                                   # « cache hit » : réponse immédiate
-        return cache[cle]
-    nb_requetes_sql += 1                               # « cache miss » : on interroge la vraie base
-    valeur = con.execute("SELECT ROUND(SUM(montant)) FROM commandes WHERE canal = ?", (canal,)).fetchone()[0]
-    cache[cle] = valeur
-    return valeur
-
-for canal in ["Site", "Site", "Boutique", "Site", "Boutique", "Réseaux", "Site"]:
-    print(f"{canal:10s}", chiffre_affaires_du_canal(canal))
-print("7 demandes, requêtes SQL réellement exécutées :", nb_requetes_sql)
-```
-<!--sortie-->
-```text
-Site       8807.0
-Site       8807.0
-Boutique   8528.0
-Site       8807.0
-Boutique   8528.0
-Réseaux  6764.0
-Site       8807.0
-7 demandes, requêtes SQL réellement exécutées : 3
-```
-
-Sept demandes, trois requêtes seulement. Il reste le problème classique : **quand périme le cache ?** (si une nouvelle commande arrive, la valeur en cache devient fausse). Redis résout cela avec une **durée de vie** (`EX 3600`, comme ci-dessus) : la clé s'efface toute seule. Un mot célèbre résume la difficulté : « *il n'y a que deux choses difficiles en informatique : invalider un cache et nommer les choses.* »
+Le cas d'usage numéro un est le **cache** : stocker le résultat d'une requête lente (par exemple le tableau de bord du chiffre d'affaires) pour ne pas la recalculer à chaque visite. Imaginons sept demandes successives (Site, Site, Boutique, Site, Boutique, Réseaux, Site) : la première fois qu'un canal est demandé, la requête SQL est exécutée (*cache miss*) et son résultat est rangé dans un dictionnaire ; les fois suivantes, la réponse vient directement du « cache » (*cache hit*). Résultat : sept demandes, **trois** requêtes SQL seulement (l'application 5.11 du cahier programme ce petit cache). Il reste le problème classique : **quand périme le cache ?** (si une nouvelle commande arrive, la valeur en cache devient fausse). Redis résout cela avec une **durée de vie** (`EX 3600`, comme ci-dessus) : la clé s'efface toute seule. Un mot célèbre résume la difficulté : « *il n'y a que deux choses difficiles en informatique : invalider un cache et nommer les choses.* »
 
 ### 5.5.4 Alors, que choisir ?
 
@@ -242,6 +190,8 @@ Sept demandes, trois requêtes seulement. Il reste le problème classique : **qu
 | Analyse de données | **excellent** | souvent à exporter d'abord |
 
 Pour un data scientist, la réponse pratique est la suivante. **Commencez par le relationnel** (PostgreSQL en particulier : fiable, gratuit, et capable de stocker du JSON) : il répond à l'immense majorité des besoins, et l'analyse y est la plus confortable. N'allez vers le NoSQL que lorsqu'un besoin précis l'impose (cache ultra-rapide, volume réparti, données de forme libre, graphes). Dans les grandes entreprises, on trouve d'ailleurs souvent **plusieurs bases à la fois** (on parle de *persistance polyglotte*) : un SGBD relationnel pour les commandes, Redis pour le cache, un moteur de documents pour le catalogue, un entrepôt de données pour l'analyse. En tant qu'analyste, vous serez souvent celui qui les **réunit**, d'où l'intérêt de connaître chacune de ces familles.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : applications 5.10 (documents JSON) et 5.11 (un cache en Python).
 
 > ✅ **À retenir**
 >

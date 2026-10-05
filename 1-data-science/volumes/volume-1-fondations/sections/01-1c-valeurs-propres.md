@@ -46,8 +46,6 @@ A = np.array([[2, 1], [1, 2]])
 valeurs, vecteurs = np.linalg.eigh(A)     # eigh : pour les matrices symétriques
 print("valeurs propres :", valeurs)
 print("vecteurs propres (en colonnes) :\n", vecteurs.round(4))
-print("trace =", np.trace(A), " somme des valeurs propres =", valeurs.sum())
-print("det   =", round(np.linalg.det(A), 4), " produit des valeurs propres =", valeurs.prod())
 ```
 <!--sortie-->
 ```text
@@ -55,6 +53,14 @@ valeurs propres : [1. 3.]
 vecteurs propres (en colonnes) :
  [[-0.7071  0.7071]
  [ 0.7071  0.7071]]
+```
+
+```python hide
+print("trace =", np.trace(A), " somme des valeurs propres =", valeurs.sum())
+print("det   =", round(np.linalg.det(A), 4), " produit des valeurs propres =", valeurs.prod())
+```
+<!--sortie-->
+```text
 trace = 4  somme des valeurs propres = 4.0
 det   = 3.0  produit des valeurs propres = 3.0
 ```
@@ -82,7 +88,7 @@ Nous admettons l'existence (la preuve complète se trouve dans tout cours d'alg�
 
 Une conséquence pratique de $\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^\top$ est que les **puissances** deviennent triviales : $\mathbf{A}^k = \mathbf{V}\boldsymbol{\Lambda}^k\mathbf{V}^\top$, et élever une matrice diagonale à la puissance $k$, c'est simplement élever ses éléments. (Nous nous en servirons pour les chaînes de Markov dans la section ➕ du chapitre 2.)
 
-```python
+```python hide
 k = 5
 via_diagonalisation = vecteurs @ np.diag(valeurs**k) @ vecteurs.T
 directement = np.linalg.matrix_power(A, k)
@@ -99,15 +105,22 @@ A^5 directement :
  [121 122]]
 ```
 
-#### 🛠️ Application : la direction principale d'un nuage de clients
+#### Un nuage de clients : la direction principale
 
 La gérante mesure, pour 200 clients, le nombre de visites mensuelles sur son site et leur dépense mensuelle. Elle soupçonne que les deux sont liées. On **standardise** chaque variable (on retranche la moyenne et on divise par l'écart-type, pour qu'elles aient la même échelle, comme promis dans la section sur les vecteurs), puis on calcule la **matrice de covariance** des deux variables standardisées :
 
 $$\mathbf{C} = \begin{pmatrix} 1 & r \\ r & 1 \end{pmatrix},$$
 
-où $r$ est la corrélation entre les deux variables. C'est une matrice symétrique : le théorème spectral s'applique.
+où $r$ est la corrélation entre les deux variables. C'est une matrice symétrique : le théorème spectral s'applique, et le calcul se fait **à la main** pour n'importe quel $r > 0$.
 
-```python
+> 🧪 **À la main.** L'équation caractéristique est $\det(\mathbf{C} - \lambda\mathbf{I}) = (1-\lambda)^2 - r^2 = 0$, donc $\lambda = 1 \pm r$.
+>
+> - Pour $\lambda_1 = 1 + r$ : $\begin{pmatrix}-r & r\\ r & -r\end{pmatrix}\mathbf{v} = \mathbf{0}$ donne $v_1 = v_2$, soit la direction $\frac{1}{\sqrt2}(1, 1)$ : la **diagonale**.
+> - Pour $\lambda_2 = 1 - r$ : on trouve $\frac{1}{\sqrt2}(1, -1)$ : l'autre diagonale, perpendiculaire à la première.
+>
+> Quelle que soit la corrélation, les axes principaux de deux variables standardisées sont donc les deux diagonales, et la part de variance portée par le premier axe vaut $\dfrac{1+r}{2}$. Pour $r = 0{,}9$, cela fait $95\ \%$.
+
+```python hide
 rng = np.random.default_rng(42)
 n = 200
 visites = rng.normal(6, 2, n)                        # visites par mois
@@ -137,7 +150,7 @@ Direction principale : [0.707 0.707]
 
 ![Nuage des 200 clients (variables standardisées) et son axe principal : le long de la diagonale, le nuage est étiré ; perpendiculairement, il est mince.](figures/ch01-nuage-clients.png)
 
-**Lecture.** La plus grande valeur propre (environ 1,90) correspond à la direction $(0{,}71;\; 0{,}71)$, la diagonale : c'est l'axe le long duquel le nuage de clients est le plus étiré, l'axe « client actif et dépensier ». Elle capte environ **95 %** de toute la variabilité. La seconde (0,10) correspond à la direction perpendiculaire, qui ne représente que les écarts « dépense inhabituelle pour ce nombre de visites ».
+**Sur les données simulées.** La corrélation mesurée vaut environ 0,90 : la plus grande valeur propre (environ 1,90) correspond à la direction $(0{,}71;\; 0{,}71)$, la diagonale : c'est l'axe le long duquel le nuage de clients est le plus étiré, l'axe « client actif et dépensier ». Elle capte environ **95 %** de toute la variabilité. La seconde (0,10) correspond à la direction perpendiculaire, qui ne représente que les écarts « dépense inhabituelle pour ce nombre de visites ».
 
 Autrement dit, on peut résumer ces deux variables par **une seule** (la position le long de l'axe principal), en ne perdant que 5 % de l'information. C'est le principe de l'**analyse en composantes principales** (ACP), que nous étudierons en détail au volume II : *trouver les directions de plus grande variance, ce sont les vecteurs propres de la matrice de covariance*.
 
@@ -147,6 +160,8 @@ Autrement dit, on peut résumer ces deux variables par **une seule** (la positio
 > - On les trouve avec $\det(\mathbf{A} - \lambda\mathbf{I}) = 0$. Somme des valeurs propres = trace ; produit = déterminant.
 > - Une matrice symétrique a des valeurs propres réelles et des vecteurs propres orthogonaux ; $\mathbf{A} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}^\top$.
 > - Les vecteurs propres de la matrice de covariance sont les axes principaux d'un nuage de données.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.3, exercice 1.3.
 
 ### 1.1.4 La décomposition en valeurs singulières (SVD)
 
@@ -194,11 +209,11 @@ Voici la propriété qui rend la SVD si utile en pratique.
 
 Autrement dit : si les premières valeurs singulières sont grandes et les suivantes minuscules, on peut **jeter** les dernières couches sans presque rien perdre. C'est de la **compression**.
 
-#### 🛠️ Application : résumer un tableau de ventes
+#### Un tableau de ventes : combien de couches faut-il ?
 
-La gérante a les ventes hebdomadaires de 6 produits sur 8 semaines. Les données sont simulées selon une règle simple : *ventes = popularité du produit × effet de la semaine + un peu de bruit*. Une telle structure « produit × saison » doit se retrouver dans la première couche de la SVD.
+La gérante a les ventes hebdomadaires de 6 produits sur 8 semaines (un tableau de 48 nombres). Les données sont simulées selon une règle simple : *ventes = popularité du produit × effet de la semaine + un peu de bruit*. Une telle structure « produit × saison » doit se retrouver dans la première couche de la SVD : c'est la matrice la plus simple possible, un produit extérieur $\mathbf{u}\mathbf{v}^\top$ (comme dans l'exemple à la main ci-dessus, mais bruitée).
 
-```python
+```python hide
 rng = np.random.default_rng(7)
 popularite = np.array([50, 30, 20, 12, 8, 5.0])                    # un niveau par produit
 saison = np.array([1.0, 1.1, 0.9, 1.2, 1.5, 1.4, 1.0, 0.8])       # un effet par semaine
@@ -218,7 +233,7 @@ Tableau des ventes (6 produits x 8 semaines) :
  [ 5  6  3  6  9  5  6  4]]
 ```
 
-```python
+```python hide
 U, s, Vt = np.linalg.svd(M)
 print("valeurs singulières :", s.round(2))
 part = 100 * s**2 / (s**2).sum()
@@ -239,7 +254,7 @@ nombres à stocker : 48 (tableau) contre 15 (couche 1)
 
 ![Ventes observées (à gauche), approximation par une seule couche (au centre) et ce qui reste (à droite). L'échelle de couleur est la même pour les deux premiers panneaux.](figures/ch01-svd-ventes.png)
 
-**Lecture.** La première valeur singulière (environ 202) est près de soixante fois plus grande que la deuxième (environ 3,5) : **99,9 %** de l'« énergie » du tableau est dans une seule couche. Une approximation de rang 1, qui ne stocke que 15 nombres au lieu de 48, reproduit le tableau avec une erreur relative d'environ 2,7 %. Le reste (les couches 2 à 6) est du bruit.
+**Résultat.** La SVD du tableau donne une première valeur singulière (environ 202) près de soixante fois plus grande que la deuxième (environ 3,5) : **99,9 %** de l'« énergie » du tableau est dans une seule couche. Une approximation de rang 1, qui ne stocke que 15 nombres au lieu de 48, reproduit le tableau avec une erreur relative d'environ 2,7 %. Le reste (les couches 2 à 6) est du bruit.
 
 La SVD a donc **retrouvé toute seule** la structure « popularité × saison » que nous avions mise dans les données, sans qu'on lui dise de la chercher. Vous venez de voir le principe de la **réduction de dimension** et celui des **systèmes de recommandation** par factorisation de matrices, deux sujets que nous développerons aux volumes suivants.
 
@@ -249,3 +264,5 @@ La SVD a donc **retrouvé toute seule** la structure « popularité × saison »
 > - Les valeurs singulières mesurent l'importance de chaque couche ; leur nombre non nul est le rang.
 > - Garder les $k$ premières couches donne la meilleure approximation de rang $k$ (Eckart-Young) : c'est la base de la compression, du débruitage et de l'ACP.
 > - L'ACP n'est rien d'autre que la SVD des données centrées.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.4.

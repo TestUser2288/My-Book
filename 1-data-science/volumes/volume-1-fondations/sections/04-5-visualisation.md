@@ -6,9 +6,9 @@
 
 > 🧭 **Pour la suite du livre.** Nous ne ferons ici que les graphiques fondamentaux. Les graphiques interactifs, les cartes ou les tableaux de bord complets sont abordés dans la série Data Analyst.
 
-Pour être autonome, cette section recharge les données de 4.4 (même graine, mêmes résultats) et règle l'apparence des figures du livre : traits fins, grille discrète, pas de cadre inutile.
+Les figures de cette section utilisent les données de 4.4 (mêmes graines, mêmes résultats) et la palette du livre : traits fins, grille discrète, pas de cadre inutile. Seuls les extraits utiles sont reproduits ; le code complet de chaque figure se trouve dans le fichier source de la section, exécuté à chaque construction du livre.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,6 +34,7 @@ df = df.sort_values("date").reset_index(drop=True)
 df["semaine"] = df["date"].dt.to_period("W").dt.start_time
 hebdo = df.groupby("semaine").agg(commandes=("montant", "count"), ca=("montant", "sum"))
 print(df.shape, "|", len(hebdo), "semaines | CA total :", round(df["montant"].sum(), 1), "€")
+ordre = ["Réseaux", "Site", "Boutique"]
 ```
 <!--sortie-->
 ```text
@@ -72,38 +73,39 @@ Il existe deux manières de s'en servir. L'interface « état » (`plt.plot(...)
 ```python
 fig, ax = plt.subplots(figsize=(7, 3.6))              # une figure contenant un seul Axes
 ax.plot(hebdo.index, hebdo["ca"], marker="o", ms=4, color=BLEU)
-ax.set_title("Chiffre d'affaires hebdomadaire de la boutique")
-ax.set_xlabel("semaine (lundi)")
-ax.set_ylabel("chiffre d'affaires (€)")
+ax.set(title="Chiffre d'affaires hebdomadaire de la boutique",
+       xlabel="semaine (lundi)", ylabel="chiffre d'affaires (€)")
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m"))   # dates au format jour/mois
-fig.autofmt_xdate()                                    # incline les dates si nécessaire
 fig.savefig("figures/ch04-premier-graphique.png", dpi=150, bbox_inches="tight")
 plt.close(fig)                                         # libère la mémoire
-print("figure enregistrée :", "semaine la plus forte =", hebdo["ca"].idxmax().date(), f"({hebdo['ca'].max():.0f} €)")
-```
-<!--sortie-->
-```text
-figure enregistrée : semaine la plus forte = 2026-03-23 (1737 €)
 ```
 
 ![Notre premier graphique : une courbe du chiffre d'affaires par semaine.](figures/ch04-premier-graphique.png)
 
 Tout y est : un **titre**, des **axes nommés avec leur unité**, une ligne avec des **marqueurs** (un point par semaine, pour ne pas laisser croire que l'on connaît les valeurs entre les semaines). La courbe est irrégulière d'une semaine à l'autre, ce qui est normal : chaque semaine ne compte qu'entre 14 et 27 commandes, donc quelques gros paniers suffisent à faire bondir le total. Pour voir la **tendance**, on lisse avec une moyenne mobile, que nous ajouterons en 4.5.3.
 
-> 🛠️ **Le patron de tous les graphiques matplotlib.** (1) `fig, ax = plt.subplots(...)` ; (2) `ax.plot / ax.bar / ax.hist / ax.scatter(...)` ; (3) `ax.set_title / set_xlabel / set_ylabel` ; (4) `fig.savefig(...)`. Pour *plusieurs* panneaux : `fig, axes = plt.subplots(2, 2)` renvoie un tableau d'Axes que l'on indexe `axes[0, 0]`, `axes[0, 1]`, etc. (c'est un tableau NumPy, voir 4.4.2).
+> 💡 **Le patron de tous les graphiques matplotlib.** (1) `fig, ax = plt.subplots(...)` ; (2) `ax.plot / ax.bar / ax.hist / ax.scatter(...)` ; (3) `ax.set_title / set_xlabel / set_ylabel` ; (4) `fig.savefig(...)`. Pour *plusieurs* panneaux : `fig, axes = plt.subplots(2, 2)` renvoie un tableau d'Axes que l'on indexe `axes[0, 0]`, `axes[0, 1]`, etc. (c'est un tableau NumPy, voir 4.4.2).
 
 ### 4.5.3 Les quatre graphiques essentiels, avec pandas
 
-pandas offre une méthode `.plot` sur ses Series et DataFrames, qui appelle matplotlib en coulisses et **renvoie l'Axes** : on peut donc la combiner avec tout ce qui précède, en lui passant l'argument `ax=`. Voici les quatre graphiques que vous tracerez le plus souvent, dans une seule figure à quatre panneaux :
+pandas offre une méthode `.plot` sur ses Series et DataFrames, qui appelle matplotlib en coulisses et **renvoie l'Axes** : on peut donc la combiner avec tout ce qui précède, en lui passant l'argument `ax=`. Voici les quatre graphiques que vous tracerez le plus souvent, dans une seule figure à quatre panneaux. En une ligne chacun, ils s'écrivent ainsi :
 
 1. **histogramme** des montants ;
 2. **barres horizontales** du chiffre d'affaires par canal (triées) ;
 3. **courbe** du chiffre d'affaires hebdomadaire avec sa moyenne mobile ;
 4. **nuage de points** livraison/satisfaction.
 
-Pour le quatrième, un détail d'importance. La livraison est un nombre entier de jours et la satisfaction une note entière de 1 à 5 : beaucoup de commandes tombent *exactement au même point*, et un nuage de points normal en cacherait la plupart. On les **décale aléatoirement d'un tout petit peu** (« jitter », en français *jitter* ou *bruitage*) et on rend les points translucides : les zones denses apparaissent plus foncées.
+Le code complet de la figure ajoute les titres, les étiquettes et les annotations. Pour le quatrième graphique, un détail d'importance. La livraison est un nombre entier de jours et la satisfaction une note entière de 1 à 5 : beaucoup de commandes tombent *exactement au même point*, et un nuage de points normal en cacherait la plupart. On les **décale aléatoirement d'un tout petit peu** (« jitter », en français *jitter* ou *bruitage*) et on rend les points translucides : les zones denses apparaissent plus foncées.
 
-```python
+```python noexec
+df["montant"].plot.hist(bins=30, color=BLEU)                      # histogramme
+ca_canal = df.groupby("canal")["montant"].sum().sort_values()
+ca_canal.plot.barh(color=BLEU)                                   # barres horizontales, triées
+hebdo["ca"].rolling(4).mean().plot()                             # courbe lissée
+df.plot.scatter(x="livraison", y="satisfaction", alpha=0.3)      # nuage de points
+```
+
+```python hide
 fig, axes = plt.subplots(2, 2, figsize=(10.5, 7.2))
 fig.subplots_adjust(hspace=0.38, wspace=0.28)
 
@@ -167,33 +169,31 @@ part du CA du canal en tête : 37%
 
 **seaborn** est une couche au-dessus de matplotlib spécialisée dans les graphiques **statistiques**. Son atout : on lui donne le **tableau complet** (`data=df`) et on dit quelle colonne va où (`x=`, `y=`, `hue=` pour la couleur), et seaborn s'occupe des regroupements, des légendes et des couleurs.
 
-Deux exemples. D'abord la distribution des montants **selon le canal**, en histogramme et en boîte à moustaches :
+Deux exemples. D'abord la distribution des montants **selon le canal**, en histogramme et en boîte à moustaches (on précise juste `hue=` pour la couleur) :
+
+```python hide
+import seaborn as sns
+
+sns.set_theme(style="whitegrid", rc={"axes.spines.top": False, "axes.spines.right": False})
+```
 
 ```python
 import seaborn as sns
 
-sns.set_theme(style="whitegrid", rc={"axes.spines.top": False, "axes.spines.right": False})
-ordre = ["Réseaux", "Site", "Boutique"]
-
-fig, axes = plt.subplots(1, 2, figsize=(11, 4), gridspec_kw={"width_ratios": [1.3, 1], "wspace": 0.25})
-sns.histplot(data=df, x="montant", hue="canal", hue_order=ordre, palette=COULEURS, bins=30,
-             element="step", alpha=0.3, ax=axes[0])
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+sns.histplot(data=df, x="montant", hue="canal", hue_order=ordre, palette=COULEURS, element="step", alpha=0.3, ax=axes[0])
+sns.boxplot(data=df, x="canal", y="montant", order=ordre, hue="canal", palette=COULEURS, ax=axes[1])
 axes[0].set(title="Histogrammes superposés selon le canal", xlabel="montant (€)", ylabel="nombre de commandes")
-
-sns.boxplot(data=df, x="canal", y="montant", order=ordre, hue="canal", palette=COULEURS, legend=False,
-            width=0.55, fliersize=3, ax=axes[1])
 axes[1].set(title="Boîtes à moustaches selon le canal", xlabel="", ylabel="montant (€)")
-
 fig.savefig("figures/ch04-seaborn-distributions.png", dpi=150, bbox_inches="tight")
-plt.close(fig)
 print(df.groupby("canal")["montant"].median().reindex(ordre).round(1).to_string())
 ```
 <!--sortie-->
 ```text
 canal
-Réseaux    41.5
-Site         49.5
-Boutique     64.8
+Réseaux     41.5
+Site        49.5
+Boutique    64.8
 ```
 
 ![Avec seaborn, une ligne suffit pour séparer les données par canal : histogrammes superposés et boîtes à moustaches.](figures/ch04-seaborn-distributions.png)
@@ -208,22 +208,20 @@ print(tab.round(2))
 
 fig, ax = plt.subplots(figsize=(6.5, 3))
 sns.heatmap(tab, annot=True, fmt=".0%", cmap="Blues", cbar=False, linewidths=2, linecolor="white", ax=ax)
-ax.set(title="Part de chaque note, selon le canal", xlabel="note de satisfaction", ylabel="")
 fig.savefig("figures/ch04-seaborn-heatmap.png", dpi=150, bbox_inches="tight")
-plt.close(fig)
 ```
 <!--sortie-->
 ```text
 satisfaction     1     2     3     4     5
 canal                                     
-Réseaux     0.00  0.06  0.31  0.49  0.14
+Réseaux       0.00  0.06  0.31  0.49  0.14
 Site          0.01  0.05  0.25  0.54  0.16
 Boutique      0.00  0.00  0.04  0.42  0.54
 ```
 
 ![Carte de chaleur : chaque ligne (canal) somme à 100 %. Plus la case est foncée, plus la note est fréquente dans ce canal.](figures/ch04-seaborn-heatmap.png)
 
-Chaque ligne du tableau somme à 1 (donc 100 %) : on lit « *parmi* les commandes de la boutique, 54 % ont donné la note 5 » (contre 14 % pour Réseaux et 16 % pour le Site). La case la plus foncée de la ligne Boutique est à droite (la note 5), celles d'Réseaux et du Site sont sur la note 4, avec une part importante de 3 : la boutique, où la livraison est immédiate, a les clients les plus satisfaits.
+Chaque ligne du tableau somme à 1 (donc 100 %) : on lit « *parmi* les commandes de la boutique, 54 % ont donné la note 5 » (contre 14 % pour Réseaux et 16 % pour le Site). La case la plus foncée de la ligne Boutique est à droite (la note 5), celles de Réseaux et du Site sont sur la note 4, avec une part importante de 3 : la boutique, où la livraison est immédiate, a les clients les plus satisfaits.
 
 > 💡 **matplotlib, pandas ou seaborn ?** Ce n'est pas un choix exclusif : seaborn et pandas **dessinent dans des Axes matplotlib**, que l'on peut retoucher avec les méthodes de 4.5.2. Règle pratique : pandas `.plot` pour regarder vite, seaborn pour les graphiques statistiques avec groupes, matplotlib pour tout ce qui doit être personnalisé au pixel près.
 
@@ -242,30 +240,30 @@ On additionne ces couches avec le signe `+`. Reproduisons l'histogramme par cana
 library(ggplot2)
 commandes <- read.csv("donnees/commandes.csv")
 commandes$canal <- factor(commandes$canal, levels = c("Réseaux", "Site", "Boutique"))
-print(aggregate(montant ~ canal, data = commandes, FUN = function(x) round(median(x), 1)))
 
 p <- ggplot(commandes, aes(x = montant, fill = canal)) +
-  geom_histogram(bins = 30, alpha = 0.8, colour = "white") +
-  facet_wrap(~ canal, ncol = 1) +
+  geom_histogram(bins = 30, colour = "white") +             # une géométrie : l'histogramme
+  facet_wrap(~ canal, ncol = 1) +                           # un panneau par canal
   scale_fill_manual(values = c(Réseaux = "#2a78d6", Site = "#eb6834", Boutique = "#1baf7a")) +
   labs(title = "Distribution des montants selon le canal", x = "montant (€)", y = "nombre de commandes") +
-  theme_minimal(base_size = 11) +
-  theme(legend.position = "none")
+  theme_minimal(base_size = 11) + theme(legend.position = "none")
 ggsave("figures/ch04-ggplot-montants.png", plot = p, width = 7, height = 5, dpi = 150)
-cat("figure enregistrée\n")
+```
+
+```r hide
+print(aggregate(montant ~ canal, data = commandes, FUN = function(x) round(median(x), 1)))
 ```
 <!--sortie-->
 ```text
-      canal montant
-1 Réseaux    41.5
-2      Site    49.5
-3  Boutique    64.8
-figure enregistrée
+     canal montant
+1  Réseaux    41.5
+2     Site    49.5
+3 Boutique    64.8
 ```
 
 ![Le même type de graphique avec ggplot2 : un panneau par canal (facettes), même échelle horizontale.](figures/ch04-ggplot-montants.png)
 
-On retrouve les mêmes médianes qu'en Python (confirmant que les deux outils lisent bien les mêmes données). Le tableau suivant résume la différence de philosophie :
+On retrouve les mêmes médianes qu'en Python (41,5 € pour Réseaux, 49,5 € pour le Site, 64,8 € pour la Boutique) (confirmant que les deux outils lisent bien les mêmes données). Le tableau suivant résume la différence de philosophie :
 
 | | matplotlib / seaborn (Python) | ggplot2 (R) |
 |---|---|---|
@@ -274,31 +272,31 @@ On retrouve les mêmes médianes qu'en Python (confirmant que les deux outils li
 | Personnalisation fine | très grande, mais verbeuse | grande, via `theme()` et `scale_*()` |
 | Combiner plusieurs couches | appels successifs sur le même `ax` | `+ geom_...()` |
 
-> 🧪 **Honnêteté d'exécution.** Les graphiques de cette section ont tous été produits par le code affiché (sauf trois dessins explicatifs, produits par `build/fig_ch04.py` : l'anatomie d'une figure, le broadcasting et l'axe tronqué) ; le bloc R ci-dessus a bien été exécuté (R avec ggplot2). Les versions de bibliothèques peuvent légèrement modifier l'aspect (polices, marges) sans changer l'information.
+> 🧪 **Honnêteté d'exécution.** Les graphiques de cette section ont tous été produits par du code exécuté à chaque construction du livre (sauf trois dessins explicatifs, produits par `build/fig_ch04.py` : l'anatomie d'une figure, le broadcasting et l'axe tronqué) ; le bloc R a bien été exécuté (R avec ggplot2). Les versions de bibliothèques peuvent légèrement modifier l'aspect (polices, marges) sans changer l'information.
 
 ### 4.5.6 Bien faire, mal faire : les pièges du graphique trompeur
 
 Un graphique peut mentir sans qu'une seule donnée soit fausse. Voici les six pièges les plus répandus. Le premier mérite une démonstration.
 
-**Piège n°1 : l'axe tronqué.** Comparons la satisfaction moyenne d'Réseaux et du Site. Les deux graphiques ci-dessous montrent **exactement les mêmes deux nombres**.
+**Piège n°1 : l'axe tronqué.** Comparons la satisfaction moyenne du canal Réseaux et du Site. Les deux graphiques ci-dessous montrent **exactement les mêmes deux nombres** : 3,72 pour Réseaux et 3,79 pour le Site, soit un écart réel de 2 %.
 
-```python
+```python hide
 moy = df[df["canal"].isin(["Réseaux", "Site"])].groupby("canal")["satisfaction"].mean()
-insta, site = moy["Réseaux"], moy["Site"]
-print("moyennes :", round(insta, 2), "et", round(site, 2))
-print("écart réel : +", round((site / insta - 1) * 100, 1), "%")
-print("barre du Site / barre d'Réseaux si l'axe commence à 3,70 :", round((site - 3.70) / (insta - 3.70), 1), "fois plus haute")
+reseaux, site = moy["Réseaux"], moy["Site"]
+print("moyennes :", round(reseaux, 2), "et", round(site, 2))
+print("écart réel : +", round((site / reseaux - 1) * 100, 1), "%")
+print("barre du Site / barre de Réseaux si l'axe commence à 3,70 :", round((site - 3.70) / (reseaux - 3.70), 1), "fois plus haute")
 ```
 <!--sortie-->
 ```text
 moyennes : 3.72 et 3.79
 écart réel : + 2.0 %
-barre du Site / barre d'Réseaux si l'axe commence à 3,70 : 5.2 fois plus haute
+barre du Site / barre de Réseaux si l'axe commence à 3,70 : 5.2 fois plus haute
 ```
 
 ![Mêmes données, deux impressions opposées : à gauche l'axe commence à 3,70, à droite à 0.](figures/ch04-axe-tronque.png)
 
-À gauche, avec un axe qui commence à 3,70, la barre du Site paraît **plus de 5 fois plus haute** que celle d'Réseaux (c'est le « 5,2 fois » imprimé ci-dessus) ; à droite, sur un axe complet, les deux barres sont quasiment identiques, ce qui correspond bien à l'écart réel de 2 %. **Règle : pour un diagramme en barres, l'axe doit commencer à 0**, car c'est la *longueur* de la barre qui porte l'information. (Pour une courbe ou un nuage de points, c'est la position qui compte : on peut zoomer, à condition de le signaler.)
+À gauche, avec un axe qui commence à 3,70, la barre du Site paraît **plus de 5 fois plus haute** que celle de Réseaux (exactement 5,2 fois : $(3{,}79-3{,}70)/(3{,}72-3{,}70)$) ; à droite, sur un axe complet, les deux barres sont quasiment identiques, ce qui correspond bien à l'écart réel de 2 %. **Règle : pour un diagramme en barres, l'axe doit commencer à 0**, car c'est la *longueur* de la barre qui porte l'information. (Pour une courbe ou un nuage de points, c'est la position qui compte : on peut zoomer, à condition de le signaler.)
 
 **Les autres pièges, et leurs remèdes :**
 
@@ -324,7 +322,9 @@ Un graphique n'est utile que s'il sort de votre ordinateur. `fig.savefig(chemin)
 | `dpi=` | résolution en pixels par pouce : **150** pour l'écran, **300** pour l'impression |
 | `bbox_inches="tight"` | rogne les marges blanches inutiles |
 
-```python
+En pratique, `fig.savefig("exemple.pdf", dpi=150, bbox_inches="tight")` suffit : l'extension choisit le format (nous avons vérifié que PNG, SVG et PDF s'enregistrent bien).
+
+```python hide
 import os
 import tempfile
 
@@ -344,65 +344,9 @@ plt.close(fig)
 .pdf enregistré, taille non nulle : True
 ```
 
-> 🛠️ **Application : le tableau de bord de la gérante.** Mettons tout en commun dans une **fonction** qui produit en une fois la figure que la gérante joint à son rapport du lundi (celui de 4.4.13). Remarquez que chaque panneau a un **titre qui énonce sa conclusion**, calculée à partir des données (et non écrite à la main) : si les chiffres changent, le titre reste vrai.
 
-```python
-def tableau_de_bord(df, chemin):
-    """Dessine le tableau de bord de la boutique à partir du DataFrame `df` et l'enregistre dans `chemin`."""
-    ca = df.groupby("semaine")["montant"].sum()
-    lisse = ca.rolling(4).mean().dropna()
-    par_canal = df.groupby("canal")["montant"].sum().sort_values()
-    notes = df["satisfaction"].value_counts().sort_index()
-    sens = "monte" if lisse.iloc[-1] > lisse.iloc[0] else "baisse"
-
-    fig = plt.figure(figsize=(10.5, 6.6))
-    grille = fig.add_gridspec(2, 2, height_ratios=[1.15, 1], hspace=0.5, wspace=0.3)
-
-    ax = fig.add_subplot(grille[0, :])                              # panneau du haut : toute la largeur
-    ax.plot(ca.index, ca.values, color=BLEU, alpha=0.35, marker="o", ms=3)
-    ax.plot(lisse.index, lisse.values, color=BLEU, lw=2.5)
-    ax.set_title(f"Le chiffre d'affaires hebdomadaire {sens} : de {lisse.iloc[0]:.0f} à {lisse.iloc[-1]:.0f} € (moyenne mobile)")
-    ax.set_ylabel("€ par semaine")
-    ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO, interval=4))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m"))
-
-    ax = fig.add_subplot(grille[1, 0])
-    ax.barh(par_canal.index, par_canal.values, color=[COULEURS[c] for c in par_canal.index], alpha=0.85)
-    for i, v in enumerate(par_canal):
-        ax.text(v + 80, i, f"{v / par_canal.sum():.0%}".replace("%", " %"), va="center")
-    ax.set_title(f"{par_canal.index[-1]} : {par_canal.iloc[-1] / par_canal.sum():.0%} du chiffre d'affaires".replace("%", " %"))
-    ax.set_xlabel("chiffre d'affaires (€)")
-    ax.set_xlim(0, par_canal.max() * 1.2)
-    ax.grid(axis="y", visible=False)
-
-    ax = fig.add_subplot(grille[1, 1])
-    ax.bar(notes.index, notes.values, color=[ORANGE if n <= 2 else BLEU for n in notes.index], alpha=0.85)
-    ax.set_title(f"{(df['satisfaction'] >= 4).mean():.0%} des clients notent 4 ou 5".replace("%", " %"))
-    ax.set_xlabel("note de satisfaction")
-    ax.set_ylabel("commandes")
-    ax.grid(axis="x", visible=False)
-
-    fig.savefig(chemin, dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    return par_canal.index[-1], round(float(lisse.iloc[-1]), 1)
-
-
-print(tableau_de_bord(df, "figures/ch04-tableau-de-bord.png"))
-```
-<!--sortie-->
-```text
-('Site', 1433.7)
-```
+Mettons tout en commun dans une **fonction** qui produit, en une seule figure, le tableau de bord que la gérante joint à son rapport du lundi : la courbe lissée du chiffre d'affaires, la part de chaque canal, la répartition des notes. Chaque panneau a un **titre qui énonce sa conclusion, calculée à partir des données** (et non écrite à la main) : si les chiffres changent, le titre reste vrai. Tel que la gérante le lit, il dit que la tendance du chiffre d'affaires est à la hausse (de 1 080 à 1 434 € par semaine en moyenne mobile), que le Site et la Boutique pèsent chacun plus d'un tiers des ventes, et que trois clients sur quatre sont satisfaits (4 ou 5). Voilà le chemin complet : des **données brutes** (fichier CSV) aux **tableaux** (pandas, 4.4) puis aux **figures** prêtes à insérer dans un rapport, le tout dans un script que l'on peut relancer chaque semaine. C'est l'esprit de la **recherche reproductible** que nous retrouverons au chapitre 6. La fonction complète est construite pas à pas dans l'application 4.6 du cahier.
 
 ![Le tableau de bord produit par la fonction : trois panneaux, chacun avec un titre qui énonce sa conclusion.](figures/ch04-tableau-de-bord.png)
 
-Lisons-le comme le ferait la gérante : la tendance du chiffre d'affaires est à la hausse (1 080 → 1 434 € par semaine en moyenne mobile), le Site et la Boutique pèsent chacun plus d'un tiers des ventes, et trois clients sur quatre sont satisfaits (4 ou 5). Voilà le chemin complet : des **données brutes** (fichier CSV) aux **tableaux** (pandas, 4.4) puis aux **figures** prêtes à insérer dans un rapport, le tout dans un script que l'on peut relancer chaque semaine. C'est l'esprit de la **recherche reproductible** que nous retrouverons au chapitre 6.
-
-> ✅ **À retenir (visualisation).**
->
-> 1. On part de la **question** et du **type des variables**, pas du joli graphique ;
-> 2. matplotlib : `fig, ax = plt.subplots()`, on dessine dans l'`ax`, on nomme, on enregistre ; pandas `.plot` et seaborn dessinent dans le même cadre ;
-> 3. quatre fondamentaux : histogramme (forme), barres triées (comparaison), courbe (temps), nuage de points (relation) ;
-> 4. **barres : l'axe commence à zéro** ; pas de 3D ; peu de couleurs, avec un sens ; titre = message ;
-> 5. ggplot2 (R) décrit un graphique par **couches** : données + esthétique + géométrie ;
-> 6. **PNG** pour l'écran, **PDF/SVG** pour l'impression ; une fonction de tracé rend l'analyse reproductible.
+> 📒 **Pour s'entraîner.** Cahier, chapitre 4 : application 4.6 (le tableau de bord) ; exercice 4.12 (un graphique honnête).

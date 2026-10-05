@@ -111,9 +111,9 @@ Voici la fonction de perte des moindres carrés, que vous connaissez maintenant 
 
 $$\hat{\boldsymbol\theta} = \arg\min_{\boldsymbol\theta}\; \sum_{i=1}^{n}\bigl(y_i - \mathbf{x}_i^\top\boldsymbol\theta\bigr)^2 .$$
 
-Lecture mot à mot : « le vecteur de paramètres estimé $\hat{\boldsymbol\theta}$ est **l'argument $\boldsymbol\theta$ qui minimise** la somme, sur les $n$ observations, du **carré de l'écart** entre la valeur observée $y_i$ et la prédiction $\mathbf{x}_i^\top\boldsymbol\theta$ ». Et en Python :
+Lecture mot à mot : « le vecteur de paramètres estimé $\hat{\boldsymbol\theta}$ est **l'argument $\boldsymbol\theta$ qui minimise** la somme, sur les $n$ observations, du **carré de l'écart** entre la valeur observée $y_i$ et la prédiction $\mathbf{x}_i^\top\boldsymbol\theta$ ». Sur nos trois points $(1,2)$, $(2,3)$, $(3,5)$ (section 1.3), cette formule donne $\hat{\boldsymbol\theta} = (1{,}5\;;\;1/3)$ et une somme des carrés de $1/6 \approx 0{,}1667$.
 
-```python
+```python hide
 import numpy as np
 x = np.array([1.0, 2.0, 3.0]); y = np.array([2.0, 3.0, 5.0])
 X = np.column_stack([x, np.ones_like(x)])
@@ -127,4 +127,4 @@ theta chapeau = [1.5    0.3333]
 somme des carrés = 0.1667
 ```
 
-Une formule, une phrase, trois lignes de code : c'est cette triple lecture qui vous rendra autonome.
+Une formule, une phrase, un exemple chiffré : c'est cette triple lecture qui vous rendra autonome.

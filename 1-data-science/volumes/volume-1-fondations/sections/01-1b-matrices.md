@@ -6,7 +6,7 @@ On note $\mathbf{A} \in \mathbb{R}^{n \times p}$ une matrice à $n$ lignes et $p
 
 #### Un exemple concret
 
-La gérante a noté ses ventes des trois premiers mois pour trois produits (poteries, huile, bijoux). Chaque **ligne** est un mois, chaque **colonne** un produit :
+La gérante a noté ses ventes des trois premiers mois pour trois produits (poteries, textiles, bijoux). Chaque **ligne** est un mois, chaque **colonne** un produit :
 
 $$\mathbf{V} = \begin{pmatrix} 10 & 40 & 20 \\ 12 & 35 & 25 \\ 15 & 50 & 18 \end{pmatrix} \begin{array}{l} \leftarrow \text{janvier} \\ \leftarrow \text{février} \\ \leftarrow \text{mars} \end{array}$$
 
@@ -24,12 +24,12 @@ Formellement, $(\mathbf{V}\mathbf{p})_i = \sum_j v_{ij}\, p_j$ : la composante $
 >
 > $$\mathbf{V}\mathbf{p} = 45 \begin{pmatrix}10\\12\\15\end{pmatrix} + 12 \begin{pmatrix}40\\35\\50\end{pmatrix} + 30 \begin{pmatrix}20\\25\\18\end{pmatrix}.$$
 >
-> Le chiffre d'affaires est « 45 fois les ventes de poteries, plus 12 fois les ventes d'huile, plus 30 fois les ventes de bijoux ». C'est exactement ce que fait une régression linéaire : un mélange pondéré de colonnes.
+> Le chiffre d'affaires est « 45 fois les ventes de poteries, plus 12 fois les ventes de textiles, plus 30 fois les ventes de bijoux ». C'est exactement ce que fait une régression linéaire : un mélange pondéré de colonnes.
 
 ```python
 import numpy as np
 
-V = np.array([[10, 40, 20],    # janvier : poteries, huile, bijoux
+V = np.array([[10, 40, 20],    # janvier : poteries, textiles, bijoux
               [12, 35, 25],    # février
               [15, 50, 18]])   # mars
 prix = np.array([45, 12, 30])
@@ -55,9 +55,9 @@ $$c_{ij} = \sum_{k=1}^{p} a_{ik}\, b_{kj}.$$
 
 > ⚠️ **Règle d'or des dimensions.** Pour multiplier, le **nombre de colonnes de $\mathbf{A}$ doit égaler le nombre de lignes de $\mathbf{B}$** : $(n \times \mathbf{p})(\mathbf{p} \times q) \to (n \times q)$. Les deux $p$ « du milieu » doivent être identiques et disparaissent ; il reste $n \times q$. Quand un code plante avec une erreur de « forme » (*shape*), c'est presque toujours cette règle qui est violée.
 
-```python
+```python hide
 P = np.array([[45, 49.5],      # poteries : prix actuel, prix +10 %
-              [12, 13.2],      # huile
+              [12, 13.2],      # textiles
               [30, 33.0]])     # bijoux
 print(V @ P)
 ```
@@ -78,7 +78,7 @@ Chaque ligne est un mois, chaque colonne un scénario. La deuxième colonne vaut
 >
 > Calcul de $\mathbf{B}\mathbf{A}$ : on trouve $\begin{pmatrix}3&4\\1&2\end{pmatrix}$ : multiplier à gauche par $\mathbf{B}$ **échange les lignes** de $\mathbf{A}$. Les deux résultats sont différents.
 
-```python
+```python hide
 A = np.array([[1, 2], [3, 4]])
 B = np.array([[0, 1], [1, 0]])
 print("A @ B =\n", A @ B)
@@ -120,7 +120,7 @@ $$\mathbf{A}^{-1} = \frac{1}{ad - bc}\begin{pmatrix}d&-b\\-c&a\end{pmatrix}.$$
 >
 > **Vérification** : $\mathbf{A}\mathbf{A}^{-1} = \begin{pmatrix}2\cdot 3 + 1\cdot(-5) & 2\cdot(-1) + 1\cdot 2\\ 5\cdot 3 + 3\cdot(-5) & 5\cdot(-1) + 3\cdot 2\end{pmatrix} = \begin{pmatrix}1&0\\0&1\end{pmatrix}$. ✔
 
-```python
+```python hide
 A = np.array([[2, 1], [5, 3]])
 A_inv = np.linalg.inv(A)
 print(A_inv.round(6) + 0)          # le "+ 0" évite l'affichage de -0.
@@ -138,10 +138,10 @@ print((A @ A_inv).round(6) + 0)
 
 Voici l'utilité majeure de l'inverse. La gérante a perdu sa liste de prix, mais retrouve deux factures :
 
-- commande 1 : 2 poteries + 1 huile = 102 € ;
-- commande 2 : 1 poterie + 3 huiles = 81 €.
+- commande 1 : 2 poteries + 1 écharpe = 102 € ;
+- commande 2 : 1 poterie + 3 écharpes = 81 €.
 
-Notons $x_1$ le prix d'une poterie et $x_2$ celui d'une huile. Le système s'écrit $\mathbf{M}\mathbf{x} = \mathbf{b}$ avec
+Notons $x_1$ le prix d'une poterie et $x_2$ celui d'une écharpe. Le système s'écrit $\mathbf{M}\mathbf{x} = \mathbf{b}$ avec
 
 $$\mathbf{M} = \begin{pmatrix}2&1\\1&3\end{pmatrix}, \quad \mathbf{x} = \begin{pmatrix}x_1\\x_2\end{pmatrix}, \quad \mathbf{b} = \begin{pmatrix}102\\81\end{pmatrix}.$$
 
@@ -149,7 +149,7 @@ $$\mathbf{M} = \begin{pmatrix}2&1\\1&3\end{pmatrix}, \quad \mathbf{x} = \begin{p
 >
 > $$\mathbf{x} = \mathbf{M}^{-1}\mathbf{b} = \frac15\begin{pmatrix}3\cdot 102 - 81\\ -102 + 2\cdot 81\end{pmatrix} = \frac15\begin{pmatrix}225\\60\end{pmatrix} = \begin{pmatrix}45\\12\end{pmatrix}.$$
 >
-> Une poterie coûte **45 €**, une huile **12 €**. Vérifions : $2 \times 45 + 12 = 102$ ✔ et $45 + 3\times 12 = 81$ ✔.
+> Une poterie coûte **45 €**, une écharpe **12 €**. Vérifions : $2 \times 45 + 12 = 102$ ✔ et $45 + 3\times 12 = 81$ ✔.
 
 ```python
 M = np.array([[2, 1], [1, 3]])
@@ -165,11 +165,11 @@ Prix retrouvés : [45. 12.]
 
 #### Quand le système n'a pas de solution unique : déterminant et rang
 
-Imaginons que la commande 2 soit en réalité « 4 poteries + 2 huiles = 204 € » : c'est exactement le **double** de la commande 1. Elle n'apporte **aucune information nouvelle**. Il y a alors une infinité de couples de prix qui conviennent. Le déterminant le détecte : $\det\begin{pmatrix}2&1\\4&2\end{pmatrix} = 2\times 2 - 1\times 4 = 0$. On dit que la matrice est **singulière** (non inversible).
+Imaginons que la commande 2 soit en réalité « 4 poteries + 2 écharpes = 204 € » : c'est exactement le **double** de la commande 1. Elle n'apporte **aucune information nouvelle**. Il y a alors une infinité de couples de prix qui conviennent. Le déterminant le détecte : $\det\begin{pmatrix}2&1\\4&2\end{pmatrix} = 2\times 2 - 1\times 4 = 0$. On dit que la matrice est **singulière** (non inversible).
 
 Une notion plus générale est le **rang** : le nombre de colonnes (ou de lignes) *linéairement indépendantes*, c'est-à-dire qui ne s'obtiennent pas comme combinaison des autres. Ici le rang vaut 1 au lieu de 2.
 
-```python
+```python hide
 S = np.array([[2, 1], [4, 2]])
 print("déterminant :", np.linalg.det(S))
 print("rang        :", np.linalg.matrix_rank(S))
@@ -180,54 +180,33 @@ déterminant : 0.0
 rang        : 1
 ```
 
-> 🛠️ **Application : des colonnes redondantes.** Cette situation est fréquente dans les vraies données. Supposons qu'un fichier contienne le prix hors taxes (HT) *et* le prix toutes taxes comprises (TTC = 1,19 × HT). La seconde colonne est un multiple de la première : elle ne dit rien de plus.
+#### Des colonnes redondantes dans de vraies données
 
-```python
-ht = np.array([40.0, 25.0, 60.0, 15.0])
-table = np.column_stack([ht, 1.19 * ht])    # deux colonnes : HT et TTC
-print("rang de la table :", np.linalg.matrix_rank(table), "(alors qu'il y a 2 colonnes)")
-```
-<!--sortie-->
-```text
-rang de la table : 1 (alors qu'il y a 2 colonnes)
-```
+Cette situation est fréquente. Si un fichier contient le prix hors taxes (HT) *et* le prix toutes taxes comprises (TTC $= 1{,}19 \times$ HT), la seconde colonne est un multiple de la première : elle ne dit rien de plus, et le rang du tableau vaut 1 au lieu de 2. Un modèle de régression qui utiliserait ces deux colonnes serait incapable de départager leurs rôles : c'est le problème de la **multicolinéarité**, que nous retrouverons au volume II.
 
-Un modèle de régression qui utiliserait ces deux colonnes serait incapable de départager leurs rôles. C'est le problème de la **multicolinéarité**, que nous retrouverons au volume II.
+#### Toutes les similarités d'un coup
 
-#### Application : la matrice des similarités entre clients
-
-Revenons à nos clients et à la similarité cosinus. Ajoutons deux clients, Dorra et Elyes, et mettons les cinq profils dans une matrice $\mathbf{X}$ (une ligne par client, une colonne par catégorie).
-
-L'astuce : si l'on **normalise** chaque ligne pour que sa norme vaille 1, on obtient une matrice $\mathbf{U}$ dont chaque ligne est un vecteur de longueur 1. Alors le produit scalaire de deux lignes de $\mathbf{U}$ est directement leur cosinus. Et **tous** les produits scalaires entre lignes sont rassemblés dans le produit $\mathbf{U}\mathbf{U}^\top$ :
+Revenons à la similarité cosinus. L'astuce : si l'on **normalise** chaque ligne d'une matrice de profils $\mathbf{X}$ pour que sa norme vaille 1, on obtient une matrice $\mathbf{U}$ dont chaque ligne est un vecteur de longueur 1. Alors le produit scalaire de deux lignes de $\mathbf{U}$ est directement leur cosinus, et **tous** les produits scalaires entre lignes sont rassemblés dans un seul produit matriciel :
 
 $$(\mathbf{U}\mathbf{U}^\top)_{ij} = \mathbf{u}_i \cdot \mathbf{u}_j = \cos\theta_{ij}.$$
 
-```python
-clients = {"Amel": [3, 1, 0], "Bilel": [6, 2, 0], "Chaima": [0, 1, 4],
-           "Dorra": [1, 0, 5], "Elyes": [2, 2, 2]}
-noms = list(clients)
-X = np.array(list(clients.values()), dtype=float)        # une ligne par client
+Pour nos trois clients du début, cela donne
 
-U = X / np.linalg.norm(X, axis=1, keepdims=True)         # chaque ligne ramenée à la norme 1
-S = U @ U.T                                              # toutes les similarités d'un coup
+$$\mathbf{U}\mathbf{U}^\top \approx \begin{pmatrix} 1 & 1 & 0{,}08 \\ 1 & 1 & 0{,}08 \\ 0{,}08 & 0{,}08 & 1 \end{pmatrix}.$$
 
-print(" " * 8 + "".join(f"{n:>8}" for n in noms))
-for i, n in enumerate(noms):
-    print(f"{n:<8}" + "".join(f"{S[i, j]:8.2f}" for j in range(len(noms))))
+On y lit que la matrice est **symétrique** (la ressemblance d'Alix à Basile est celle de Basile à Alix), que sa **diagonale vaut 1** (chacun ressemble parfaitement à lui-même), et qu'Alix et Basile sont identiques tandis que Camille est très différente d'eux. Avec cinq mille clients, ce serait la même opération : une seule multiplication de matrices.
+
+```python hide
+X3 = np.array([alix, basile, camille], dtype=float)
+U3 = X3 / np.linalg.norm(X3, axis=1, keepdims=True)
+print((U3 @ U3.T).round(2))
 ```
 <!--sortie-->
 ```text
-            Amel   Bilel  Chaima   Dorra   Elyes
-Amel        1.00    1.00    0.08    0.19    0.73
-Bilel       1.00    1.00    0.08    0.19    0.73
-Chaima      0.08    0.08    1.00    0.95    0.70
-Dorra       0.19    0.19    0.95    1.00    0.68
-Elyes       0.73    0.73    0.70    0.68    1.00
+[[1.   1.   0.08]
+ [1.   1.   0.08]
+ [0.08 0.08 1.  ]]
 ```
-
-Lecture : la diagonale vaut 1 (chacun ressemble parfaitement à lui-même), la matrice est symétrique (la ressemblance d'Amel à Bilel est celle de Bilel à Amel), Amel et Bilel valent 1,00, et Chaima et Dorra, tous deux fans de bijoux, sont très proches. Elyes, qui achète un peu de tout, est moyennement proche de chacun (entre 0,68 et 0,73) sans avoir de « jumeau » parmi eux.
-
-Pour recommander un produit à Chaima, la gérante pourrait regarder ce qu'achète son voisin le plus proche, ici Dorra. Avec une seule multiplication de matrices, nous avons comparé les cinq clients entre eux ; avec cinq mille clients, ce serait la même ligne de code.
 
 > ✅ **À retenir (matrices).**
 >
@@ -236,3 +215,5 @@ Pour recommander un produit à Chaima, la gérante pourrait regarder ce qu'achè
 > - Le produit matriciel n'est **pas commutatif**.
 > - Résoudre $\mathbf{M}\mathbf{x} = \mathbf{b}$ : on utilise `np.linalg.solve`. Si $\det\mathbf{M} = 0$ (rang insuffisant), il n'y a pas de solution unique.
 > - Des colonnes redondantes font chuter le rang : c'est la source de la multicolinéarité.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : applications 1.1 et 1.2, exercice 1.2.

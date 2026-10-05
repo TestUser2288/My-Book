@@ -21,11 +21,11 @@ print(resume)
 ```
 <!--sortie-->
 ```text
-             n  moyenne  ecart_type
-canal                              
-Boutique   114     74.8        40.6
-Réseaux  138     49.0        31.1
-Site       148     59.5        38.3
+            n  moyenne  ecart_type
+canal                             
+Boutique  114     74.8        40.6
+Réseaux   138     49.0        31.1
+Site      148     59.5        38.3
 ```
 
 **En R** (le même calcul avec le paquet `dplyr`, section 4.2) :
@@ -41,11 +41,11 @@ commandes |>
 <!--sortie-->
 ```text
 # A tibble: 3 × 4
-  canal         n moyenne ecart_type
-  <chr>     <int>   <dbl>      <dbl>
-1 Boutique    114    74.8       40.6
-2 Réseaux   138    49         31.1
-3 Site        148    59.5       38.3
+  canal        n moyenne ecart_type
+  <chr>    <int>   <dbl>      <dbl>
+1 Boutique   114    74.8       40.6
+2 Réseaux    138    49         31.1
+3 Site       148    59.5       38.3
 ```
 
 Les deux langages donnent exactement les mêmes nombres : 114 commandes en boutique pour un montant moyen d'environ 75 €, comme au 3.1. (Le tri alphabétique des canaux est le même ; seule la présentation du tableau diffère.)

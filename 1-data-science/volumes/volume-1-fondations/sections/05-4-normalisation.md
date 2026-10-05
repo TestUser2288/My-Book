@@ -4,9 +4,9 @@
 
 ### 5.4.1 Le problème : la grande feuille unique
 
-Imaginons que la gérante ait gardé son habitude du tableur : **une seule feuille** avec une ligne par article vendu, contenant tout ce qu'on sait sur la commande, la cliente et le produit. Fabriquons cette feuille pour les **huit premières commandes** : nous créons dans la base des tables de travail préfixées `ex_` (nous les supprimerons à la fin de la section).
+Imaginons que la gérante ait gardé son habitude du tableur : **une seule feuille** avec une ligne par article vendu, contenant tout ce qu'on sait sur la commande, la cliente et le produit. Fabriquons cette feuille pour les **huit premières commandes**, en recollant par jointures les cinq tables du 5.1 (nous créons pour cela dans la base des tables de travail préfixées `ex_`, supprimées à la fin de la section).
 
-```sql
+```sql hide
 CREATE TABLE ex_feuille (
     id_commande INTEGER NOT NULL, id_produit INTEGER NOT NULL,
     date_commande TEXT, id_client INTEGER, prenom TEXT, nom TEXT, ville TEXT,
@@ -25,37 +25,30 @@ JOIN categories AS ca ON ca.id_categorie = p.id_categorie
 WHERE c.id_commande <= 8;
 ```
 
-Voici un extrait de la feuille (quelques colonnes seulement pour tenir en largeur) :
+Voici un extrait de la feuille : les lignes des clients n° 3 et n° 5 (quelques colonnes seulement pour tenir en largeur).
 
 ```sql
 SELECT id_commande, id_produit, id_client, prenom, ville, nom_produit, nom_categorie, quantite
 FROM ex_feuille
+WHERE id_client IN (3, 5)
 ORDER BY id_commande, id_produit;
 ```
 <!--sortie-->
 ```text
- id_commande  id_produit  id_client  prenom    ville                nom_produit nom_categorie  quantite
-           1           1          2    Sami   Ville A           Tajine décoratif       Poterie         1
-           2          10          6   Hatem Ville C           Pendentif khamsa        Bijoux         1
-           3           2          3   Aymen     Ville F Bol en céramique de Ville E       Poterie         1
-           3           3          3   Aymen     Ville F       Vase peint à la main       Poterie         1
-           3          13          3   Aymen     Ville F    Savon à l'huile d'olive   Cosmétiques         1
-           4          11          1 Yassine Ville C         Bracelet de perles        Bijoux         1
-           4          14          1 Yassine Ville C              Eau de jasmin   Cosmétiques         1
-           5           8          5    Emna   Ville A            Pochette brodée       Textile         2
-           5           9          5    Emna   Ville A            Bague en argent        Bijoux         1
-           5          15          5    Emna   Ville A           Huile de nigelle   Cosmétiques         1
-           6           2          9   Salma    Ville H Bol en céramique de Ville E       Poterie         1
-           6           8          9   Salma    Ville H            Pochette brodée       Textile         1
-           7           5          4    Emna   Ville A            Foutah en coton       Textile         1
-           7           9          4    Emna   Ville A            Bague en argent        Bijoux         1
-           8           4          5    Emna   Ville A            Plat à couscous       Poterie         2
-           8           5          5    Emna   Ville A            Foutah en coton       Textile         1
+ id_commande  id_produit  id_client prenom   ville             nom_produit nom_categorie  quantite
+           3           2          3   Adam Ville F        Bol en céramique       Poterie         1
+           3           3          3   Adam Ville F    Vase peint à la main       Poterie         1
+           3          13          3   Adam Ville F Savon à l'huile d'olive   Cosmétiques         1
+           5           8          5   Anna Ville A         Pochette brodée       Textile         2
+           5           9          5   Anna Ville A         Bague en argent        Bijoux         1
+           5          15          5   Anna Ville A           Huile de soin   Cosmétiques         1
+           8           4          5   Anna Ville A   Grand plat de service       Poterie         2
+           8           5          5   Anna Ville A          Plaid en coton       Textile         1
 ```
 
-Regardez la cliente n° 5, Emna Hamdi : elle apparaît sur **cinq lignes**, et sa ville « Ville A » est écrite cinq fois. Même chose pour le produit n° 9 (Bague en argent) et sa catégorie « Bijoux ». Cette redondance cause trois catégories de problèmes, appelées **anomalies**.
+Regardez la cliente n° 5, Anna Michel : elle apparaît sur **cinq lignes**, et sa ville « Ville A » est écrite cinq fois. Même chose pour le produit n° 9 (Bague en argent) et sa catégorie « Bijoux ». Cette redondance cause trois catégories de problèmes, appelées **anomalies**.
 
-**1. Anomalie de mise à jour.** Emna déménage à Ville G. L'employé de la gérante ne corrige qu'**une** ligne sur cinq (il a oublié les autres) :
+**1. Anomalie de mise à jour.** Anna déménage à Ville G. L'employé de la gérante ne corrige qu'**une** ligne sur cinq (il a oublié les autres) :
 
 ```sql
 UPDATE ex_feuille SET ville = 'Ville G'
@@ -70,25 +63,25 @@ GROUP BY id_client, prenom, nom, ville;
 ```
 <!--sortie-->
 ```text
- id_client prenom   nom  ville  lignes
-         5   Emna Hamdi Ville A       4
-         5   Emna Hamdi Ville G       1
+ id_client prenom    nom   ville  lignes
+         5   Anna Michel Ville A       4
+         5   Anna Michel Ville G       1
 ```
 
-Deux villes pour la même personne : on ne sait plus laquelle est vraie. C'est exactement l'histoire de « Amel Ben Salah » du 5.1.1. Dans notre vraie base, cette erreur est **impossible** : la ville d'une cliente n'est écrite qu'à un seul endroit.
+Deux villes pour la même personne : on ne sait plus laquelle est vraie. C'est exactement l'histoire de « Léa Martin » du 5.1.1. Dans notre vraie base, cette erreur est **impossible** : la ville d'une cliente n'est écrite qu'à un seul endroit.
 
-> ⚠️ **Une incohérence ne se résorbe pas toute seule.** Même un `SELECT DISTINCT id_client, ville` ne sait pas « choisir » la bonne ville : il renvoie les deux. Les doublons contradictoires sont de la **vraie** information fausse, que seul un humain peut trancher. Remettons la ville d'origine pour la suite :
+> ⚠️ **Une incohérence ne se résorbe pas toute seule.** Même un `SELECT DISTINCT id_client, ville` ne sait pas « choisir » la bonne ville : il renvoie les deux. Les doublons contradictoires sont de la **vraie** information fausse, que seul un humain peut trancher. Remettons la ville d'origine pour la suite, par un `UPDATE` inverse.
 
-```sql
+```sql hide
 UPDATE ex_feuille SET ville = 'Ville A'
 WHERE id_client = 5 AND id_commande = 8 AND id_produit = 5;
 ```
 
-**2. Anomalie d'insertion.** la gérante veut ajouter au catalogue un nouveau produit, pas encore vendu. Impossible : la feuille n'a de place que pour des *lignes de commande*, et la clé primaire exige un numéro de commande.
+**2. Anomalie d'insertion.** La gérante veut ajouter au catalogue un nouveau produit, pas encore vendu. Impossible : la feuille n'a de place que pour des *lignes de commande*, et la clé primaire exige un numéro de commande. La base répond : `NOT NULL constraint failed: ex_feuille.id_commande`.
 
-```python
+```python hide
 try:
-    con.execute("INSERT INTO ex_feuille (id_produit, nom_produit, prix_catalogue) VALUES (17, 'Narguilé', 90)")
+    con.execute("INSERT INTO ex_feuille (id_produit, nom_produit, prix_catalogue) VALUES (17, 'Lanterne', 90)")
 except sqlite3.IntegrityError as erreur:
     print("refusé :", erreur)
 ```
@@ -111,17 +104,17 @@ ORDER BY id_produit;
 <!--sortie-->
 ```text
  id_produit             nom_produit  prix_catalogue  seule_commande
-          1        Tajine décoratif            45.0               1
+          1          Plat décoratif            45.0               1
           3    Vase peint à la main            65.0               3
-          4         Plat à couscous            38.0               8
-         10        Pendentif khamsa            35.0               2
+          4   Grand plat de service            38.0               8
+         10               Pendentif            35.0               2
          11      Bracelet de perles            15.0               4
          13 Savon à l'huile d'olive             6.0               3
-         14           Eau de jasmin            14.0               4
-         15        Huile de nigelle            24.0               5
+         14            Eau parfumée            14.0               4
+         15           Huile de soin            24.0               5
 ```
 
-Annuler la commande n° 5 ferait disparaître l'huile de nigelle du catalogue : on a voulu supprimer *une vente* et on a perdu *un produit*.
+Annuler la commande n° 5 ferait disparaître l'huile de soin du catalogue : on a voulu supprimer *une vente* et on a perdu *un produit*.
 
 Résumé : dans une table, **tout fait doit être associé à un seul sujet**. Un client, un produit, une commande et une vente sont quatre sujets différents ; les mélanger dans une même table provoque ces trois anomalies.
 
@@ -139,9 +132,19 @@ Les dépendances fonctionnelles obéissent à trois règles, les **axiomes d'Arm
 2. **Augmentation** : si $X\to Y$, alors $XZ\to YZ$ pour tout $Z$.
 3. **Transitivité** : si $X\to Y$ et $Y\to Z$, alors $X\to Z$.
 
-La **fermeture** $X^+$ d'un ensemble d'attributs est l'ensemble de tout ce qu'il détermine, directement ou par transitivité. On la calcule en partant de $X$ et en ajoutant les attributs déterminés tant que c'est possible. Appliquons-le à notre feuille. Les dépendances que nous croyons vraies (règles de gestion de la boutique) sont :
+La **fermeture** $X^+$ d'un ensemble d'attributs est l'ensemble de tout ce qu'il détermine, directement ou par transitivité. On la calcule en partant de $X$ et en ajoutant les attributs déterminés tant que c'est possible. Appliquons-le à notre feuille. Les dépendances que nous croyons vraies (règles de gestion de la boutique) sont les cinq suivantes :
 
-```python
+| Dépendance | Signification |
+|---|---|
+| `id_commande` → `date_commande`, `id_client` | une commande a une date et un client |
+| `id_client` → `prenom`, `nom`, `ville` | un client a un nom et une ville |
+| `id_produit` → `nom_produit`, `id_categorie`, `prix_catalogue` | un produit a un nom, une catégorie, un prix |
+| `id_categorie` → `nom_categorie` | une catégorie a un nom |
+| (`id_commande`, `id_produit`) → `quantite`, `prix_unitaire` | une ligne est identifiée par le couple |
+
+Pour la fermeture, l'algorithme est celui du point fixe : on part de $X$, et tant qu'une dépendance dont le membre gauche est déjà inclus apporte de nouveaux attributs, on les ajoute. (Un court programme l'exécute en coulisses sur la feuille.)
+
+```python hide
 dependances = [
     (["id_commande"],                ["date_commande", "id_client"]),
     (["id_client"],                  ["prenom", "nom", "ville"]),
@@ -162,9 +165,9 @@ def fermeture(X, deps):
     return res
 ```
 
-Avant de s'en servir, vérifions que ces dépendances sont **respectées par les données** de la feuille. On charge celle-ci dans pandas, et l'on teste, pour chaque dépendance $X\to Y$, qu'aucun groupe de lignes de même $X$ ne contient deux valeurs différentes de $Y$ :
+Avant de s'en servir, vérifions que ces dépendances sont **respectées par les données** de la feuille : pour chaque dépendance $X\to Y$, aucun groupe de lignes de même $X$ ne doit contenir deux valeurs différentes de $Y$.
 
-```python
+```python hide
 feuille = pd.read_sql_query("SELECT * FROM ex_feuille", con)
 
 def verifie(df, X, Y):
@@ -190,11 +193,11 @@ ville -> id_client ?                False
 id_commande -> prix_unitaire ?      False
 ```
 
-Les cinq dépendances sont respectées ; les deux « fausses » dépendances (`ville` $\to$ `id_client`, `id_commande` $\to$ `prix_unitaire`) sont **contredites** par les données, comme prévu. Attention à la nuance logique : un jeu de données peut seulement **réfuter** une dépendance (une paire de lignes suffit), jamais la **démontrer** ; seule la connaissance du métier (« un client n'a qu'une ville de livraison par défaut ») l'affirme.
+Le test confirme que les cinq dépendances sont respectées ; les deux « fausses » dépendances (`ville` $\to$ `id_client`, `id_commande` $\to$ `prix_unitaire`) sont **contredites** par les données, comme prévu. Attention à la nuance logique : un jeu de données peut seulement **réfuter** une dépendance (une paire de lignes suffit), jamais la **démontrer** ; seule la connaissance du métier (« un client n'a qu'une ville de livraison par défaut ») l'affirme.
 
-Calculons maintenant des fermetures et cherchons la clé de la feuille :
+Calculons maintenant des fermetures et cherchons la clé de la feuille. La fermeture de {`id_client`} est {`id_client`, `prenom`, `nom`, `ville`} ; celle de {`id_commande`} ajoute la date et le client (`date_commande`, `id_client`) et, par transitivité, ses `prenom`, `nom` et `ville`. La seule clé candidate est le couple (`id_commande`, `id_produit`) :
 
-```python
+```python hide
 from itertools import combinations
 
 attributs = set(feuille.columns)
@@ -226,11 +229,11 @@ Les **formes normales** sont des niveaux de « propreté » d'un schéma, chaque
 
 | Forme | Exigence | Anomalie évitée |
 |---|---|---|
-| **1FN** | chaque case contient **une seule valeur** (atomique) ; pas de listes ni de colonnes répétées | cases du type « Tajine ; Foutah » |
+| **1FN** | chaque case contient **une seule valeur** (atomique) ; pas de listes ni de colonnes répétées | cases du type « Plat ; Plaid » |
 | **2FN** | 1FN **et** aucun attribut ne dépend d'une **partie** de la clé (utile quand la clé est composite) | informations sur le produit répétées sur chaque vente |
 | **3FN** | 2FN **et** aucun attribut non-clé ne dépend d'un **autre attribut non-clé** (pas de dépendance transitive) | ville du client recopiée parce que `id_client` détermine `ville` |
 
-**1FN.** Si la gérante avait noté le panier dans une seule case (`articles = "Foutah en coton ; Pochette brodée"`), elle n'aurait pu ni compter les ventes par produit, ni les joindre au catalogue : on ne sait pas jointer un morceau de texte. La solution est **une ligne par article** : c'est ce que fait notre feuille, qui est donc déjà en 1FN (et nous aurions eu le même problème avec des colonnes `produit1`, `produit2`, `produit3`).
+**1FN.** Si la gérante avait noté le panier dans une seule case (`articles = "Plaid en coton ; Pochette brodée"`), elle n'aurait pu ni compter les ventes par produit, ni les joindre au catalogue : on ne sait pas jointer un morceau de texte. La solution est **une ligne par article** : c'est ce que fait notre feuille, qui est donc déjà en 1FN (et nous aurions eu le même problème avec des colonnes `produit1`, `produit2`, `produit3`).
 
 **2FN.** La clé de la feuille est composite (`id_commande`, `id_produit`). Or les infos du produit ne dépendent que de `id_produit`, et celles de la commande que de `id_commande` : ce sont des **dépendances partielles**. On découpe : chaque groupe d'attributs va dans une table dont la clé est l'attribut qui le détermine.
 
@@ -245,7 +248,7 @@ CREATE TABLE ex_produits AS
 SELECT DISTINCT id_produit, nom_produit, id_categorie, nom_categorie, prix_catalogue FROM ex_feuille;
 ```
 
-(`DISTINCT` supprime les doublons : chaque commande et chaque produit n'est plus écrit qu'une fois.) La redondance a déjà fortement baissé, mais elle n'a pas disparu : dans `ex_commandes`, la ville d'Emna est encore écrite pour **chacune** de ses commandes (n° 5 et n° 8). Cause : `id_commande` $\to$ `id_client` $\to$ `ville` : c'est une **dépendance transitive**.
+(`DISTINCT` supprime les doublons : chaque commande et chaque produit n'est plus écrit qu'une fois.) La redondance a déjà fortement baissé, mais elle n'a pas disparu : dans `ex_commandes`, la ville d'Anna est encore écrite pour **chacune** de ses commandes (n° 5 et n° 8). Cause : `id_commande` $\to$ `id_client` $\to$ `ville` : c'est une **dépendance transitive**.
 
 **3FN.** On extrait ce qui dépend d'un attribut non-clé dans sa propre table : les clients (clé `id_client`) d'un côté, les catégories (clé `id_categorie`) de l'autre.
 
@@ -263,9 +266,9 @@ CREATE TABLE ex_produits3 AS
 SELECT DISTINCT id_produit, nom_produit, id_categorie, prix_catalogue FROM ex_produits;
 ```
 
-Comptons les lignes de chaque table pour voir la différence :
+Comptons les lignes de chaque table pour voir la différence (un comptage fait en coulisses) : la grande feuille de 16 lignes devient cinq tables : 16 lignes de commande, 8 commandes, 7 clients, 12 produits et 4 catégories.
 
-```sql
+```sql hide
 SELECT 'feuille unique' AS table_, COUNT(*) AS lignes FROM ex_feuille
 UNION ALL SELECT 'lignes',     COUNT(*) FROM ex_lignes
 UNION ALL SELECT 'commandes',  COUNT(*) FROM ex_commandes3
@@ -284,11 +287,11 @@ feuille unique      16
     categories       4
 ```
 
-La grande feuille (16 lignes) est devenue cinq petites tables : exactement la structure du 5.1 ! La normalisation est ce qui a conduit à notre schéma, et un dessin préalable des entités (5.1.2) aurait donné le même résultat plus vite. Les anomalies ont disparu : changer la ville d'Emna se fait par **un seul** `UPDATE` sur **une seule** ligne ; ajouter un produit au catalogue est un simple `INSERT` dans `produits` ; supprimer une vente laisse produit et client intacts.
+La grande feuille est devenue cinq petites tables : exactement la structure du 5.1 ! La normalisation est ce qui a conduit à notre schéma, et un dessin préalable des entités (5.1.2) aurait donné le même résultat plus vite. Les anomalies ont disparu : changer la ville d'Anna se fait par **un seul** `UPDATE` sur **une seule** ligne ; ajouter un produit au catalogue est un simple `INSERT` dans `produits` ; supprimer une vente laisse produit et client intacts.
 
-> 💡 **Le test de sécurité : « décomposer sans rien perdre ».** Découper une table en plusieurs ne doit pas **perdre d'information**. Vérifions que, si l'on recolle les morceaux par des jointures, on retrouve **exactement** la feuille d'origine, ni plus ni moins. On compare dans les deux sens avec `EXCEPT` (5.2.5) : les lignes reconstituées absentes de la feuille, puis l'inverse.
+> 💡 **Le test de sécurité : « décomposer sans rien perdre ».** Découper une table en plusieurs ne doit pas **perdre d'information**. Vérifions que, si l'on recolle les morceaux par des jointures, on retrouve **exactement** la feuille d'origine, ni plus ni moins. On recolle les cinq petites tables par des jointures (5.2.5) et on compare dans les deux sens avec `EXCEPT` : les lignes reconstituées absentes de la feuille, puis l'inverse (le contrôle est exécuté en coulisses).
 
-```sql
+```sql hide
 CREATE TEMP VIEW ex_recollee AS
 SELECT l.id_commande, l.id_produit, c.date_commande, c.id_client, cl.prenom, cl.nom, cl.ville,
        p.nom_produit, p.id_categorie, ca.nom_categorie, p.prix_catalogue, l.quantite, l.prix_unitaire
@@ -299,7 +302,7 @@ JOIN ex_produits3   AS p  ON p.id_produit   = l.id_produit
 JOIN ex_categories  AS ca ON ca.id_categorie = p.id_categorie;
 ```
 
-```sql
+```sql hide
 SELECT (SELECT COUNT(*) FROM (SELECT * FROM ex_recollee EXCEPT SELECT * FROM ex_feuille)) AS en_trop,
        (SELECT COUNT(*) FROM (SELECT * FROM ex_feuille  EXCEPT SELECT * FROM ex_recollee)) AS manquantes;
 ```
@@ -309,13 +312,13 @@ SELECT (SELECT COUNT(*) FROM (SELECT * FROM ex_recollee EXCEPT SELECT * FROM ex_
        0           0
 ```
 
-Zéro et zéro : la décomposition est **sans perte**. (Et grâce à la remarque du 5.4.1 sur la ville d'Emna, nous avons pris soin de remettre la feuille en état avant de la découper : normaliser des données **déjà contradictoires** aurait recopié fidèlement la contradiction dans la table `ex_clients`, avec deux lignes pour la même cliente. Un schéma normalisé rend les *nouvelles* incohérences impossibles, par exemple en déclarant `id_client` clé primaire de `clients`, mais ne répare pas les anciennes.)
+Le contrôle renvoie zéro et zéro : la décomposition est **sans perte**. (Et grâce à la remarque du 5.4.1 sur la ville d'Anna, nous avons pris soin de remettre la feuille en état avant de la découper : normaliser des données **déjà contradictoires** aurait recopié fidèlement la contradiction dans la table `ex_clients`, avec deux lignes pour la même cliente. Un schéma normalisé rend les *nouvelles* incohérences impossibles, par exemple en déclarant `id_client` clé primaire de `clients`, mais ne répare pas les anciennes.)
 
 > 📐 **Pourquoi la décomposition sans perte fonctionne (théorème de Heath).** Soit $R(X,Y,Z)$ une table avec la dépendance $X\to Y$. Alors $R=\pi_{X,Y}(R)\bowtie\pi_{X,Z}(R)$. *Preuve.* L'inclusion $R\subseteq\pi_{XY}(R)\bowtie\pi_{XZ}(R)$ est évidente (toute ligne se retrouve en recollant ses propres morceaux). Réciproquement, soit $(x,y,z)$ dans la jointure : $(x,y)$ vient d'une ligne $(x,y,z')\in R$ et $(x,z)$ d'une ligne $(x,y',z)\in R$. Ces deux lignes ont la **même valeur $x$**, donc, comme $X\to Y$, la **même valeur $y=y'$**. La ligne $(x,y',z)=(x,y,z)$ est donc dans $R$. $\square$ Sans la dépendance, la jointure pourrait fabriquer de **fausses lignes** : c'est le piège de la décomposition faite « au feeling ».
 
-Pour finir proprement, supprimons nos tables de travail (il faut le faire pour que la base redevienne celle du 5.1) :
+Pour finir proprement, nos tables de travail sont supprimées en coulisses (pour que la base redevienne celle du 5.1).
 
-```python
+```python hide
 con.execute("DROP VIEW IF EXISTS ex_recollee")
 for t in ["ex_lignes", "ex_commandes3", "ex_clients", "ex_produits3", "ex_categories",
           "ex_commandes", "ex_produits", "ex_feuille"]:
@@ -357,19 +360,19 @@ ORDER BY categorie, canal;
 ```
 <!--sortie-->
 ```text
-  categorie     canal  chiffre_affaires
-     Bijoux  Boutique            2256.0
-     Bijoux Réseaux            1914.0
-     Bijoux      Site            2836.0
-Cosmétiques  Boutique             878.0
-Cosmétiques Réseaux            1099.0
-Cosmétiques      Site            1170.0
-    Poterie  Boutique            2397.0
-    Poterie Réseaux            2143.0
-    Poterie      Site            2410.0
-    Textile  Boutique            2997.0
-    Textile Réseaux            1607.0
-    Textile      Site            2390.0
+  categorie    canal  chiffre_affaires
+     Bijoux Boutique            2256.0
+     Bijoux  Réseaux            1914.0
+     Bijoux     Site            2836.0
+Cosmétiques Boutique             878.0
+Cosmétiques  Réseaux            1099.0
+Cosmétiques     Site            1170.0
+    Poterie Boutique            2397.0
+    Poterie  Réseaux            2143.0
+    Poterie     Site            2410.0
+    Textile Boutique            2997.0
+    Textile  Réseaux            1607.0
+    Textile     Site            2390.0
 ```
 
 Une requête qui exigeait quatre jointures tient maintenant en trois lignes, et la vue peut évoluer (changer de définition) sans que les analystes changent leurs requêtes.
@@ -380,7 +383,13 @@ Quand on écrit `WHERE id_client = 2`, comment la base trouve-t-elle les command
 
 Pour $N=500\,000$, c'est $\log_2 N\approx19$ comparaisons contre 500 000 : un facteur **plus de 25 000**. On peut demander à la base **comment elle compte exécuter** une requête, avec `EXPLAIN QUERY PLAN` (c'est le premier outil de l'analyste qui s'occupe de performance) :
 
-```python
+```sql noexec
+-- On demande à la base comment elle compte exécuter la requête, puis on crée l'index :
+EXPLAIN QUERY PLAN SELECT * FROM commandes WHERE id_client = 2;
+CREATE INDEX idx_commandes_client ON commandes(id_client);
+```
+
+```python hide-code
 def plan(requete):
     for ligne in con.execute("EXPLAIN QUERY PLAN " + requete):
         print("  ", ligne[3])
@@ -409,9 +418,9 @@ Filtre sur une colonne non indexée :
 
 `SCAN` signifie « lire toute la table » ; `SEARCH ... USING INDEX` signifie « chercher via l'arbre ». La clé primaire est **toujours** indexée automatiquement ; c'est aussi pourquoi les clés étrangères mal indexées sont une cause classique de lenteur. Le filtre sur `montant` reste un `SCAN` : aucun index ne l'aide.
 
-Pour mesurer le gain « pour de vrai », construisons une table de **500 000 lignes** (par une CTE récursive, 5.3.6) et chronométrons la même recherche avant et après un index. Les durées exactes dépendent de votre machine ; nous n'affichons donc que le **facteur de gain**, arrondi à la puissance de dix inférieure, pour que le résultat reste le même d'une exécution à l'autre.
+Pour mesurer le gain « pour de vrai », nous construisons en coulisses une table de **500 000 lignes** (par une CTE récursive, 5.3.6) et chronométrons la même recherche avant et après un index (l'application 5.9 du cahier refait l'expérience pas à pas). Les durées exactes dépendent de votre machine ; nous n'affichons donc que le **facteur de gain**, arrondi à la puissance de dix inférieure, pour que le résultat reste le même d'une exécution à l'autre.
 
-```python
+```python hide-code
 import time, math
 
 con.executescript("""
@@ -441,7 +450,7 @@ lignes dans la table : 500000
 gain au moins égal à : 100 fois
 ```
 
-Chez nous, le gain réel est de l'ordre de plusieurs centaines de fois (le programme n'affiche que la puissance de dix inférieure, pour rester reproductible) : voilà pourquoi les index sont **la** première optimisation. Mais ils ne sont pas gratuits : un index occupe de la place, et il doit être **mis à jour à chaque insertion ou modification**, ce qui ralentit l'écriture. Règle d'usage : indexer les colonnes **souvent utilisées dans un `WHERE` ou un `JOIN`** (surtout les clés étrangères) et ne pas indexer à tout va. Notez enfin que les index peuvent changer le **temps** d'une requête, **jamais son résultat**.
+Chez nous, le gain dépasse un facteur cent (et la précision de l'affichage est volontairement grossière, pour rester reproductible) : voilà pourquoi les index sont **la** première optimisation. Mais ils ne sont pas gratuits : un index occupe de la place, et il doit être **mis à jour à chaque insertion ou modification**, ce qui ralentit l'écriture. Règle d'usage : indexer les colonnes **souvent utilisées dans un `WHERE` ou un `JOIN`** (surtout les clés étrangères) et ne pas indexer à tout va. Notez enfin que les index peuvent changer le **temps** d'une requête, **jamais son résultat**.
 
 ### 5.4.6 Les transactions : tout ou rien
 
@@ -480,7 +489,9 @@ après  : 400 commandes
 
 La commande n° 9001, pourtant bien insérée à l'étape 1, a **disparu** : l'échec de l'étape 2 a annulé toute la transaction. Sans transaction, on aurait gardé une commande fantôme sans article. Dans le bloc `with con:`, Python déclenche un `COMMIT` si tout se passe bien, un `ROLLBACK` à la première exception.
 
-> 🧪 **Pourquoi l'isolation compte.** Deux caissiers enregistrent en même temps la vente du dernier exemplaire d'un tajine. Sans isolation, chacun lit « stock = 1 », chacun vend, et le stock tombe à −1. Avec une transaction isolée, la seconde attend (ou échoue) et lit « stock = 0 ». Les SGBD offrent plusieurs **niveaux d'isolation**, du plus laxiste au plus strict, avec un compromis entre sécurité et vitesse ; le détail dépasse ce chapitre, mais retenez que les bases relationnelles gèrent pour vous un problème que les fichiers CSV ignorent complètement.
+> 🧪 **Pourquoi l'isolation compte.** Deux caissiers enregistrent en même temps la vente du dernier exemplaire d'un vase. Sans isolation, chacun lit « stock = 1 », chacun vend, et le stock tombe à −1. Avec une transaction isolée, la seconde attend (ou échoue) et lit « stock = 0 ». Les SGBD offrent plusieurs **niveaux d'isolation**, du plus laxiste au plus strict, avec un compromis entre sécurité et vitesse ; le détail dépasse ce chapitre, mais retenez que les bases relationnelles gèrent pour vous un problème que les fichiers CSV ignorent complètement.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 5 : application 5.9 (mesurer le gain d'un index), exercice 5.11 (dépendances fonctionnelles et décomposition en 3FN).
 
 > ✅ **À retenir**
 >

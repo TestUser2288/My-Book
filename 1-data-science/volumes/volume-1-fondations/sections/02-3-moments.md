@@ -1,6 +1,6 @@
 ## 2.3 Espérance, variance, covariance
 
-Une loi complète (une courbe, un tableau) est riche mais encombrante. Dans la pratique, on la résume par **quelques nombres** : où est son centre ? De combien s'étale-t-elle ? Comment deux variables évoluent-elles ensemble ?
+Une loi complète (une courbe, un tableau) est riche mais encombrante. Dans la pratique, on la résume par **quelques nombres** : où est son centre ? De combien s'étale-t-elle ? Comment deux variables évoluent-elles ensemble ? Cette section définit ces trois résumés, démontre leurs propriétés et les applique à des décisions chiffrées.
 
 ### 2.3.1 L'espérance : la moyenne « à long terme »
 
@@ -12,7 +12,7 @@ $$E[X]=\sum_k k\,P(X=k)\qquad\text{et}\qquad E[X]=\int_{-\infty}^{+\infty}x\,f(x
 
 **Exemple 1 : le dé.** $E[X]=1\cdot\tfrac16+2\cdot\tfrac16+\dots+6\cdot\tfrac16=\tfrac{21}6=3{,}5$. Remarquez que l'espérance n'est **pas** une valeur possible : on n'obtiendra jamais 3,5. C'est un centre de gravité, pas un résultat.
 
-**Exemple 2 : une décision.** la gérante hésite à lancer une nouvelle lampe. Elle envisage trois scénarios pour le bénéfice du premier trimestre :
+**Exemple 2 : une décision.** La gérante hésite à lancer une nouvelle lampe. Elle envisage trois scénarios pour le bénéfice du premier trimestre :
 
 | Scénario | Probabilité | Bénéfice (€) |
 |---|---:|---:|
@@ -24,19 +24,6 @@ $$E[X]=0{,}3\times5000+0{,}5\times1000+0{,}2\times(-3000)=1500+500-600=1400.$$
 
 Le lancement rapporte **en moyenne** 1 400 €. Une option alternative sûre rapporterait 1 200 €. Faut-il lancer ? L'espérance seule dit oui, mais elle ne dit rien du **risque** : il y a 20 % de chances de perdre de l'argent. C'est exactement le rôle de la variance, ci-dessous.
 
-```python
-import numpy as np
-benefices = np.array([5000, 1000, -3000])
-probas = np.array([0.3, 0.5, 0.2])
-
-esperance = (benefices * probas).sum()
-print("E[X] =", esperance)
-```
-<!--sortie-->
-```text
-E[X] = 1400.0
-```
-
 #### Propriétés de l'espérance
 
 > 📐 **Linéarité.** Pour toutes variables $X$, $Y$ et constantes $a$, $b$ :
@@ -47,7 +34,7 @@ E[X] = 1400.0
 >
 > La seconde se démontre de la même façon avec une somme double. Elle est **toujours vraie, même si $X$ et $Y$ sont dépendantes** : c'est ce qui la rend si puissante.
 
-**Exemple d'usage.** Si les ventes du jour ont une espérance de 120 bols à 25 € l'unité, les recettes $25X$ ont pour espérance $25\times120=3000$ € : on multiplie simplement.
+**Exemple d'usage.** Si les ventes du jour ont une espérance de 120 articles à 25 € l'unité, les recettes $25X$ ont pour espérance $25\times120=3000$ € : on multiplie simplement.
 
 **Application élégante : l'espérance d'une binomiale.** Une binomiale $X\sim\text{Bin}(n,p)$ est la somme de $n$ Bernoulli : $X=B_1+\dots+B_n$, avec $E[B_i]=1\cdot p+0\cdot(1-p)=p$. Par linéarité,
 
@@ -72,7 +59,7 @@ Deux commerçants ont chacun un bénéfice moyen de 1 000 € par mois. Chez l'u
 
 $$\operatorname{Var}(X)=E\bigl[(X-\mu)^2\bigr],\qquad \mu=E[X].$$
 
-On prend le **carré** de l'écart pour que les écarts positifs et négatifs ne se compensent pas. L'**écart-type** $\sigma=\sqrt{\operatorname{Var}(X)}$ ramène le résultat à l'unité d'origine (des euros, pas des dinars²).
+On prend le **carré** de l'écart pour que les écarts positifs et négatifs ne se compensent pas. L'**écart-type** $\sigma=\sqrt{\operatorname{Var}(X)}$ ramène le résultat à l'unité d'origine (des euros, et non des euros²).
 
 > 📐 **Formule de calcul (« moyenne des carrés moins carré de la moyenne »).**
 >
@@ -88,22 +75,6 @@ $$E[X^2]=0{,}3\times5000^2+0{,}5\times1000^2+0{,}2\times3000^2=7{,}5\cdot10^6+0{
 
 $$\operatorname{Var}(X)=9{,}8\cdot10^6-1400^2=9{,}8\cdot10^6-1{,}96\cdot10^6=7{,}84\cdot10^6,\qquad\sigma=2800\ \text{€}.$$
 
-```python
-e_carre = (benefices**2 * probas).sum()
-variance = e_carre - esperance**2
-print("E[X^2]   =", e_carre)
-print("Var(X)   =", variance)
-print("écart-type =", np.sqrt(variance))
-print("P(perte)   =", probas[benefices < 0].sum())
-```
-<!--sortie-->
-```text
-E[X^2]   = 9800000.0
-Var(X)   = 7840000.0
-écart-type = 2800.0
-P(perte)   = 0.2
-```
-
 L'écart-type (2 800 €) est **deux fois plus grand** que l'espérance (1 400 €) : l'option est très risquée. Face à l'option sûre à 1 200 €, le gain moyen n'est supérieur que de 200 € alors que le risque est considérable. Beaucoup de gens (et de gérants) préféreraient l'option sûre. Il n'y a pas de « bonne » réponse mathématique : la variance **quantifie** le risque pour que la décision soit éclairée.
 
 #### Propriétés de la variance
@@ -112,7 +83,7 @@ L'écart-type (2 800 €) est **deux fois plus grand** que l'espérance (1 400 �
 >
 > *Preuve.* $E[aX+b]=a\mu+b$, donc $(aX+b)-E[aX+b]=a(X-\mu)$ et $\operatorname{Var}(aX+b)=E[a^2(X-\mu)^2]=a^2\operatorname{Var}(X)$. $\blacksquare$
 >
-> Conséquences : ajouter une constante ($+b$) ne change pas l'étalement ; multiplier par $a$ multiplie l'écart-type par $|a|$. Convertir des euros en euros multiplie l'écart-type par le taux de change, et c'est tout.
+> Conséquences : ajouter une constante ($+b$) ne change pas l'étalement ; multiplier par $a$ multiplie l'écart-type par $|a|$. Convertir des euros dans une autre monnaie multiplie l'écart-type par le taux de change, et c'est tout.
 
 > 📐 **Somme de variables indépendantes.** Si $X$ et $Y$ sont **indépendantes**, $\operatorname{Var}(X+Y)=\operatorname{Var}(X)+\operatorname{Var}(Y)$. (Nous démontrons le cas général au 2.3.3.)
 
@@ -127,29 +98,7 @@ L'écart-type (2 800 €) est **deux fois plus grand** que l'espérance (1 400 �
 | Uniforme$(a,b)$ | $(b-a)^2/12$ |
 | Normale$(\mu,\sigma^2)$ | $\sigma^2$ |
 
-Vérifions numériquement avec `scipy` et par simulation :
-
-```python
-from scipy import stats
-rng = np.random.default_rng(21)
-
-lois = {"Binomiale(20; 0,2)": (stats.binom(20, 0.2), rng.binomial(20, 0.2, 200_000)),
-        "Poisson(3)":         (stats.poisson(3),     rng.poisson(3, 200_000)),
-        "Exponentielle(0,5)": (stats.expon(scale=2), rng.exponential(2, 200_000)),
-        "Normale(120; 15)":   (stats.norm(120, 15),  rng.normal(120, 15, 200_000))}
-
-print(f"{'loi':<20}{'E théo':>9}{'E simulé':>10}{'Var théo':>10}{'Var simulée':>12}")
-for nom, (loi, ech) in lois.items():
-    print(f"{nom:<20}{loi.mean():>9.3f}{ech.mean():>10.3f}{loi.var():>10.3f}{ech.var():>12.3f}")
-```
-<!--sortie-->
-```text
-loi                    E théo  E simulé  Var théo Var simulée
-Binomiale(20; 0,2)      4.000     4.004     3.200       3.209
-Poisson(3)              3.000     3.005     3.000       3.006
-Exponentielle(0,5)      2.000     2.001     4.000       3.968
-Normale(120; 15)      120.000   120.001   225.000     225.467
-```
+Une simulation de 200 000 tirages pour chacune de ces lois retrouve les valeurs de ces deux tableaux à moins de 1 % près (par exemple, 4,004 pour l'espérance d'une binomiale$(20\,;0{,}2)$ contre 4 en théorie, et 3,209 pour sa variance contre 3,2).
 
 La **loi de Poisson** a la propriété particulière que sa variance est égale à son espérance. Si les commandes de la gérante varient *beaucoup plus* que leur moyenne (on parle de **sur-dispersion**), c'est un signe que le modèle de Poisson est trop simple.
 
@@ -165,16 +114,18 @@ $$\operatorname{Cov}(X,Y)=E\bigl[(X-\mu_X)(Y-\mu_Y)\bigr]=E[XY]-E[X]E[Y].$$
 - Écarts à la moyenne : $x-\bar x=(-15,-5,5,15)$ et $y-\bar y=(-10,-4,4,10)$.
 - Produits : $(150,\ 20,\ 20,\ 150)$, de somme 340, donc covariance $=340/4=85$.
 
+Un piège de programmation guette ici : les bibliothèques ne divisent pas toutes par le même nombre.
+
 ```python
+import numpy as np
 x = np.array([10, 20, 30, 40.0]); y = np.array([12, 18, 26, 32.0])
-cov_xy = ((x - x.mean()) * (y - y.mean())).mean()
-print("covariance (à la main) =", cov_xy)
-print("np.cov (n-1)           =", np.cov(x, y)[0, 1].round(2), "  <- divise par n-1, voir chapitre 3")
+print("à la main (÷ n) :", ((x - x.mean()) * (y - y.mean())).mean())
+print("np.cov    (÷ n-1):", np.cov(x, y)[0, 1].round(2))
 ```
 <!--sortie-->
 ```text
-covariance (à la main) = 85.0
-np.cov (n-1)           = 113.33   <- divise par n-1, voir chapitre 3
+à la main (÷ n) : 85.0
+np.cov    (÷ n-1): 113.33
 ```
 
 > ⚠️ **$n$ ou $n-1$ ?** `np.cov` divise par $n-1$ (estimateur sans biais, section 3.2) et donne 113,33 ; la formule de la **loi** divise par $n$. Pour de grands échantillons la différence disparaît ; ici avec $n=4$ elle est visible. On y reviendra.
@@ -191,14 +142,6 @@ $$\rho_{XY}=\frac{\operatorname{Cov}(X,Y)}{\sigma_X\,\sigma_Y}\in[-1,\ 1].$$
 
 Ici : $\rho=\dfrac{85}{\sqrt{125\times58}}\approx0{,}998$, une relation presque parfaitement linéaire.
 
-```python
-print("corrélation :", np.corrcoef(x, y)[0, 1].round(4))
-```
-<!--sortie-->
-```text
-corrélation : 0.9983
-```
-
 ![Quatre nuages de points et leur corrélation. Le dernier montre qu'une corrélation nulle n'implique pas l'indépendance.](figures/ch02-correlations.png)
 
 > ⚠️ **Trois mises en garde essentielles.**
@@ -213,57 +156,18 @@ corrélation : 0.9983
 >
 > Si $X$ et $Y$ sont indépendantes, $\operatorname{Cov}=0$ et on retrouve l'additivité des variances.
 
-**Application : la diversification.** Les ventes quotidiennes de bols ($X$) et de tapis ($Y$) ont chacune une moyenne de 50 et un écart-type de 10. Quelle est la variabilité des ventes **totales** $X+Y$ ?
+**Exemple : la diversification.** Les ventes quotidiennes de deux produits, $X$ et $Y$, ont chacune une moyenne de 50 et un écart-type de 10. Quelle est la variabilité des ventes **totales** $X+Y$ ?
 
 - Si les deux produits sont **corrélés positivement** ($\rho=+0{,}5$) : $\operatorname{Var}=100+100+2\times0{,}5\times100=300$, soit $\sigma\approx17{,}3$.
 - Si les deux produits sont **corrélés négativement** ($\rho=-0{,}5$ : quand l'un se vend mal, l'autre se vend bien) : $\operatorname{Var}=100+100-100=100$, soit $\sigma=10$.
 
-```python
-rng = np.random.default_rng(8)
-for rho in (0.5, -0.5):
-    cov = [[100, rho * 100], [rho * 100, 100]]            # matrice de covariance
-    ventes = rng.multivariate_normal([50, 50], cov, size=100_000)
-    total = ventes.sum(axis=1)
-    print(f"rho = {rho:+.1f} : écart-type du total = {total.std():.2f}   (théorie : {np.sqrt(200 + 2 * rho * 100):.2f})")
-```
-<!--sortie-->
-```text
-rho = +0.5 : écart-type du total = 17.29   (théorie : 17.32)
-rho = -0.5 : écart-type du total = 9.97   (théorie : 10.00)
-```
-
-Mêmes moyennes, mêmes écarts-types individuels, mais un total **bien moins variable** (écart-type de 10 au lieu de 17) quand les produits se compensent. C'est le principe de la **diversification** : on réunit des produits (ou des placements) dont les hauts et les bas ne coïncident pas, pour stabiliser le tout.
+Mêmes moyennes, mêmes écarts-types individuels, mais un total **bien moins variable** (écart-type de 10 au lieu de 17) quand les produits se compensent. C'est le principe de la **diversification** : on réunit des produits (ou des placements) dont les hauts et les bas ne coïncident pas, pour stabiliser le tout. Une simulation de 100 000 jours confirme ces deux valeurs (17,29 et 9,97).
 
 #### La matrice de covariance
 
 Avec plusieurs variables, on range toutes les variances et covariances dans une **matrice de covariance** $\boldsymbol\Sigma$ : variances sur la diagonale, covariances ailleurs. Elle est **symétrique** et ses valeurs propres sont **positives** ; c'est celle dont nous avions calculé les vecteurs propres au 1.1.3 (aperçu de l'ACP).
 
-```python
-rng = np.random.default_rng(2)
-n = 365
-temperature = rng.normal(25, 6, n)
-visites = 80 + 3 * temperature + rng.normal(0, 15, n)
-ventes = 0.2 * visites + rng.normal(0, 3, n)
-
-donnees = np.column_stack([temperature, visites, ventes])
-print("matrice de covariance :")
-print(np.cov(donnees.T).round(1))
-print("matrice de corrélation :")
-print(np.corrcoef(donnees.T).round(2))
-```
-<!--sortie-->
-```text
-matrice de covariance :
-[[ 36.7 106.2  22.6]
- [106.2 529.4 107.1]
- [ 22.6 107.1  31.1]]
-matrice de corrélation :
-[[1.   0.76 0.67]
- [0.76 1.   0.84]
- [0.67 0.84 1.  ]]
-```
-
-La matrice de **corrélation** est la covariance « normalisée » : diagonale de 1 et tout entre −1 et 1. Ici, on lit que la température est fortement corrélée aux visites, et que les visites sont corrélées aux ventes ; la corrélation température–ventes, un peu plus faible, est un effet **indirect** (la température agit sur les visites, qui agissent sur les ventes).
+La matrice de **corrélation** en est la version « normalisée » : diagonale de 1 et tout entre −1 et 1. Prenons trois variables mesurées sur 365 jours : la température, le nombre de visites et les ventes. On obtient des corrélations de 0,76 entre température et visites, 0,84 entre visites et ventes, et 0,67 entre température et ventes. La corrélation température–ventes, un peu plus faible, est un effet **indirect** : la température agit sur les visites, qui agissent sur les ventes.
 
 > ✅ **À retenir (espérance, variance, covariance).**
 >
@@ -272,3 +176,46 @@ La matrice de **corrélation** est la covariance « normalisée » : diagonale d
 > - $\operatorname{Var}(X+Y)=\operatorname{Var}X+\operatorname{Var}Y+2\operatorname{Cov}(X,Y)$ : la covariance mesure comment les variables se combinent.
 > - $\rho=\operatorname{Cov}/(\sigma_X\sigma_Y)$ est un **cosinus** : entre −1 et 1, sans unité. Il ne mesure que le lien **linéaire**, et ne prouve jamais une causalité.
 > - La matrice de covariance range toutes les covariances ; c'est l'objet central de l'ACP.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : application 2.5 (diversification et matrice de covariance), exercices 2.7 et 2.8.
+
+```python hide
+# Vérifie tous les nombres cités dans la section 2.3.
+import numpy as np
+from scipy import stats
+benefices = np.array([5000, 1000, -3000]); probas = np.array([0.3, 0.5, 0.2])
+e = (benefices * probas).sum(); e2 = (benefices**2 * probas).sum()
+print("lampe : E =", e, "| E[X^2] =", e2, "| Var =", e2 - e**2, "| sigma =", np.sqrt(e2 - e**2), "| P(perte) =", probas[benefices < 0].sum())
+des = np.arange(1, 7); print("dé : E =", des.mean(), "| E[X^2] =", round((des**2).mean(), 2), "| E^2 =", des.mean()**2)
+rng = np.random.default_rng(21)
+lois = {"Binomiale(20; 0,2)": (stats.binom(20, 0.2), rng.binomial(20, 0.2, 200_000)),
+        "Poisson(3)": (stats.poisson(3), rng.poisson(3, 200_000)),
+        "Exponentielle(0,5)": (stats.expon(scale=2), rng.exponential(2, 200_000)),
+        "Normale(120; 15)": (stats.norm(120, 15), rng.normal(120, 15, 200_000))}
+for nom, (loi, ech) in lois.items():
+    print(f"{nom:<20} E {loi.mean():.3f} vs {ech.mean():.3f} | Var {loi.var():.3f} vs {ech.var():.3f}")
+x = np.array([10, 20, 30, 40.0]); y = np.array([12, 18, 26, 32.0])
+print("cov =", ((x - x.mean()) * (y - y.mean())).mean(), "| np.cov =", np.cov(x, y)[0, 1].round(2), "| rho =", np.corrcoef(x, y)[0, 1].round(4), "| 85/sqrt(125*58) =", round(85 / np.sqrt(125 * 58), 4))
+rng = np.random.default_rng(8)
+for rho in (0.5, -0.5):
+    cov = [[100, rho * 100], [rho * 100, 100]]
+    total = rng.multivariate_normal([50, 50], cov, size=100_000).sum(axis=1)
+    print(f"diversification rho={rho:+.1f} : sigma simulé {total.std():.2f} | théorie {np.sqrt(200 + 2 * rho * 100):.2f}")
+rng = np.random.default_rng(2)
+n = 365
+temperature = rng.normal(25, 6, n); visites = 80 + 3 * temperature + rng.normal(0, 15, n); ventes = 0.2 * visites + rng.normal(0, 3, n)
+print("corrélations température-visites, visites-ventes, température-ventes :", np.corrcoef(np.column_stack([temperature, visites, ventes]).T).round(2)[[0, 1, 0], [1, 2, 2]])
+```
+<!--sortie-->
+```text
+lampe : E = 1400.0 | E[X^2] = 9800000.0 | Var = 7840000.0 | sigma = 2800.0 | P(perte) = 0.2
+dé : E = 3.5 | E[X^2] = 15.17 | E^2 = 12.25
+Binomiale(20; 0,2)   E 4.000 vs 4.004 | Var 3.200 vs 3.209
+Poisson(3)           E 3.000 vs 3.005 | Var 3.000 vs 3.006
+Exponentielle(0,5)   E 2.000 vs 2.001 | Var 4.000 vs 3.968
+Normale(120; 15)     E 120.000 vs 120.001 | Var 225.000 vs 225.467
+cov = 85.0 | np.cov = 113.33 | rho = 0.9983 | 85/sqrt(125*58) = 0.9983
+diversification rho=+0.5 : sigma simulé 17.29 | théorie 17.32
+diversification rho=-0.5 : sigma simulé 9.97 | théorie 10.00
+corrélations température-visites, visites-ventes, température-ventes : [0.76 0.84 0.67]
+```

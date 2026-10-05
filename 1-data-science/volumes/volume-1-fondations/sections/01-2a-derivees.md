@@ -18,9 +18,13 @@ Par exemple, $P(20) = -2\cdot 400 + 1600 - 300 = 500$ €.
 
 Pour définir la dérivée, il faut la notion de **limite** : la valeur *vers laquelle tend* une quantité quand on s'approche d'un point, même si l'on ne peut pas l'atteindre.
 
-> 🧪 **Exemple.** Considérons $f(x) = \dfrac{x^2 - 1}{x - 1}$. Elle n'est pas définie en $x = 1$ (division par zéro). Mais que se passe-t-il quand $x$ s'en approche ?
+> 🧪 **Exemple.** Considérons $f(x) = \dfrac{x^2 - 1}{x - 1}$. Elle n'est pas définie en $x = 1$ (division par zéro). Mais que se passe-t-il quand $x$ s'en approche ? Calculons quelques valeurs (comme $x^2-1=(x-1)(x+1)$, on a $f(x)=x+1$ dès que $x\neq1$) :
 
-```python
+| $x$ | 0,9 | 0,99 | 0,999 | 1,001 | 1,01 | 1,1 |
+|---|---|---|---|---|---|---|
+| $f(x)$ | 1,9 | 1,99 | 1,999 | 2,001 | 2,01 | 2,1 |
+
+```python hide
 import numpy as np
 
 def f(x):
@@ -39,7 +43,7 @@ x = 1.01    f(x) = 2.0100
 x = 1.1     f(x) = 2.1000
 ```
 
-On voit que $f(x)$ se rapproche de **2**. On écrit $\lim_{x \to 1} f(x) = 2$. (Algébriquement, $x^2 - 1 = (x-1)(x+1)$, donc $f(x) = x + 1$ dès que $x \ne 1$.) Une limite décrit un comportement **au voisinage** d'un point, pas au point lui-même.
+On voit que $f(x)$ se rapproche de **2**. On écrit $\lim_{x \to 1} f(x) = 2$. Une limite décrit un comportement **au voisinage** d'un point, pas au point lui-même.
 
 #### Définition de la dérivée
 
@@ -51,9 +55,9 @@ Puis de faire tendre $h$ vers zéro. La **dérivée** est la limite, quand elle 
 
 $$f'(x) = \lim_{h \to 0} \frac{f(x + h) - f(x)}{h}.$$
 
-> 🧪 **Exemple chiffré.** Prenons $f(x) = x^2$ au point $x = 3$ et rapprochons $h$ de zéro :
+> 🧪 **Exemple chiffré.** Prenons $f(x) = x^2$ au point $x = 3$ et rapprochons $h$ de zéro. Le taux d'accroissement $\dfrac{(3+h)^2 - 3^2}{h}$ vaut $7$ pour $h=1$, puis $6{,}1$ ; $6{,}01$ ; $6{,}001$ ; $6{,}0001$ pour $h = 0{,}1$ ; $0{,}01$ ; $0{,}001$ ; $0{,}0001$.
 
-```python
+```python hide
 def carre(x):
     return x**2
 
@@ -105,9 +109,13 @@ La dernière règle, celle de la **dérivée d'une composée** (ou « règle de 
 >
 > Autre exemple, qui servira bientôt : $\dfrac{d}{dx}\,e^{-0{,}5x} = -0{,}5\,e^{-0{,}5x}$ (l'intérieur est $-0{,}5x$, de dérivée $-0{,}5$).
 
-Pour **vérifier** une dérivée calculée à la main (ou dénicher une erreur), on peut la comparer à une dérivée numérique : on calcule la pente entre $x - h$ et $x + h$ pour un très petit $h$ (la « différence centrée »).
+Pour **vérifier** une dérivée calculée à la main (ou dénicher une erreur), on peut la comparer à une dérivée numérique, la pente entre $x - h$ et $x + h$ pour un très petit $h$ (la « différence centrée ») :
 
-```python
+$$f'(x) \approx \frac{f(x+h) - f(x-h)}{2h}, \qquad h \approx 10^{-6}.$$
+
+Pour $x^3$ en $x=2$, $(3x+1)^2$ en $x=1$, $e^{-0{,}5x}$ en $x=2$ et $\ln(2x)$ en $x=4$, cette formule redonne les valeurs de la dérivée exacte ($12$ ; $24$ ; $-0{,}1839$ ; $0{,}25$) à six décimales près.
+
+```python hide
 def derivee_numerique(f, x, h=1e-6):
     return (f(x + h) - f(x - h)) / (2 * h)
 
@@ -130,11 +138,16 @@ ln(2x) en x = 4      numérique =  0.250000   formule =  0.250000
 
 > ✅ **Bonne habitude.** Chaque fois que vous dérivez une expression compliquée, comparez-la à une dérivée numérique. Les erreurs de signe et les oublis de « fois la dérivée de l'intérieur » sont les fautes les plus courantes.
 
-#### 🛠️ Application : à quel niveau de ventes le bénéfice est-il maximal ?
+#### Un exemple de décision : à quel niveau de ventes le bénéfice est-il maximal ?
 
-Reprenons $P(q) = -2q^2 + 80q - 300$. Observons-la d'abord :
+Reprenons $P(q) = -2q^2 + 80q - 300$. Observons-la d'abord, pour quelques valeurs de $q$ :
 
-```python
+| $q$ | 10 | 15 | 20 | 25 | 30 |
+|---|---|---|---|---|---|
+| $P(q)$ (€) | 300 | 450 | 500 | 450 | 300 |
+
+
+```python hide
 def benefice(q):
     return -2 * q**2 + 80 * q - 300
 
@@ -156,9 +169,9 @@ $$P'(q) = -4q + 80.$$
 
 On résout $P'(q) = 0$ : $-4q + 80 = 0$, donc $q = 20$ pièces, pour un bénéfice $P(20) = 500$ €.
 
-La dérivée a aussi une lecture économique directe : c'est le **bénéfice marginal**, le gain approximatif que rapporte la pièce supplémentaire. En $q = 10$, $P'(10) = -40 + 80 = 40$ €. Vérifions avec la vraie différence :
+La dérivée a aussi une lecture économique directe : c'est le **bénéfice marginal**, le gain approximatif que rapporte la pièce supplémentaire. En $q = 10$, $P'(10) = -40 + 80 = 40$ €. Comparons avec la vraie différence : $P(11) - P(10) = 338 - 300 = 38$ €.
 
-```python
+```python hide
 print("gain réel de la 11e pièce : P(11) - P(10) =", benefice(11) - benefice(10), "€")
 print("pente en q = 10           : P'(10) = -4*10 + 80 =", -4 * 10 + 80, "€")
 ```
@@ -168,9 +181,9 @@ gain réel de la 11e pièce : P(11) - P(10) = 38 €
 pente en q = 10           : P'(10) = -4*10 + 80 = 40 €
 ```
 
-La pente (40) est une bonne approximation du gain réel (38) : elle est exacte pour une variation infiniment petite, et approchée pour une variation d'une pièce. Enfin, confirmons le sommet par une recherche numérique, sans utiliser la dérivée :
+La pente (40) est une bonne approximation du gain réel (38) : elle est exacte pour une variation infiniment petite, et approchée pour une variation d'une pièce. Une recherche numérique du maximum, sans utiliser la dérivée, retrouve bien $q = 20$ et un bénéfice de 500 €.
 
-```python
+```python hide
 from scipy.optimize import minimize_scalar
 
 res = minimize_scalar(lambda q: -benefice(q), bounds=(0, 40), method="bounded")
@@ -180,8 +193,6 @@ print(f"optimum numérique : q = {res.x:.3f}, bénéfice = {-res.fun:.2f} €")
 ```text
 optimum numérique : q = 20.000, bénéfice = 500.00 €
 ```
-
-(On minimise $-P$ puisque la fonction cherche un minimum : maximiser $P$ revient à minimiser $-P$.)
 
 ![Bénéfice hebdomadaire en fonction du nombre de pièces vendues. En q = 10 la tangente monte avec une pente de 40 ; en q = 20 elle est horizontale : c'est le sommet.](figures/ch01-benefice-tangentes.png)
 
@@ -203,3 +214,5 @@ Ici $P''(q) = -4 < 0$ : c'est bien un maximum.
 > - Les cinq règles à maîtriser : puissances, somme, multiple, produit, composée.
 > - Pour optimiser : on cherche $f'(x) = 0$, puis on contrôle avec $f''$.
 > - Comparer une dérivée à la main à une dérivée numérique permet de détecter les erreurs.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.5, exercice 1.4.

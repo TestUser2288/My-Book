@@ -32,9 +32,9 @@ Voyons-le. Soixante échantillons de 40 commandes, un intervalle à 95 % pour ch
 
 ![60 intervalles de confiance à 95 % construits sur 60 échantillons différents de 40 commandes. Les intervalles en rouge n'atteignent pas la vraie moyenne : environ 1 sur 20 en moyenne (5 sur 60 ici, une fluctuation normale).](figures/ch03-couverture.png)
 
-Mesurons-le précisément, sur 20 000 échantillons :
+Mesurons-le précisément : sur 20 000 échantillons de 40 commandes, **94,5 %** des intervalles contiennent la vraie moyenne, avec une largeur moyenne de 23,9 €.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -62,7 +62,7 @@ part des intervalles contenant la vraie moyenne : 0.9451
 largeur moyenne : 23.88 €
 ```
 
-La couverture est proche de 95 % (un peu moins : la loi des montants est asymétrique et $n=40$ est modeste ; nous reviendrons sur ces limites). L'idée est donc validée.
+Cette couverture est proche de 95 % (un peu moins : la loi des montants est asymétrique et $n=40$ est modeste ; nous reviendrons sur ces limites). L'idée est donc validée.
 
 > ⚠️ **Deux erreurs d'interprétation à éviter.**
 > 1. « La vraie valeur a 95 % de chances d'être dans [56,5 ; 64,0] » : formulation courante, rigoureusement fausse dans l'approche fréquentiste (dans l'approche bayésienne, elle est correcte pour un *intervalle de crédibilité*).
@@ -70,11 +70,15 @@ La couverture est proche de 95 % (un peu moins : la loi des montants est asymét
 
 ### 3.3.3 Quand l'écart-type est inconnu : la loi de Student
 
-En pratique, on ne connaît **pas** $\sigma$ ; on le remplace par son estimation $s$. Mais $s$ est elle-même aléatoire, ce qui ajoute de l'incertitude : pour de petits échantillons, on tomberait trop souvent à côté avec la valeur 1,96. William Gosset (qui signait « Student » en 1908, alors qu'il travaillait dans une brasserie Guinness) a montré que la bonne loi pour $\dfrac{\bar X-\mu}{S/\sqrt n}$ est la **loi de Student à $n-1$ degrés de liberté** (si les données sont à peu près normales).
+En pratique, on ne connaît **pas** $\sigma$ ; on le remplace par son estimation $s$. Mais $s$ est elle-même aléatoire, ce qui ajoute de l'incertitude : pour de petits échantillons, on tomberait trop souvent à côté avec la valeur 1,96. William Gosset (qui signait « Student » en 1908, alors qu'il travaillait pour une grande brasserie) a montré que la bonne loi pour $\dfrac{\bar X-\mu}{S/\sqrt n}$ est la **loi de Student à $n-1$ degrés de liberté** (si les données sont à peu près normales).
 
-C'est une cloche comme la normale, mais avec des **queues plus lourdes** (plus de prudence), qui tend vers $\mathcal N(0,1)$ quand $n$ augmente :
+C'est une cloche comme la normale, mais avec des **queues plus lourdes** (plus de prudence), qui tend vers $\mathcal N(0,1)$ quand $n$ augmente. La valeur critique à 95 % :
 
-```python
+| Degrés de liberté | 2 | 5 | 10 | 30 | 100 | 1 000 | loi normale |
+|-----------------|-----|-----|-----|-----|-----|-----|-----------|
+| Valeur critique | 4,303 | 2,571 | 2,228 | 2,042 | 1,984 | 1,962 | 1,960 |
+
+```python hide
 for ddl in (2, 5, 10, 30, 100, 1000):
     print(f"degrés de liberté = {ddl:>4} : valeur critique à 95 % = {stats.t.ppf(0.975, ddl):.3f}")
 print("loi normale                      :", round(stats.norm.ppf(0.975), 3))
@@ -92,9 +96,9 @@ loi normale                      : 1.96
 
 Avec 2 degrés de liberté (3 observations), la valeur critique est 4,30 : l'intervalle est plus de deux fois plus large qu'avec 1,96. Dès 30 degrés de liberté, on est proche de 2,04 ; avec 400 observations, la différence avec 1,96 est imperceptible.
 
-L'intervalle devient $\bar x\pm t_{n-1,\,0{,}975}\dfrac{s}{\sqrt n}$. Voici le calcul pour nos 400 commandes, à la main puis avec `scipy` :
+L'intervalle devient $\bar x\pm t_{n-1,\,0{,}975}\dfrac{s}{\sqrt n}$. Pour nos 400 commandes : $\bar x=60{,}25$, erreur-type $=1{,}90$, $t_{399,\,0{,}975}=1{,}966$, d'où $60{,}25\pm1{,}966\times1{,}90$, soit **[56,51 ; 63,98]** €. Une ligne de `scipy` donne le même résultat :
 
-```python
+```python hide
 m = df["montant"]
 n = len(m)
 xbar, s = m.mean(), m.std(ddof=1)
@@ -111,9 +115,24 @@ IC à 95 % (à la main) : [56.51 ; 63.98]
 IC à 95 % (scipy)     : [56.51 63.98]
 ```
 
+```python
+xbar, s, n = m.mean(), m.std(ddof=1), len(m)
+print(np.round(stats.t.interval(0.95, n - 1, loc=xbar, scale=s / np.sqrt(n)), 2))
+```
+<!--sortie-->
+```text
+[56.51 63.98]
+```
+
 **Et pour chaque canal ?** On répète le calcul par groupe :
 
-```python
+| Canal | $n$ | Moyenne | IC à 95 % |
+|---|---|---|---|
+| Réseaux | 138 | 49,0 € | [43,8 ; 54,2] |
+| Site | 148 | 59,5 € | [53,3 ; 65,7] |
+| Boutique | 114 | 74,8 € | [67,3 ; 82,4] |
+
+```python hide
 def ic_moyenne(x, niveau=0.95):
     x = np.asarray(x)
     se = x.std(ddof=1) / np.sqrt(len(x))
@@ -126,16 +145,21 @@ for canal in ["Réseaux", "Site", "Boutique"]:
 ```
 <!--sortie-->
 ```text
-Réseaux  n = 138   moyenne =  49.0   IC95 % = [ 43.8 ;  54.2]
+Réseaux    n = 138   moyenne =  49.0   IC95 % = [ 43.8 ;  54.2]
 Site       n = 148   moyenne =  59.5   IC95 % = [ 53.3 ;  65.7]
 Boutique   n = 114   moyenne =  74.8   IC95 % = [ 67.3 ;  82.4]
 ```
 
-Les intervalles d'Réseaux ([43,8 ; 54,2]) et de la boutique ([67,3 ; 82,4]) **sont très éloignés** : c'est un indice sérieux que ces deux canaux diffèrent vraiment. L'intervalle du site ([53,3 ; 65,7]) chevauche légèrement celui d'Réseaux mais pas celui de la boutique. Attention : « les intervalles se chevauchent » ne prouve **pas** que les moyennes sont égales, et même des intervalles qui se touchent peuvent cacher une différence significative. La bonne méthode est de construire un intervalle (ou un test) pour la **différence** elle-même, ce que nous ferons au 3.4.
+Les intervalles du canal Réseaux ([43,8 ; 54,2]) et de la boutique ([67,3 ; 82,4]) **sont très éloignés** : c'est un indice sérieux que ces deux canaux diffèrent vraiment. L'intervalle du site ([53,3 ; 65,7]) chevauche légèrement celui de Réseaux mais pas celui de la boutique. Attention : « les intervalles se chevauchent » ne prouve **pas** que les moyennes sont égales, et même des intervalles qui se touchent peuvent cacher une différence significative. La bonne méthode est de construire un intervalle (ou un test) pour la **différence** elle-même, ce que nous ferons au 3.4.
 
-> 💡 **Ce qui fait varier la largeur.** La demi-largeur est $t\times s/\sqrt n$. Elle **diminue** quand $n$ augmente (en $1/\sqrt n$), **augmente** quand la dispersion $s$ augmente, et **augmente** quand on exige plus de confiance (99 % donne un intervalle plus large que 95 %). Il n'y a pas de gratuité : plus de certitude coûte en précision.
+> 💡 **Ce qui fait varier la largeur.** La demi-largeur est $t\times s/\sqrt n$. Elle **diminue** quand $n$ augmente (en $1/\sqrt n$), **augmente** quand la dispersion $s$ augmente, et **augmente** quand on exige plus de confiance (99 % donne un intervalle plus large que 95 %). Il n'y a pas de gratuité : plus de certitude coûte en précision. Pour les 400 commandes :
 
-```python
+| Confiance | 80 % | 90 % | 95 % | 99 % |
+|---|---|---|---|---|
+| Intervalle (€) | [57,81 ; 62,69] | [57,11 ; 63,38] | [56,51 ; 63,98] | [55,33 ; 65,17] |
+| Largeur (€) | 4,88 | 6,27 | 7,47 | 9,84 |
+
+```python hide
 for niveau in (0.80, 0.90, 0.95, 0.99):
     lo, hi = ic_moyenne(m, niveau)
     print(f"confiance {niveau:.0%} : [{lo:.2f} ; {hi:.2f}]   largeur = {hi - lo:.2f}")
@@ -156,9 +180,16 @@ $$\hat p\pm1{,}96\sqrt{\frac{\hat p(1-\hat p)}n}.$$
 
 Sur 1 000 visiteurs dont 205 achètent : $0{,}205\pm1{,}96\times0{,}0128=0{,}205\pm0{,}025$, soit **[18,0 % ; 23,0 %]**.
 
-Mais cet intervalle devient **mauvais** pour de petits échantillons ou des proportions proches de 0 ou 1. Par exemple, avec 0 achat sur 20 visiteurs, $\hat p=0$ et l'intervalle de Wald est $[0\,;\,0]$ : « on est certain que le taux de conversion est exactement nul » ! Absurde. L'**intervalle de Wilson** corrige cela : il est centré non pas sur $\hat p$ mais sur une valeur légèrement « tirée vers 1/2 », et ne sort jamais de $[0,1]$.
+Mais cet intervalle devient **mauvais** pour de petits échantillons ou des proportions proches de 0 ou 1. Par exemple, avec 0 achat sur 20 visiteurs, $\hat p=0$ et l'intervalle de Wald est $[0\,;\,0]$ : « on est certain que le taux de conversion est exactement nul » ! Absurde. L'**intervalle de Wilson** corrige cela : il est centré non pas sur $\hat p$ mais sur une valeur légèrement « tirée vers 1/2 », et ne sort jamais de $[0,1]$. Comparaison sur quatre cas :
 
-```python
+| Observé | $\hat p$ | Wald | Wilson |
+|---|---|---|---|
+| 205 sur 1 000 | 0,205 | [0,180 ; 0,230] | [0,181 ; 0,231] |
+| 7 sur 20 | 0,350 | [0,141 ; 0,559] | [0,181 ; 0,567] |
+| 0 sur 20 | 0,000 | [0,000 ; 0,000] | [0,000 ; 0,161] |
+| 2 sur 15 | 0,133 | [0,000 ; 0,305] | [0,037 ; 0,379] |
+
+```python hide
 def ic_wald(k, n, niveau=0.95):
     p = k / n
     z = stats.norm.ppf(1 - (1 - niveau) / 2)
@@ -190,12 +221,12 @@ Et si l'on veut un intervalle pour la **médiane**, un quantile, un rapport, ou 
 
 > 💡 **Idée.** On ne peut pas retirer de nouveaux échantillons dans la vraie population, mais on peut **rééchantillonner dans l'échantillon lui-même**. On tire $n$ valeurs **avec remise** dans nos $n$ observations (certaines apparaissent plusieurs fois, d'autres pas), on recalcule la statistique, et on recommence des milliers de fois. La dispersion des valeurs obtenues imite la dispersion qu'on aurait observée en échantillonnant la vraie population.
 
-**L'algorithme (intervalle « percentile »).**
+**L'algorithme (intervalle « percentile »).** Il se programme en quelques lignes, mais l'idée suffit :
 
 1. Répéter $B$ fois (par exemple 10 000) : tirer un échantillon de taille $n$ avec remise ; calculer la statistique.
 2. L'intervalle à 95 % est formé des percentiles 2,5 % et 97,5 % des $B$ valeurs obtenues.
 
-```python
+```python hide
 rng = np.random.default_rng(42)
 x = df["montant"].to_numpy()
 B = 10_000
@@ -216,7 +247,7 @@ IC bootstrap 95 % de la moyenne : [56.7 64. ]
 (à comparer à l'IC de Student de la moyenne : [56.5 64. ] )
 ```
 
-Pour la moyenne, le bootstrap donne pratiquement le même résultat que la formule de Student : rassurant. Pour la **médiane**, qui n'a pas de formule simple, il fournit un intervalle ([environ 47 ; 55] €) que l'on n'aurait pas pu obtenir à la main.
+Sur nos 400 commandes (10 000 rééchantillonnages), le bootstrap donne pour la moyenne l'intervalle [56,7 ; 64,0], pratiquement celui de la formule de Student ([56,5 ; 64,0]) : rassurant. Pour la **médiane**, qui n'a pas de formule simple, il fournit un intervalle (la médiane observée est 51,0 € ; IC à 95 % : [47,3 ; 55,1] €) que l'on n'aurait pas pu obtenir à la main.
 
 > 🧪 **Limites.** Le bootstrap suppose que l'échantillon est représentatif de la population ; il marche mal pour des statistiques « extrêmes » (le maximum), avec de très petits échantillons, ou en présence de très fortes dépendances entre observations. Il reste un outil de base du data scientist, car il généralise à **n'importe quelle** statistique sans calcul mathématique.
 
@@ -226,7 +257,9 @@ On peut renverser le raisonnement : *quelle précision veut-on ?* Si la gérante
 
 $$n\ge\Bigl(\frac{1{,}96\,s}{\varepsilon}\Bigr)^2=\Bigl(\frac{1{,}96\times38}2\Bigr)^2\approx1\,387\ \text{commandes}.$$
 
-```python
+Pour une marge de ±1 €, le même calcul donne 5 548 commandes.
+
+```python hide
 s, eps = 38, 2
 print("n pour une marge de ±2 € :", int(np.ceil((1.96 * s / eps) ** 2)))
 print("n pour une marge de ±1 € :", int(np.ceil((1.96 * s / 1) ** 2)))
@@ -247,3 +280,5 @@ Diviser la marge par 2 demande **4 fois plus de données** (la loi en $1/\sqrt n
 > - Largeur : $\downarrow$ avec $n$ (en $1/\sqrt n$) ; $\uparrow$ avec la dispersion et avec le niveau de confiance.
 > - **Bootstrap** : rééchantillonner avec remise pour obtenir un IC de n'importe quelle statistique.
 > - $n\ge(z\,s/\varepsilon)^2$ pour viser une marge $\varepsilon$.
+>
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.3, exercices 3.4 et 3.5.

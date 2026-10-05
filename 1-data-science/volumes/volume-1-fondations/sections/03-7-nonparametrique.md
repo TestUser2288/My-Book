@@ -6,7 +6,7 @@
 
 > 💡 **Intuition.** Au lieu de travailler sur les valeurs, on les **range** du plus petit au plus grand et l'on travaille sur leurs **rangs** (1er, 2e, 3e…). Une valeur extrême de 1 000 000 n'a que le rang « dernier » : elle ne peut plus fausser le résultat. Les rangs perdent un peu d'information (l'ampleur des écarts), mais gagnent une **robustesse** considérable.
 
-```python
+```python hide
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -21,7 +21,7 @@ valeurs : [12 15 14 10 13 40]
 rangs   : [2. 5. 4. 1. 3. 6.]
 ```
 
-L'extrême (40) reçoit simplement le rang 6, le même qu'il aurait eu en valant 16.
+Pour six commandes de 12, 15, 14, 10, 13 et 40 €, les rangs sont 2, 5, 4, 1, 3 et 6 : l'extrême (40) reçoit simplement le rang 6, le même qu'il aurait eu en valant 16.
 
 ### 3.7.2 Le test de Mann-Whitney (deux groupes indépendants)
 
@@ -29,9 +29,9 @@ C'est l'équivalent non paramétrique du test de Welch. On mélange les deux gro
 
 > 💡 **Interprétation très parlante.** La statistique $U/(n_1n_2)$ est la probabilité qu'une observation tirée au hasard dans le groupe A **dépasse** une observation tirée au hasard dans le groupe B. Valeur 0,5 : aucune différence ; proche de 1 : A domine B. (C'est aussi l'**AUC** du volume II.)
 
-**Un cas où le test de Student se trompe.** Deux petits groupes de 6 commandes. Dans le premier, un client dépense une somme exceptionnelle :
+**Un cas où le test de Student se trompe.** Deux petits groupes de 6 commandes : 12, 15, 14, 10, 13 et 40 € d'un côté, 9, 8, 11, 10, 7 et 12 € de l'autre (moyennes 17,3 et 9,5 €). Dans le premier, un client dépense une somme exceptionnelle. Le test de Welch donne $p=0{,}15$, celui de Mann-Whitney $p=0{,}02$.
 
-```python
+```python hide
 ga = np.array([12, 15, 14, 10, 13, 40])
 gb = np.array([9, 8, 11, 10, 7, 12])
 print("moyennes :", ga.mean().round(1), gb.mean().round(1))
@@ -47,9 +47,9 @@ Mann-Whitney   : p = 0.02
 
 Presque **tous** les clients du premier groupe dépensent plus que ceux du second ; seul le cas de 40 gonfle la variance et noie l'effet dans le test de Student ($p\approx0{,}15$, non significatif). Le test de Mann-Whitney, lui, voit la domination systématique du groupe A ($p\approx0{,}02$, significatif). C'est le gain de puissance de la robustesse quand les données sont « sales ».
 
-**Sur nos 400 commandes** (boutique contre Réseaux) :
+**Sur nos 400 commandes** (boutique contre Réseaux), une seule instruction de `scipy` suffit :
 
-```python
+```python hide
 b = df.loc[df["canal"] == "Boutique", "montant"]
 i = df.loc[df["canal"] == "Réseaux", "montant"]
 u = stats.mannwhitneyu(b, i, alternative="two-sided")
@@ -62,7 +62,16 @@ U = 11246.0   p-valeur = 4.410098845865466e-09
 P(commande boutique > commande Réseaux) = 0.715
 ```
 
-Une commande de la boutique dépasse une commande d'Réseaux dans 71 % des paires comparées ($p\approx4\times10^{-9}$). Conclusion identique à celle du test de Welch, avec une interprétation plus intuitive.
+```python
+u = stats.mannwhitneyu(b, i)        # b, i : montants de la boutique et du canal Réseaux (3.4.3)
+print(u.statistic, f"{u.pvalue:.1e}")
+```
+<!--sortie-->
+```text
+11246.0 4.4e-09
+```
+
+Une commande de la boutique dépasse une commande du canal Réseaux dans 71,5 % des paires comparées ($U/(n_1n_2)=11\,246/(114\times138)=0{,}715$ ; $p\approx4\times10^{-9}$). Conclusion identique à celle du test de Welch, avec une interprétation plus intuitive.
 
 ### 3.7.3 Autres tests de rangs
 
@@ -73,7 +82,7 @@ Une commande de la boutique dépasse une commande d'Réseaux dans 71 % des paire
 | $k>2$ groupes | ANOVA (`f_oneway`) | **Kruskal-Wallis** (`kruskal`) |
 | Corrélation | Pearson | **Spearman** / **Kendall** (`spearmanr`, `kendalltau`) |
 
-```python
+```python hide
 # Wilcoxon : les 8 colis avant/après du 3.4.3
 avant = np.array([5, 4, 6, 7, 5, 6, 8, 5])
 apres = np.array([4, 4, 5, 6, 5, 5, 6, 4])
@@ -99,7 +108,7 @@ Spearman : [-0.511  0.   ]
 Kendall  : [-0.437  0.   ]
 ```
 
-Les lignes de corrélation donnent (coefficient, p-valeur) ; la p-valeur arrondie vaut 0. Pour la satisfaction (note de 1 à 5, **ordinale**), Spearman et Kendall sont plus appropriés que Pearson. Dans les trois cas, le lien entre délai et satisfaction est très significatif.
+Sur nos 400 commandes, ces tests donnent : Wilcoxon sur les 8 colis du 3.4.3, $p=0{,}031$ ; ANOVA sur les trois canaux, $p=3{,}4\times10^{-7}$, et Kruskal-Wallis, $p=9{,}4\times10^{-9}$ ; corrélation entre délai et satisfaction : Pearson $-0{,}532$, Spearman $-0{,}511$, Kendall $-0{,}437$ (p-valeurs arrondies à 0). Pour la satisfaction (note de 1 à 5, **ordinale**), Spearman et Kendall sont plus appropriés que Pearson. Dans les trois cas, le lien entre délai et satisfaction est très significatif.
 
 > ✅ **Quand choisir le non paramétrique ?** Données ordinales ; petits échantillons ($n<20$) d'allure non normale ; valeurs extrêmes qu'on ne veut pas supprimer. Si les données sont vraiment normales, le test de Student est un peu plus puissant (de l'ordre de 5 %) : le non paramétrique est une **assurance bon marché**.
 
@@ -107,7 +116,7 @@ Les lignes de corrélation donnent (coefficient, p-valeur) ; la p-valeur arrondi
 
 > 💡 **Intuition.** $H_0$ dit : « le canal n'a aucun effet sur le montant ». Si c'est vrai, l'étiquette « boutique » ou « Réseaux » collée sur une commande est **arbitraire** : on aurait pu l'échanger avec n'importe quelle autre. Alors **mélangeons** les étiquettes au hasard, recalculons la différence de moyennes, et recommençons des milliers de fois. On obtient ainsi la **distribution de la différence quand $H_0$ est vraie**, sans aucune hypothèse de loi. La p-valeur est la fréquence des mélanges qui donnent une différence au moins aussi grande que celle observée.
 
-```python
+```python hide
 rng = np.random.default_rng(12)
 valeurs = np.concatenate([b.to_numpy(), i.to_numpy()])
 n_b = len(b)
@@ -131,9 +140,9 @@ plus grande différence parmi les 20 000 mélanges : 20.58 €
 p-valeur de permutation : 4.999750012499375e-05
 ```
 
-Aucun des 20 000 mélanges n'atteint la différence observée de 25,8 € : la différence maximale obtenue par hasard est bien plus petite. On majore donc la p-valeur par $1/20\,001\approx5\times10^{-5}$ (le « +1 » évite de déclarer p = 0). Faisons maintenant la même chose sur la petite expérience à 6 + 6 commandes, où l'on peut même énumérer toutes les permutations possibles :
+Sur nos données, avec 20 000 mélanges, aucun n'atteint la différence observée de 25,8 € : la différence maximale obtenue par hasard est bien plus petite. On majore donc la p-valeur par $1/20\,001\approx5\times10^{-5}$ (le « +1 » évite de déclarer p = 0). Faisons maintenant la même chose sur la petite expérience à 6 + 6 commandes, où l'on peut même énumérer toutes les permutations possibles : il y en a 924, et la p-valeur exacte est 0,0173.
 
-```python
+```python hide
 from itertools import combinations
 tout = np.concatenate([ga, gb])
 obs = tout[:6].mean() - tout[6:].mean()
@@ -159,9 +168,9 @@ Il y a $\binom{12}{6}=924$ manières de répartir les 12 valeurs en deux groupes
 
 Comment savoir si l'hypothèse de normalité du test de Student est raisonnable ? Deux outils.
 
-**Le diagramme quantile-quantile (QQ-plot)** : on compare les quantiles des données à ceux d'une loi normale ; si les points suivent la droite, c'est normal. **Le test de Shapiro-Wilk** : $H_0$ = « les données sont normales ».
+**Le diagramme quantile-quantile (QQ-plot)** : on compare les quantiles des données à ceux d'une loi normale ; si les points suivent la droite, c'est normal. **Le test de Shapiro-Wilk** : $H_0$ = « les données sont normales ». Sur nos montants, il rejette nettement la normalité ($p=3\times10^{-18}$) ; sur leur logarithme, il ne rejette pas ($p=0{,}846$, et le test de Kolmogorov-Smirnov donne $p=0{,}879$).
 
-```python
+```python hide
 print("Shapiro-Wilk sur le montant      : p =", f"{stats.shapiro(df['montant']).pvalue:.1e}")
 print("Shapiro-Wilk sur log(montant)    : p =", round(stats.shapiro(np.log(df["montant"])).pvalue, 3))
 z = stats.zscore(np.log(df["montant"]))
@@ -184,3 +193,5 @@ Le montant brut est **clairement non normal** ($p\approx10^{-18}$), alors que so
 > - **Mann-Whitney** (2 groupes), **Wilcoxon** (apparié), **Kruskal-Wallis** ($k$ groupes), **Spearman/Kendall** (corrélation).
 > - **Test de permutation** : on mélange les étiquettes pour fabriquer la loi de la statistique sous $H_0$ ; valable pour toute statistique.
 > - **Shapiro-Wilk** et **Kolmogorov-Smirnov** testent une loi, mais préférez les graphiques et le TCL.
+>
+> 📒 **Pour s'entraîner.** Cahier, chapitre 3 : application 3.7, exercice 3.12.

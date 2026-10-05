@@ -42,26 +42,11 @@ Au début, les courbes sont chaotiques (avec 3 visiteurs, la proportion vaut 0, 
 > **Conclusion.** Appliquée à $\bar X_n$, dont la variance vaut $\sigma^2/n$ :
 > $$P\bigl(|\bar X_n-\mu|\ge\varepsilon\bigr)\le\frac{\sigma^2}{n\,\varepsilon^2}\xrightarrow[n\to\infty]{}0.\ \blacksquare$$
 
-La preuve donne même une information **quantitative** : la borne décroît comme $1/n$. Appliquons-la. Combien de visiteurs faut-il observer pour que la proportion mesurée soit à **±2 points** de la vérité avec une probabilité d'au moins 95 % ? Ici $\sigma^2=p(1-p)=0{,}163$ et $\varepsilon=0{,}02$ ; on veut $\dfrac{0{,}163}{n\times0{,}0004}\le0{,}05$.
+La preuve donne même une information **quantitative** : la borne décroît comme $1/n$. Appliquons-la. Combien de visiteurs faut-il observer pour que la proportion mesurée soit à **±2 points** de la vérité avec une probabilité d'au moins 95 % ? Ici $\sigma^2=p(1-p)=0{,}163$ et $\varepsilon=0{,}02$ ; on veut $\dfrac{0{,}163}{n\times0{,}0004}\le0{,}05$, soit
 
-```python
-import numpy as np
-from scipy import stats
+$$n\ \ge\ \frac{0{,}163}{0{,}05\times0{,}0004}\approx8\,149.$$
 
-p = 0.205
-sigma2 = p * (1 - p)
-eps = 0.02
-n_tchebychev = sigma2 / (0.05 * eps**2)
-print("variance d'un acheteur/non-acheteur :", round(sigma2, 4))
-print("n garanti par Tchebychev            :", round(n_tchebychev))
-```
-<!--sortie-->
-```text
-variance d'un acheteur/non-acheteur : 0.163
-n garanti par Tchebychev            : 8149
-```
-
-Tchebychev garantit le résultat à partir d'environ **8 150 visiteurs**. C'est une borne **sûre mais très pessimiste** (elle marche pour *n'importe quelle* loi). Le théorème central limite, ci-dessous, donnera beaucoup mieux.
+Tchebychev garantit donc le résultat à partir d'environ **8 150 visiteurs**. C'est une borne **sûre mais très pessimiste** (elle marche pour *n'importe quelle* loi). Le théorème central limite, ci-dessous, donnera beaucoup mieux.
 
 > ⚠️ **L'erreur du joueur.** « La roulette est tombée 5 fois sur rouge, le noir est *dû*. » Faux : la loi des grands nombres ne dit **pas** que le hasard « compense » le passé. Chaque tirage est indépendant. Elle dit que la **proportion** se stabilise parce que les premiers tirages sont **dilués** dans une masse de tirages futurs, pas parce que le futur corrige le passé.
 
@@ -81,103 +66,32 @@ La portée est stupéfiante : **quelle que soit la loi d'origine** (asymétrique
 
 ![Distribution de la moyenne d'échantillon pour des tirages exponentiels. À n = 1 on voit la loi d'origine ; dès n = 10 la cloche apparaît ; à n = 50 elle est quasi parfaite. La courbe orange est la loi normale prédite par le TCL.](figures/ch02-tcl.png)
 
-Le même résultat se mesure avec un seul chiffre, l'**asymétrie** (*skewness*) de la distribution, qui vaut 0 pour une cloche parfaite :
+Le même résultat se mesure avec un seul chiffre, l'**asymétrie** (*skewness*) de la distribution, qui vaut 0 pour une cloche parfaite. Sur les mêmes simulations (exponentielle de moyenne 1, donc d'écart-type 1) :
 
-```python
-rng = np.random.default_rng(4)
-for n in (1, 2, 10, 50, 500):
-    moyennes = rng.exponential(1.0, size=(20_000, n)).mean(axis=1)
-    print(f"n = {n:>3} : moyenne = {moyennes.mean():.3f}   écart-type = {moyennes.std():.3f}"
-          f"   (théorie 1/√n = {1 / np.sqrt(n):.3f})   asymétrie = {stats.skew(moyennes):+.2f}")
-```
-<!--sortie-->
-```text
-n =   1 : moyenne = 0.997   écart-type = 1.004   (théorie 1/√n = 1.000)   asymétrie = +2.02
-n =   2 : moyenne = 1.005   écart-type = 0.706   (théorie 1/√n = 0.707)   asymétrie = +1.41
-n =  10 : moyenne = 0.999   écart-type = 0.316   (théorie 1/√n = 0.316)   asymétrie = +0.59
-n =  50 : moyenne = 1.000   écart-type = 0.141   (théorie 1/√n = 0.141)   asymétrie = +0.29
-n = 500 : moyenne = 0.999   écart-type = 0.045   (théorie 1/√n = 0.045)   asymétrie = +0.12
-```
+| $n$ | 1 | 2 | 10 | 50 | 500 |
+|---|---:|---:|---:|---:|---:|
+| Moyenne des moyennes | 0,997 | 1,005 | 0,999 | 1,000 | 0,999 |
+| Écart-type des moyennes | 1,004 | 0,706 | 0,316 | 0,141 | 0,045 |
+| Théorie $1/\sqrt n$ | 1,000 | 0,707 | 0,316 | 0,141 | 0,045 |
+| Asymétrie | +2,02 | +1,41 | +0,59 | +0,29 | +0,12 |
 
 On observe trois choses : la moyenne reste à 1 (sans biais) ; l'écart-type suit la loi $1/\sqrt n$ ; l'asymétrie s'efface (de 2 pour $n=1$ vers 0).
 
 > 📐 **Idée de la preuve (esquisse).** On étudie la **fonction génératrice des moments** $M(t)=E[e^{tZ}]$ de la variable centrée réduite $Z_n=\sqrt n(\bar X_n-\mu)/\sigma$. Par indépendance, $M_{Z_n}(t)=\bigl[M(t/\sqrt n)\bigr]^n$ où $M$ est celle d'une variable centrée réduite. Un développement de Taylor donne $M(s)=1+\tfrac{s^2}2+o(s^2)$ (le terme en $s$ disparaît car l'espérance est nulle, et le coefficient de $s^2$ est $\operatorname{Var}/2=\tfrac12$). Donc $M_{Z_n}(t)=\bigl(1+\tfrac{t^2}{2n}+o(1/n)\bigr)^n\to e^{t^2/2}$, qui est précisément la fonction génératrice de $\mathcal N(0,1)$. Une démonstration complète, avec fonctions caractéristiques, relève de la ➕ théorie de la mesure (section 2.5).
 
-### 2.4.4 Applications
+### 2.4.4 Trois usages du théorème central limite
 
-**Application 1 : la probabilité sur une moyenne.** Les paniers de la boutique sont très asymétriques (beaucoup de petits achats, quelques gros) ; supposons-les exponentiels de moyenne 60 €, donc d'écart-type 60 €. La gérante regarde les 40 prochains paniers. Quelle est la probabilité que leur **moyenne dépasse 70 €** ?
+**Usage 1 : la probabilité sur une moyenne.** Les paniers de la boutique sont très asymétriques (beaucoup de petits achats, quelques gros) ; supposons-les exponentiels de moyenne 60 €, donc d'écart-type 60 €. La gérante regarde les 40 prochains paniers. Quelle est la probabilité que leur **moyenne dépasse 70 €** ?
 
-Par le TCL, $\bar X_{40}\approx\mathcal N\bigl(60,\ 60^2/40\bigr)$, d'erreur-type $60/\sqrt{40}\approx9{,}49$. Le score $z$ est $(70-60)/9{,}49\approx1{,}05$, d'où $P\approx0{,}146$.
+Par le TCL, $\bar X_{40}\approx\mathcal N\bigl(60,\ 60^2/40\bigr)$, d'erreur-type $60/\sqrt{40}\approx9{,}49$. Le score $z$ est $(70-60)/9{,}49\approx1{,}05$, d'où $P\approx0{,}146$. Une simulation de 200 000 échantillons de 40 paniers donne 0,148 : l'approximation normale est très proche (elle sous-estime très légèrement la queue de droite, à cause de l'asymétrie de la loi d'origine). Observez ce que le TCL a fait : **sans connaître la loi des paniers**, seulement leur moyenne et leur écart-type, on a répondu à une question de probabilité.
 
-```python
-mu, sigma, n = 60, 60, 40
-se = sigma / np.sqrt(n)
-approx_tcl = stats.norm(mu, se).sf(70)
+**Usage 2 : de combien de visiteurs a-t-on besoin ?** Reprenons la question du 2.4.2 avec le TCL. La proportion observée $\hat p\approx\mathcal N\bigl(p,\ p(1-p)/n\bigr)$. Avec probabilité 95 %, $\hat p$ est à moins de $1{,}96$ erreurs-types de $p$ (le fameux 1,96 du 2.2.5). On veut donc
 
-rng = np.random.default_rng(5)
-paniers = rng.exponential(60, size=(200_000, n))          # 200 000 échantillons de 40 paniers
-simule = (paniers.mean(axis=1) > 70).mean()
-print("erreur-type    :", round(se, 2))
-print("P(moyenne > 70) par le TCL :", round(approx_tcl, 4))
-print("P(moyenne > 70) simulée    :", round(simule, 4))
-```
-<!--sortie-->
-```text
-erreur-type    : 9.49
-P(moyenne > 70) par le TCL : 0.1459
-P(moyenne > 70) simulée    : 0.1477
-```
+$$1{,}96\sqrt{\frac{p(1-p)}n}\le\varepsilon\iff n\ge\Bigl(\frac{1{,}96}{\varepsilon}\Bigr)^2p(1-p)=\Bigl(\frac{1{,}96}{0{,}02}\Bigr)^2\times0{,}163\approx1\,565.$$
 
-Environ 15 % ; l'approximation normale est assez proche de la simulation (elle sous-estime très légèrement la queue de droite, à cause de l'asymétrie de la loi d'origine). Observez ce que le TCL a fait : **sans connaître la loi des paniers**, seulement leur moyenne et leur écart-type, on a répondu à une question de probabilité.
+Le TCL demande environ **1 565 visiteurs** au lieu de 8 150 : **5 fois moins**. Cette formule est celle des **tailles d'échantillon** des sondages et des tests A/B (chapitre 3). Une simulation vérifie que 1 570 visiteurs suffisent bien : la proportion observée tombe à moins de 2 points de la vérité dans 95,1 % des échantillons.
 
-**Application 2 : de combien de visiteurs a-t-on besoin ?** Reprenons la question du 2.4.2 avec le TCL. La proportion observée $\hat p\approx\mathcal N\bigl(p,\ p(1-p)/n\bigr)$. Avec probabilité 95 %, $\hat p$ est à moins de $1{,}96$ erreurs-types de $p$ (le fameux 1,96 du 2.2.5). On veut donc
-
-$$1{,}96\sqrt{\frac{p(1-p)}n}\le\varepsilon\iff n\ge\Bigl(\frac{1{,}96}{\varepsilon}\Bigr)^2p(1-p).$$
-
-```python
-n_tcl = (1.96 / eps) ** 2 * p * (1 - p)
-print("n nécessaire par le TCL :", round(n_tcl))
-print("n garanti par Tchebychev :", round(n_tchebychev))
-```
-<!--sortie-->
-```text
-n nécessaire par le TCL : 1565
-n garanti par Tchebychev : 8149
-```
-
-Le TCL demande environ **1 565 visiteurs** au lieu de 8 150 : **5 fois moins**. Cette formule est celle des **tailles d'échantillon** des sondages et des tests A/B (chapitre 3).
-
-> 🧪 **Vérifions par simulation** que 1 570 visiteurs (arrondi) suffisent bien à tenir la marge de ±2 points, dans environ 95 % des cas :
-
-```python
-rng = np.random.default_rng(6)
-n_obs = 1570
-taux = rng.binomial(n_obs, p, size=100_000) / n_obs
-print("part des échantillons à moins de 2 points de la vérité :", round((np.abs(taux - p) <= eps).mean(), 4))
-```
-<!--sortie-->
-```text
-part des échantillons à moins de 2 points de la vérité : 0.9514
-```
-
-**Application 3 : la normale approche la binomiale.** Une binomiale est une somme de $n$ Bernoulli ; le TCL dit donc que pour $n$ grand, $\text{Bin}(n,p)\approx\mathcal N\bigl(np,\ np(1-p)\bigr)$. Sur 100 visiteurs à 20 % de conversion, quelle est la probabilité d'avoir **au moins 30 acheteurs** ?
-
-```python
-b = stats.binom(100, 0.2)
-exact = b.sf(29)                                   # P(X >= 30) = P(X > 29)
-approx = stats.norm(20, 4).sf(29.5)                # correction de continuité : on coupe à 29,5
-print("exact (binomiale)     :", round(exact, 4))
-print("approx. normale       :", round(approx, 4))
-print("approx. sans correction:", round(stats.norm(20, 4).sf(30), 4))
-```
-<!--sortie-->
-```text
-exact (binomiale)     : 0.0112
-approx. normale       : 0.0088
-approx. sans correction: 0.0062
-```
-
-La **correction de continuité** (couper à 29,5 plutôt qu'à 30) améliore sensiblement l'approximation : on remplace des barres discrètes par une courbe continue, et la barre « 30 » occupe l'intervalle [29,5 ; 30,5].
+**Usage 3 : la normale approche la binomiale.** Une binomiale est une somme de $n$ Bernoulli ; le TCL dit donc que pour $n$ grand, $\text{Bin}(n,p)\approx\mathcal N\bigl(np,\ np(1-p)\bigr)$. Sur 100 visiteurs à 20 % de conversion, quelle est la probabilité d'avoir **au moins 30 acheteurs** ? La binomiale donne exactement $0{,}0112$. L'approximation normale $\mathcal N(20,\,4^2)$ donne $0{,}0062$ si l'on coupe à 30, mais $0{,}0088$ avec la **correction de continuité** (couper à 29,5 plutôt qu'à 30) : on remplace des barres discrètes par une courbe continue, et la barre « 30 » occupe l'intervalle $[29{,}5\,;\,30{,}5]$, ce qui améliore sensiblement l'approximation.
 
 ### 2.4.5 Un mot de prudence
 
@@ -196,3 +110,44 @@ Le TCL est un résultat **asymptotique** : « $\approx$ » devient exact quand $
 > - **TCL** : $\dfrac{\bar X_n-\mu}{\sigma/\sqrt n}\approx\mathcal N(0,1)$ pour *toute* loi de variance finie. C'est le pont entre les probabilités et la statistique.
 > - Utilisations : probabilités sur des moyennes, taille d'échantillon $n\ge(1{,}96/\varepsilon)^2p(1-p)$, approximation normale de la binomiale.
 > - Les hypothèses comptent : avec des queues très lourdes (Cauchy), rien de tout cela ne marche.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 2 : application 2.3 (dimensionner un échantillon), exercice 2.9.
+
+```python hide
+# Vérifie tous les nombres cités dans la section 2.4.
+import numpy as np
+from scipy import stats
+p = 0.205; sigma2 = p * (1 - p); eps = 0.02
+n_tcheb = sigma2 / (0.05 * eps**2)
+print("sigma2 =", round(sigma2, 4), "| n Tchebychev =", round(n_tcheb), "| 0,163/(0,05*0,0004) =", round(0.163 / (0.05 * 0.0004)))
+rng = np.random.default_rng(4)
+for n in (1, 2, 10, 50, 500):
+    m = rng.exponential(1.0, size=(20_000, n)).mean(axis=1)
+    print(f"n={n:>3} moyenne {m.mean():.3f} ecart-type {m.std():.3f} theorie {1/np.sqrt(n):.3f} asymetrie {stats.skew(m):+.2f}")
+mu, sigma, n = 60, 60, 40
+se = sigma / np.sqrt(n)
+print("erreur-type =", round(se, 2), "| z =", round(10 / se, 2), "| TCL P(>70) =", round(stats.norm(mu, se).sf(70), 4))
+rng = np.random.default_rng(5)
+print("simulée :", round((rng.exponential(60, size=(200_000, n)).mean(axis=1) > 70).mean(), 4))
+n_tcl = (1.96 / eps) ** 2 * p * (1 - p)
+print("n TCL =", round(n_tcl), "| rapport =", round(n_tcheb / n_tcl, 2))
+rng = np.random.default_rng(6)
+taux = rng.binomial(1570, p, size=100_000) / 1570
+print("part à moins de 2 points avec n=1570 :", round((np.abs(taux - p) <= eps).mean(), 4))
+b = stats.binom(100, 0.2)
+print("P(X>=30) exact", round(b.sf(29), 4), "| normale avec correction", round(stats.norm(20, 4).sf(29.5), 4), "| sans", round(stats.norm(20, 4).sf(30), 4))
+```
+<!--sortie-->
+```text
+sigma2 = 0.163 | n Tchebychev = 8149 | 0,163/(0,05*0,0004) = 8150
+n=  1 moyenne 0.997 ecart-type 1.004 theorie 1.000 asymetrie +2.02
+n=  2 moyenne 1.005 ecart-type 0.706 theorie 0.707 asymetrie +1.41
+n= 10 moyenne 0.999 ecart-type 0.316 theorie 0.316 asymetrie +0.59
+n= 50 moyenne 1.000 ecart-type 0.141 theorie 0.141 asymetrie +0.29
+n=500 moyenne 0.999 ecart-type 0.045 theorie 0.045 asymetrie +0.12
+erreur-type = 9.49 | z = 1.05 | TCL P(>70) = 0.1459
+simulée : 0.1477
+n TCL = 1565 | rapport = 5.21
+part à moins de 2 points avec n=1570 : 0.9514
+P(X>=30) exact 0.0112 | normale avec correction 0.0088 | sans 0.0062
+```

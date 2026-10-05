@@ -21,12 +21,14 @@ Rassurez-vous : il ne s'agit pas de refaire un cursus de mathématiques. Il suff
 
 ## Le chemin de ce chapitre
 
-Nous allons suivre la boutique **la boutique** et ses questions concrètes :
+Nous suivrons une petite boutique et ses questions concrètes :
 
-- **1.1 Algèbre linéaire** : La gérante veut savoir quels clients se ressemblent, calculer son chiffre d'affaires par mois sans boucle interminable, et résumer un tableau de ventes en quelques tendances.
+- **1.1 Algèbre linéaire** : la gérante veut savoir quels clients se ressemblent, calculer son chiffre d'affaires par mois sans boucle interminable, et résumer un tableau de ventes en quelques tendances.
 - **1.2 Analyse** : comment son bénéfice change-t-il quand elle modifie un prix un tout petit peu ? Et quelle est la probabilité qu'une commande arrive dans les trois prochaines minutes ?
 - **1.3 Optimisation** : quel prix maximise ses recettes ? Comment répartir son budget publicitaire ?
 - **1.4 Fiche de notations** : toutes les notations du livre, au même endroit.
 - ➕ **Pour aller plus loin** : pourquoi l'ordinateur se trompe parfois (analyse numérique), et comment compter et relier des objets (mathématiques discrètes et graphes).
 
-> 💡 **Comment lire ce chapitre.** Chaque notion suit le même rythme : une intuition, un exemple chiffré à la main, puis (si nécessaire) une démonstration, puis le code. Si une démonstration vous décourage, sautez-la : l'exemple et le code suffisent pour avancer. Revenez-y plus tard.
+> 💡 **Comment lire ce chapitre.** Chaque notion suit le même rythme : une intuition, un exemple chiffré à la main, puis, quand c'est utile, une démonstration. Si une démonstration vous décourage, sautez-la : l'exemple suffit pour avancer. Revenez-y plus tard.
+
+> 📒 **Le cahier.** Les applications guidées et les exercices corrigés de ce chapitre sont dans le **Cahier d'exercices et d'applications** du volume (chapitre 1). Ce livre se concentre sur les idées, les démonstrations et les exemples faits à la main : le code n'y apparaît que lorsqu'il aide vraiment à comprendre.

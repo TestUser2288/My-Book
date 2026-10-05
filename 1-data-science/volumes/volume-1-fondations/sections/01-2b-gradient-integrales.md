@@ -36,9 +36,15 @@ Et ce produit scalaire, nous savons le majorer.
 >
 > (Au passage : on retrouve la même inégalité de Cauchy-Schwarz que dans la section 1.1.1.)
 
-Vérifions numériquement en $(1, 1)$, en mesurant la pente de $f$ dans quatre directions :
+Vérifions en $(1, 1)$, où $\nabla f = (2, 6)$ et $\|\nabla f\| = \sqrt{40} \approx 6{,}325$, en calculant la pente de $f$ dans quatre directions $\mathbf{u}$ (de longueur 1), par $\nabla f\cdot\mathbf{u}$ :
 
-```python
+| Direction | $(1, 0)$ | $(0, 1)$ | celle du gradient | opposée au gradient |
+|---|---|---|---|---|
+| Pente | $2$ | $6$ | $+6{,}325$ | $-6{,}325$ |
+
+(Un calcul numérique de la pente par de petits déplacements, mené en parallèle, donne les mêmes valeurs.)
+
+```python hide
 def f2(x, y):
     return x**2 + 3 * y**2
 
@@ -66,13 +72,13 @@ direction du gradient    pente mesurée =    6.325
 opposée au gradient      pente mesurée =   -6.325
 ```
 
-La pente mesurée est maximale (6,325, soit $\|\nabla f\| = \sqrt{40}$) dans la direction du gradient, et minimale (−6,325) dans la direction opposée. Aucune autre direction ne fait mieux.
+La pente est maximale ($\|\nabla f\| = \sqrt{40}$) dans la direction du gradient, et minimale ($-\sqrt{40}$) dans la direction opposée. Aucune autre direction ne fait mieux.
 
 ![Courbes de niveau de f(x,y) = x² + 3y² (chaque ellipse est une « altitude » constante) et, en chaque point, la direction de la plus forte descente (−gradient). Les flèches sont perpendiculaires aux courbes de niveau et pointent vers le fond du bol.](figures/ch01-gradient-contours.png)
 
 Deux faits à retenir sur cette figure : le gradient est **perpendiculaire aux courbes de niveau**, et **−gradient pointe vers le bas**. C'est exactement ce que nous utiliserons en 1.3 pour descendre vers le minimum.
 
-#### 🛠️ Application : la pente de l'erreur d'une droite
+#### Un exemple : le gradient de l'erreur d'une droite
 
 La gérante veut ajuster une droite $y = ax + b$ à trois mesures $(x_i, y_i)$ : $(1, 2)$, $(2, 3)$ et $(3, 5)$. Pour mesurer la qualité d'une droite candidate, on utilise la **somme des carrés des erreurs** :
 
@@ -90,7 +96,7 @@ $$\frac{\partial L}{\partial a} = -2\sum_i x_i\, r_i, \qquad \frac{\partial L}{\
 >
 > Le gradient $(-46, -20)$ est très négatif : en augmentant $a$ et $b$, l'erreur diminue fortement.
 
-```python
+```python hide
 x = np.array([1.0, 2.0, 3.0])
 y = np.array([2.0, 3.0, 5.0])
 
@@ -117,7 +123,7 @@ perte en (1,5 ; 1/3) : 0.1667
 gradient en (1,5 ; 1/3) : [0. 0.]
 ```
 
-Au point $(1{,}5\;;\;1/3)$, le gradient est **nul** : on est au fond du bol. Nous montrerons en 1.3 comment y arriver automatiquement.
+Au point $(a, b) = (1{,}5\;;\;1/3)$, le gradient est **nul** : on est au fond du bol. À la main : les erreurs valent alors $r = (2 - \tfrac{11}{6},\; 3 - \tfrac{10}{3},\; 5 - \tfrac{29}{6}) = (\tfrac16,\,-\tfrac13,\,\tfrac16)$, donc $\sum r_i = 0$ et $\sum x_i r_i = \tfrac16 - \tfrac23 + \tfrac12 = 0$, et la perte vaut $L = \tfrac1{36} + \tfrac19 + \tfrac1{36} = \tfrac16 \approx 0{,}167$. Nous montrerons en 1.3 comment y arriver automatiquement.
 
 > ✅ **À retenir (gradient).**
 >
@@ -125,6 +131,8 @@ Au point $(1{,}5\;;\;1/3)$, le gradient est **nul** : on est au fond du bol. Nou
 > - $-\nabla f$ pointe vers la plus forte **descente**.
 > - Au minimum (ou au maximum, ou au col), le gradient est nul.
 > - La règle de la composée rend le calcul du gradient d'une « somme de carrés d'erreurs » mécanique : c'est le cœur de l'entraînement des modèles.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.6, exercice 1.5.
 
 ### 1.2.3 Intégrales : accumuler les petits changements
 
@@ -136,9 +144,13 @@ Au point $(1{,}5\;;\;1/3)$, le gradient est **nul** : on est au fond du bol. Nou
 
 L'aire sous une courbe $f$ entre $a$ et $b$ se note $\displaystyle\int_a^b f(x)\,dx$. L'idée de **Riemann** : découper l'intervalle en $n$ bandes étroites, approcher chaque bande par un rectangle de hauteur $f(x)$, et additionner. Plus $n$ est grand, meilleure est l'approximation.
 
-> 🧪 **Exemple à la main.** Aire sous $f(x) = x^2$ entre 0 et 3, avec $n = 3$ rectangles de largeur 1 (hauteur mesurée au bord droit) : $1\cdot 1^2 + 1 \cdot 2^2 + 1\cdot 3^2 = 1 + 4 + 9 = 14$. C'est une approximation grossière (les rectangles dépassent la courbe). Avec $n = 6$ rectangles de largeur $0{,}5$ : $0{,}5\,(0{,}5^2 + 1^2 + 1{,}5^2 + 2^2 + 2{,}5^2 + 3^2) = 0{,}5 \times 22{,}75 = 11{,}375$. Mieux !
+> 🧪 **Exemple à la main.** Aire sous $f(x) = x^2$ entre 0 et 3, avec $n = 3$ rectangles de largeur 1 (hauteur mesurée au bord droit) : $1\cdot 1^2 + 1 \cdot 2^2 + 1\cdot 3^2 = 1 + 4 + 9 = 14$. C'est une approximation grossière (les rectangles dépassent la courbe). Avec $n = 6$ rectangles de largeur $0{,}5$ : $0{,}5\,(0{,}5^2 + 1^2 + 1{,}5^2 + 2^2 + 2{,}5^2 + 3^2) = 0{,}5 \times 22{,}75 = 11{,}375$. Mieux ! En continuant avec de plus en plus de rectangles, on obtient :
 
-```python
+| $n$ | 3 | 6 | 30 | 300 | 3000 |
+|---|---|---|---|---|---|
+| aire approchée | 14,000 | 11,375 | 9,455 | 9,045 | 9,005 |
+
+```python hide
 def riemann(f, a, b, n):
     largeur = (b - a) / n
     xs = a + largeur * np.arange(1, n + 1)        # extrémités droites des bandes
@@ -158,7 +170,7 @@ n = 3000 rectangles : aire ≈ 9.0045
 valeur exacte : 3^3 / 3 = 9.0
 ```
 
-Les approximations convergent vers **9**. L'intégrale *est* cette limite.
+Les approximations convergent vers **9** (la valeur exacte). L'intégrale *est* cette limite.
 
 #### Le théorème fondamental : la dérivée à l'envers
 
@@ -179,7 +191,7 @@ Quelques primitives à connaître :
 
 > 📐 **Pourquoi ça marche : l'idée de la preuve.** Notons $A(x) = \int_a^x f(t)\,dt$ l'aire accumulée jusqu'en $x$. Quand $x$ avance de $h$, l'aire gagne une fine bande de largeur $h$ et de hauteur à peu près $f(x)$ : $A(x+h) - A(x) \approx f(x)\,h$. En divisant par $h$ et en faisant tendre $h$ vers 0, on obtient $A'(x) = f(x)$. L'aire accumulée est donc **une** primitive de $f$ ; deux primitives ne diffèrent que d'une constante, qui disparaît dans la différence $F(b) - F(a)$. $\blacksquare$ (Preuve simplifiée, suffisante pour l'intuition.)
 
-#### 🛠️ Application : une commande dans les trois prochaines minutes ?
+#### Un exemple : une commande dans les trois prochaines minutes ?
 
 Sur le site de la boutique, en heure de pointe, une commande arrive en moyenne toutes les 2 minutes. On montrera au chapitre 2 que le temps d'attente $T$ (en minutes) avant la prochaine commande suit une **loi exponentielle** de taux $\lambda = 0{,}5$ par minute, dont la densité est
 
@@ -191,7 +203,7 @@ La probabilité qu'une commande arrive dans les 3 prochaines minutes est l'aire 
 >
 > $$P(T \le 3) = \bigl[-e^{-0{,}5\,t}\bigr]_0^3 = -e^{-1{,}5} - (-e^{0}) = 1 - e^{-1{,}5} \approx 0{,}777.$$
 
-```python
+```python hide
 from scipy.integrate import quad
 
 lam = 0.5
@@ -216,7 +228,7 @@ aire totale sous la courbe    : 1.0
 
 ![Densité du temps d'attente avant la prochaine commande. L'aire grisée entre 0 et 3 minutes vaut 0,777 : il y a environ 78 % de chances qu'une commande arrive dans les trois prochaines minutes.](figures/ch01-attente-densite.png)
 
-**Lecture.** Les trois méthodes concordent : environ **77,7 %** de chances. Et l'aire **totale** sous la courbe vaut 1 : c'est une exigence de toute densité de probabilité (la probabilité que *quelque chose* arrive est de 100 %). Nous reverrons ces idées en détail au chapitre 2.
+**Lecture.** Le calcul exact et une intégration numérique concordent : environ **77,7 %** de chances. Et l'aire **totale** sous la courbe vaut 1 : c'est une exigence de toute densité de probabilité (la probabilité que *quelque chose* arrive est de 100 %). Nous reverrons ces idées en détail au chapitre 2.
 
 > ⚠️ **Piège : les aires sous l'axe comptent négativement.** Si $f$ est négative sur une partie de l'intervalle, l'intégrale en tient compte avec un signe moins. L'intégrale mesure une quantité **algébrique** accumulée, pas toujours une surface géométrique.
 
@@ -225,3 +237,5 @@ aire totale sous la courbe    : 1.0
 > - $\int_a^b f(x)\,dx$ est l'aire (algébrique) sous la courbe entre $a$ et $b$ : une limite de sommes de rectangles.
 > - Théorème fondamental : $\int_a^b f = F(b) - F(a)$ où $F' = f$.
 > - Pour une densité de probabilité, l'aire sous la courbe sur une zone **est** la probabilité de cette zone ; l'aire totale vaut 1.
+
+> 📒 **Pour s'entraîner.** Cahier, chapitre 1 : application 1.7.
