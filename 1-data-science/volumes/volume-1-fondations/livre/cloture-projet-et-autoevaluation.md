@@ -443,7 +443,7 @@ gain de satisfaction attendu sur ces commandes : +0.36 point
 gain sur l'ensemble des livraisons              : +0.094 point
 ```
 
-> ⚠️ **Association n'est pas causalité.** La pente décrit comment les deux variables **varient ensemble** dans nos données. Elle ne prouve pas que réduire les délais *fera* monter les notes : un facteur caché pourrait jouer sur les deux à la fois (les commandes volumineuses sont peut-être à la fois plus lentes à préparer et plus exigeantes). Ici les données sont simulées et la relation a été construite pour être réelle, mais dans une vraie étude, la phrase honnête serait : « *les commandes livrées plus lentement sont associées à des notes plus basses, d'environ 0,18 point par jour* ». Distinguer corrélation et causalité est l'un des grands thèmes du volume III.
+> ⚠️ **Association n'est pas causalité.** La pente décrit comment les deux variables **varient ensemble** dans nos données. Elle ne prouve pas que réduire les délais *fera* monter les notes : un facteur caché pourrait jouer sur les deux à la fois (les commandes volumineuses sont peut-être à la fois plus lentes à préparer et plus exigeantes). Ici les données sont simulées et la relation a été construite pour être réelle, mais dans une vraie étude, la phrase honnête serait : « *les commandes livrées plus lentement sont associées à des notes plus basses, d'environ 0,18 point par jour* ». Distinguer corrélation et causalité est l'un des grands thèmes du volume II (chapitre 7, facultatif).
 
 ## P.6 Étape 5 : qui relancer en janvier ? (question 4)
 
@@ -644,7 +644,7 @@ Une étude honnête se termine par ses **limites** :
 
 - **Une seule année** : impossible de distinguer une vraie saisonnalité d'un phénomène propre à 2025.
 - **Pas de coûts** : nous avons parlé de chiffre d'affaires, jamais de **bénéfice**. Instagram pourrait être très rentable si l'on dépense peu pour y vendre.
-- **Pas de causalité** : les relations constatées sont des **associations** ; pour savoir si réduire les délais *améliorerait* les notes, il faudrait une expérience (volume III).
+- **Pas de causalité** : les relations constatées sont des **associations** ; pour savoir si réduire les délais *améliorerait* les notes, il faudrait une expérience (volume II, chapitre 7 facultatif sur l'inférence causale, et chapitre 8 sur les plans d'expériences).
 - **Variables simples** : nous n'avons pas pris en compte, par exemple, la ville de livraison, le type de produit ou le client lui-même (un client très exigeant note toujours bas). Les modèles du volume II (régression multiple, modèles mixtes) permettent de **tenir compte de plusieurs facteurs à la fois**.
 
 > ✅ **À retenir.** Ce que vous venez de faire, de la question de Yasmine au rapport, est le **cycle de base de la data science** : *poser la question → contrôler les données → décrire → comparer ou relier avec rigueur → conclure avec prudence → rendre reproductible*. Les volumes suivants ajouteront des outils (régression, apprentissage automatique, séries temporelles…), mais ce cycle ne changera pas.
