@@ -1,0 +1,49 @@
+\usepackage{float}
+\floatplacement{figure}{htbp}
+\usepackage{xcolor}
+\definecolor{bleu}{HTML}{2A78D6}\definecolor{orange}{HTML}{EB6834}
+\definecolor{aqua}{HTML}{1BAF7A}\definecolor{violet}{HTML}{4A3AA7}
+\definecolor{rouge}{HTML}{E34948}\definecolor{vert}{HTML}{1BAF7A}\definecolor{etoile}{HTML}{E0A100}
+\newfontfamily\symfont{DejaVu Sans}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable,skins}
+\newtcolorbox{calloutbox}[2]{enhanced,breakable,colback=#1!6,colframe=#1,boxrule=0pt,
+  frame hidden,borderline west={2.6pt}{0pt}{#1},arc=0pt,left=9pt,right=7pt,top=5pt,bottom=5pt,
+  before skip=9pt,after skip=9pt,fonttitle=\bfseries\small,#2}
+\newenvironment{callout}[1]{%
+  \ifthenelse{\equal{#1}{intuition}}{\begin{calloutbox}{bleu}{}}{%
+  \ifthenelse{\equal{#1}{rigueur}}{\begin{calloutbox}{violet}{}}{%
+  \ifthenelse{\equal{#1}{application}}{\begin{calloutbox}{aqua}{}}{%
+  \ifthenelse{\equal{#1}{attention}}{\begin{calloutbox}{orange}{}}{%
+  \ifthenelse{\equal{#1}{retenir}}{\begin{calloutbox}{vert}{}}{%
+  \ifthenelse{\equal{#1}{remarque}}{\begin{calloutbox}{gray}{}}{%
+  \begin{calloutbox}{gray}{}}}}}}}%
+}{\end{calloutbox}}
+\usepackage{ifthen}
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+\fvset{fontsize=\footnotesize}
+\usepackage{booktabs,longtable,array}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\emergencystretch}{3em}
+\usepackage{microtype}
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\small}
+\makeatletter
+\renewcommand{\maketitle}{\begin{titlepage}\centering
+  \vspace*{2.8cm}
+  {\color{bleu}\rule{\textwidth}{2.2pt}}\\[1.4cm]
+  {\fontsize{44}{52}\selectfont\bfseries DATA SCIENCE\par}
+  \vspace{.6cm}
+  {\Large Série 1 \textemdash\ Volume I\par}
+  \vspace{1.2cm}
+  {\fontsize{30}{36}\selectfont\color{bleu}\itshape Fondations\par}
+  \vspace{1.2cm}
+  {\color{bleu}\rule{\textwidth}{2.2pt}}\\[1.2cm]
+  {\large Mathématiques\,\textperiodcentered\ Probabilités\,\textperiodcentered\ Statistique\\[3pt]
+   Programmation\,\textperiodcentered\ Bases de données\,\textperiodcentered\ Outils\par}
+  \vfill
+  {\small\color{gray} Un livre pour apprendre le métier pas à pas,\\ avec une boutique d'artisanat tunisienne pour fil rouge.\par}
+  \vspace{1cm}
+\end{titlepage}}
+\makeatother
