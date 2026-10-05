@@ -17,7 +17,7 @@ local subst = {
   ["💡"] = "{\\symfont\\color{bleu}■}", ["📐"] = "{\\symfont\\color{violet}■}",
   ["🛠"] = "{\\symfont\\color{aqua}■}", ["🧪"] = "{\\symfont\\color{gray}■}",
   ["🧭"] = "{\\symfont\\color{gray}■}", ["📦"] = "{\\symfont\\color{gray}■}",
-  ["🏋"] = "", ["\u{FE0F}"] = "", ["₀"] = "\\textsubscript{0}", ["ᵉ"] = "\\textsuperscript{e}",
+  ["🏋"] = "", ["\u{FE0F}"] = "", ["₀"] = "\\textsubscript{0}", ["₁"] = "\\textsubscript{1}", ["₂"] = "\\textsubscript{2}", ["⁴"] = "\\textsuperscript{4}", ["ᵉ"] = "\\textsuperscript{e}",
 }
 
 local function fix_str(s)
@@ -79,7 +79,7 @@ end
 -- Dans le code (police mono) : les symboles absents de DejaVu Sans Mono deviennent du texte
 local code_subst = { ["✓"] = "[OK]", ["✗"] = "[X]", ["✔"] = "[OK]", ["✘"] = "[X]", ["✅"] = "[OK]", ["❌"] = "[X]",
   ["💡"] = "(i)", ["📐"] = "(rigueur)", ["🛠"] = "(appli)", ["🧪"] = "(remarque)", ["🧭"] = "(repère)",
-  ["⚠"] = "(!)", ["\u{FE0F}"] = "" }
+  ["⚠"] = "(!)", ["➕"] = "(+)", ["₀"] = "_0", ["₁"] = "_1", ["₂"] = "_2", ["⁴"] = "^4", ["\u{FE0F}"] = "" }
 local function fix_code(text)
   local out, changed = text, false
   for k, v in pairs(code_subst) do
