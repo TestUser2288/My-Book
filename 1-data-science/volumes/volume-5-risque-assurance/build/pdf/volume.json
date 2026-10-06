@@ -1,0 +1,50 @@
+{
+ "serie": "Série 1 — Volume V",
+ "nom": "Risque et assurance",
+ "ligneA": "Risque de crédit\\,\\textperiodcentered\\ Modélisation actuarielle\\,\\textperiodcentered\\ Mesures de risque",
+ "ligneB": "Cadre réglementaire\\,\\textperiodcentered\\ Vie, réassurance, actif-passif",
+ "pied": "De la donnée au risque chiffré,\\\\ avec un assureur et une banque fictifs.",
+ "title": "DATA SCIENCE",
+ "author": "Série 1 : Data Science",
+ "subtitle": "Volume V : Risque et assurance — Scoring, actuariat, mesures de risque et réglementation",
+ "livre": {
+  "dossier": "sections",
+  "source": "livre/volume-5-risque-assurance-complet.md",
+  "out": "livre/volume-5-risque-assurance.pdf",
+  "start_heading": "# Introduction",
+  "titres": {
+   "00": "00-introduction",
+   "01": "chapitre-1-risque-de-credit",
+   "02": "chapitre-2-modelisation-actuarielle",
+   "03": "chapitre-3-mesures-de-risque",
+   "04": "chapitre-4-cadre-reglementaire",
+   "05": "chapitre-5-assurance-vie",
+   "06": "chapitre-6-reassurance",
+   "07": "chapitre-7-actif-passif-portefeuille",
+   "10": "cloture-points-cles"
+  }
+ },
+ "cahier": {
+  "dossier": "cahier",
+  "source": "livre/cahier-volume-5-complet.md",
+  "out": "livre/cahier-volume-5.pdf",
+  "start_heading": "# Mode d'emploi",
+  "serie": "Série 1 — Volume V",
+  "nom": "Cahier d'exercices et d'applications",
+  "ligneA": "Exercices corrigés\\,\\textperiodcentered\\ Applications guidées\\,\\textperiodcentered\\ Projet",
+  "ligneB": "Compagnon du volume V : Risque et assurance",
+  "pied": "À utiliser avec le livre : chaque chapitre renvoie ici\\\\ pour s'entraîner.",
+  "subtitle": "Cahier d'exercices et d'applications du volume V : Risque et assurance",
+  "titres": {
+   "00": "cahier-00-mode-emploi",
+   "01": "cahier-chapitre-1",
+   "02": "cahier-chapitre-2",
+   "03": "cahier-chapitre-3",
+   "04": "cahier-chapitre-4",
+   "05": "cahier-chapitre-5",
+   "06": "cahier-chapitre-6",
+   "07": "cahier-chapitre-7",
+   "10": "cahier-projet-et-autoevaluation"
+  }
+ }
+}
