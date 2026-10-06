@@ -128,7 +128,7 @@ Les exemples sont écrits en **Python** (langage principal), avec quelques exemp
 
 Pour installer ce qu'il faut, un seul jeu de commandes suffit (détaillé au chapitre 6) :
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn
@@ -5810,7 +5810,7 @@ pandas offre une méthode `.plot` sur ses Series et DataFrames, qui appelle matp
 
 Le code complet de la figure ajoute les titres, les étiquettes et les annotations. Pour le quatrième graphique, un détail d'importance. La livraison est un nombre entier de jours et la satisfaction une note entière de 1 à 5 : beaucoup de commandes tombent *exactement au même point*, et un nuage de points normal en cacherait la plupart. On les **décale aléatoirement d'un tout petit peu** (« jitter », en français *jitter* ou *bruitage*) et on rend les points translucides : les zones denses apparaissent plus foncées.
 
-```python noexec
+```python
 df["montant"].plot.hist(bins=30, color=BLEU)                      # histogramme
 ca_canal = df.groupby("canal")["montant"].sum().sort_values()
 ca_canal.plot.barh(color=BLEU)                                   # barres horizontales, triées
@@ -6150,7 +6150,7 @@ Test vert. Remarquez que nous avons aussi ajouté une **validation** : un taux d
 **Étape 3 : le module de la boutique.** Il contient quatre classes (un article, un panier, une commande en boutique, une commande sur le site), avec docstrings, annotations de types, validation et une constante pour la TVA (une soixantaine de lignes, données dans le cahier). Voici les passages qui illustrent la section :
 
 
-```python noexec
+```python
 @dataclass(frozen=True)             # frozen : on ne peut plus modifier un article créé
 class Article:
     nom: str
@@ -6185,7 +6185,7 @@ Quelques points de lecture :
 **Étape 4 : les tests du module.** Chaque règle métier vérifiée à la main plus haut devient un test (il y en a dix dans le module complet). Le décorateur `@pytest.fixture` prépare le panier de l'exemple (le *arrange*) ; `pytest.approx` compare des nombres décimaux avec une petite tolérance (rappelez-vous, section 1.5 : `0.1 + 0.2 != 0.3` en binaire !) ; `@pytest.mark.parametrize` rejoue le même test avec plusieurs valeurs. Voici deux tests, puis la suite complète :
 
 
-```python noexec
+```python
 @pytest.fixture
 def panier():                                   # Arrange : le panier de l'exemple
     p = Panier()
@@ -6291,7 +6291,7 @@ Les deux langages donnent exactement les mêmes nombres : 114 commandes en bouti
 
 Un programme SAS est une suite d'**étapes** : les étapes `DATA` fabriquent ou transforment des tables, les étapes `PROC` (procédures) appliquent un traitement statistique prêt à l'emploi. Chaque instruction se termine par un point-virgule, et un bloc par `run;`.
 
-```sas noexec
+```sas
 /* SAS — non exécuté dans ce livre */
 proc import datafile="donnees/commandes.csv"
             out=commandes dbms=csv replace;
@@ -6312,7 +6312,7 @@ On lit : « importer le CSV dans une table `commandes` » puis « *procédure ME
 
 Deux particularités à connaître : les indices **commencent à 1**, et les fichiers de données se lisent dans une `table`.
 
-```matlab noexec
+```matlab
 % MATLAB — non exécuté dans ce livre
 T = readtable("donnees/commandes.csv");
 
@@ -6326,7 +6326,7 @@ disp(G)
 
 > 💡 **Intuition.** **Julia** (libre, créé en 2012) vise un compromis : une syntaxe lisible proche de Python et de MATLAB, mais un code **compilé à la volée** presque aussi rapide qu'un programme en C. Il est apprécié pour le calcul scientifique, les simulations lourdes et l'optimisation. Son écosystème de science des données est plus jeune que celui de Python ; une particularité est le temps d'attente à la première exécution (la compilation).
 
-```julia noexec
+```julia
 # Julia — non exécuté dans ce livre
 using CSV, DataFrames, Statistics
 
@@ -6562,7 +6562,7 @@ def rapport(ids):
 
 On le profile avec `cProfile` (la sortie, longue, n'est pas reproduite ; nous en résumons l'essentiel) :
 
-```python noexec
+```python
 import cProfile
 
 cProfile.run("rapport(donnees)", sort="cumtime")       # affiche, par fonction, le nombre d'appels et le temps passé
@@ -8067,7 +8067,7 @@ Quand on écrit `WHERE id_client = 2`, comment la base trouve-t-elle les command
 
 Pour $N=500\,000$, c'est $\log_2 N\approx19$ comparaisons contre 500 000 : un facteur **plus de 25 000**. On peut demander à la base **comment elle compte exécuter** une requête, avec `EXPLAIN QUERY PLAN` (c'est le premier outil de l'analyste qui s'occupe de performance) :
 
-```sql noexec
+```sql
 -- On demande à la base comment elle compte exécuter la requête, puis on crée l'index :
 EXPLAIN QUERY PLAN SELECT * FROM commandes WHERE id_client = 2;
 CREATE INDEX idx_commandes_client ON commandes(id_client);
@@ -8184,7 +8184,7 @@ Dans une base de documents, une commande n'est pas répartie sur plusieurs table
 
 Ce document **contient tout ce qu'il faut** pour afficher la commande : pas de jointure à faire, une seule lecture suffit. C'est l'argument central des bases de documents : ce qu'on lit ensemble est rangé ensemble. On les interroge avec des filtres sur les champs, y compris dans les listes imbriquées. Voici « les commandes d'au moins 100 € qui contiennent un bijou », d'abord à la manière de MongoDB (les filtres se décrivent avec des documents) :
 
-```javascript noexec
+```javascript
 // Non exécuté : nécessite un serveur MongoDB.
 db.commandes.countDocuments({
   montant: { $gte: 100 },
@@ -8237,7 +8237,7 @@ WHERE json_extract(doc, '$.montant') >= 100
 
 Pour un agrégat complet, MongoDB utilise un **pipeline** d'étapes qui s'enchaînent (le même esprit que les CTE du 5.3) :
 
-```javascript noexec
+```javascript
 // Non exécuté : chiffre d'affaires et nombre de commandes par canal, pour les commandes de 100 € et plus.
 db.commandes.aggregate([
   { $match: { montant: { $gte: 100 } } },
@@ -8255,7 +8255,7 @@ db.commandes.aggregate([
 
 **Redis** est le plus simple des modèles : un dictionnaire géant **en mémoire** (donc extrêmement rapide : des centaines de milliers d'opérations par seconde). On y range des valeurs sous une clé : `SET cle valeur`, `GET cle`. Il propose aussi des types pratiques : compteurs, listes, ensembles, **ensembles triés** (classements). Voici quelques commandes typiques pour une boutique en ligne :
 
-```bash noexec
+```bash
 # Non exécuté : nécessite un serveur Redis.
 redis-cli SET panier:2 '{"articles": 3, "total": 88.2}' EX 3600   # panier du client 2, expire dans 1 heure
 redis-cli GET panier:2
@@ -8716,7 +8716,7 @@ Jusqu'ici tout se passe sur une seule machine. Pour collaborer, ou simplement se
 
 Un dépôt distant n'a rien de mystérieux : c'est un dépôt Git comme les autres, souvent « nu » (*bare*, sans dossier de travail). On peut donc le **simuler sans Internet** avec un second dossier de la machine : c'est l'objet de l'application 6.3 du cahier. Avec un vrai service, les commandes ressemblent à ceci (*non exécuté ici : il faut un compte et une connexion*) :
 
-```bash noexec
+```bash
 git remote add origin git@github.com:nom/depot.git   # déclarer l'adresse du dépôt distant
 git push -u origin main                              # envoyer son travail
 git pull                                             # récupérer celui des autres
@@ -8791,7 +8791,7 @@ Retenez bien cette image : **le fichier** `.ipynb` et **la mémoire** du noyau s
 
 Pour installer et lancer l'interface (*non exécuté ici : l'interface s'ouvre dans un navigateur et ne peut pas être reproduite dans un livre*) :
 
-```bash noexec
+```bash
 pip install jupyterlab        # installe JupyterLab (l'interface moderne)
 jupyter lab                   # lance le serveur et ouvre le navigateur
 ```
@@ -8897,7 +8897,7 @@ Un notebook est un fichier texte : Git peut donc le suivre. Mais, comme les **so
 
 La bibliothèque `nbconvert` transforme un notebook en d'autres formats : **HTML** (à envoyer par e-mail), **PDF**, **Markdown**, ou **script Python** (le code seul). En ligne de commande, l'option `--execute` rejoue d'abord tout le notebook dans un noyau neuf, c'est-à-dire exactement la règle « Restart & Run All », automatisée :
 
-```bash noexec
+```bash
 jupyter nbconvert --to html --execute analyse.ipynb       # page web, après avoir tout rejoué
 jupyter nbconvert --to script analyse.ipynb               # le code seul, en fichier .py
 jupyter nbconvert --to markdown analyse.ipynb             # document Markdown
@@ -9114,7 +9114,7 @@ tabulate==0.10.0
 
 Pour le livre complet, l'installation recommandée dans l'avant-propos serait donc (*non exécutée ici : elle télécharge environ 200 Mo de bibliothèques*) :
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn
@@ -9208,7 +9208,7 @@ Un vrai projet d'analyse est une **chaîne d'étapes** : vérifier les données,
 
 Sous Linux et macOS, le programme **cron** exécute des commandes à heure fixe. On le configure en ajoutant des lignes à la **table cron** (`crontab -e`). Une ligne comporte cinq champs de temps (minute, heure, jour du mois, mois, jour de la semaine) suivis de la commande. Par exemple, pour lancer notre script tous les jours à 7 h du matin :
 
-```bash noexec
+```bash
 # minute heure jour mois jour-semaine   commande
 0 7 * * *  cd ~/etude-ventes && bash scripts/rapport.sh donnees/commandes.csv
 ```
@@ -9227,7 +9227,7 @@ Au 6.3.6, nous avons dit que des projets distincts peuvent avoir besoin de **ver
 
 La bonne pratique à retenir : **`==` pour reproduire un résultat** (rapport remis à un client, article), **fourchette** pour une bibliothèque en développement qui doit rester compatible avec d'autres. Deux outils alternatifs que vous croiserez (*non exécutés ici : non installés*) :
 
-```bash noexec
+```bash
 conda create --name etude-ventes python=3.13 pandas   # conda installe aussi Python lui-même
 uv venv && uv pip install -r requirements.txt         # uv : un installateur très rapide, compatible avec pip
 ```
@@ -9262,7 +9262,7 @@ CMD ["python", "src/resume.py", "donnees/commandes.csv"]
 
 `FROM` choisit la base, `WORKDIR` fixe le dossier, `COPY` copie des fichiers de votre machine vers l'image, `RUN` exécute une commande **pendant la construction**, `CMD` définit ce que fera le conteneur **au démarrage**. L'ordre des lignes n'est pas anodin : Docker garde en cache chaque étape, et la copie de `requirements.txt` **avant** celle du code permet de ne pas réinstaller les bibliothèques à chaque modification d'un script. On construit puis on lance :
 
-```bash noexec
+```bash
 docker build -t etude-ventes .          # construit l'image à partir du Dockerfile
 docker run --rm etude-ventes            # lance un conteneur, le supprime à la fin
 docker run --rm -v "$PWD/rapports:/app/rapports" etude-ventes   # partage le dossier rapports/
@@ -9477,7 +9477,7 @@ moyenne = df["montant"].mean()
 ```
 ~~~
 
-```bash noexec
+```bash
 quarto render rapport.qmd              # produit rapport.html
 quarto render rapport.qmd --to pdf     # produit un PDF (via LaTeX)
 ```

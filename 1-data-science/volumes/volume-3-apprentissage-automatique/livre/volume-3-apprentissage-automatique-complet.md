@@ -284,7 +284,7 @@ Pour quelques illustrations, nous utilisons aussi des jeux **réels et classique
 
 Ce volume utilise les outils des volumes précédents, avec des bibliothèques d'apprentissage automatique en plus. Voici les commandes d'installation (non exécutées ici : elles installent des paquets sur *votre* machine). Les quatre premiers paquets sont **figés** à la version qui a produit les sorties du livre.
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy==2.5.3 pandas==3.0.6 scipy==1.18.1 scikit-learn==1.9.1
@@ -4924,7 +4924,7 @@ Ce dernier point demande tout de même une réserve : **un jeu de validation ét
 
 Dans la pratique, on écrit plutôt les autoencodeurs avec une bibliothèque d'apprentissage profond, qui permet des architectures plus riches (convolutions pour les images, couches récurrentes pour les séquences), un entraînement par lots sur carte graphique, et un contrôle fin de l'optimisation (arrêt précoce, régularisation). Voici l'équivalent PyTorch du réseau précédent. **Ce code n'est pas exécuté dans ce livre** : PyTorch n'est pas installé dans l'environnement qui a produit les sorties.
 
-```python noexec
+```python
 import torch
 from torch import nn
 
@@ -5689,7 +5689,7 @@ Les étiquettes de ces deux jeux sont en réalité toutes connues : c'est ce qui
 
 > ⚠️ **Une convention à connaître.** Dans scikit-learn, une observation **sans étiquette** se marque par la valeur `-1` dans le vecteur des étiquettes. Les méthodes semi-supervisées reçoivent *tout* le tableau de variables $X$, et un vecteur $y$ où seules quelques entrées sont renseignées.
 
-```python noexec
+```python
 y_partiel = np.full(len(y), -1)              # -1 = « pas d'étiquette »
 y_partiel[indices_etiquetes] = y[indices_etiquetes]
 ```
@@ -6053,7 +6053,7 @@ On distingue trois cadres ; nous travaillerons dans le premier, le plus courant 
 
 Tout l'art est dans le choix du score $u$. Pour la stratégie de la marge (8.3.2), l'étape 2 se résume à quelques lignes :
 
-```python noexec
+```python
 P = modele.predict_proba(X_libres)                  # probabilités du modèle sur les points non étiquetés
 tri = np.sort(P, axis=1)
 marge = tri[:, -1] - tri[:, -2]                     # écart entre les deux classes les plus probables
@@ -6562,7 +6562,7 @@ L'autre grande idée est bayésienne, et elle est plus élégante. Pour chaque b
 2. afficher la bannière dont le taux tiré est le plus élevé ;
 3. observer le résultat et mettre à jour la loi de cette bannière.
 
-```python noexec
+```python
 # Un tour de Thompson (succes et essais : tableaux de taille 4 ; taux_vrais : inconnus de l'algorithme)
 theta = rng.beta(1 + succes, 1 + essais - succes)    # un taux tiré dans chaque loi Bêta
 a = int(np.argmax(theta))                            # on affiche la bannière au taux tiré le plus haut
@@ -6672,7 +6672,7 @@ $$Q(s,a)\;\leftarrow\;Q(s,a)+\alpha\Big[\,r+\gamma\max_{a'}Q(s',a')-Q(s,a)\Big].
 
 C'est la même idée, avec un max : la cible est « la récompense observée, plus la valeur de la **meilleure** action possible dans l'état suivant ». Comme la cible est un tirage dont l'espérance est $(TQ)(s,a)$, où $T$ est l'opérateur de Bellman d'optimalité, et que $Q^*$ est son point fixe, la règle pousse $Q$ vers $Q^*$.
 
-```python noexec
+```python
 # Une mise à jour de Q-learning après l'observation (s, a, r, s2)
 cible = r + gamma * Q[s2].max()           # ce que l'on croit valoir cette action, d'après la suite
 Q[s, a] += alpha * (cible - Q[s, a])      # on rapproche l'estimation de la cible, d'un pas alpha
@@ -6772,7 +6772,7 @@ Deux ingrédients rendent l'entraînement praticable :
 - le **tampon de rejeu** (*replay buffer*) : on stocke les transitions passées et on entraîne sur des **mini-lots tirés au hasard** dans ce tampon. Sans cela, les exemples successifs sont très corrélés (la journée $t+1$ ressemble à la journée $t$), ce qui viole l'hypothèse « exemples indépendants » de l'apprentissage supervisé (chapitre 1) ;
 - le **réseau cible** $\theta^-$ : une copie *figée* du réseau, mise à jour rarement, qui sert à calculer la cible. Sans lui, la cible bouge à chaque pas puisqu'elle dépend des paramètres que l'on est en train de modifier.
 
-```python noexec
+```python
 # Non exécuté : PyTorch n'est pas installé dans l'environnement de ce livre.
 q_reseau, q_cible = ReseauQ(), ReseauQ()                      # deux réseaux de même architecture
 for etape in range(n_etapes):

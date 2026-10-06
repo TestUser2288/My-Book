@@ -128,7 +128,7 @@ Les exemples sont écrits en **Python** (langage principal), avec quelques exemp
 
 Pour installer ce qu'il faut, un seul jeu de commandes suffit (détaillé au chapitre 6) :
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn

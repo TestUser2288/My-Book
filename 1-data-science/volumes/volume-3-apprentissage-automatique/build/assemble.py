@@ -51,6 +51,8 @@ def strip_hidden(text):
         elif "hide-code" in flags:
             out.extend(sortie[1:] if sortie else [])   # on garde le bloc ```text de la sortie, sans le marqueur
         else:
+            if flags:                              # pandoc ne lit pas « ```python noexec » : on ne garde que le langage
+                block[0] = "```" + m.group(1)
             out.extend(block)
             out.extend(sortie)
         i = nxt

@@ -702,7 +702,7 @@ Dans les projets réels, on n'écrit pas ses échantillonneurs à la main. Les b
 
 > ⚠️ **Non exécuté.** PyMC et Stan **ne sont pas installés** dans l'environnement qui a servi à écrire ce livre. Les deux blocs de code ci-dessous sont donc **montrés sans avoir été exécutés** ; leur résultat attendu est celui de la section 6.3.5 (même modèle, mêmes a priori), mais nous n'avons pas pu le vérifier ici.
 
-```python noexec
+```python
 import pymc as pm
 
 with pm.Model() as modele:
@@ -712,7 +712,7 @@ with pm.Model() as modele:
     trace = pm.sample(2000, tune=1000, chains=4, random_seed=1)  # NUTS par défaut
 ```
 
-```text noexec
+```text
 data { int<lower=0> n; matrix[n, 5] X; array[n] int<lower=0, upper=1> y; }
 parameters { vector[5] beta; }
 model {

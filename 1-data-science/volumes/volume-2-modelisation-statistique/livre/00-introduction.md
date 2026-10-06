@@ -204,7 +204,7 @@ Le chiffre d'affaires annuel passe de 12 658 € en 2016 à 27 630 € en 2025 :
 
 Ce volume utilise les mêmes outils que le volume I (Python, R, un terminal), avec quelques bibliothèques de plus. Si vous avez suivi le chapitre 6 du volume I, vous savez créer un environnement virtuel ; voici les commandes (non exécutées ici : elles installent des paquets sur *votre* machine).
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn statsmodels scikit-learn lifelines arch

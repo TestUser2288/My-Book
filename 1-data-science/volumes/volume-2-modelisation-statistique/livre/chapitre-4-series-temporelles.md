@@ -532,7 +532,7 @@ Nos modèles prévoient $\log(\text{ca})$. Pour annoncer des euros, on revient p
 
 Voyons ce que donnent nos trois modèles (A, B, C de 4.2) sur les 24 mois mis de côté : ils sont ajustés **sur les 96 mois d'apprentissage seulement**, puis on leur demande la prévision des 24 mois suivants. Avec `statsmodels`, c'est un appel :
 
-```python noexec
+```python
 prev = modele.get_forecast(24, exog=X_test)          # prévision des 24 mois de test
 prev.predicted_mean, prev.conf_int(alpha=0.05)        # valeur centrale (en log) et intervalle à 95 %
 ```
@@ -984,7 +984,7 @@ avec **$g(t)$** une tendance **linéaire par morceaux** (la pente peut changer e
 
 Rien de magique donc : c'est une **régression linéaire** sur des variables bien construites (la tendance par morceaux, les termes de Fourier, les événements), assortie d'une pénalisation, exactement dans l'esprit du chapitre 1 (section 1.5 : la régularisation). Voici le code typique, tel qu'on le trouve dans la documentation de la bibliothèque :
 
-```python noexec
+```python
 from prophet import Prophet
 
 df = v.reset_index().rename(columns={"mois": "ds"})        # Prophet attend les colonnes « ds » (date) et « y »

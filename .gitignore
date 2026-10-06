@@ -8,3 +8,9 @@ __pycache__/
 *.toc
 .venv
 catboost_info/
+modeles/
+donnees/volumineux/
+spark-warehouse/
+metastore_db/
+derby.log
+mlruns/

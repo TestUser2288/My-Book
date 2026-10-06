@@ -2092,7 +2092,7 @@ pandas offre une méthode `.plot` sur ses Series et DataFrames, qui appelle matp
 
 Le code complet de la figure ajoute les titres, les étiquettes et les annotations. Pour le quatrième graphique, un détail d'importance. La livraison est un nombre entier de jours et la satisfaction une note entière de 1 à 5 : beaucoup de commandes tombent *exactement au même point*, et un nuage de points normal en cacherait la plupart. On les **décale aléatoirement d'un tout petit peu** (« jitter », en français *jitter* ou *bruitage*) et on rend les points translucides : les zones denses apparaissent plus foncées.
 
-```python noexec
+```python
 df["montant"].plot.hist(bins=30, color=BLEU)                      # histogramme
 ca_canal = df.groupby("canal")["montant"].sum().sort_values()
 ca_canal.plot.barh(color=BLEU)                                   # barres horizontales, triées
@@ -2432,7 +2432,7 @@ Test vert. Remarquez que nous avons aussi ajouté une **validation** : un taux d
 **Étape 3 : le module de la boutique.** Il contient quatre classes (un article, un panier, une commande en boutique, une commande sur le site), avec docstrings, annotations de types, validation et une constante pour la TVA (une soixantaine de lignes, données dans le cahier). Voici les passages qui illustrent la section :
 
 
-```python noexec
+```python
 @dataclass(frozen=True)             # frozen : on ne peut plus modifier un article créé
 class Article:
     nom: str
@@ -2467,7 +2467,7 @@ Quelques points de lecture :
 **Étape 4 : les tests du module.** Chaque règle métier vérifiée à la main plus haut devient un test (il y en a dix dans le module complet). Le décorateur `@pytest.fixture` prépare le panier de l'exemple (le *arrange*) ; `pytest.approx` compare des nombres décimaux avec une petite tolérance (rappelez-vous, section 1.5 : `0.1 + 0.2 != 0.3` en binaire !) ; `@pytest.mark.parametrize` rejoue le même test avec plusieurs valeurs. Voici deux tests, puis la suite complète :
 
 
-```python noexec
+```python
 @pytest.fixture
 def panier():                                   # Arrange : le panier de l'exemple
     p = Panier()
@@ -2573,7 +2573,7 @@ Les deux langages donnent exactement les mêmes nombres : 114 commandes en bouti
 
 Un programme SAS est une suite d'**étapes** : les étapes `DATA` fabriquent ou transforment des tables, les étapes `PROC` (procédures) appliquent un traitement statistique prêt à l'emploi. Chaque instruction se termine par un point-virgule, et un bloc par `run;`.
 
-```sas noexec
+```sas
 /* SAS — non exécuté dans ce livre */
 proc import datafile="donnees/commandes.csv"
             out=commandes dbms=csv replace;
@@ -2594,7 +2594,7 @@ On lit : « importer le CSV dans une table `commandes` » puis « *procédure ME
 
 Deux particularités à connaître : les indices **commencent à 1**, et les fichiers de données se lisent dans une `table`.
 
-```matlab noexec
+```matlab
 % MATLAB — non exécuté dans ce livre
 T = readtable("donnees/commandes.csv");
 
@@ -2608,7 +2608,7 @@ disp(G)
 
 > 💡 **Intuition.** **Julia** (libre, créé en 2012) vise un compromis : une syntaxe lisible proche de Python et de MATLAB, mais un code **compilé à la volée** presque aussi rapide qu'un programme en C. Il est apprécié pour le calcul scientifique, les simulations lourdes et l'optimisation. Son écosystème de science des données est plus jeune que celui de Python ; une particularité est le temps d'attente à la première exécution (la compilation).
 
-```julia noexec
+```julia
 # Julia — non exécuté dans ce livre
 using CSV, DataFrames, Statistics
 
@@ -2844,7 +2844,7 @@ def rapport(ids):
 
 On le profile avec `cProfile` (la sortie, longue, n'est pas reproduite ; nous en résumons l'essentiel) :
 
-```python noexec
+```python
 import cProfile
 
 cProfile.run("rapport(donnees)", sort="cumtime")       # affiche, par fonction, le nombre d'appels et le temps passé

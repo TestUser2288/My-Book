@@ -40,7 +40,7 @@ Les étiquettes de ces deux jeux sont en réalité toutes connues : c'est ce qui
 
 > ⚠️ **Une convention à connaître.** Dans scikit-learn, une observation **sans étiquette** se marque par la valeur `-1` dans le vecteur des étiquettes. Les méthodes semi-supervisées reçoivent *tout* le tableau de variables $X$, et un vecteur $y$ où seules quelques entrées sont renseignées.
 
-```python noexec
+```python
 y_partiel = np.full(len(y), -1)              # -1 = « pas d'étiquette »
 y_partiel[indices_etiquetes] = y[indices_etiquetes]
 ```
@@ -404,7 +404,7 @@ On distingue trois cadres ; nous travaillerons dans le premier, le plus courant 
 
 Tout l'art est dans le choix du score $u$. Pour la stratégie de la marge (8.3.2), l'étape 2 se résume à quelques lignes :
 
-```python noexec
+```python
 P = modele.predict_proba(X_libres)                  # probabilités du modèle sur les points non étiquetés
 tri = np.sort(P, axis=1)
 marge = tri[:, -1] - tri[:, -2]                     # écart entre les deux classes les plus probables

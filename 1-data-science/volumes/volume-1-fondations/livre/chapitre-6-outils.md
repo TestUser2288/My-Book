@@ -404,7 +404,7 @@ Jusqu'ici tout se passe sur une seule machine. Pour collaborer, ou simplement se
 
 Un dépôt distant n'a rien de mystérieux : c'est un dépôt Git comme les autres, souvent « nu » (*bare*, sans dossier de travail). On peut donc le **simuler sans Internet** avec un second dossier de la machine : c'est l'objet de l'application 6.3 du cahier. Avec un vrai service, les commandes ressemblent à ceci (*non exécuté ici : il faut un compte et une connexion*) :
 
-```bash noexec
+```bash
 git remote add origin git@github.com:nom/depot.git   # déclarer l'adresse du dépôt distant
 git push -u origin main                              # envoyer son travail
 git pull                                             # récupérer celui des autres
@@ -479,7 +479,7 @@ Retenez bien cette image : **le fichier** `.ipynb` et **la mémoire** du noyau s
 
 Pour installer et lancer l'interface (*non exécuté ici : l'interface s'ouvre dans un navigateur et ne peut pas être reproduite dans un livre*) :
 
-```bash noexec
+```bash
 pip install jupyterlab        # installe JupyterLab (l'interface moderne)
 jupyter lab                   # lance le serveur et ouvre le navigateur
 ```
@@ -585,7 +585,7 @@ Un notebook est un fichier texte : Git peut donc le suivre. Mais, comme les **so
 
 La bibliothèque `nbconvert` transforme un notebook en d'autres formats : **HTML** (à envoyer par e-mail), **PDF**, **Markdown**, ou **script Python** (le code seul). En ligne de commande, l'option `--execute` rejoue d'abord tout le notebook dans un noyau neuf, c'est-à-dire exactement la règle « Restart & Run All », automatisée :
 
-```bash noexec
+```bash
 jupyter nbconvert --to html --execute analyse.ipynb       # page web, après avoir tout rejoué
 jupyter nbconvert --to script analyse.ipynb               # le code seul, en fichier .py
 jupyter nbconvert --to markdown analyse.ipynb             # document Markdown
@@ -802,7 +802,7 @@ tabulate==0.10.0
 
 Pour le livre complet, l'installation recommandée dans l'avant-propos serait donc (*non exécutée ici : elle télécharge environ 200 Mo de bibliothèques*) :
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn
@@ -896,7 +896,7 @@ Un vrai projet d'analyse est une **chaîne d'étapes** : vérifier les données,
 
 Sous Linux et macOS, le programme **cron** exécute des commandes à heure fixe. On le configure en ajoutant des lignes à la **table cron** (`crontab -e`). Une ligne comporte cinq champs de temps (minute, heure, jour du mois, mois, jour de la semaine) suivis de la commande. Par exemple, pour lancer notre script tous les jours à 7 h du matin :
 
-```bash noexec
+```bash
 # minute heure jour mois jour-semaine   commande
 0 7 * * *  cd ~/etude-ventes && bash scripts/rapport.sh donnees/commandes.csv
 ```
@@ -915,7 +915,7 @@ Au 6.3.6, nous avons dit que des projets distincts peuvent avoir besoin de **ver
 
 La bonne pratique à retenir : **`==` pour reproduire un résultat** (rapport remis à un client, article), **fourchette** pour une bibliothèque en développement qui doit rester compatible avec d'autres. Deux outils alternatifs que vous croiserez (*non exécutés ici : non installés*) :
 
-```bash noexec
+```bash
 conda create --name etude-ventes python=3.13 pandas   # conda installe aussi Python lui-même
 uv venv && uv pip install -r requirements.txt         # uv : un installateur très rapide, compatible avec pip
 ```
@@ -950,7 +950,7 @@ CMD ["python", "src/resume.py", "donnees/commandes.csv"]
 
 `FROM` choisit la base, `WORKDIR` fixe le dossier, `COPY` copie des fichiers de votre machine vers l'image, `RUN` exécute une commande **pendant la construction**, `CMD` définit ce que fera le conteneur **au démarrage**. L'ordre des lignes n'est pas anodin : Docker garde en cache chaque étape, et la copie de `requirements.txt` **avant** celle du code permet de ne pas réinstaller les bibliothèques à chaque modification d'un script. On construit puis on lance :
 
-```bash noexec
+```bash
 docker build -t etude-ventes .          # construit l'image à partir du Dockerfile
 docker run --rm etude-ventes            # lance un conteneur, le supprime à la fin
 docker run --rm -v "$PWD/rapports:/app/rapports" etude-ventes   # partage le dossier rapports/
@@ -1165,7 +1165,7 @@ moyenne = df["montant"].mean()
 ```
 ~~~
 
-```bash noexec
+```bash
 quarto render rapport.qmd              # produit rapport.html
 quarto render rapport.qmd --to pdf     # produit un PDF (via LaTeX)
 ```

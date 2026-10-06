@@ -37,7 +37,7 @@ Les applications utilisent les jeux de données du dossier `donnees/` : un table
 
 Pour exécuter le code, installez l'environnement décrit dans l'avant-propos du livre (non exécuté ici, car il installe des paquets sur *votre* machine) :
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn

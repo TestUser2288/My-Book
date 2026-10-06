@@ -204,7 +204,7 @@ Le chiffre d'affaires annuel passe de 12 658 € en 2016 à 27 630 € en 2025 :
 
 Ce volume utilise les mêmes outils que le volume I (Python, R, un terminal), avec quelques bibliothèques de plus. Si vous avez suivi le chapitre 6 du volume I, vous savez créer un environnement virtuel ; voici les commandes (non exécutées ici : elles installent des paquets sur *votre* machine).
 
-```bash noexec
+```bash
 python -m venv .venv
 source .venv/bin/activate        # sous Windows : .venv\Scripts\activate
 pip install numpy pandas scipy matplotlib seaborn statsmodels scikit-learn lifelines arch
@@ -4015,7 +4015,7 @@ Nos modèles prévoient $\log(\text{ca})$. Pour annoncer des euros, on revient p
 
 Voyons ce que donnent nos trois modèles (A, B, C de 4.2) sur les 24 mois mis de côté : ils sont ajustés **sur les 96 mois d'apprentissage seulement**, puis on leur demande la prévision des 24 mois suivants. Avec `statsmodels`, c'est un appel :
 
-```python noexec
+```python
 prev = modele.get_forecast(24, exog=X_test)          # prévision des 24 mois de test
 prev.predicted_mean, prev.conf_int(alpha=0.05)        # valeur centrale (en log) et intervalle à 95 %
 ```
@@ -4467,7 +4467,7 @@ avec **$g(t)$** une tendance **linéaire par morceaux** (la pente peut changer e
 
 Rien de magique donc : c'est une **régression linéaire** sur des variables bien construites (la tendance par morceaux, les termes de Fourier, les événements), assortie d'une pénalisation, exactement dans l'esprit du chapitre 1 (section 1.5 : la régularisation). Voici le code typique, tel qu'on le trouve dans la documentation de la bibliothèque :
 
-```python noexec
+```python
 from prophet import Prophet
 
 df = v.reset_index().rename(columns={"mois": "ds"})        # Prophet attend les colonnes « ds » (date) et « y »
@@ -6281,7 +6281,7 @@ Dans les projets réels, on n'écrit pas ses échantillonneurs à la main. Les b
 
 > ⚠️ **Non exécuté.** PyMC et Stan **ne sont pas installés** dans l'environnement qui a servi à écrire ce livre. Les deux blocs de code ci-dessous sont donc **montrés sans avoir été exécutés** ; leur résultat attendu est celui de la section 6.3.5 (même modèle, mêmes a priori), mais nous n'avons pas pu le vérifier ici.
 
-```python noexec
+```python
 import pymc as pm
 
 with pm.Model() as modele:
@@ -6291,7 +6291,7 @@ with pm.Model() as modele:
     trace = pm.sample(2000, tune=1000, chains=4, random_seed=1)  # NUTS par défaut
 ```
 
-```text noexec
+```text
 data { int<lower=0> n; matrix[n, 5] X; array[n] int<lower=0, upper=1> y; }
 parameters { vector[5] beta; }
 model {

@@ -1437,7 +1437,7 @@ Quand on écrit `WHERE id_client = 2`, comment la base trouve-t-elle les command
 
 Pour $N=500\,000$, c'est $\log_2 N\approx19$ comparaisons contre 500 000 : un facteur **plus de 25 000**. On peut demander à la base **comment elle compte exécuter** une requête, avec `EXPLAIN QUERY PLAN` (c'est le premier outil de l'analyste qui s'occupe de performance) :
 
-```sql noexec
+```sql
 -- On demande à la base comment elle compte exécuter la requête, puis on crée l'index :
 EXPLAIN QUERY PLAN SELECT * FROM commandes WHERE id_client = 2;
 CREATE INDEX idx_commandes_client ON commandes(id_client);
@@ -1554,7 +1554,7 @@ Dans une base de documents, une commande n'est pas répartie sur plusieurs table
 
 Ce document **contient tout ce qu'il faut** pour afficher la commande : pas de jointure à faire, une seule lecture suffit. C'est l'argument central des bases de documents : ce qu'on lit ensemble est rangé ensemble. On les interroge avec des filtres sur les champs, y compris dans les listes imbriquées. Voici « les commandes d'au moins 100 € qui contiennent un bijou », d'abord à la manière de MongoDB (les filtres se décrivent avec des documents) :
 
-```javascript noexec
+```javascript
 // Non exécuté : nécessite un serveur MongoDB.
 db.commandes.countDocuments({
   montant: { $gte: 100 },
@@ -1607,7 +1607,7 @@ WHERE json_extract(doc, '$.montant') >= 100
 
 Pour un agrégat complet, MongoDB utilise un **pipeline** d'étapes qui s'enchaînent (le même esprit que les CTE du 5.3) :
 
-```javascript noexec
+```javascript
 // Non exécuté : chiffre d'affaires et nombre de commandes par canal, pour les commandes de 100 € et plus.
 db.commandes.aggregate([
   { $match: { montant: { $gte: 100 } } },
@@ -1625,7 +1625,7 @@ db.commandes.aggregate([
 
 **Redis** est le plus simple des modèles : un dictionnaire géant **en mémoire** (donc extrêmement rapide : des centaines de milliers d'opérations par seconde). On y range des valeurs sous une clé : `SET cle valeur`, `GET cle`. Il propose aussi des types pratiques : compteurs, listes, ensembles, **ensembles triés** (classements). Voici quelques commandes typiques pour une boutique en ligne :
 
-```bash noexec
+```bash
 # Non exécuté : nécessite un serveur Redis.
 redis-cli SET panier:2 '{"articles": 3, "total": 88.2}' EX 3600   # panier du client 2, expire dans 1 heure
 redis-cli GET panier:2

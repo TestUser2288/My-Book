@@ -597,7 +597,7 @@ Pour chaque situation, donnez le mécanisme (MCAR, MAR, MNAR ou structurel) et l
 
 Voici un script qui prétend évaluer un modèle de départ de clients :
 
-```python noexec
+```python
 X = SimpleImputer(strategy="median").fit_transform(df.drop(columns="y"))
 X = StandardScaler().fit_transform(X)
 X = SelectKBest(f_classif, k=10).fit_transform(X, df["y"])
