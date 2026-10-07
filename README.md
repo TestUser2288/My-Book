@@ -15,9 +15,10 @@ Chaque volume est publié en **deux ouvrages** : le **livre** (explications, dé
 | 1 · Data Science | **V. Risque et assurance** (scoring et PD/LGD/EAD, actuariat, VaR et stress tests, Bâle, Solvabilité, Takaful ; ➕ vie, réassurance, actif-passif) | **écrit** · 224 p. | **écrit** · 135 p. |
 | 1 · Data Science | VI | à écrire | à écrire |
 | 2 · Data Analyst | **I. Fondations** (statistique, Excel, SQL, Python et R, collecte de données) | **écrit** · 210 p. | **écrit** · 105 p. |
-| 2 · Data Analyst | II à VI | à écrire | à écrire |
+| 2 · Data Analyst | **II. Préparation des données** (nettoyage, transformation et fusion, qualité et réconciliation, documentation ; ➕ confidentialité) | **écrit** · 191 p. | **écrit** · 112 p. |
+| 2 · Data Analyst | III à VI | à écrire | à écrire |
 
-**Lire** (PDF) : volume I [livre](1-data-science/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](1-data-science/volumes/volume-1-fondations/livre/cahier-volume-1.pdf) ; volume II [livre](1-data-science/volumes/volume-2-modelisation-statistique/livre/volume-2-modelisation-statistique.pdf) · [cahier](1-data-science/volumes/volume-2-modelisation-statistique/livre/cahier-volume-2.pdf) ; volume III [livre](1-data-science/volumes/volume-3-apprentissage-automatique/livre/volume-3-apprentissage-automatique.pdf) · [cahier](1-data-science/volumes/volume-3-apprentissage-automatique/livre/cahier-volume-3.pdf) ; volume IV [livre](1-data-science/volumes/volume-4-sujets-avances/livre/volume-4-sujets-avances.pdf) · [cahier](1-data-science/volumes/volume-4-sujets-avances/livre/cahier-volume-4.pdf) ; volume V [livre](1-data-science/volumes/volume-5-risque-assurance/livre/volume-5-risque-assurance.pdf) · [cahier](1-data-science/volumes/volume-5-risque-assurance/livre/cahier-volume-5.pdf). Série 2 : volume I [livre](2-data-analysis/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](2-data-analysis/volumes/volume-1-fondations/livre/cahier-volume-1.pdf). Les versions Markdown (un fichier par chapitre, et le volume complet) sont dans le dossier `livre/` de chaque volume.
+**Lire** (PDF) : volume I [livre](1-data-science/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](1-data-science/volumes/volume-1-fondations/livre/cahier-volume-1.pdf) ; volume II [livre](1-data-science/volumes/volume-2-modelisation-statistique/livre/volume-2-modelisation-statistique.pdf) · [cahier](1-data-science/volumes/volume-2-modelisation-statistique/livre/cahier-volume-2.pdf) ; volume III [livre](1-data-science/volumes/volume-3-apprentissage-automatique/livre/volume-3-apprentissage-automatique.pdf) · [cahier](1-data-science/volumes/volume-3-apprentissage-automatique/livre/cahier-volume-3.pdf) ; volume IV [livre](1-data-science/volumes/volume-4-sujets-avances/livre/volume-4-sujets-avances.pdf) · [cahier](1-data-science/volumes/volume-4-sujets-avances/livre/cahier-volume-4.pdf) ; volume V [livre](1-data-science/volumes/volume-5-risque-assurance/livre/volume-5-risque-assurance.pdf) · [cahier](1-data-science/volumes/volume-5-risque-assurance/livre/cahier-volume-5.pdf). Série 2 : volume I [livre](2-data-analysis/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](2-data-analysis/volumes/volume-1-fondations/livre/cahier-volume-1.pdf) ; volume II [livre](2-data-analysis/volumes/volume-2-preparation-donnees/livre/volume-2-preparation-donnees.pdf) · [cahier](2-data-analysis/volumes/volume-2-preparation-donnees/livre/cahier-volume-2.pdf). Les versions Markdown (un fichier par chapitre, et le volume complet) sont dans le dossier `livre/` de chaque volume.
 
 Le fil rouge est **une boutique fictive** (aucun nom, lieu ou produit réel) ; tous les jeux de données sont **simulés** avec des graines fixes, et chaque nombre du livre est reproductible (`make check`). Les règles d'écriture (code minimal, anonymisation, structure) sont dans [`CONVENTIONS.md`](CONVENTIONS.md).
 
@@ -42,7 +43,8 @@ projet-livres/
     ├── plan/                  tables des matières de la série 2 (EN + FR)
     └── volumes/
         ├── volume-1-fondations/   sections/ (livre), cahier/, livre/ (généré), figures/, donnees/, build/ (+ donnees_a1.py, outils_xl.py)
-        └── volume-2 … volume-6    à écrire
+        ├── volume-2-preparation-donnees/   idem (+ build/donnees_a2.py : sources désordonnées et leur vérité ; outils_capture.py)
+        └── volume-3 … volume-6    à écrire
 ```
 
 ## Reconstruire un volume
