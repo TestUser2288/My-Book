@@ -1,0 +1,21 @@
+# Série 2, volume I : mêmes versions figées que la série 1 (pile scientifique) + outils tableur.
+numpy==2.5.3
+pandas==3.0.6
+scipy==1.18.1
+statsmodels==0.15.0
+scikit-learn==1.9.1
+matplotlib==3.11.2
+seaborn==0.13.2
+pyarrow==25.0.1
+duckdb==1.5.6
+polars==2.0.0
+openpyxl==3.1.5
+XlsxWriter==3.2.9
+pillow==12.3.0
+requests==2.34.2
+beautifulsoup4==4.15.0
+nbclient==0.11.0
+nbconvert==7.17.1
+nbformat==5.11.1
+ipykernel==7.4.0
+pytest==9.1.1
