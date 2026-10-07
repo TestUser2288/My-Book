@@ -1,0 +1,65 @@
+id_employe,poste,site,genre
+1,Logistique,Entrepôt,F
+2,Vendeur,Boutique,F
+3,Caissier,Boutique,H
+4,Vendeur,Boutique,F
+5,Logistique,Entrepôt,F
+6,Administratif,Siège,H
+7,Caissier,Boutique,F
+8,Service client,Siège,H
+9,Service client,Siège,H
+10,Logistique,Entrepôt,H
+11,Vendeur,Boutique,H
+12,Vendeur,Boutique,F
+13,Logistique,Entrepôt,H
+14,Logistique,Entrepôt,F
+15,Logistique,Entrepôt,F
+16,Vendeur,Boutique,H
+17,Caissier,Boutique,H
+18,Caissier,Boutique,H
+19,Vendeur,Boutique,H
+20,Vendeur,Boutique,F
+21,Vendeur,Boutique,H
+22,Service client,Siège,H
+23,Logistique,Entrepôt,F
+24,Logistique,Entrepôt,F
+25,Caissier,Boutique,F
+26,Logistique,Entrepôt,H
+27,Vendeur,Boutique,F
+28,Caissier,Boutique,F
+29,Caissier,Boutique,H
+30,Responsable,Boutique,F
+31,Logistique,Entrepôt,H
+32,Responsable,Boutique,H
+33,Vendeur,Boutique,F
+34,Service client,Siège,H
+35,Vendeur,Boutique,F
+36,Logistique,Entrepôt,H
+37,Logistique,Entrepôt,H
+38,Caissier,Boutique,F
+39,Vendeur,Boutique,F
+40,Caissier,Boutique,H
+41,Vendeur,Boutique,F
+42,Logistique,Entrepôt,H
+43,Vendeur,Boutique,F
+44,Vendeur,Boutique,F
+45,Service client,Siège,F
+46,Service client,Siège,H
+47,Vendeur,Boutique,H
+48,Logistique,Entrepôt,F
+49,Logistique,Entrepôt,F
+50,Vendeur,Boutique,F
+51,Vendeur,Boutique,F
+52,Vendeur,Boutique,F
+53,Vendeur,Boutique,F
+54,Vendeur,Boutique,H
+55,Responsable,Boutique,F
+56,Service client,Siège,H
+57,Vendeur,Boutique,F
+58,Logistique,Entrepôt,F
+59,Vendeur,Boutique,H
+60,Service client,Siège,H
+61,Caissier,Boutique,F
+62,Caissier,Boutique,H
+63,Service client,Siège,F
+64,Vendeur,Boutique,H
