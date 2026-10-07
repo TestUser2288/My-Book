@@ -1,0 +1,46 @@
+{
+ "serie": "Série 2 — Volume II",
+ "nom": "Préparation des données",
+ "ligneA": "Nettoyage\\,\\textperiodcentered\\ Transformation\\,\\textperiodcentered\\ Fusion",
+ "ligneB": "Qualité et réconciliation\\,\\textperiodcentered\\ Documentation",
+ "pied": "Fiabiliser avant d'analyser,\\\\ avec une boutique pour fil rouge.",
+ "title": "DATA ANALYST",
+ "author": "Série 2 : Data Analyst",
+ "subtitle": "Volume II : Préparation des données — Nettoyer, transformer et fiabiliser ses données",
+ "livre": {
+  "dossier": "sections",
+  "source": "livre/volume-2-preparation-donnees-complet.md",
+  "out": "livre/volume-2-preparation-donnees.pdf",
+  "start_heading": "# Introduction",
+  "titres": {
+   "00": "00-introduction",
+   "01": "chapitre-1-nettoyage",
+   "02": "chapitre-2-transformation-fusion",
+   "03": "chapitre-3-qualite-reconciliation",
+   "04": "chapitre-4-documentation",
+   "05": "chapitre-5-confidentialite",
+   "10": "cloture-points-cles"
+  }
+ },
+ "cahier": {
+  "dossier": "cahier",
+  "source": "livre/cahier-volume-2-complet.md",
+  "out": "livre/cahier-volume-2.pdf",
+  "start_heading": "# Mode d'emploi",
+  "serie": "Série 2 — Volume II",
+  "nom": "Cahier d'exercices et d'applications",
+  "ligneA": "Exercices corrigés\\,\\textperiodcentered\\ Applications guidées\\,\\textperiodcentered\\ Projet",
+  "ligneB": "Compagnon du volume II : Préparation des données",
+  "pied": "À utiliser avec le livre : chaque chapitre renvoie ici\\\\ pour s'entraîner.",
+  "subtitle": "Cahier d'exercices et d'applications du volume II : Préparation des données",
+  "titres": {
+   "00": "cahier-00-mode-emploi",
+   "01": "cahier-chapitre-1",
+   "02": "cahier-chapitre-2",
+   "03": "cahier-chapitre-3",
+   "04": "cahier-chapitre-4",
+   "05": "cahier-chapitre-5",
+   "10": "cahier-projet-et-autoevaluation"
+  }
+ }
+}
