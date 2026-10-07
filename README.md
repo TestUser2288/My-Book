@@ -14,9 +14,10 @@ Chaque volume est publié en **deux ouvrages** : le **livre** (explications, dé
 | 1 · Data Science | **IV. Sujets avancés et modernes** (deep learning, NLP et modèles de langage, big data, MLOps, ingénierie des données ; ➕ cloud, applications de démonstration) | **écrit** · 219 p. | **écrit** · 145 p. |
 | 1 · Data Science | **V. Risque et assurance** (scoring et PD/LGD/EAD, actuariat, VaR et stress tests, Bâle, Solvabilité, Takaful ; ➕ vie, réassurance, actif-passif) | **écrit** · 224 p. | **écrit** · 135 p. |
 | 1 · Data Science | VI | à écrire | à écrire |
-| 2 · Data Analyst | 1 à 6 | à écrire | à écrire |
+| 2 · Data Analyst | **I. Fondations** (statistique, Excel, SQL, Python et R, collecte de données) | **écrit** · 210 p. | **écrit** · 105 p. |
+| 2 · Data Analyst | II à VI | à écrire | à écrire |
 
-**Lire** (PDF) : volume I [livre](1-data-science/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](1-data-science/volumes/volume-1-fondations/livre/cahier-volume-1.pdf) ; volume II [livre](1-data-science/volumes/volume-2-modelisation-statistique/livre/volume-2-modelisation-statistique.pdf) · [cahier](1-data-science/volumes/volume-2-modelisation-statistique/livre/cahier-volume-2.pdf) ; volume III [livre](1-data-science/volumes/volume-3-apprentissage-automatique/livre/volume-3-apprentissage-automatique.pdf) · [cahier](1-data-science/volumes/volume-3-apprentissage-automatique/livre/cahier-volume-3.pdf) ; volume IV [livre](1-data-science/volumes/volume-4-sujets-avances/livre/volume-4-sujets-avances.pdf) · [cahier](1-data-science/volumes/volume-4-sujets-avances/livre/cahier-volume-4.pdf) ; volume V [livre](1-data-science/volumes/volume-5-risque-assurance/livre/volume-5-risque-assurance.pdf) · [cahier](1-data-science/volumes/volume-5-risque-assurance/livre/cahier-volume-5.pdf). Les versions Markdown (un fichier par chapitre, et le volume complet) sont dans le dossier `livre/` de chaque volume.
+**Lire** (PDF) : volume I [livre](1-data-science/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](1-data-science/volumes/volume-1-fondations/livre/cahier-volume-1.pdf) ; volume II [livre](1-data-science/volumes/volume-2-modelisation-statistique/livre/volume-2-modelisation-statistique.pdf) · [cahier](1-data-science/volumes/volume-2-modelisation-statistique/livre/cahier-volume-2.pdf) ; volume III [livre](1-data-science/volumes/volume-3-apprentissage-automatique/livre/volume-3-apprentissage-automatique.pdf) · [cahier](1-data-science/volumes/volume-3-apprentissage-automatique/livre/cahier-volume-3.pdf) ; volume IV [livre](1-data-science/volumes/volume-4-sujets-avances/livre/volume-4-sujets-avances.pdf) · [cahier](1-data-science/volumes/volume-4-sujets-avances/livre/cahier-volume-4.pdf) ; volume V [livre](1-data-science/volumes/volume-5-risque-assurance/livre/volume-5-risque-assurance.pdf) · [cahier](1-data-science/volumes/volume-5-risque-assurance/livre/cahier-volume-5.pdf). Série 2 : volume I [livre](2-data-analysis/volumes/volume-1-fondations/livre/volume-1-fondations.pdf) · [cahier](2-data-analysis/volumes/volume-1-fondations/livre/cahier-volume-1.pdf). Les versions Markdown (un fichier par chapitre, et le volume complet) sont dans le dossier `livre/` de chaque volume.
 
 Le fil rouge est **une boutique fictive** (aucun nom, lieu ou produit réel) ; tous les jeux de données sont **simulés** avec des graines fixes, et chaque nombre du livre est reproductible (`make check`). Les règles d'écriture (code minimal, anonymisation, structure) sont dans [`CONVENTIONS.md`](CONVENTIONS.md).
 
@@ -39,13 +40,15 @@ projet-livres/
 │       └── volume-6                à écrire
 └── 2-data-analysis/
     ├── plan/                  tables des matières de la série 2 (EN + FR)
-    └── volumes/               volume-1 … volume-6, à écrire
+    └── volumes/
+        ├── volume-1-fondations/   sections/ (livre), cahier/, livre/ (généré), figures/, donnees/, build/ (+ donnees_a1.py, outils_xl.py)
+        └── volume-2 … volume-6    à écrire
 ```
 
 ## Reconstruire un volume
 
 ```bash
-cd 1-data-science/volumes/volume-1-fondations     # ou volume-2-… / … / volume-5-risque-assurance
+cd 1-data-science/volumes/volume-1-fondations     # ou volume-2-… / … / volume-5-risque-assurance ; série 2 : cd 2-data-analysis/volumes/volume-1-fondations
 bash setup-env.sh     # une fois : environnement Python + R, pandoc, xelatex
 make check            # réexécute tout le code sans rien écrire (0 erreur attendu)
 make pdf              # assemble les chapitres et construit le PDF
