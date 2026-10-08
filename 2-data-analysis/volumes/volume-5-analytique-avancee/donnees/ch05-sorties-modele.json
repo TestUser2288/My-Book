@@ -1,0 +1,155 @@
+{
+ "modele": "HuggingFaceTB/SmolLM2-135M-Instruct",
+ "parametres": "135 millions",
+ "decodage": "glouton (déterministe)",
+ "sql": {
+  "v1": {
+   "q01": "SELECT * FROM commandes WHERE id = 2024;",
+   "q02": "SELECT DISTINCT CASE WHEN CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE_DUPLICATE(CASE;",
+   "q03": "SELECT DISTINCT d.nombre_de_affaires\nFROM dbo.affaires\nJOIN dbo.affaires_de_affaires ON dbo.affaires_de_affaires.id_affaires = d.affaires_de_affaires.id_affaires\nWHERE d.id_affaires = 100000;",
+   "q04": "SELECT * FROM panier WHERE nom = '1234567890' AND id = 1234567890;",
+   "q05": "SELECT * FROM produits WHERE id_produit = 1;",
+   "q06": "SELECT * FROM produits WHERE id = 100000;",
+   "q07": "SELECT total_frais_facturés\nFROM facturations\nWHERE facturations.id_facturation = 2024;",
+   "q08": "SELECT * FROM commande WHERE id = 2024;",
+   "q09": "SELECT * FROM commandes WHERE code = 2025;",
+   "q10": "SELECT COUNT(*) FROM cliente WHERE cliente.id = 100000;",
+   "q11": "SELECT COUNT(*) FROM clientes WHERE id = 1;",
+   "q12": "SELECT DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1, DATE(CURDATE())+1,;",
+   "q13": "SELECT taux_livre_retour_dans_commande_2025\nFROM commandes_2025\nWHERE commande_2025.commande_id = 2025;",
+   "q14": "SELECT D.d_mois, D.d_date_de_merchant, D.d_date_de_merchant_de_sauvage, D.d_date_de_merchant_de_sauvage_de_sauvage, D.d_date_de_merchant_de_sauvage_de_sauvage_de_sauvage, D.d_date_de;",
+   "q15": "SELECT * FROM catégories WHERE marge > 200000;",
+   "q16": "SELECT * FROM clientes WHERE id = 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;",
+   "q17": "SELECT COUNT(*) FROM DUCHESS_APPOINTMENT_DUCHESS WHERE DUCHESS_APPOINTMENT_DUCHESS_ID = 2025;",
+   "q18": "SELECT * FROM commandes WHERE date_created >= DATEADD(month, -1, DATE_FORMAT(date_created, '%Y-%m-%d'));",
+   "q19": "SELECT * FROM cliente WHERE cliente.id = 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;",
+   "q20": "SELECT * FROM Db_Sommes WHERE date_of_birth > DATEADD(month, -1, DATE_SUB(DATEDIFF(year, date_of_birth), 1, 1));"
+  },
+  "v2": {
+   "q01": "SELECT id_commande, COUNT(*) as commandes_passées\nFROM commandes;",
+   "q02": "SELECT DATE(date_commande) AS date_commande, CASE WHEN date_commande IS NULL THEN '2024-01-01' ELSE date_commande END AS date_commande, CASE WHEN date_commande IS NULL THEN '2024-01-01' ELSE date_commande END AS date_commande, CASE WHEN date_commande IS NULL THEN;",
+   "q03": "SELECT DATEDIFF(YEAR, date_commande, date_ligne) AS date_dernier_tour, date_commande\nFROM livraisons;",
+   "q04": "SELECT p.prenom, p.adresse, p.date_inscription, p.date_commande, p.date_ligne, p.date_ligne, p.date_expedition, p.date_livraison, p.date_commande, p.date_ligne, p.date_ligne, p.date_expedition, p.date_livraison, p;",
+   "q05": "SELECT id_commande, id_ligne, id_produit, id_client, id_ligne, id_commande, id_produit, id_ligne, id_ligne, id_commande, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne;",
+   "q06": "SELECT id_produit, id_commande, id_client, id_ligne, id_ligne, id_commande, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_l;",
+   "q07": "SELECT total_frais_port\nFROM port_factur_2024\nWHERE date_port_facturé > DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1,;",
+   "q08": "SELECT id_ligne, id_commande, id_produit, id_client, id_ligne, id_retour, id_retour, id_commande, id_ligne, id_ligne, id_commande, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne,;",
+   "q09": "SELECT id_commande, id_ligne, id_produit, id_client, id_commande, id_produit_ligne, id_ligne, id_ligne_commande, id_ligne_commande_ligne, id_ligne_commande_ligne_ligne, id_ligne_commande_ligne_ligne_ligne,;",
+   "q10": "SELECT id_commande, id_ligne, id_client, id_produit, id_commande, id_produit, id_ligne, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne,;",
+   "q11": "SELECT id_commande, id_ligne, id_client, id_commande, id_produit, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_command;",
+   "q12": "SELECT DATE(date_commande) FROM commandes WHERE date_commande > DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATEADD(month, -1, DATE;",
+   "q13": "SELECT\n  id_commande,\n  id_produit,\n  id_client,\n  id_ligne,\n  id_commande,\n  id_produit,\n  id_produit,\n  id_ligne,\n  id_ligne,\n  id_commande,\n  id_ligne,\n  id_ligne,\n  id_ligne,\n  id_ligne,\n  id_ligne,\n  id_;",
+   "q14": "SELECT DATE(date_commande) AS date_commande, DATE(date_commande) AS date_commande, DATE(date_commande) AS date_commande, DATE(date_commande) AS date_commande, DATE(date_commande) AS date_commande, DATE(date_commande) AS date_commande, DATE(date_commande) AS date_commande, DATE;",
+   "q15": "SELECT id_cat_marge_brute, COUNT(*) as num_cat_marge_brute\nFROM produits\nGROUP BY id_cat_marge_brute;",
+   "q16": "SELECT id_commande, id_ligne, id_client, id_produit, id_produit, id_ligne, id_ligne, id_commande, id_ligne, id_commande, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne;",
+   "q17": "SELECT COUNT(*) FROM commandes WHERE date_commande > 2025;",
+   "q18": "SELECT id_commande, id_ligne, id_commande, id_produit, id_client, id_ligne, id_commande, id_produit, id_ligne, id_commande, id_ligne, id_ligne, id_commande, id_ligne, id_ligne, id_ligne, id_ligne, id_ligne, id;",
+   "q19": "SELECT p.prenom, p.nom, p.adresse, p.date_inscription, p.date_expedition, p.date_livraison, p.date_remise_pct, p.date_remise_pct, p.date_remise_pct, p.date_remise_pct, p.date_remise_pct, p.date_remise_pct,;",
+   "q20": "SELECT id_commande, date_commande, heure, id_client, canal, mode_livraison, code_promo, frais_port, prix_vente, cout_achat, fournisseur, date_lancement, montant_rembourse, date_expedition, date_livraison, delai_promis_j, colis_abime, retard, date_livraison;"
+  },
+  "v3": {
+   "q01": "SELECT COUNT(*) FROM commandes WHERE date_commande >= DATE '2024-01-01' AND date_commande < DATE '2025-12-31';",
+   "q02": "SELECT COUNT(*) AS n FROM livraisons L WHERE date_expedition = DATE '2024-01-01' AND date_livraison = DATE '2024-01-01';",
+   "q03": "SELECT COUNT(*) AS n FROM retours WHERE date_livraison > DATE '2024-01-01' AND date_livraison < DATE '2023-01-01';",
+   "q04": "SELECT panier.prenom, panier.adresse, panier.date_expedition, panier.date_livraison, panier.date_expedition_j, panier.date_livraison_j, panier.date_livraison_j, panier.date_livraison_j, panier.date_livraison_j, panier.date_livra;",
+   "q05": "SELECT COUNT(*) AS n FROM produits WHERE id_produit = 1;",
+   "q06": "SELECT id_produit, COUNT(*) AS n FROM produits WHERE date_commande >= DATE '2025-01-01' AND date_commande < DATE '2026-01-01';",
+   "q07": "SELECT COUNT(*) AS total_port FROM retours WHERE mode_livraison = '2024';",
+   "q08": "SELECT p.date_commande, COUNT(*) AS n FROM lignes_commande l JOIN produits p USING (id_produit) GROUP BY p.date_commande;",
+   "q09": "SELECT COUNT(*) AS prix_unitaire, COUNT(*) AS prix_vente, COUNT(*) AS montant_rembourse, COUNT(*) AS montant_rembours, COUNT(*) AS montant_expedition, COUNT(*) AS montant_livraison, COUNT(*) AS montant_délai_promis, COUNT(*) AS montant_délai;",
+   "q10": "SELECT COUNT(*) FROM commandes WHERE date_commande >= DATE '2025-01-01' AND date_commande < DATE '2026-01-01';",
+   "q11": "SELECT COUNT(*) AS n FROM commandes WHERE id_commande = 1;",
+   "q12": "SELECT DATE(date_expedition) AS d_expedition, COUNT(*) AS n FROM retours WHERE mode_livraison = '1' AND date_expedition > DATE '2024-01-01';",
+   "q13": "SELECT COUNT(*) AS taux_livraison, COUNT(*) AS taux_transporteur, COUNT(*) AS taux_livraison, COUNT(*) AS taux_transporteur, COUNT(*) AS taux_transporteur, COUNT(*) AS taux_transporteur, COUNT(*) AS taux_transporteur, COUNT(*) AS taux_transporteur, COUNT(*) AS taux_;",
+   "q14": "SELECT COUNT(*) AS mais_affaires_de_2025 FROM livraisons WHERE date_livraison BETWEEN DATE '2024-01-01' AND DATE '2025-12-31';",
+   "q15": "SELECT c.categorie, COUNT(*) AS n FROM lignes_commande l JOIN produits p USING (id_produit) GROUP BY c.categorie;",
+   "q16": "SELECT id_client, COUNT(*) AS villes_client FROM produits WHERE date_commande >= DATE '2025-01-01' AND date_commande < DATE '2026-01-01';",
+   "q17": "SELECT COUNT(*) AS n FROM commandes WHERE date_commande >= DATE '2024-01-01' AND date_commande < DATE '2025-12-31';",
+   "q18": "SELECT COUNT(*) AS n FROM commandes WHERE date_commande >= DATE '2024-01-01' AND date_commande < DATE '2025-12-31';",
+   "q19": "SELECT p.categorie, COUNT(*) AS n FROM lignes_commande l JOIN produits p USING (id_produit) GROUP BY p.categorie;",
+   "q20": "SELECT id_commande, COUNT(*) AS n FROM commandes WHERE date_commande >= DATE '2025-01-01' AND date_commande < DATE '2024-01-01';"
+  }
+ },
+ "tokens": [
+  {
+   "nom": "schema_ddl",
+   "texte": "CREATE TABLE commandes (\n  id_commande INTEGER,\n  date_commande DATE,\n  heure TIME,\n  id_client INTEGER,\n  canal VARCHAR,\n  mode_livraison VARCHAR,\n  code_promo VARCHAR,\n  frais_port DOUBLE\n);\nCREATE TABLE lignes_commande (\n  id_ligne INTEGER,\n  id_commande INTEGER,\n  id_produit INTEGER,\n  quantite INTEGER,\n  prix_unitaire DOUBLE,\n  remise_pct DOUBLE,\n  montant DOUBLE\n);\nCREATE TABLE produits (\n  id_produit INTEGER,\n  nom_produit VARCHAR,\n  categorie VARCHAR,\n  prix_vente DOUBLE,\n  cout_achat DOUBLE,\n  fournisseur VARCHAR,\n  date_lancement DATE\n);\nCREATE TABLE clients (\n  id_client INTEGER,\n  date_inscription DATE,\n  annee_naissance INTEGER,\n  ville VARCHAR,\n  canal_acquisition VARCHAR,\n  fidelite INTEGER,\n  email_valide INTEGER,\n  consentement_marketing INTEGER\n);\nCREATE TABLE livraisons (\n  id_commande INTEGER,\n  date_commande DATE,\n  canal VARCHAR,\n  mode_livraison VARCHAR,\n  transporteur VARCHAR,\n  date_expedition DATE,\n  date_livraison DATE,\n  delai_promis_j INTEGER,\n  colis_abime INTEGER,\n  retard INTEGER\n);\nCREATE TABLE retours (\n  id_retour INTEGER,\n  id_ligne INTEGER,\n  date_retour DATE,\n  motif VARCHAR,\n  montant_rembourse DOUBLE\n);",
+   "caracteres": 1160,
+   "jetons": 416
+  },
+  {
+   "nom": "schema_descriptions",
+   "texte": "CREATE TABLE commandes (\n  id_commande INTEGER,  -- identifiant de la commande\n  date_commande DATE,  -- jour de la commande\n  heure TIME,  -- heure de la commande\n  id_client INTEGER,  -- client (clients.id_client)\n  canal VARCHAR,  -- Boutique, Site ou Réseaux\n  mode_livraison VARCHAR,  -- Domicile, Point relais ou Retrait magasin\n  code_promo VARCHAR,  -- code utilisé ; NULL si aucun\n  frais_port DOUBLE  -- frais de port facturés, UNE valeur par COMMANDE (pas par ligne)\n);\nCREATE TABLE lignes_commande (\n  id_ligne INTEGER,  -- identifiant de la ligne\n  id_commande INTEGER,  -- commandes.id_commande\n  id_produit INTEGER,  -- produits.id_produit\n  quantite INTEGER,  -- quantité\n  prix_unitaire DOUBLE,  -- prix unitaire TTC\n  remise_pct DOUBLE,  -- remise en %\n  montant DOUBLE  -- montant TTC de la ligne après remise ; chiffre d'affaires = somme des montants\n);\nCREATE TABLE produits (\n  id_produit INTEGER,  -- identifiant du produit (120)\n  nom_produit VARCHAR,  -- nom : ATTENTION, 60 noms pour 120 produits\n  categorie VARCHAR,  -- 6 catégories\n  prix_vente DOUBLE,  -- prix de vente TTC\n  cout_achat DOUBLE,  -- coût d'achat HT\n  fournisseur VARCHAR,  -- fournisseur\n  date_lancement DATE  -- date de lancement\n);\nCREATE TABLE clients (\n  id_client INTEGER,  -- identifiant\n  date_inscription DATE,  -- inscription\n  annee_naissance INTEGER,  -- année de naissance\n  ville VARCHAR,  -- Ville A … Ville T\n  canal_acquisition VARCHAR,  -- canal d'acquisition\n  fidelite INTEGER,  -- 1 si carte de fidélité, sinon 0\n  email_valide INTEGER,  -- 0/1\n  consentement_marketing INTEGER  -- 0/1\n);\nCREATE TABLE livraisons (\n  id_commande INTEGER,  -- commandes.id_commande (uniquement les commandes Site et Réseaux)\n  date_commande DATE,  -- jour de la commande\n  canal VARCHAR,  -- canal\n  mode_livraison VARCHAR,  -- mode\n  transporteur VARCHAR,  -- Transporteur A, B ou C\n  date_expedition DATE,  -- expédition\n  date_livraison DATE,  -- livraison\n  delai_promis_j INTEGER,  -- délai promis en jours\n  colis_abime INTEGER,  -- 0/1\n  retard INTEGER  -- 1 si livré après le délai promis\n);\nCREATE TABLE retours (\n  id_retour INTEGER,  -- identifiant\n  id_ligne INTEGER,  -- lignes_commande.id_ligne\n  date_retour DATE,  -- date\n  motif VARCHAR,  -- motif du retour\n  montant_rembourse DOUBLE  -- montant remboursé\n);",
+   "caracteres": 2325,
+   "jetons": 837
+  },
+  {
+   "nom": "ligne_csv",
+   "texte": "1,1,24,1,33.9,0,33.9\n2,1,10,1,49.9,0,49.9\n3,2,87,2,12.5,10,22.5\n",
+   "caracteres": 64,
+   "jetons": 64
+  },
+  {
+   "nom": "phrase",
+   "texte": "Le chiffre d'affaires de décembre progresse de 12,4 % par rapport à décembre 2024.",
+   "caracteres": 82,
+   "jetons": 36
+  },
+  {
+   "nom": "requete",
+   "texte": "SELECT canal, SUM(montant) FROM lignes_commande GROUP BY canal;",
+   "caracteres": 63,
+   "jetons": 20
+  }
+ ],
+ "logits": {
+  "amorce": "Le chiffre d'affaires de décembre a",
+  "jetons": [
+   "vec",
+   "ins",
+   " ",
+   "uss",
+   "up",
+   "j",
+   "-",
+   "uc",
+   "é",
+   " la",
+   " une",
+   "is"
+  ],
+  "scores": [
+   23.625,
+   22.875,
+   21.75,
+   21.25,
+   21.125,
+   20.625,
+   20.25,
+   20.0,
+   19.875,
+   19.75,
+   19.625,
+   19.625
+  ]
+ },
+ "commentaire": {
+  "faits": {
+   "mois": "12/2025",
+   "ca": 183845,
+   "commandes": 1853,
+   "panier_moyen": 99.2,
+   "ca_vs_mois_precedent_pct": 27.8,
+   "ca_vs_annee_precedente_pct": 16.9,
+   "commandes_vs_annee_precedente_pct": 9.6,
+   "categorie_leader": "Décoration",
+   "part_categorie_leader_pct": 33.1,
+   "livraisons_en_retard_pct": 54.0
+  },
+  "texte": "{\"mois\": \"12/2025\", \"ca\": 183845, \"commandes\": 1853, \"panier_moyen\": 99.2, \"ca_vs_mois_precedent_pct\": 27.8, \"ca_vs_annee_precedente_pct\": 16.9,"
+ },
+ "lignes_csv": {
+  "prompt": "client,date_commande,canal,montant\n12,2024-03-02,Site,38.50\n",
+  "texte": "12,2024-03-02,Site,38.50\n12,2024-03-02,Site,38.50\n12,2024-03-02,Site,38.50\n12,2024-03-02,"
+ }
+}
