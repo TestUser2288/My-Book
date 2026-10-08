@@ -1,0 +1,9 @@
+date,type,description
+2025-03-12,panne_site,commandes du Site à zéro : CA et commandes réduits à 45 % du niveau attendu
+2025-03-13,panne_site,commandes du Site à zéro : CA et commandes réduits à 45 % du niveau attendu
+2025-03-14,panne_site,commandes du Site à zéro : CA et commandes réduits à 45 % du niveau attendu
+2025-06-18,commande_b2b,+4 200 € (grosse commande d'un professionnel)
+2025-09-09,erreur_saisie,chiffre d'affaires ×10
+2025-04-28,fermeture_boutique,fermeture exceptionnelle : environ 45 % de ventes en moins
+2025-04-29,fermeture_boutique,fermeture exceptionnelle : environ 45 % de ventes en moins
+2025-10-20,doublon_journee,la journée apparaît deux fois
