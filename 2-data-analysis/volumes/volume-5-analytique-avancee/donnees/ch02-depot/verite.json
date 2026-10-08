@@ -1,0 +1,71 @@
+{
+ "total_original": 1324763.72,
+ "lignes_originales": 29827,
+ "commandes": 12946,
+ "par_mois": {
+  "2025-01": {
+   "lignes_originales": 2225,
+   "lignes_fichier": 2227,
+   "total_original": 89178.95
+  },
+  "2025-02": {
+   "lignes_originales": 1711,
+   "lignes_fichier": 1712,
+   "total_original": 72642.44
+  },
+  "2025-03": {
+   "lignes_originales": 2023,
+   "lignes_fichier": 2028,
+   "total_original": 89787.3
+  },
+  "2025-04": {
+   "lignes_originales": 2225,
+   "lignes_fichier": 2228,
+   "total_original": 98580.53
+  },
+  "2025-05": {
+   "lignes_originales": 2387,
+   "lignes_fichier": 2388,
+   "total_original": 105272.03
+  },
+  "2025-06": {
+   "lignes_originales": 2330,
+   "lignes_fichier": 2333,
+   "total_original": 106930.12
+  },
+  "2025-07": {
+   "lignes_originales": 2240,
+   "lignes_fichier": 2243,
+   "total_original": 111220.87
+  },
+  "2025-08": {
+   "lignes_originales": 1803,
+   "lignes_fichier": 1807,
+   "total_original": 89898.36
+  },
+  "2025-09": {
+   "lignes_originales": 2521,
+   "lignes_fichier": 2522,
+   "total_original": 113452.74
+  },
+  "2025-10": {
+   "lignes_originales": 2644,
+   "lignes_fichier": 2645,
+   "total_original": 120063.92
+  },
+  "2025-11": {
+   "lignes_originales": 3459,
+   "lignes_fichier": 3484,
+   "total_original": 143891.58
+  },
+  "2025-12": {
+   "lignes_originales": 4259,
+   "lignes_fichier": 4262,
+   "total_original": 183844.88
+  }
+ },
+ "orphelins": 18,
+ "negatifs": 9,
+ "doublons_novembre": 25,
+ "mars_lignes_erronees": 12
+}
