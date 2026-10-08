@@ -1,0 +1,46 @@
+{
+ "serie": "Série 2 — Volume V",
+ "nom": "Analytique avancée et automatisation",
+ "ligneA": "Entrepôts\\,\\textperiodcentered\\ ETL\\,\\textperiodcentered\\ Prédictif",
+ "ligneB": "Risque et assurance\\,\\textperiodcentered\\ Pipelines automatisés",
+ "pied": "Passer des analyses ponctuelles aux systèmes reproductibles,\\\\ avec une boutique, un assureur et une banque fictifs.",
+ "title": "DATA ANALYST",
+ "author": "Série 2 : Data Analyst",
+ "subtitle": "Volume V : Analytique avancée et automatisation — Des analyses ponctuelles aux systèmes reproductibles",
+ "livre": {
+  "dossier": "sections",
+  "source": "livre/volume-5-analytique-avancee-complet.md",
+  "out": "livre/volume-5-analytique-avancee.pdf",
+  "start_heading": "# Introduction",
+  "titres": {
+   "00": "00-introduction",
+   "01": "chapitre-1-entrepots-modelisation",
+   "02": "chapitre-2-etl-automatisation",
+   "03": "chapitre-3-analytique-predictive",
+   "04": "chapitre-4-risque-assurance",
+   "05": "chapitre-5-llm-analyse",
+   "10": "cloture-points-cles"
+  }
+ },
+ "cahier": {
+  "dossier": "cahier",
+  "source": "livre/cahier-volume-5-complet.md",
+  "out": "livre/cahier-volume-5.pdf",
+  "start_heading": "# Mode d'emploi",
+  "serie": "Série 2 — Volume V",
+  "nom": "Cahier d'exercices et d'applications",
+  "ligneA": "Exercices corrigés\\,\\textperiodcentered\\ Applications guidées\\,\\textperiodcentered\\ Projet",
+  "ligneB": "Compagnon du volume V : Analytique avancée et automatisation",
+  "pied": "À utiliser avec le livre : chaque chapitre renvoie ici\\\\ pour s'entraîner.",
+  "subtitle": "Cahier d'exercices et d'applications du volume V : Analytique avancée et automatisation",
+  "titres": {
+   "00": "cahier-00-mode-emploi",
+   "01": "cahier-chapitre-1",
+   "02": "cahier-chapitre-2",
+   "03": "cahier-chapitre-3",
+   "04": "cahier-chapitre-4",
+   "05": "cahier-chapitre-5",
+   "10": "cahier-projet-et-autoevaluation"
+  }
+ }
+}

@@ -1,0 +1,21 @@
+id_employe,date_depart,motif
+4,2025-12-15,licenciement
+5,2022-05-15,démission
+6,2022-07-15,démission
+8,2021-05-15,démission
+9,2024-11-15,démission
+17,2022-03-15,démission
+25,2024-12-15,fin de contrat
+26,2025-10-15,démission
+27,2021-12-15,démission
+28,2023-02-15,démission
+31,2021-10-15,fin de contrat
+33,2022-03-15,démission
+35,2024-10-15,retraite
+38,2025-08-15,démission
+40,2023-03-15,démission
+41,2025-07-15,retraite
+43,2024-06-15,démission
+47,2022-06-15,démission
+58,2021-02-15,démission
+63,2021-07-15,fin de contrat
